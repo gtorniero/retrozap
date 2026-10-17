@@ -673,14 +673,14 @@ async function duracoes(zip){
 }
 // nome do grupo pelo nome do arquivo do export ("Conversa do WhatsApp com X", "WhatsApp Chat - X")
 function nomeDoArquivo(nome){
-  const n = String(nome || '').split('/').pop().replace(/\.(zip|txt)$/i, '').trim();
+  const n = limpaTxt(String(nome || '').split('/').pop()).replace(/\.(zip|txt)$/i, '').trim();
   const m = n.match(/^(?:Conversa do WhatsApp com|Conversa do WhatsApp -|WhatsApp Chat with|WhatsApp Chat -|Chat de WhatsApp con|Chat de WhatsApp -)\s*(.+)$/i);
-  return m ? m[1].trim().slice(0, 40) : '';
+  return m ? limpaTxt(m[1]).slice(0, 40) : '';
 }
 // ou pelo último "mudou o nome do grupo para ..." / "criou o grupo ..."
 function nomeDaConversa(text){
   const rx = /(?:mudou o nome(?: do grupo)?(?: de [“"][^”"]*[”"])? para|mudou o assunto(?: de [“"][^”"]*[”"])? para|criou (?:o )?grupo|changed the (?:group name|subject)(?: from [“"][^”"]*[”"])? to|created group) [“"]([^”"\n]{1,40})[”"]/gi;
-  let m, ult = ''; while ((m = rx.exec(text))) ult = m[1].trim(); return ult;
+  let m, ult = ''; while ((m = rx.exec(text))) ult = limpaTxt(m[1]); return ult;
 }
 async function readFile(f){
   DUR = {}; state.grupo = nomeDoArquivo(f.name);
@@ -836,7 +836,7 @@ function roster(){
     state.awards = buildAwards(state.data); state.idx = 0;
     story();
   };
-  $('#gn').oninput = e => { state.grupo = e.target.value.trim(); };
+  $('#gn').oninput = e => { state.grupo = limpaTxt(e.target.value); };
   $('#cmp').onchange = e => { state.comparar = e.target.checked; };
   window.scrollTo(0,0);
 }
@@ -1337,9 +1337,15 @@ function fundo(c, W, H, raio){
   c.globalAlpha = 1; c.fillStyle = MODOS[state.modo].c; c.fillRect(0,0,W,16);
 }
 // texto que encolhe até caber na largura
+// remove marcas invisíveis de direção (vêm no nome do arquivo exportado pelo iPhone e desalinham o texto)
+function limpaTxt(s){ return String(s || '').replace(/[​-‏‪-‮⁦-⁩﻿]/g, '').replace(/\s+/g, ' ').trim(); }
+// texto que encolhe até caber na largura, posicionado à mão (o centro automático falha no Safari com emoji)
 function caber(c, txt, x, y, maxW, peso, tam, fam){
+  txt = limpaTxt(txt);
   let t = tam; do { c.font = `${peso} ${t}px ${fam}`; t -= 2; } while (c.measureText(txt).width > maxW && t > 22);
-  c.fillText(txt, x, y);
+  const w = Math.min(c.measureText(txt).width, maxW), al = c.textAlign;
+  const x0 = al === 'center' ? x - w/2 : (al === 'right' || al === 'end') ? x - w : x;
+  c.save(); c.direction = 'ltr'; c.textAlign = 'left'; c.fillText(txt, x0, y, maxW); c.restore();
 }
 function drawResumo(d){
   const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
