@@ -275,6 +275,12 @@ body.has-cookies .acao{bottom:150px}
 .optin{display:flex;gap:12px;align-items:flex-start;background:var(--acai);border-radius:16px;padding:14px 16px;cursor:pointer}
 .optin input{width:22px;height:22px;margin-top:2px;accent-color:var(--manga);flex:0 0 auto}
 .optin>span{display:flex;flex-direction:column;gap:2px;font-weight:700}.optin .small{font-weight:400}
+.duas{display:grid;grid-template-columns:1fr;gap:16px;width:100%}
+@media (min-width:600px){.duas:has(figure+figure){grid-template-columns:1fr 1fr}}
+.card-fim{margin:0;display:flex;flex-direction:column;gap:10px;align-items:center;background:var(--acai);border-radius:20px;padding:14px}
+.card-fim figcaption{font-family:var(--titulo);font-weight:800;font-size:20px;color:var(--areia)}
+.card-fim .rimg{width:100%;max-width:340px}
+.card-fim .btn-row{width:100%;display:flex;gap:8px}.card-fim .btn{flex:1;padding:12px 10px;font-size:15px}
 .cookies{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--acai);border-top:1px solid var(--linha);padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));font-size:14px;color:var(--neblina);display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
 .cookies a,.rodape a{color:var(--areia)}
 body.has-cookies{padding-bottom:calc(170px + env(safe-area-inset-bottom,0px))}
@@ -1089,15 +1095,26 @@ function suspense(){
       if (!sl.isConnected) return;
       dots.forEach(el => el.classList.add('on'));
       sl.innerHTML = `<div class="em-g" aria-hidden="true">${v.e}</div><div class="roleta ok">${esc(v.txt)}</div>
-        <p class="lead">Esse é o resumo do grupo. Agora é mandar no WhatsApp e ver quem se ofende primeiro.</p>
-        <img id="rimg" class="rimg" alt="${esc(altResumo(d))}">`;
+        <p class="lead">${destaquesBrasil().length ? 'Duas imagens para o grupo: o resumo e o ranking.' : 'Esse é o resumo do grupo.'} Agora é mandar no WhatsApp e ver quem se ofende primeiro.</p>
+        <div class="duas">
+          <figure class="card-fim"><figcaption>📸 Resumo do grupo</figcaption><img id="rimg" class="rimg" alt="${esc(altResumo(d))}">
+            <div class="btn-row"><button type="button" class="btn btn-wa" id="wa1">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv1">⬇️ Salvar</button></div></figure>
+          ${destaquesBrasil().length ? `<figure class="card-fim"><figcaption>🏅 Ranking do grupo</figcaption><img id="rimg2" class="rimg" alt="${esc(altComparacao())}">
+            <div class="btn-row"><button type="button" class="btn btn-wa" id="wa2">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv2">⬇️ Salvar</button></div></figure>` : ''}
+        </div>`;
       confetti();
-      document.fonts.ready.then(() => { const im = $('#rimg'); if (im) im.src = drawResumo(d); });
-      bt.disabled = false; bt.textContent = '📲 Mandar o resumo no WhatsApp'; bt.onclick = () => mandarWhats(paraBlob(drawResumo(d)), 'retrozap-resumo.png', convite('resumo'), null, () => openCard(() => drawResumo(d), convite('resumo'), altResumo(d)));
-      const q = document.createElement('button'); q.className = 'btn btn-ghost'; q.style.width = '100%'; q.textContent = '🟪 Versão quadrada'; q.onclick = () => openCard(() => drawResumoQ(d), convite('resumo'), altResumo(d));
-      const vf = document.createElement('button'); vf.className = 'btn btn-ghost'; vf.id = 'vf'; vf.style.width = '100%'; vf.textContent = 'Ver os personagens do grupo →'; vf.onclick = () => final();
-      const cmpB = document.createElement('button'); cmpB.className = 'btn btn-main'; cmpB.style.width = '100%'; cmpB.textContent = '🏅 Mandar o ranking do grupo'; cmpB.onclick = () => openCard(() => drawComparacao(d), convite('ranking'), altComparacao());
-      if (destaquesBrasil().length) bt.after(cmpB, q, vf); else bt.after(q, vf);
+      document.fonts.ready.then(() => { const im = $('#rimg'); if (im) im.src = drawResumo(d); const im2 = $('#rimg2'); if (im2) im2.src = drawComparacao(d); });
+      const abre = (fz, txt, alt) => openCard(fz, txt, alt);
+      $('#wa1').onclick = () => mandarWhats(paraBlob(drawResumo(d)), 'retrozap-resumo.png', convite('resumo'), null, () => abre(() => drawResumo(d), convite('resumo'), altResumo(d)));
+      $('#sv1').onclick = () => abre(() => drawResumo(d), convite('resumo'), altResumo(d));
+      if ($('#wa2')){
+        $('#wa2').onclick = () => mandarWhats(paraBlob(drawComparacao(d)), 'retrozap-ranking.png', convite('ranking'), null, () => abre(() => drawComparacao(d), convite('ranking'), altComparacao()));
+        $('#sv2').onclick = () => abre(() => drawComparacao(d), convite('ranking'), altComparacao());
+      }
+      bt.style.display = 'none';
+      const q = document.createElement('button'); q.className = 'btn btn-ghost'; q.style.width = '100%'; q.textContent = '🟪 Resumo em versão quadrada'; q.onclick = () => openCard(() => drawResumoQ(d), convite('resumo'), altResumo(d));
+      const vf = document.createElement('button'); vf.className = 'btn btn-main'; vf.id = 'vf'; vf.style.width = '100%'; vf.textContent = 'Ver os personagens do grupo →'; vf.onclick = () => final();
+      bt.after(q, vf);
     }
   };
   bt.onclick = () => {
