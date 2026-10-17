@@ -20,6 +20,8 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="preload" href="/assets/bricolage.woff2" as="font" type="font/woff2" crossorigin>
+<meta name="google-adsense-account" content="ca-pub-4039247360984618">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4039247360984618" crossorigin="anonymous"></script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Retrozap","url":"https://retrozap.com.br/","applicationCategory":"EntertainmentApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"BRL"},"inLanguage":"pt-BR"}</script>
 <script src="/assets/jszip.min.js" defer></script>
 <style>
@@ -347,7 +349,7 @@ window.addEventListener('popstate', () => {
 function avisoCookies(){
   try { if (localStorage.getItem('retrozap-cookies')) return; } catch {}
   const b = document.createElement('div'); b.className = 'cookies';
-  b.innerHTML = 'Usamos cookies só para contar visitas. Suas mensagens nunca saem do seu celular. <a href="/privacidade">Saiba mais</a> <button class="btn btn-main mini" type="button">Entendi</button>';
+  b.innerHTML = 'Usamos cookies para contar visitas e mostrar anúncios do Google, que podem ser personalizados. Suas mensagens nunca saem do seu celular. <a href="/privacidade">Política de privacidade</a> <button class="btn btn-main mini" type="button">Entendi</button>';
   b.querySelector('button').onclick = () => { try { localStorage.setItem('retrozap-cookies', '1'); } catch {} b.remove(); document.body.classList.remove('has-cookies'); };
   document.body.appendChild(b); document.body.classList.add('has-cookies'); // espaço extra para o aviso não cobrir nenhum botão
 }
@@ -632,7 +634,7 @@ function home(){
     <p class="eyebrow">A retrospectiva oficial dos grupos do Brasil</p>
     <h1>Todo grupo tem uma história. <em>Descubra a do seu.</em></h1>
     <p class="lead">O Retrozap lê a conversa do seu grupo e conta tudo: quem fala demais, quem some, quem manda figurinha às 3 da manhã e quem nunca esquece um aniversário. No fim, cada um leva o seu troféu. 🏆</p>
-    <div class="badge"><span aria-hidden="true">🔒</span><span><b>Suas mensagens não saem do seu celular.</b> Tudo é analisado aqui no navegador. A gente não recebe, não lê e não guarda nenhuma mensagem.</span></div>
+    <div class="badge"><span aria-hidden="true">🔒</span><span><b>Suas mensagens não saem do seu celular.</b> Tudo é analisado aqui no navegador. A gente não recebe, não lê e não guarda nenhuma mensagem. <a href="/privacidade" style="color:var(--areia)">Entenda</a></span></div>
     <div class="panel">
       <p class="ask">1. Exporte a conversa do WhatsApp</p>
       <div class="tabs" role="tablist">
@@ -657,7 +659,7 @@ function home(){
       <span class="small" id="fname">${state.arquivo ? 'Arquivo escolhido: ' + esc(state.arquivo.name) : 'Aceita o .zip ou o .txt que o WhatsApp gera'}</span>
       <input type="file" id="file" accept=".txt,.zip,text/plain,application/zip">
     </label>
-    <div class="badge priv"><span aria-hidden="true">🔒</span><span><b>Suas mensagens não saem do seu celular.</b> Tudo é analisado aqui no navegador. A gente não recebe, não lê e não guarda nenhuma mensagem.</span></div>
+    <div class="badge priv"><span aria-hidden="true">🔒</span><span><b>Suas mensagens não saem do seu celular.</b> Tudo é analisado aqui no navegador. A gente não recebe, não lê e não guarda nenhuma mensagem. <a href="/privacidade" style="color:var(--areia)">Entenda</a></span></div>
     <div class="panel">
       <p class="ask">3. Que tipo de grupo é?</p>
       <div class="modes" role="group" aria-label="Tipo de grupo">
