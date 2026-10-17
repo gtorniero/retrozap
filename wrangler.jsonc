@@ -4,6 +4,9 @@
   "name": "retrozap-v2",
   "main": "src/index.js",
   "compatibility_date": "2025-09-01",
+  // endereço de teste retrozap-v2.<conta>.workers.dev ligado
+  "workers_dev": true,
+  "preview_urls": true,
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
