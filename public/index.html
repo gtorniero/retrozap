@@ -1044,7 +1044,7 @@ function fatosResumo(d){
     piada: d.giria[0] === 'bora' ? 'E quantas vezes foram mesmo?' : 'O dicionário do grupo agradece.'});
   if (au) f.push({e:'🎧', big:au.txt, sub:au.comp, piada:'E ninguém ouviu em 2x. Mentira.'});
   const br = destaquesBrasil();
-  if (br.length) f.push({e:'🇧🇷', brasil:br.slice(0, 3), piada: br[0].top <= 5 ? 'Grupo de elite. Ou de gente sem nada para fazer.' : 'Esse grupo não brinca em serviço.'});
+  if (br.length) f.push({e:'🏅', brasil:br.slice(0, 3), piada: br[0].top <= 5 ? 'Grupo de elite. Ou de gente sem nada para fazer.' : 'Esse grupo não brinca em serviço.'});
   f.push({e:'🏅', destaques:ds, piada:'Ninguém foi poupado.'});
   return f;
 }
@@ -1075,7 +1075,7 @@ function suspense(){
   };
   const mostra = x => {
     if (x.brasil){ sl.innerHTML = `<div class="em-g" aria-hidden="true">${x.e}</div><h2 style="font-size:30px">Comparado com outros grupos</h2>
-         <div class="dest">${x.brasil.map(y => `<div><span aria-hidden="true">🏅</span><div><b>${esc(y.txt)}</b><span class="small">${esc(y.sub)}</span></div></div>`).join('')}</div>
+         <div class="dest">${x.brasil.map(y => `<div><span aria-hidden="true">${y.e}</span><div><b>${esc(y.txt)}</b><span class="small">${esc(y.sub)}</span></div></div>`).join('')}</div>
          <p class="piada">${esc(x.piada)}</p>`; return; }
     sl.innerHTML = x.destaques
       ? `<div class="em-g" aria-hidden="true">${x.e}</div><h2 style="font-size:30px">Os destaques</h2>
@@ -1096,7 +1096,8 @@ function suspense(){
       bt.disabled = false; bt.textContent = '📲 Mandar o resumo no WhatsApp'; bt.onclick = () => mandarWhats(paraBlob(drawResumo(d)), 'retrozap-resumo.png', convite('resumo'), null, () => openCard(() => drawResumo(d), convite('resumo'), altResumo(d)));
       const q = document.createElement('button'); q.className = 'btn btn-ghost'; q.style.width = '100%'; q.textContent = '🟪 Versão quadrada'; q.onclick = () => openCard(() => drawResumoQ(d), convite('resumo'), altResumo(d));
       const vf = document.createElement('button'); vf.className = 'btn btn-ghost'; vf.id = 'vf'; vf.style.width = '100%'; vf.textContent = 'Ver os personagens do grupo →'; vf.onclick = () => final();
-      bt.after(q, vf);
+      const cmpB = document.createElement('button'); cmpB.className = 'btn btn-main'; cmpB.style.width = '100%'; cmpB.textContent = '🏅 Mandar o ranking do grupo'; cmpB.onclick = () => openCard(() => drawComparacao(d), convite('ranking'), altComparacao());
+      if (destaquesBrasil().length) bt.after(cmpB, q, vf); else bt.after(q, vf);
     }
   };
   bt.onclick = () => {
@@ -1220,6 +1221,7 @@ function final(semFesta){
     <p class="lead" style="text-align:center">${champ[1].length} troféus: ${champ[1].map(a=>gtit(a.n, champ[0])).join(', ')}. Um verdadeiro monopólio.</p>
     <button class="btn btn-main" id="rs">✨ Resumo do grupo para os stories</button>
     <button class="btn btn-ghost" id="rq">🟪 Resumo quadrado para mandar no grupo</button>
+    ${destaquesBrasil().length ? '<button class="btn btn-main" id="rk">🏅 Ranking do grupo para os stories</button>' : ''}
     <button class="btn btn-ghost" id="cc">📲 Card do destaque do grupo</button>
     <div class="panel" style="align-items:center;text-align:center">
       <span class="tag-premium">Grátis no lançamento</span>
@@ -1240,6 +1242,7 @@ function final(semFesta){
   </section>`;
   $('#rs').onclick = () => openCard(() => drawResumo(d), convite('resumo'), altResumo(d));
   $('#rq').onclick = () => openCard(() => drawResumoQ(d), convite('resumo'), altResumo(d));
+  $('#rk')?.addEventListener('click', () => openCard(() => drawComparacao(d), convite('ranking'), altComparacao()));
   $('#cc').onclick = () => openCard(() => drawCard({emoji:'👑', title:'Destaque do grupo', winner:champ[0], line:`${champ[1].length} troféus no grupo`}), convite('destaque', champ[0]), `Card: ${champ[0]} é o destaque do grupo, com ${champ[1].length} troféus`);
   $('#again').onclick = () => { state.arquivo = null; state.grupo = ''; home(); };
   $('#cp').onclick = () => custom();
@@ -1335,7 +1338,6 @@ function drawResumo(d){
   c.fillStyle = '#FFC23C'; c.font = `800 68px ${BR}`; const nl = wrap(c, v.txt, W/2, 410 + gy, 940, 76);
   const linhas = [
     ['💬', fmt(d.total), `mensagens desde ${desde}`],
-    destaquesBrasil()[0] && ['🏅', destaquesBrasil()[0].txt, destaquesBrasil()[0].sub],
     ['📚', lv.txt, lv.comp],
     ['⏱️', tempoLeitura(d.palavras), 'para ler tudo, sem parar'],
     fr && ['🗣️', fr.txt, fr.sub],
@@ -1428,25 +1430,77 @@ async function comparar(d){
   state.comp = null;
   if (state.comparar === false) return;
   // grupo de exemplo: comparação simulada, e nada é enviado ao banco
-  if (state.sample){ state.comp = {pronto:true, n:1000, exemplo:true, top:{total:4, recorde:9, audios:12, por_dia:6, figurinhas:38}}; return; }
+  if (state.sample){ state.comp = {pronto:true, n:1000, exemplo:true, top:{risadas:3, palavrao:2, furos:4, por_dia:6, madrugada:7, recorde:9, audios:12, total:4, figurinhas:38, textao:60, apagadas:41, dias:30, bomdia:70, parabens:55, fora:80}}; return; }
   try {
     const base = `${+d.start}|${d.total}|${d.people.length}|${state.modo}`;
     const h = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(base)))].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
-    const dias = Math.max(1, Math.round((d.end - d.start)/864e5) + 1);
-    const corpo = {id: h, modo: state.modo, total: d.total, por_dia: Math.round(d.total/dias*100)/100, recorde: d.recorde ? d.recorde[1] : 1,
-      audios: d.people.reduce((s,p) => s + p.audio, 0), membros: Math.max(2, d.people.length), dias, figurinhas: d.people.reduce((s,p) => s + p.sticker, 0)};
-    const r = await fetch('/api/stats', {method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(corpo)});
+    const r = await fetch('/api/stats', {method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({id: h, modo: state.modo, ...numerosDoGrupo(d)})});
     const j = await r.json(); if (j && j.pronto) state.comp = j;
   } catch {}
 }
-// frases "Top X%" que valem mostrar (só as boas), da melhor para a pior
+// os únicos dados que saem do celular: contas do grupo inteiro, sem nomes nem textos
+function numerosDoGrupo(d){
+  const s = k => d.people.reduce((a,p) => a + (p[k] || 0), 0), tot = Math.max(1, d.total), tx = Math.max(1, s('text'));
+  const dias = Math.max(1, Math.round((d.end - d.start)/864e5) + 1), r2 = x => Math.round(x*100)/100;
+  return {total: d.total, por_dia: r2(d.total/dias), recorde: d.recorde ? d.recorde[1] : 1, audios: s('audio'), figurinhas: s('sticker'),
+    membros: Math.max(2, d.people.length), dias, risadas: r2(s('laugh')/tx*100), madrugada: r2(s('night')/tot*100), fora: r2(s('after')/tot*100),
+    palavrao: r2(s('palavrao')/tx*1000), furos: r2(s('furo')/tx*1000), bomdia: r2(s('bomdia')/tx*1000), parabens: r2(s('parabens')/tx*1000),
+    apagadas: r2(s('deleted')/tot*1000), textao: r2(s('chars')/tx)};
+}
+// as comparações, com texto engraçado; m = tipos de grupo em que a métrica aparece
+const RANKING = [
+  {k:'risadas', e:'😂', t:'mais risonhos'},
+  {k:'por_dia', e:'💬', t:'mais tagarelas'},
+  {k:'madrugada', e:'🦉', t:'mais insones'},
+  {k:'palavrao', e:'🤬', t:'mais boca-suja', m:['amigos']},
+  {k:'furos', e:'🙅', t:'em rolê cancelado', m:['amigos']},
+  {k:'bomdia', e:'☀️', t:'em bom dia', m:['familia','comunidade']},
+  {k:'parabens', e:'🎂', t:'em parabéns', m:['familia']},
+  {k:'fora', e:'🌙', t:'em mensagem fora do expediente', m:['trabalho']},
+  {k:'textao', e:'📜', t:'em textão'},
+  {k:'audios', e:'🎙️', t:'em podcast não solicitado'},
+  {k:'figurinhas', e:'🖼️', t:'em figurinha'},
+  {k:'recorde', e:'🔥', t:'em dia de caos'},
+  {k:'apagadas', e:'🗑️', t:'em arrependimento'},
+  {k:'total', e:'📨', t:'em mensagens'},
+  {k:'dias', e:'📅', t:'', antigo:true}
+];
+// as melhores posições do grupo (até 6), da melhor para a pior
 function destaquesBrasil(){
   const c = state.comp; if (!c) return [];
   const tipo = {amigos:'de amigos', familia:'de família', trabalho:'de trabalho', comunidade:'de comunidade'}[state.modo];
-  return [['total','em mensagens'],['recorde','em recorde de mensagens num dia'],['audios','em áudios'],['por_dia','em mensagens por dia'],['figurinhas','em figurinhas']]
-    .map(([k, t]) => ({k, top: c.top[k], txt: `Top ${c.top[k]}% ${t}`, sub: `entre os grupos ${tipo} no Retrozap${c.exemplo ? ' (simulação do exemplo)' : ''}`}))
-    .filter(x => x.top <= 50).sort((a,b) => a.top - b.top);
+  const sub = `entre os grupos ${tipo} no Retrozap${c.exemplo ? ' (simulação do exemplo)' : ''}`;
+  return RANKING.filter(x => (!x.m || x.m.includes(state.modo)) && c.top[x.k] <= 35)
+    .map(x => ({k:x.k, e:x.e, top:c.top[x.k], big: x.antigo ? `Mais antigo que ${100 - c.top[x.k]}%` : `Top ${c.top[x.k]}%`, rot: x.antigo ? 'dos grupos' : x.t, txt: x.antigo ? `Mais antigo que ${100 - c.top[x.k]}% dos grupos` : `Top ${c.top[x.k]}% ${x.t}`, sub}))
+    .sort((a,b) => a.top - b.top).slice(0, 6);
 }
+// imagem 2: nosso grupo no ranking
+function drawComparacao(d){
+  const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
+  const BR = '"Bricolage Grotesque", sans-serif', DM = '"DM Sans", sans-serif', lista = destaquesBrasil();
+  const tipo = {amigos:'DE AMIGOS', familia:'DE FAMÍLIA', trabalho:'DE TRABALHO', comunidade:'DE COMUNIDADE'}[state.modo];
+  fundo(c, W, H, 1100);
+  c.textAlign = 'center';
+  c.fillStyle = '#FFC23C'; c.font = `800 48px ${BR}`; c.fillText('retrozap 🏆', W/2, 100);
+  if (state.grupo){ c.fillStyle = '#FFF4E0'; caber(c, state.grupo, W/2, 178, 960, 800, 62, BR); }
+  c.font = '120px serif'; c.fillText('🏅', W/2, 340);
+  c.fillStyle = '#FFC23C'; c.font = `800 78px ${BR}`; c.fillText('NOSSO GRUPO', W/2, 450); c.fillText('NO RANKING', W/2, 535);
+  c.fillStyle = '#B9A8CC'; c.font = `700 30px ${DM}`; c.fillText(`ENTRE OS GRUPOS ${tipo} DO RETROZAP`, W/2, 595, 980);
+  const y0 = 650, passo = Math.min(190, 1040/Math.max(1, lista.length)), alt = passo - 18;
+  lista.forEach((x, i) => {
+    const y = y0 + i*passo;
+    c.fillStyle = 'rgba(61,26,92,.88)'; c.beginPath(); c.roundRect(70, y, W-140, alt, 30); c.fill();
+    c.textAlign = 'left'; c.font = `${Math.round(alt*.45)}px serif`; c.fillStyle = '#FFF4E0'; c.fillText(x.e, 105, y + alt*.64);
+    c.fillStyle = '#FFC23C'; caber(c, x.big, 240, y + alt*.5, 740, 800, Math.round(alt*.38), BR);
+    c.fillStyle = '#FFF4E0'; caber(c, x.rot, 240, y + alt*.84, 740, 700, Math.round(alt*.22), DM);
+  });
+  c.textAlign = 'center';
+  if (state.comp?.exemplo){ c.fillStyle = '#B9A8CC'; c.font = `500 26px ${DM}`; c.fillText('simulação do grupo de exemplo', W/2, 1745); }
+  c.fillStyle = '#B9A8CC'; c.font = `500 30px ${DM}`; c.fillText('E o seu grupo, em que posição fica?', W/2, 1800);
+  c.fillStyle = '#FFF4E0'; c.font = `700 36px ${DM}`; c.fillText('Todo grupo tem uma história · retrozap.com.br', W/2, 1868);
+  return cv.toDataURL('image/png');
+}
+function altComparacao(){ return `Nosso grupo${state.grupo ? ' ' + state.grupo : ''} no ranking do Retrozap: ${destaquesBrasil().map(x => x.txt).join('; ')}.`; }
 
 /* ---------- personagens (top 5) ---------- */
 const TRACOS = [
@@ -1614,6 +1668,9 @@ const LINK = 'https://retrozap.com.br';
 function convite(tipo, x){
   if (tipo === 'premio') return `Saiu o resultado no nosso grupo: ${x.winner.name} levou "${x.n}" 🏆😂 Descubra quem leva cada prêmio no SEU grupo, de graça e sem as mensagens saírem do celular: ${LINK}`;
   if (tipo === 'destaque') return `${x} é o destaque do nosso grupo 👑 Descubra quem é o destaque do SEU grupo no Retrozap: ${LINK}`;
+  if (tipo === 'ranking'){ const b = destaquesBrasil()[0], ti = {amigos:'de amigos', familia:'de família', trabalho:'de trabalho', comunidade:'de comunidade'}[state.modo];
+    const frase = !b ? 'tem posição no ranking' : b.k === 'dias' ? `é ${b.txt.toLowerCase()} ${ti}` : `está no ${b.txt} entre os grupos ${ti}`;
+    return `Nosso grupo ${frase} do Retrozap 😂🏆 Descubra a posição do SEU grupo. É grátis: retrozap.com.br`; }
   if (tipo === 'spoiler') return `👀 SPOILER! Fiz a retrospectiva do nosso grupo no Retrozap e esses são os ${x} troféus em disputa. Quem leva cada um? Mandem os palpites! Todo grupo tem uma história, descubra a do seu em www.retrozap.com.br`;
   if (tipo === 'amigos') return 'Fiz a retrospectiva do meu grupo no Retrozap! Faz a do seu: quem é o tagarela, quem é o fantasma, qual é a vibe do grupo. É grátis e rápido: https://retrozap.com.br';
   return 'Esse é o resumo do nosso grupo 😂🏆 Descubra a vibe, as histórias e as curiosidades do SEU grupo no Retrozap. É grátis: retrozap.com.br';
