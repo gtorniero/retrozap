@@ -10,12 +10,14 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Retrozap · Todo grupo tem uma história. Descubra a do seu.">
 <meta property="og:description" content="A retrospectiva oficial dos grupos de WhatsApp do Brasil. Grátis, e suas mensagens não saem do celular.">
-<meta property="og:image" content="https://retrozap.com.br/og-image.png">
+<meta property="og:image" content="https://retrozap.com.br/og-retrozap.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta property="og:url" content="https://retrozap.com.br/">
 <meta property="og:locale" content="pt_BR">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="/icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="preload" href="/assets/bricolage.woff2" as="font" type="font/woff2" crossorigin>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Retrozap","url":"https://retrozap.com.br/","applicationCategory":"EntertainmentApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"BRL"},"inLanguage":"pt-BR"}</script>
@@ -286,6 +288,10 @@ body.has-cookies .acao{bottom:150px}
 .card-fim figcaption{font-family:var(--titulo);font-weight:800;font-size:20px;color:var(--areia)}
 .card-fim .rimg{width:100%;max-width:340px}
 .card-fim .btn-row{width:100%;display:flex;gap:8px}.card-fim .btn{flex:1;padding:12px 10px;font-size:15px}
+.patro{position:fixed;inset:0;z-index:40;background:rgba(10,4,20,.82);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
+.patro-box{background:var(--acai);border:1px solid var(--linha);border-radius:24px;padding:18px;width:min(100%,440px);display:flex;flex-direction:column;gap:10px;text-align:center;animation:pop .4s cubic-bezier(.2,1.4,.4,1)}
+.patro-of{font-size:15px;color:var(--neblina);margin:0}.patro-of b{color:var(--areia)}
+.patro-img img{width:100%;border-radius:16px;display:block}
 .cookies{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--acai);border-top:1px solid var(--linha);padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));font-size:14px;color:var(--neblina);display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
 .cookies a,.rodape a{color:var(--areia)}
 body.has-cookies{padding-bottom:calc(170px + env(safe-area-inset-bottom,0px))}
@@ -746,7 +752,7 @@ async function run(text, sample){
   }
   if (sample) state.grupo = 'Turma do Churras'; else if (!state.grupo) state.grupo = nomeDaConversa(text);
   evento('upload_ok', {mensagens: msgs.length, modo: state.modo, exemplo: !!sample});
-  state.raw = msgs; state.alias = {}; state.hidden = new Set(); state.ctx = '';
+  state.raw = msgs; state.alias = {}; state.hidden = new Set(); state.ctx = ''; state.intervaloVisto = false;
   state.left = new Set(msgs.sys.filter(e => e.type === 'saiu' || e.type === 'removido').map(e => e.who));
   state.changed = new Set(msgs.sys.filter(e => e.type === 'numero').map(e => e.who));
   const autores = new Set(msgs.map(m => m.a));
@@ -1004,9 +1010,9 @@ function lineup(){
     </div>
     <div class="cats">${ativos.map(a => linha(a)).join('')}</div>
     ${bonus.length ? `<details class="panel"><summary class="ask" style="cursor:pointer">🎁 Ver as ${bonus.length} extras</summary><div class="cats" style="margin-top:12px">${bonus.map(a => linha(a, true)).join('')}</div></details>` : ''}
-    <div class="cats"><div class="cat extra"><span class="em" aria-hidden="true">✍️</span><div class="ct"><b>Crie sua categoria</b><span class="small">No final, escolha mais categorias prontas, como "Reclamão Oficial". Grátis.</span></div></div></div>
     <button class="btn btn-main" id="go">🥁 Começar a revelação</button>
   </section>`;
+  intervaloComercial();
   $('#spoil').onclick = () => openCard(() => drawSpoiler(ativos), convite('spoiler', ativos.length), `Spoiler${state.grupo ? ' do grupo ' + state.grupo : ''}: os ${ativos.length} troféus em disputa são ${juntar(ativos.map(a => a.n))}. Quem leva cada um?`);
   $('#go').onclick = award;
   window.scrollTo(0,0);
@@ -1054,7 +1060,7 @@ function next(){
 // O auge: o resumo do grupo, revelado fato a fato, terminando no card para mandar no WhatsApp
 function altResumo(d){
   const lv = livro(d), fr = frase(d), v = vibe(d);
-  return `Resumo do grupo${state.grupo ? ' ' + state.grupo : ''}. Vibe: ${v.txt}. ${fmt(d.total)} mensagens. Um livro de ${fmt(lv.pags)} páginas. ${tempoLeitura(d.palavras)} para ler tudo.${fr ? ' ' + fr.sub + ': ' + fr.txt + '.' : ''}`;
+  return `Resumo do grupo${state.grupo ? ' ' + state.grupo : ''}. ${fmt(d.total)} mensagens. Um livro de ${fmt(lv.pags)} páginas. ${tempoLeitura(d.palavras)} para ler tudo.${fr ? ' ' + fr.sub + ': ' + fr.txt + '.' : ''}`;
 }
 function fatosResumo(d){
   const lv = livro(d), au = audios(d), fr = frase(d), ds = destaques(d);
@@ -1115,7 +1121,7 @@ function suspense(){
     {
       if (!sl.isConnected) return;
       dots.forEach(el => el.classList.add('on'));
-      sl.innerHTML = `<div class="em-g" aria-hidden="true">${v.e}</div><div class="roleta ok">${esc(v.txt)}</div>
+      sl.innerHTML = `<div class="em-g" aria-hidden="true">📸</div><p class="eyebrow" style="margin:0">Resumo do grupo</p><div class="roleta ok">${esc(state.grupo || 'Nosso grupo')}</div>
         <p class="lead">${destaquesBrasil().length ? 'Duas imagens para o grupo: o resumo e o ranking.' : 'Esse é o resumo do grupo.'} Agora é mandar no WhatsApp e ver quem se ofende primeiro.</p>
         <div class="duas">
           <figure class="card-fim"><figcaption>📸 Resumo do grupo</figcaption><img id="rimg" class="rimg" alt="${esc(altResumo(d))}">
@@ -1140,7 +1146,7 @@ function suspense(){
   };
   bt.onclick = () => {
     i++;
-    if (i < fatos.length){ dots[i].classList.add('on'); mostra(fatos[i]); bt.textContent = i === fatos.length - 1 ? 'Revelar a vibe do grupo ✨' : 'Próximo →'; }
+    if (i < fatos.length){ dots[i].classList.add('on'); mostra(fatos[i]); bt.textContent = i === fatos.length - 1 ? 'Ver o resumo do grupo ✨' : 'Próximo →'; }
     else vibeFinal();
     window.scrollTo(0,0);
   };
@@ -1261,12 +1267,6 @@ function final(semFesta){
     <button class="btn btn-ghost" id="rq">🟪 Resumo quadrado para mandar no grupo</button>
     ${destaquesBrasil().length ? '<button class="btn btn-main" id="rk">🏅 Ranking do grupo para os stories</button>' : ''}
     <button class="btn btn-ghost" id="cc">📲 Card do destaque do grupo</button>
-    <div class="panel" style="align-items:center;text-align:center">
-      <span class="tag-premium">Grátis no lançamento</span>
-      <h2 style="font-size:26px">Faltou uma categoria? Crie a sua.</h2>
-      <p class="small">Escolha mais categorias prontas, como "Reclamão Oficial", e descubra quem leva.</p>
-      <button class="btn btn-main" id="cp" style="width:100%">✍️ Crie sua categoria</button>
-    </div>
     <h2 style="font-size:30px;margin-top:8px">Os personagens</h2>
     <p class="lead">Os 5 que mais movimentam o grupo, e o que faz cada um ser quem é.</p>
     <div class="persos">${personagens(d, by).map(x => `<div class="perso">
@@ -1283,7 +1283,6 @@ function final(semFesta){
   $('#rk')?.addEventListener('click', () => openCard(() => drawComparacao(d), convite('ranking'), altComparacao()));
   $('#cc').onclick = () => openCard(() => drawCard({emoji:'👑', title:'Destaque do grupo', winner:champ[0], line:`${champ[1].length} troféus no grupo`}), convite('destaque', champ[0]), `Card: ${champ[0]} é o destaque do grupo, com ${champ[1].length} troféus`);
   $('#again').onclick = () => { state.arquivo = null; state.grupo = ''; home(); };
-  $('#cp').onclick = () => custom();
   if (!semFesta){ confetti(); window.scrollTo(0,0); }
 }
 
@@ -1375,11 +1374,8 @@ function drawResumo(d){
   const v = vibe(d), lv = livro(d), au = audios(d), fr = frase(d), desde = d.start.toLocaleDateString('pt-BR', {month:'short', year:'numeric'}).replace('.', '');
   c.textAlign = 'center';
   c.fillStyle = '#FFC23C'; c.font = `800 48px ${BR}`; c.fillText('retrozap 🏆', W/2, 100);
-  const gy = state.grupo ? 60 : 0;
-  if (state.grupo){ c.fillStyle = '#FFF4E0'; caber(c, state.grupo, W/2, 178, 960, 800, 62, BR); }
-  c.fillStyle = '#B9A8CC'; c.font = `700 30px ${DM}`; c.fillText(state.grupo ? 'A VIBE DO GRUPO' : 'A VIBE DO NOSSO GRUPO', W/2, 190 + gy);
-  c.font = '110px serif'; c.fillText(v.e, W/2, 315 + gy);
-  c.fillStyle = '#FFC23C'; c.font = `800 68px ${BR}`; const nl = wrap(c, v.txt, W/2, 410 + gy, 940, 76);
+  c.fillStyle = '#B9A8CC'; c.font = `700 30px ${DM}`; c.fillText('RESUMO DO GRUPO', W/2, 175);
+  c.fillStyle = '#FFC23C'; c.font = `800 84px ${BR}`; const nl = Math.min(2, wrap(c, state.grupo || 'Nosso grupo', W/2, 285, 960, 92));
   const linhas = [
     ['💬', fmt(d.total), `mensagens desde ${desde}`],
     ['📚', lv.txt, lv.comp],
@@ -1388,7 +1384,7 @@ function drawResumo(d){
     d.giria && d.giria[1] >= 3 && ['🤙', `“${d.giria[0]}”`, `a gíria oficial · ${fmt(d.giria[1])} vezes`],
     au && ['🎧', au.txt, au.comp]
   ].filter(Boolean);
-  const topo = 410 + gy + (nl - 1)*76 + 70, base = 1530, passo = Math.min(160, (base - topo)/linhas.length), alt = passo - 14;
+  const topo = 285 + (nl - 1)*92 + 75, base = 1530, passo = Math.min(178, (base - topo)/linhas.length), alt = passo - 14;
   let y = topo;
   for (const [ic, num, rot] of linhas){
     c.fillStyle = 'rgba(61,26,92,.85)'; c.beginPath(); c.roundRect(70, y, W-140, alt, 28); c.fill();
@@ -1417,9 +1413,8 @@ function drawResumoQ(d){
   const v = vibe(d), lv = livro(d), fr = frase(d), desde = d.start.toLocaleDateString('pt-BR', {month:'short', year:'numeric'}).replace('.', '');
   c.textAlign = 'center';
   c.fillStyle = '#FFC23C'; c.font = `800 40px ${BR}`; c.fillText('retrozap 🏆', W/2, 76);
-  if (state.grupo){ c.fillStyle = '#FFF4E0'; caber(c, state.grupo, W/2, 130, 960, 800, 44, BR); }
-  c.fillStyle = '#B9A8CC'; c.font = `700 24px ${DM}`; c.fillText(state.grupo ? 'A VIBE DO GRUPO' : 'A VIBE DO NOSSO GRUPO', W/2, state.grupo ? 176 : 140);
-  c.fillStyle = '#FFC23C'; caber(c, `${v.e} ${v.txt}`, W/2, state.grupo ? 236 : 210, 960, 800, 52, BR);
+  c.fillStyle = '#B9A8CC'; c.font = `700 24px ${DM}`; c.fillText('RESUMO DO GRUPO', W/2, 130);
+  c.fillStyle = '#FFC23C'; caber(c, state.grupo || 'Nosso grupo', W/2, 215, 960, 800, 64, BR);
   const tiles = [
     ['💬', fmt(d.total), `mensagens desde ${desde}`],
     ['📚', `${fmt(lv.pags)} páginas`, /Harry|Príncipe/.test(lv.comp) ? lv.comp : 'se o grupo fosse um livro'],
@@ -1545,6 +1540,33 @@ function drawComparacao(d){
   return cv.toDataURL('image/png');
 }
 function altComparacao(){ return `Nosso grupo${state.grupo ? ' ' + state.grupo : ''} no ranking do Retrozap: ${destaquesBrasil().map(x => x.txt).join('; ')}.`; }
+
+/* ---------- patrocínio: "intervalo comercial" na entrada das categorias ---------- */
+const PATRO_IMG = '/assets/partygames.jpg';
+const PATRO_LINK = 'https://playpartygames.com.br/?utm_source=retrozap&utm_medium=popup&utm_campaign=intervalo';
+// Desligado até fechar o patrocínio. Para ligar: true. O pop-up está pronto e aprovado no visual.
+const PATROCINIO_ATIVO = false;
+function intervaloComercial(){
+  if (!PATROCINIO_ATIVO) return;
+  if (state.intervaloVisto) return; state.intervaloVisto = true;
+  const ev = (n) => { try { if (typeof evento === 'function') evento(n); } catch {} };
+  const antes = document.activeElement, m = document.createElement('div');
+  m.className = 'patro'; m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true'); m.setAttribute('aria-label','Intervalo comercial. Oferecimento: Party Games');
+  m.innerHTML = `<div class="patro-box">
+    <p class="eyebrow" style="margin:0">Intervalo comercial</p>
+    <p class="patro-of">Oferecimento: <b>Party Games</b></p>
+    <a href="${PATRO_LINK}" target="_blank" rel="noopener sponsored" class="patro-img"><img src="${PATRO_IMG}" alt="Party Games: os melhores jogos em família, casais e amigos. 10% de desconto com o código RETROZAP. playpartygames.com.br"></a>
+    <a href="${PATRO_LINK}" target="_blank" rel="noopener sponsored" class="btn btn-main" id="patroIr" style="text-decoration:none">🎲 Ver os jogos com 10% off</a>
+    <button type="button" class="btn btn-ghost" id="patroFecha">Continuar para as categorias →</button>
+  </div>`;
+  document.body.appendChild(m); ev('patrocinio_visto');
+  const fecha = () => { m.remove(); try { antes?.focus(); } catch {} };
+  m.querySelector('#patroFecha').onclick = fecha;
+  m.querySelectorAll('a').forEach(a => a.addEventListener('click', () => ev('patrocinio_clique')));
+  m.addEventListener('click', e => { if (e.target === m) fecha(); });
+  m.addEventListener('keydown', e => { if (e.key === 'Escape') fecha(); });
+  m.querySelector('#patroFecha').focus();
+}
 
 /* ---------- personagens (top 5) ---------- */
 const TRACOS = [
