@@ -1427,6 +1427,8 @@ function drawSpoiler(lista){
 async function comparar(d){
   state.comp = null;
   if (state.comparar === false) return;
+  // grupo de exemplo: comparação simulada, e nada é enviado ao banco
+  if (state.sample){ state.comp = {pronto:true, n:1000, exemplo:true, top:{total:4, recorde:9, audios:12, por_dia:6, figurinhas:38}}; return; }
   try {
     const base = `${+d.start}|${d.total}|${d.people.length}|${state.modo}`;
     const h = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(base)))].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
@@ -1442,7 +1444,7 @@ function destaquesBrasil(){
   const c = state.comp; if (!c) return [];
   const tipo = {amigos:'de amigos', familia:'de família', trabalho:'de trabalho', comunidade:'de comunidade'}[state.modo];
   return [['total','em mensagens'],['recorde','em recorde de mensagens num dia'],['audios','em áudios'],['por_dia','em mensagens por dia'],['figurinhas','em figurinhas']]
-    .map(([k, t]) => ({k, top: c.top[k], txt: `Top ${c.top[k]}% ${t}`, sub: `entre os grupos ${tipo} no Retrozap`}))
+    .map(([k, t]) => ({k, top: c.top[k], txt: `Top ${c.top[k]}% ${t}`, sub: `entre os grupos ${tipo} no Retrozap${c.exemplo ? ' (simulação do exemplo)' : ''}`}))
     .filter(x => x.top <= 50).sort((a,b) => a.top - b.top);
 }
 
