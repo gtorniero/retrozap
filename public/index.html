@@ -219,6 +219,11 @@ input[type=range]{width:100%;accent-color:var(--manga)}
 .perso .em{font-size:40px;line-height:1}
 .perso h3{font-size:24px;color:var(--manga)}
 .perso ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:15px}
+.perso .fala{display:flex;flex-direction:column;gap:6px}
+.perso .fala .rot{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.7}
+.perso .chips{display:flex;flex-wrap:wrap;gap:6px}
+.perso .chip{background:rgba(255,194,60,.16);color:var(--manga);font-weight:700;font-size:16px;border-radius:999px;padding:5px 12px}
+.perso .chip.emo{font-size:20px;padding:3px 12px;letter-spacing:2px}
 .resumo{font-size:15px;color:var(--neblina)}
 .resumo b{color:var(--areia)}
 .btn.mini{padding:9px 14px;font-size:14px;flex:0 1 auto}
@@ -461,13 +466,28 @@ const GIRIA_NORM = {vei:'véi', vey:'véi', affs:'aff', vixe:'vish', 'ta ligado'
 let DUR = {}; // duração dos áudios (s), só quando o export vem "com mídia"
 const AUDIO_MEDIO = 35; // estimativa por áudio quando o export vem "sem mídia"
 const DIAS_LONGO = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+// assuntos leves para descrever cada personagem
+const TEMAS = [
+  ['comida', /\b(comida|comer|almoco|jantar|pizza|churras\w*|hamburguer|sushi|fome|receita|restaurante|lanche)\b/],
+  ['futebol', /\b(futebol|jogo|gol|time|timao|mengao|palmeiras|corinthians|flamengo|sao paulo|santos|gremio|inter|vasco|cruzeiro|campeonato|brasileirao)\b/],
+  ['rolê e festa', /\b(role|festa|balada|bar|show|sextou|aniver\w*|churras\w*)\b/],
+  ['cerveja e drinks', /\b(cerveja|breja|vinho|drink\w*|gin|cachaca|chopp|bebe\w*)\b/],
+  ['trabalho', /\b(trabalho|trampo|reuniao|chefe|cliente|projeto|escritorio|home office|deadline|entrega)\b/],
+  ['viagem', /\b(viagem|viajar|praia|ferias|voo|aeroporto|hotel|passagem|airbnb)\b/],
+  ['séries e filmes', /\b(serie|filme|netflix|episodio|temporada|novela|cinema|bbb)\b/],
+  ['bichos', /\b(cachorro|gato|pet|dog|gatinho|cachorrinho|veterinario)\b/],
+  ['filhos e família', /\b(filho|filha|filhos|bebe|escola|mae|pai|vo|vovo|sogra)\b/],
+  ['treino e saúde', /\b(treino|academia|corrida|correr|dieta|crossfit|pilates|medico|exame)\b/],
+  ['dinheiro', /\b(dinheiro|pix|conta|boleto|preco|caro|barato|salario|grana)\b/],
+  ['política', /\b(politica|eleicao|governo|presidente|deputado|lula|bolsonaro|stf)\b/]
+];
 const STOP = new Set('alguem alguém algum alguma nada coisa coisas quero queria acho achei fazer falar falou mesmo sempre nunca porque pouco assim outra outro outros pessoal galera tava tinha ficar dizer disse sabe olha verdade beleza obrigado obrigada valeu vamo vamos aqui lá depois antes agora ainda hoje amanhã ontem semana todos todas tudo cada dele dela vocês voces nosso nossa minha meu seus suas você voce também tambem então entao sobre entre desde mais menos muito muita bem bom boa dia noite para pela pelo como mais mas que isso esse essa este esta aqui ali tem ter tava estou está esta vou vai vamos com uma umas uns por sim não nao tudo todo toda quando onde quem porque pq muito muita bem também tambem então entao ainda depois agora hoje gente cara mano fazer foi ser sou era você voce vocês voces meu minha seu sua dele dela nos nós eles elas acho sabe aí ai pra pro tá ta já ja kkk mensagem omitida oculta figurinha áudio imagem'.split(' '));
 
 async function analyze(msgs, prog){
   const P = {}, hours = Array(24).fill(0), days = Array(7).fill(0), words = {}, full = {}, emo = {}, porDia = {};
   let palavras = 0, risadas = 0, silencio = 0, silIni = null, audioN = 0, audioSeg = 0, audioMedidos = 0;
   const giria = {}, minSem = new Int32Array(7*1440);
-  const get = a => P[a] || (P[a] = {name:a,count:0,text:0,chars:0,sticker:0,audio:0,photo:0,media:0,deleted:0,laugh:0,bomdia:0,parabens:0,amo:0,palavrao:0,link:0,furo:0,org:0,mae:0,ok:0,reuniao:0,salva:0,aviso:0,perdido:0,indica:0,vende:0,barulho:0,boasvindas:0,agradece:0,fofoca:0,audioMax:0,night:0,after:0,first:0,revive:0,kill:0,h:Array(24).fill(0),emo:{},words:{},y:{},wd:Array(7).fill(0),rep:{},ini:null,fim:null});
+  const get = a => P[a] || (P[a] = {name:a,count:0,text:0,chars:0,sticker:0,audio:0,photo:0,media:0,deleted:0,laugh:0,bomdia:0,parabens:0,amo:0,palavrao:0,link:0,furo:0,org:0,mae:0,ok:0,reuniao:0,salva:0,aviso:0,perdido:0,indica:0,vende:0,barulho:0,boasvindas:0,agradece:0,fofoca:0,audioMax:0,night:0,after:0,first:0,revive:0,kill:0,h:Array(24).fill(0),emo:{},words:{},y:{},wd:Array(7).fill(0),rep:{},ini:null,fim:null,giria:{},tema:{}});
   let prev = null, lastDay = '';
   for (let q = 0; q < msgs.length; q++){
     if (q % 5000 === 0 && q){ prog && prog(q/msgs.length); await sleep(0); }
@@ -487,7 +507,8 @@ async function analyze(msgs, prog){
       for (const key of ['bomdia','parabens','amo','link','furo','org','mae','reuniao','salva','aviso','perdido','indica','vende','barulho','boasvindas','agradece','fofoca']) if (RX[key].test(b)) p[key]++;
       if (RX.ok.test(b)) p.ok++;
       const pw = b.match(RX.palavrao); if (pw) p.palavrao += pw.length;
-      for (const g of b.toLowerCase().match(GIRIA) || []){ const n = GIRIA_NORM[g] || g; giria[n] = (giria[n]||0) + 1; }
+      for (const g of b.toLowerCase().match(GIRIA) || []){ const n = GIRIA_NORM[g] || g; giria[n] = (giria[n]||0) + 1; p.giria[n] = (p.giria[n]||0) + 1; }
+      if (b.length > 3){ const bn = b.toLowerCase().normalize('NFD').replace(/\p{M}/gu,''); for (const [k, rx] of TEMAS) if (rx.test(bn)) p.tema[k] = (p.tema[k]||0) + 1; }
       for (const e of b.match(/\p{Extended_Pictographic}/gu) || []){ emo[e] = (emo[e]||0)+1; p.emo[e] = (p.emo[e]||0)+1; }
       if (!RX.laugh.test(b)){
         for (const w of b.toLowerCase().normalize('NFC').match(/\p{L}{4,}/gu) || []) if (!STOP.has(w)){ words[w] = (words[w]||0)+1; p.words[w] = (p.words[w]||0)+1; }
@@ -1251,8 +1272,8 @@ function final(semFesta){
     <div class="persos">${personagens(d, by).map(x => `<div class="perso">
       <div class="ph"><span class="em" aria-hidden="true">${x.e}</span><div><span class="small">${esc(x.nome)}</span><h3>${x.titulo}</h3></div></div>
       <p class="bio">${esc(x.texto)}</p>
-      <ul>${x.fatos.map(f => `<li>${esc(f)}</li>`).join('')}</ul>
-      <p class="resumo"><b>Resumo:</b> ${esc(x.resumo)}</p></div>`).join('')}</div>
+      ${x.fala.length || x.emojis.length ? `<div class="fala"><span class="rot">Jeito de falar</span><div class="chips">${x.fala.map(f => `<span class="chip">${esc(f)}</span>`).join('')}${x.emojis.length ? `<span class="chip emo">${x.emojis.join(' ')}</span>` : ''}</div></div>` : ''}
+      <ul>${x.fatos.map(f => `<li>${esc(f)}</li>`).join('')}</ul></div>`).join('')}</div>
     <div class="badge"><span aria-hidden="true">👀</span><span><b>Em breve: Bolão do Grupo.</b> Mande um link para todo mundo palpitar os vencedores antes da revelação.</span></div>
     <a class="btn btn-ghost" id="conv" href="https://wa.me/?text=${encodeURIComponent(convite('amigos'))}" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">📣 Chamar a galera para fazer o grupo deles</a>
     <button class="btn btn-ghost" id="again">Fazer outro grupo</button>
@@ -1546,7 +1567,6 @@ function personagens(d, by){
   const P = d.people, grupo = {count:0, text:0};
   for (const p of P) for (const k of Object.keys(p)) if (typeof p[k] === 'number') grupo[k] = (grupo[k]||0) + p[k];
   const usados = new Set(), top = o => Object.entries(o).sort((a,b) => b[1]-a[1]);
-  const DIASP = ['domingos','segundas','terças','quartas','quintas','sextas','sábados'];
   const mesAno = t => t.toLocaleDateString('pt-BR', {month:'long', year:'numeric'});
   const gRiso = grupo.laugh / Math.max(1, grupo.text), gTam = grupo.chars / Math.max(1, grupo.text);
   return P.slice(0,5).map(p => {
@@ -1557,22 +1577,33 @@ function personagens(d, by){
     let titulo = 'O Pilar do Grupo', e = '🧱', resumo = `${p.name} está sempre presente e segura a conversa.`;
     if (esc1){ usados.add(esc1.t[0]); [, titulo, e] = esc1.t; resumo = `${p.name} ${esc1.t[5]}.`; }
     titulo = gtit(titulo, p.name);
-    const pct = Math.round(p.count/d.total*100), hora = p.h.indexOf(Math.max(...p.h)), dia = DIASP[p.wd.indexOf(Math.max(...p.wd))];
-    const anos = top(p.y), riso = p.laugh / Math.max(1, p.text), tam = p.chars / Math.max(1, p.text);
+    const pct = Math.round(p.count/d.total*100), tx = Math.max(1, p.text);
+    const riso = p.laugh/tx, tam = p.chars/tx;
     const parceiros = top(p.rep).filter(([n]) => n !== p.name).slice(0, 2).map(([n]) => n);
-    const midia = [['sticker','manda figurinha'],['audio','grava áudio'],['photo','manda foto ou vídeo']].sort((a,b) => p[b[0]] - p[a[0]])[0];
-    const fw = top(p.words)[0], fe = top(p.emo)[0];
-    const frases = [];
-    frases.push(`${p.name} aparece no grupo desde ${mesAno(p.ini)} e responde por ${pct}% de tudo o que foi dito, com ${fmt(p.count)} mensagens.${anos.length > 1 ? ` O auge foi em ${anos[0][0]}, com ${fmt(anos[0][1])} mensagens.` : ''}`);
-    frases.push(`Fala mais por volta das ${hora}h e nas ${dia}, ${riso > gRiso*1.25 ? 'ri bem mais que a média do grupo' : riso < gRiso*.6 ? 'ri menos que a média, mas quando ri é sincero' : 'ri na média do grupo'} e ${tam > gTam*1.3 ? 'escreve mensagens longas' : tam < gTam*.7 ? 'é de mensagens curtas e diretas' : 'escreve no tamanho certo'}.`);
-    if (p[midia[0]] >= 5) frases.push(`Quando faltam palavras, ${midia[1]}: foram ${fmt(p[midia[0]])} no total.`);
-    if (parceiros.length) frases.push(`Quem mais conversa com ${p.name} ${parceiros.length > 1 ? 'são' : 'é'} ${juntar(parceiros)}.`);
-    if (fw) frases.push(`"${fw[0]}" é a palavra que mais sai da boca de ${p.name}${fe ? `, e o emoji de estimação é ${fe[0]}` : ''}.`);
-    if (esc2) frases.push(`Além disso, tem um lado ${gtit(esc2.t[1]).replace(/^O /,'').toLowerCase()}: ${esc2.score.toFixed(1).replace('.',',')}× a média do grupo em ${esc2.t[4]}.`);
-    const fatos = [`${pct}% das mensagens do grupo`];
+    const midia = [['sticker','figurinhas'],['audio','áudios'],['photo','fotos e vídeos']].sort((a,b) => p[b[0]] - p[a[0]])[0];
+    // jeito de falar: gírias, palavra e emojis de estimação
+    const girias = top(p.giria).filter(([, n]) => n >= 3).slice(0, 2).map(([g]) => `“${g}”`);
+    const fw = top(p.words).find(([w, n]) => n >= 3 && !girias.includes(`“${w}”`));
+    const emojis = top(p.emo).filter(([, n]) => n >= 2).slice(0, 3).map(([x]) => x);
+    const fala = [...girias, ...(fw ? [`“${fw[0]}”`] : [])].slice(0, 3);
+    // mood: até dois traços, do mais marcante
+    const mood = [];
+    if (riso > gRiso*1.25) mood.push('risada fácil');
+    if (p.amo/p.count > (grupo.amo||0)/Math.max(1,grupo.count)*1.4 && p.amo >= 3) mood.push('carinho');
+    if (state.modo === 'amigos' && p.palavrao/tx > (grupo.palavrao||0)/Math.max(1,grupo.text)*1.4 && p.palavrao >= 5) mood.push('zero filtro');
+    if (p.night/p.count > (grupo.night||0)/Math.max(1,grupo.count)*1.4 && p.night >= 5) mood.push('alma noturna');
+    if (tam > gTam*1.3) mood.push('textão'); else if (tam < gTam*.7) mood.push('direto ao ponto');
+    if (!mood.length) mood.push(riso < gRiso*.6 ? 'mais na sua' : 'na paz');
+    // assunto favorito, em relação ao resto do grupo
+    const gt = {}; for (const q of P) for (const [k, n] of Object.entries(q.tema || {})) gt[k] = (gt[k]||0) + n;
+    const tema = Object.entries(p.tema || {}).filter(([, n]) => n >= 4)
+      .map(([k, n]) => [k, (n/tx)/((gt[k]||1)/Math.max(1, grupo.text)) * Math.log(n + 1)]).sort((a,b) => b[1] - a[1])[0]?.[0];
+    const vibe = `Vibe: ${juntar(mood.slice(0, 2))}${tema ? `. Assunto favorito: ${tema}` : ''}.`;
+    const fatos = [`${pct}% das mensagens do grupo · ${fmt(p.count)} no total`, `No grupo desde ${mesAno(p.ini)}`];
     if (esc1) fatos.push(`${esc1.score.toFixed(1).replace('.',',')}× a média do grupo em ${esc1.t[4]}`);
-    if (by[p.name]?.length) fatos.push(`Troféus: ${by[p.name].map(a => a.e + ' ' + gtit(a.n, p.name)).join(', ')}`);
-    return {nome:p.name, titulo, e, fatos, resumo, texto:frases.join(' ')};
+    else if (p[midia[0]] >= 5) fatos.push(`${fmt(p[midia[0]])} ${midia[1]}`);
+    if (parceiros.length) fatos.push(`Mais conversa com ${juntar(parceiros)}`);
+    return {nome:p.name, titulo, e, fatos, texto:`${resumo} ${vibe}`, fala, emojis};
   });
 }
 
