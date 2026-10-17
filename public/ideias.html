@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Envie sua ideia · Retrozap</title><meta name="description" content="Sugira um prêmio, uma categoria ou um recurso novo para o Retrozap.">
+<link rel="canonical" href="https://retrozap.com.br/ideias"><meta name="theme-color" content="#1A0B2E">
+<meta property="og:title" content="Envie sua ideia"><meta property="og:description" content="Sugira um prêmio, uma categoria ou um recurso novo para o Retrozap."><meta property="og:image" content="https://retrozap.com.br/og-retrozap.png">
+<link rel="icon" href="/favicon.png" type="image/png">
+<style>@font-face{font-family:'Bricolage Grotesque';src:url(/assets/bricolage.woff2) format('woff2');font-weight:200 800;font-display:swap}
+@font-face{font-family:'DM Sans';src:url(/assets/dmsans-400.woff2) format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'DM Sans';src:url(/assets/dmsans-700.woff2) format('woff2');font-weight:700;font-display:swap}
+:root{--noite:#1A0B2E;--acai:#3D1A5C;--manga:#FFC23C;--areia:#FFF4E0;--neblina:#B9A8CC;--linha:#4E2E6E;color-scheme:dark}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--noite);color:var(--areia);font-family:'DM Sans',system-ui,sans-serif;font-size:17px;line-height:1.7;padding:0 max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px))}
+main,header,footer{max-width:680px;margin:0 auto}
+header{padding:18px 0;display:flex;justify-content:space-between;align-items:center}
+.logo{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:26px;color:var(--manga);text-decoration:none}
+.cta{background:var(--manga);color:var(--noite);border-radius:999px;padding:10px 18px;font-weight:700;text-decoration:none;font-size:15px}
+h1,h2{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;line-height:1.1;text-wrap:balance}
+h1{font-size:clamp(32px,8vw,46px);margin:16px 0}h2{font-size:24px;margin:32px 0 8px}
+a{color:var(--manga)}p,li{color:var(--areia)}.small{color:var(--neblina);font-size:14px}
+.cards{display:grid;gap:12px}.card{background:var(--acai);border-radius:16px;padding:16px 18px;text-decoration:none;color:var(--areia);display:block}
+.card b{font-family:'Bricolage Grotesque',sans-serif;font-size:20px;display:block;margin-bottom:4px}
+footer{display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:center;font-size:13px;color:var(--neblina);padding-top:24px;margin-top:40px;border-top:1px solid var(--linha)}
+footer a{color:var(--areia)}
+.form{display:flex;flex-direction:column;gap:8px;background:var(--acai);border-radius:16px;padding:18px;margin:16px 0}
+.form label{font-weight:700;font-size:15px;margin-top:6px}
+.form input,.form select,.form textarea{font:inherit;font-size:16px;color:var(--areia);background:var(--noite);border:1.5px solid var(--linha);border-radius:12px;padding:12px 14px;width:100%}
+.form button{border:0;cursor:pointer;margin-top:10px;font:inherit;font-weight:700;font-size:16px;padding:14px 18px}
+.form .hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+ol,ul{padding-left:22px}li{margin:4px 0}
+</style></head><body>
+<header><a class="logo" href="/">retrozap 🏆</a><a class="cta" href="/">Fazer o meu grupo</a></header>
+<main>
+<h1>Envie sua ideia</h1>
+<p>Pensou num prêmio que todo grupo precisa ter? Numa categoria para o grupo da família? Num recurso novo? Conta pra gente. As melhores ideias entram nas próximas versões do Retrozap.</p>
+<form id="ideia" class="form">
+  <label for="tipo">Sua ideia é sobre</label>
+  <select id="tipo" name="tipo"><option value="premio">Um prêmio ou categoria nova</option><option value="recurso">Um recurso novo no site</option><option value="problema">Algo que não funcionou</option><option value="outro">Outra coisa</option></select>
+  <label for="texto">Conte sua ideia</label>
+  <textarea id="texto" name="texto" rows="5" maxlength="600" required placeholder="Ex.: prêmio &quot;Rei do Pix&quot; para quem mais cobra o rateio"></textarea>
+  <label for="contato">Seu e-mail ou WhatsApp <span class="small">(opcional, só se quiser resposta)</span></label>
+  <input id="contato" name="contato" maxlength="120" autocomplete="email">
+  <input type="text" name="site" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true">
+  <button type="submit" class="cta" id="enviar">Enviar ideia</button>
+  <p id="msg" class="small" role="status"></p>
+</form>
+<p class="small">Não coloque mensagens do seu grupo nem dados de outras pessoas aqui.</p>
+<script>
+document.getElementById('ideia').addEventListener('submit', async e => {
+  e.preventDefault();
+  const f = e.target, msg = document.getElementById('msg'), b = document.getElementById('enviar');
+  const dados = {tipo: f.tipo.value, texto: f.texto.value.trim(), contato: f.contato.value.trim(), site: f.site.value};
+  if (dados.texto.length < 5){ msg.textContent = 'Escreva um pouco mais sobre a ideia.'; return; }
+  b.disabled = true; msg.textContent = 'Enviando...';
+  try {
+    const r = await fetch('/api/ideias', {method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(dados)});
+    if (!r.ok) throw 0;
+    f.reset(); msg.textContent = 'Recebido! Obrigado pela ideia. 🏆';
+  } catch { msg.textContent = 'Não deu para enviar agora. Tente de novo ou escreva para contato@retrozap.com.br.'; }
+  b.disabled = false;
+});
+</script>
+</main>
+<footer><a href="/">Início</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a></footer>
+</body></html>
