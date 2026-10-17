@@ -1,0 +1,18 @@
+// Configuração do Worker "retrozap-v2" (Cloudflare Workers Builds roda `npx wrangler deploy` a cada push).
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "retrozap-v2",
+  "main": "src/index.js",
+  "compatibility_date": "2025-09-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    // telas da cerimônia (/prologo, /premios/3...) caem no index.html
+    "not_found_handling": "single-page-application",
+    // só /api/* passa pelo código; o resto é arquivo estático
+    "run_worker_first": ["/api/*"]
+  },
+  // banco da comparação entre grupos. Na primeira publicação a Cloudflare cria o banco "retrozap" sozinha.
+  "d1_databases": [{ "binding": "DB", "database_name": "retrozap" }],
+  "observability": { "enabled": true }
+}
