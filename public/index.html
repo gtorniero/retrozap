@@ -1338,7 +1338,7 @@ function fundo(c, W, H, raio){
 }
 // texto que encolhe até caber na largura
 // remove marcas invisíveis de direção (vêm no nome do arquivo exportado pelo iPhone e desalinham o texto)
-function limpaTxt(s){ return String(s || '').replace(/[​-‏‪-‮⁦-⁩﻿]/g, '').replace(/\s+/g, ' ').trim(); }
+function limpaTxt(s){ return String(s || '').replace(/[​‌‎‏‪-‮⁦-⁩﻿]/g, '').replace(/\s+/g, ' ').trim(); }
 // texto que encolhe até caber na largura, posicionado à mão (o centro automático falha no Safari com emoji)
 function caber(c, txt, x, y, maxW, peso, tam, fam){
   txt = limpaTxt(txt);
