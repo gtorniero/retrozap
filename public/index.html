@@ -3,8 +3,6 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-R8R1EN0KQN"></script>
 <title>Retrozap · Todo grupo tem uma história</title>
 <meta name="description" content="Descubra a história do seu grupo de WhatsApp: quem fala mais, quem some, quem manda figurinha às 3 da manhã. Prêmios, números e cards para mandar no grupo. Grátis e suas mensagens não saem do celular.">
 <meta name="theme-color" content="#1A0B2E">
@@ -295,6 +293,17 @@ body.has-cookies .acao{bottom:150px}
 .patro{position:fixed;inset:0;z-index:40;background:rgba(10,4,20,.82);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
 .patro-box{background:var(--acai);border:1px solid var(--linha);border-radius:24px;padding:18px;width:min(100%,440px);display:flex;flex-direction:column;gap:10px;text-align:center;animation:pop .4s cubic-bezier(.2,1.4,.4,1)}
 .tiles>.tile:last-child:nth-child(odd){grid-column:1/-1}
+.pw{position:relative;text-align:center}
+.pw-x{position:absolute;top:10px;right:12px;border:0;background:transparent;color:var(--neblina);font-size:20px;padding:6px 10px;border-radius:10px}
+.pw-lb{font-size:14px;font-weight:700;text-align:left}
+.pw-in{width:100%;font:inherit;font-size:17px;padding:12px 14px;border-radius:14px;border:1px solid var(--linha);background:var(--acai-2);color:var(--areia)}
+.pw-lk{border:0;background:transparent;color:var(--areia);text-decoration:underline;font:inherit;font-size:14px;padding:6px}
+.pw-qr{background:#fff;border-radius:16px;padding:10px;width:220px;max-width:100%;aspect-ratio:1;margin:0 auto;display:grid;place-items:center}
+.pw-qr img,.pw-qr svg{width:100%;height:100%;display:block}
+.pw-esp{margin:0;font-size:14px;color:var(--neblina);display:flex;align-items:center;justify-content:center;gap:8px}
+.pw-dot{width:10px;height:10px;border-radius:50%;background:var(--manga);animation:pwp 1s ease-in-out infinite alternate}
+.pw-cod{font:800 26px var(--titulo);letter-spacing:.06em;color:var(--manga);background:var(--acai-2);border-radius:14px;padding:12px}
+@keyframes pwp{from{opacity:.3}to{opacity:1}}
 .lemb{gap:12px;padding:26px 22px}
 .lemb-ic{font-size:44px;line-height:1}
 .lemb-tx{margin:0;font-size:17px;line-height:1.45}.lemb-tx b{color:var(--manga)}
@@ -399,7 +408,10 @@ const configurado = v => !!v && !/X{4}|^0+$/.test(v);
 /* ---------- Analytics (só contagens, nunca nomes ou mensagens) ---------- */
 window.dataLayer = window.dataLayer || [];
 function gtag(){ dataLayer.push(arguments); }
-if (configurado(CONFIG.GA_ID)){ gtag('js', new Date()); gtag('config', CONFIG.GA_ID, {send_page_view: false, anonymize_ip: true}); } // a tag oficial fica no <head>
+if (configurado(CONFIG.GA_ID)){
+  const g = document.createElement('script'); g.async = true; g.src = 'https://www.googletagmanager.com/gtag/js?id=' + CONFIG.GA_ID; document.head.appendChild(g);
+  gtag('js', new Date()); gtag('config', CONFIG.GA_ID, {send_page_view: false, anonymize_ip: true});
+}
 function evento(nome, params = {}){ try { if (configurado(CONFIG.GA_ID)) gtag('event', nome, params); } catch {} }
 
 /* ---------- Uma página por tela: cada tela conta como página vista ---------- */
@@ -782,6 +794,136 @@ function tutorial(how){
   pp.onclick = () => { tocando = !tocando; clearTimeout(tm); botao(); if (tocando) ciclo(); };
   if (tocando) ciclo();
 }
+/* ---------- cobrança: 1º grupo grátis, depois R$ 4,99 (Pix) libera ilimitado neste navegador ---------- */
+const TESTE_COBRANCA = /[?&]teste_cobranca=1/.test(location.search);
+const lsGet = k => { try { return localStorage.getItem(k); } catch { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); return true; } catch { return false; } };
+// identidade do grupo: a primeira mensagem (continua igual quando o grupo cresce)
+function idGrupo(){
+  const r = state.raw || [], m = r.reduce((a, x) => (!a || x.t < a.t) ? x : a, null);
+  const s = m ? `${+m.t}|${m.a}` : String(r.length); let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36);
+}
+async function precisaPagar(){
+  if (state.sample || lsGet('rz_acesso')) return false;
+  let grupos = []; try { grupos = JSON.parse(lsGet('rz_grupos') || '[]'); } catch {}
+  const id = idGrupo();
+  if (grupos.includes(id)) return false;
+  let cfg = null;
+  try { const r = await fetch('/api/cobranca', {cache: 'no-store'}); if (r.ok) cfg = await r.json(); } catch {}
+  const ativa = cfg && cfg.pronto && (cfg.modo === 'ligada' || (cfg.modo === 'teste' && TESTE_COBRANCA));
+  if (!ativa || grupos.length === 0){
+    if (!grupos.includes(id)){ grupos.push(id); lsSet('rz_grupos', JSON.stringify(grupos.slice(-50))); }
+    return false;
+  }
+  return true;
+}
+let QR_LIB = null;
+const carregaQR = () => QR_LIB || (QR_LIB = new Promise((ok, falha) => { const s = document.createElement('script'); s.src = '/assets/qrcode.js'; s.onload = () => ok(window.qrcode); s.onerror = falha; document.head.appendChild(s); }));
+function paywall(seguir){
+  const antes = document.activeElement, m = document.createElement('div');
+  let vivo = true, tm = null;
+  m.className = 'patro'; m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true'); m.setAttribute('aria-labelledby','pwT');
+  const fecha = () => { vivo = false; clearTimeout(tm); m.remove(); try { antes?.focus(); } catch {} };
+  const libera = codigo => {
+    lsSet('rz_acesso', codigo);
+    try { if (typeof evento === 'function') evento('compra_ilimitado'); } catch {}
+    caixa.innerHTML = `<div class="lemb-ic" aria-hidden="true">🎉</div>
+      <h2 id="pwT" style="font-size:26px;margin:0">Liberado!</h2>
+      <p class="lemb-tx">Agora é ilimitado neste navegador. Guarde seu código para usar em outro celular:</p>
+      <div class="pw-cod">${esc(codigo)}</div>
+      <button type="button" class="btn btn-ghost" id="pwCopC">Copiar código</button>
+      <button type="button" class="btn btn-main" id="pwSeg">Continuar a retrospectiva 🏆</button>`;
+    caixa.querySelector('#pwCopC').onclick = e => { navigator.clipboard?.writeText(codigo).then(() => { e.target.textContent = 'Copiado ✓'; }).catch(() => {}); };
+    caixa.querySelector('#pwSeg').onclick = () => { fecha(); seguir(); };
+    caixa.querySelector('#pwSeg').focus();
+  };
+  m.innerHTML = `<div class="patro-box lemb pw" aria-live="polite"></div>`;
+  const caixa = m.firstElementChild;
+  const inicio = () => {
+    caixa.innerHTML = `<button type="button" class="pw-x" id="pwX" aria-label="Fechar">✕</button>
+      <div class="lemb-ic" aria-hidden="true">🎁</div>
+      <h2 id="pwT" style="font-size:24px;margin:0">Seu primeiro grupo foi por nossa conta</h2>
+      <p class="lemb-tx">Para fazer a retrospectiva de <b>quantos grupos quiser</b>, é um pagamento único de <b>R$ 4,99</b> no Pix.</p>
+      <label class="pw-lb" for="pwEm">Seu e-mail (para o comprovante)</label>
+      <input id="pwEm" type="email" inputmode="email" autocomplete="email" placeholder="voce@email.com" class="pw-in">
+      <p class="err" id="pwErr" hidden></p>
+      <button type="button" class="btn btn-main" id="pwPix">Pagar R$ 4,99 com Pix</button>
+      <button type="button" class="pw-lk" id="pwTenho">Já paguei, tenho um código</button>
+      <p class="small" style="margin:0">Continua igual: suas mensagens não saem do seu celular. O pagamento é processado pelo Mercado Pago.</p>`;
+    caixa.querySelector('#pwX').onclick = fecha;
+    caixa.querySelector('#pwTenho').onclick = codigoTela;
+    const em = caixa.querySelector('#pwEm'), err = caixa.querySelector('#pwErr'), bt = caixa.querySelector('#pwPix');
+    em.value = lsGet('rz_email') || '';
+    bt.onclick = async () => {
+      const email = em.value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){ err.hidden = false; err.textContent = 'Confira o e-mail.'; em.focus(); return; }
+      lsSet('rz_email', email);
+      bt.disabled = true; bt.textContent = 'Gerando o Pix...'; err.hidden = true;
+      try {
+        const r = await fetch('/api/pix', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({email})});
+        const j = await r.json();
+        if (!r.ok || !j.ref) throw new Error(j.error === 'email' ? 'Confira o e-mail.' : 'Não consegui gerar o Pix agora. Tente de novo em instantes.');
+        try { if (typeof evento === 'function') evento('pix_gerado'); } catch {}
+        pixTela(j);
+      } catch (e) { bt.disabled = false; bt.textContent = 'Pagar R$ 4,99 com Pix'; err.hidden = false; err.textContent = e.message || 'Sem conexão. Tente de novo.'; }
+    };
+    em.focus();
+  };
+  const pixTela = j => {
+    caixa.innerHTML = `<button type="button" class="pw-x" id="pwX" aria-label="Fechar">✕</button>
+      <h2 id="pwT" style="font-size:22px;margin:0">Pague R$ 4,99 no Pix</h2>
+      <div class="pw-qr" id="pwQr" role="img" aria-label="QR code do Pix">${j.qr64 ? `<img src="data:image/png;base64,${j.qr64}" alt="">` : ''}</div>
+      <p class="small" style="margin:0">Escaneie no app do banco ou use o Pix copia e cola:</p>
+      <button type="button" class="btn btn-main" id="pwCop">📋 Copiar código Pix</button>
+      ${j.link ? `<a class="pw-lk" href="${esc(j.link)}" target="_blank" rel="noopener">Abrir a página do Pix</a>` : ''}
+      <p class="pw-esp"><span class="pw-dot" aria-hidden="true"></span> Aguardando o pagamento... a confirmação chega aqui sozinha.</p>`;
+    caixa.querySelector('#pwX').onclick = fecha;
+    caixa.querySelector('#pwCop').onclick = e => { navigator.clipboard?.writeText(j.qr).then(() => { e.target.textContent = 'Copiado ✓ Cole no app do banco'; }).catch(() => {}); };
+    if (!j.qr64 && j.qr) carregaQR().then(q => { const g = q(0, 'M'); g.addData(j.qr); g.make(); const el = caixa.querySelector('#pwQr'); if (el) el.innerHTML = g.createSvgTag({cellSize: 4, margin: 2, scalable: true}); }).catch(() => {});
+    const t0 = Date.now();
+    const confere = async () => {
+      if (!vivo) return;
+      try {
+        const r = await fetch('/api/pix/status', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({ref: j.ref})});
+        const s = await r.json();
+        if (s.pago && s.codigo) return libera(s.codigo);
+      } catch {}
+      if (Date.now() - t0 < 30*60e3) tm = setTimeout(confere, 3000);
+      else { const p = caixa.querySelector('.pw-esp'); if (p) p.textContent = 'O Pix expirou. Feche e gere outro.'; }
+    };
+    tm = setTimeout(confere, 3000);
+  };
+  const codigoTela = () => {
+    caixa.innerHTML = `<button type="button" class="pw-x" id="pwX" aria-label="Fechar">✕</button>
+      <h2 id="pwT" style="font-size:22px;margin:0">Recuperar acesso</h2>
+      <label class="pw-lb" for="pwCod">Código que apareceu depois do pagamento</label>
+      <input id="pwCod" class="pw-in" placeholder="RZ-XXXX-XXXX" autocapitalize="characters" autocomplete="off">
+      <p class="err" id="pwErr" hidden></p>
+      <button type="button" class="btn btn-main" id="pwOk">Liberar</button>
+      <button type="button" class="pw-lk" id="pwVolta">← Voltar</button>
+      <p class="small" style="margin:0">Perdeu o código? Escreva para <a href="mailto:contato@retrozap.com.br" style="color:var(--areia)">contato@retrozap.com.br</a> com o e-mail da compra.</p>`;
+    caixa.querySelector('#pwX').onclick = fecha;
+    caixa.querySelector('#pwVolta').onclick = inicio;
+    const inp = caixa.querySelector('#pwCod'), err = caixa.querySelector('#pwErr'), bt = caixa.querySelector('#pwOk');
+    bt.onclick = async () => {
+      const codigo = inp.value.trim().toUpperCase();
+      bt.disabled = true; err.hidden = true;
+      try {
+        const r = await fetch('/api/acesso', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({codigo})});
+        const s = await r.json();
+        if (s.ok) return libera(codigo);
+        err.hidden = false; err.textContent = 'Código não encontrado. Confira e tente de novo.';
+      } catch { err.hidden = false; err.textContent = 'Sem conexão. Tente de novo.'; }
+      bt.disabled = false;
+    };
+    inp.focus();
+  };
+  document.body.appendChild(m);
+  m.addEventListener('keydown', e => { if (e.key === 'Escape') fecha(); });
+  inicio();
+}
 function home(){
   anchor(true);
   ir('/');
@@ -1029,6 +1171,7 @@ function roster(){
   $('#inat').onclick = () => { pessoas.forEach(r => { if (meses(r) >= 12) state.hidden.add(r.n); }); redraw(); };
   $('#todos').onclick = () => { state.hidden.clear(); state.alias = {}; redraw(); };
   $('#go').onclick = async () => {
+    { const g = $('#go'); g.disabled = true; const pagar = await precisaPagar(); g.disabled = false; if (pagar) return paywall(() => $('#go').click()); }
     const msgs = state.raw.filter(m => !state.hidden.has(m.a) && !state.hidden.has(state.alias[m.a])).map(m => ({t:m.t, a:state.alias[m.a] || m.a, b:m.b}));
     if (new Set(msgs.map(m => m.a)).size < 2){ const e = $('#rerr'); e.hidden = false; e.textContent = 'Deixe pelo menos duas pessoas na cerimônia.'; return; }
     msgs.sys = state.raw.sys; msgs.perdidas = state.raw.perdidas;

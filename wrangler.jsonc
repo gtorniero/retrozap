@@ -17,5 +17,9 @@
   },
   // banco da comparação entre grupos. Na primeira publicação a Cloudflare cria o banco "retrozap" sozinha.
   "d1_databases": [{ "binding": "DB", "database_name": "retrozap" }],
+  // cobrança de R$ 4,99: "teste" (só com ?teste_cobranca=1), "ligada" (para todos) ou "desligada"
+  "vars": { "COBRANCA": "teste" },
+  // mantém variáveis criadas no painel; o Access Token do Mercado Pago é o segredo MP_TOKEN
+  "keep_vars": true,
   "observability": { "enabled": true }
 }
