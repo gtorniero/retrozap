@@ -220,10 +220,13 @@ open(os.path.join(PUB, '_headers'), 'w').write("""/*
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   X-Frame-Options: SAMEORIGIN
+  Cache-Control: no-cache
 
 /assets/*
-  Cache-Control: public, max-age=31536000, immutable
+  ! Cache-Control
+  Cache-Control: public, max-age=86400
 """)
+# páginas: o navegador sempre confere se há versão nova (no-cache); arquivos de /assets: guardados por 1 dia
 # rotas da cerimônia caem no index (as páginas legais e o blog são arquivos próprios)
 open(os.path.join(PUB, '_redirects'), 'w').write('\n'.join(f'{r} /index.html 200' for r in ['/turma','/prologo','/numeros','/categorias','/premios/*','/bonus','/resumo','/destaque','/crie-seu-premio']) + '\n')
 
