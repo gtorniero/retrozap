@@ -852,7 +852,7 @@ function paywall(seguir, ctx){
     try { if (typeof evento === 'function') evento('compra_ilimitado'); } catch {}
     caixa.innerHTML = `<div class="lemb-ic" aria-hidden="true">🎉</div>
       <h2 id="pwT" style="font-size:26px;margin:0">Liberado!</h2>
-      <p class="lemb-tx">Agora é ilimitado neste navegador, com as categorias extras. Guarde seu código para usar em outro celular${lsGet('rz_email') ? ' (também mandamos para o seu e-mail)' : ''}:</p>
+      <p class="lemb-tx">Agora é ilimitado neste navegador, com as categorias extras. Guarde seu código (tire um print) para usar em outro celular:</p>
       <div class="pw-cod">${esc(codigo)}</div>
       <button type="button" class="btn btn-ghost" id="pwCopC">Copiar código</button>
       <button type="button" class="btn btn-main" id="pwSeg">${ctx === 'bonus' ? 'Ver as categorias extras 🎁' : 'Continuar a retrospectiva 🏆'}</button>`;
@@ -924,20 +924,9 @@ function paywall(seguir, ctx){
       <p class="err" id="pwErr" hidden></p>
       <button type="button" class="btn btn-main" id="pwOk">Liberar</button>
       <button type="button" class="pw-lk" id="pwVolta">← Voltar</button>
-      <div class="ob-form" style="margin-top:4px">
-        <label class="pw-lb" for="pwRec">Perdeu o código? Receba de novo no e-mail da compra:</label>
-        <div class="ob-linha"><input id="pwRec" class="pw-in" type="email" inputmode="email" autocomplete="email" placeholder="voce@email.com"><button type="button" class="btn btn-ghost" id="pwRecOk">Enviar</button></div>
-        <p class="small" id="pwRecMsg" style="margin:0"></p>
-      </div>`;
+      <p class="small" style="margin:0">Perdeu o código? Escreva para <a href="mailto:contato@retrozap.com.br" style="color:var(--areia)">contato@retrozap.com.br</a> com o e-mail da compra.</p>`;
     caixa.querySelector('#pwX').onclick = fecha;
     caixa.querySelector('#pwVolta').onclick = inicio;
-    caixa.querySelector('#pwRec').value = lsGet('rz_email') || '';
-    caixa.querySelector('#pwRecOk').onclick = async () => {
-      const email = caixa.querySelector('#pwRec').value.trim(), msg = caixa.querySelector('#pwRecMsg');
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){ msg.textContent = 'Confira o e-mail.'; return; }
-      try { await fetch('/api/recuperar', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({email})}); } catch {}
-      msg.textContent = 'Se houver uma compra com esse e-mail, o código chega em instantes. Confira também o spam.';
-    };
     const inp = caixa.querySelector('#pwCod'), err = caixa.querySelector('#pwErr'), bt = caixa.querySelector('#pwOk');
     bt.onclick = async () => {
       const codigo = inp.value.trim().toUpperCase();
