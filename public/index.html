@@ -372,7 +372,8 @@ body.has-cookies{padding-bottom:calc(170px + env(safe-area-inset-bottom,0px))}
 .tt-dedo{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;background:rgba(255,255,255,.55);border:2px solid var(--chiclete);box-shadow:0 2px 8px rgba(0,0,0,.35);transition:left .6s ease-in-out,top .6s ease-in-out,opacity .3s;pointer-events:none;left:50%;top:92%}
 .tt-dedo.tap{animation:tttap .5s ease-out}
 .tt-cap{margin:0;min-height:22px;font-weight:700;font-size:14px;color:var(--manga);text-align:center}
-.tt-pp{align-self:center;border:0;background:transparent;color:var(--neblina);font-size:13px;text-decoration:underline;padding:4px 8px;margin-top:-8px}
+.tt-ctl{display:flex;justify-content:center;gap:4px;margin-top:-8px}
+.tt-pp{border:0;background:transparent;color:var(--neblina);font-size:13px;text-decoration:underline;padding:6px 8px}
 ol.how li{transition:color .2s}
 ol.how li.on{color:var(--manga);font-weight:700}
 @keyframes ttin{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
@@ -757,10 +758,10 @@ function tutorialHTML(){
     <div class="tt-phone"><div class="tt-scr" id="ttScr"></div><i class="tt-dedo" id="ttDedo"></i></div>
     <p class="tt-cap" id="ttCap"></p>
   </div>
-  <button class="tt-pp" id="ttPP" type="button"></button>`;
+  <div class="tt-ctl"><button class="tt-pp" id="ttPP" type="button"></button><button class="tt-pp" id="ttDeNovo" type="button">↺ Ver de novo</button></div>`;
 }
 function tutorial(how){
-  const id = ++TT_RUN, cenas = TT_CENAS[how], scr = $('#ttScr'), dedo = $('#ttDedo'), cap = $('#ttCap'), pp = $('#ttPP');
+  const id = ++TT_RUN, cenas = TT_CENAS[how], scr = $('#ttScr'), dedo = $('#ttDedo'), cap = $('#ttCap'), pp = $('#ttPP'), dn = $('#ttDeNovo');
   const lis = view.querySelectorAll('ol.how li');
   let i = 0, tocando = !TT_CALMO(), tm = null;
   const vivo = () => id === TT_RUN && scr.isConnected;
@@ -777,13 +778,13 @@ function tutorial(how){
       const c = cenas[i];
       pinta(c);
       if (!c.fim){
-        await espera(c.w || 650); if (!vivo() || !tocando) return;
+        await espera(c.w || 1100); if (!vivo() || !tocando) return;
         { const a = scr.querySelector('.alvo'), ph = scr.parentNode.getBoundingClientRect();
           if (a){ const r = a.getBoundingClientRect(); dedo.style.left = (r.left + r.width/2 - ph.left) + 'px'; dedo.style.top = (r.top + r.height/2 - ph.top) + 'px'; } }
-        await espera(700); if (!vivo() || !tocando) return;
+        await espera(800); if (!vivo() || !tocando) return;
         dedo.classList.add('tap'); scr.querySelector('.alvo')?.classList.add('apertou');
-        await espera(650);
-      } else await espera(2200);
+        await espera(900);
+      } else await espera(3000);
       if (!vivo() || !tocando) return;
       i = (i + 1) % cenas.length;
     }
@@ -791,7 +792,10 @@ function tutorial(how){
   pinta(cenas[0]); dedo.style.left = '50%'; dedo.style.top = '92%';
   botao();
   pp.onclick = () => { tocando = !tocando; clearTimeout(tm); botao(); if (tocando) ciclo(); };
-  if (tocando) ciclo();
+  // ver de novo: a espera pendente nunca termina (clearTimeout), então o ciclo antigo para e um novo começa do zero
+  dn.onclick = () => { clearTimeout(tm); i = 0; pinta(cenas[0]); dedo.style.left = '50%'; dedo.style.top = '92%'; tocando = true; botao(); tm = setTimeout(() => { if (vivo() && tocando) ciclo(); }, 800); };
+  // começa depois de 2 s, para dar tempo de ver a primeira tela
+  if (tocando) tm = setTimeout(() => { if (vivo() && tocando) ciclo(); }, 2000);
 }
 /* ---------- cobrança: 1º grupo grátis, depois R$ 4,99 (Pix) libera ilimitado neste navegador ---------- */
 const TESTE_COBRANCA = /[?&]teste_cobranca=1/.test(location.search);
@@ -1590,7 +1594,6 @@ function final(semFesta){
     <button class="btn btn-main" id="rs">✨ Resumo do grupo em imagem</button>
     ${destaquesBrasil().length ? '<button class="btn btn-main" id="rk">🏅 Ranking do grupo em imagem</button>' : ''}
     <button class="btn btn-main" id="t10">🏆 Top 10 categorias e ganhadores</button>
-    <button class="btn btn-ghost" id="cc">👑 Card do destaque do grupo</button>
     ${temBonus ? `<div class="panel" style="text-align:center;margin-top:8px">
       <div style="font-size:52px" aria-hidden="true">🎁</div>
       <h2 style="font-size:26px;margin:0">Ainda tem ${b.length} prêmios guardados</h2>
@@ -1602,7 +1605,6 @@ function final(semFesta){
   $('#rs').onclick = () => openCard(() => drawResumo(d), convite('resumo'), altResumo(d));
   $('#rk')?.addEventListener('click', () => openCard(() => drawComparacao(d), convite('ranking'), altComparacao()));
   $('#t10').onclick = () => openCard(() => drawTop10(), convite('resumo'), altTop10());
-  $('#cc').onclick = () => openCard(() => drawCard({emoji:'👑', title:'Destaque do grupo', winner:champ[0], line:`${champ[1].length} troféus no grupo`}), convite('destaque', champ[0]), `Card: ${champ[0]} é o destaque do grupo, com ${champ[1].length} troféus`);
   if (temBonus){
     $('#mais').onclick = () => {
       state.bonusShown = true; state.noBonus = true;
