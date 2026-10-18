@@ -1480,8 +1480,8 @@ function obrigado(){
       <h2 id="obT" style="font-size:26px;margin:0">Valeu por usar o Retrozap!</h2>
       <p class="lemb-tx">Esperamos que o grupo tenha se divertido (e se ofendido só um pouquinho).</p>
       <form id="obForm" class="ob-form">
-        <label class="pw-lb" for="obEm">📬 Quer saber das novidades e do próximo lançamento?</label>
-        <div class="ob-linha"><input id="obEm" class="pw-in" type="email" inputmode="email" autocomplete="email" placeholder="seu@email.com"><button type="submit" class="btn btn-ghost" id="obOk">Avise-me</button></div>
+        <label class="pw-lb" for="obEm">📬 Deixe seu e-mail para receber as próximas novidades e ganhe um presente 🎁 para se divertir com o grupo 👀</label>
+        <div class="ob-linha"><input id="obEm" class="pw-in" type="email" inputmode="email" autocomplete="email" placeholder="seu@email.com"><button type="submit" class="btn btn-main" id="obOk">Quero 🎁</button></div>
         <p class="small" id="obMsg" style="margin:0"></p>
       </form>
       <button type="button" class="btn btn-main ob-denovo" id="obNovo">🔁 Fazer a retrospectiva de outro grupo</button>`;
@@ -1493,9 +1493,9 @@ function obrigado(){
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){ msg.textContent = 'Confira o e-mail.'; return; }
       caixa.querySelector('#obOk').disabled = true;
       try {
-        const r = await fetch('/api/ideias', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({tipo: 'novidades', texto: 'Quero receber as novidades do Retrozap', contato: email})});
+        const r = await fetch('/api/ideias', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({tipo: 'novidades', texto: 'Quero receber as novidades e o presente do Retrozap', contato: email})});
         if (!r.ok) throw 0;
-        msg.textContent = 'Pronto! Você vai ser o primeiro a saber. 🎉'; ev('novidades_email');
+        msg.textContent = 'Pronto! Seu presente vai chegar no seu e-mail. 🎁'; ev('novidades_email');
       } catch { msg.textContent = 'Não consegui salvar agora. Tente de novo.'; caixa.querySelector('#obOk').disabled = false; }
     };
     caixa.querySelector('#obNovo').focus();
