@@ -5,7 +5,7 @@
 // Configuração (uma vez, no painel da Cloudflare): Settings > Bindings > D1 database, nome da variável: DB.
 // A tabela é criada sozinha na primeira chamada. Sem o banco ligado, a função responde {pronto:false} e o site segue normal.
 
-const MIN_AMOSTRA = 200; // só mostra comparação quando já houver grupos suficientes do mesmo tipo
+const MIN_AMOSTRA = 100; // só mostra comparação quando já houver grupos suficientes do mesmo tipo
 const MODOS = ['amigos', 'familia', 'trabalho', 'comunidade'];
 // campo: [mínimo, máximo] aceitos
 const CAMPOS = {
