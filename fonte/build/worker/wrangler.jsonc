@@ -1,0 +1,25 @@
+// Configuração do Worker "retrozap-v2" (Cloudflare Workers Builds roda `npx wrangler deploy` a cada push).
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "retrozap-v2",
+  "main": "src/index.js",
+  "compatibility_date": "2025-09-01",
+  // endereço de teste retrozap-v2.<conta>.workers.dev ligado
+  "workers_dev": true,
+  "preview_urls": true,
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    // telas da cerimônia (/prologo, /premios/3...) caem no index.html
+    "not_found_handling": "single-page-application",
+    // só /api/* passa pelo código; o resto é arquivo estático
+    "run_worker_first": ["/api/*"]
+  },
+  // banco da comparação entre grupos. Na primeira publicação a Cloudflare cria o banco "retrozap" sozinha.
+  "d1_databases": [{ "binding": "DB", "database_name": "retrozap" }],
+  // cobrança de R$ 4,99: "teste" (só com ?teste_cobranca=1), "ligada" (para todos) ou "desligada"
+  "vars": { "COBRANCA": "ligada" },
+  // mantém variáveis criadas no painel; o Access Token do Mercado Pago é o segredo MP_TOKEN
+  "keep_vars": true,
+  "observability": { "enabled": true }
+}
