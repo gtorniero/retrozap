@@ -108,6 +108,9 @@ export async function acesso({request, env}){
   const codigo = String(c?.codigo || '').trim().toUpperCase().slice(0, 20);
   if (!/^RZ-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(codigo)) return json({ok: false});
   await tabela(env);
-  const linha = await env.DB.prepare("SELECT ref FROM compras WHERE codigo = ? AND status = 'pago'").bind(codigo).first();
+  // com a cobrança ligada, códigos gerados no modo teste não valem
+  const linha = modo(env) === 'ligada'
+    ? await env.DB.prepare("SELECT ref FROM compras WHERE codigo = ? AND status = 'pago' AND modo = 'ligada'").bind(codigo).first()
+    : await env.DB.prepare("SELECT ref FROM compras WHERE codigo = ? AND status = 'pago'").bind(codigo).first();
   return json({ok: !!linha});
 }
