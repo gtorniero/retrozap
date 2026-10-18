@@ -863,7 +863,7 @@ function paywall(seguir){
       try {
         const r = await fetch('/api/pix', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({email})});
         const j = await r.json();
-        if (!r.ok || !j.ref) throw new Error(j.error === 'email' ? 'Confira o e-mail.' : 'Não consegui gerar o Pix agora. Tente de novo em instantes.');
+        if (!r.ok || !j.ref) throw new Error(j.error === 'email' ? 'Confira o e-mail.' : 'Não consegui gerar o Pix agora. Tente de novo em instantes.' + (TESTE_COBRANCA ? ` [${r.status}${j.detalhe ? ': ' + j.detalhe : ''}]` : ''));
         try { if (typeof evento === 'function') evento('pix_gerado'); } catch {}
         pixTela(j);
       } catch (e) { bt.disabled = false; bt.textContent = 'Pagar R$ 4,99 com Pix'; err.hidden = false; err.textContent = e.message || 'Sem conexão. Tente de novo.'; }

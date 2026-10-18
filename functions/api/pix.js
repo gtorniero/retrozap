@@ -9,10 +9,13 @@ const json = (obj, status = 200) => new Response(JSON.stringify(obj), {status, h
 const modo = env => (env.COBRANCA === 'ligada' ? 'ligada' : env.COBRANCA === 'desligada' ? 'desligada' : 'teste');
 const tabela = env => env.DB.prepare('CREATE TABLE IF NOT EXISTS compras (ref TEXT PRIMARY KEY, ordem TEXT, email TEXT, status TEXT, codigo TEXT, criado TEXT, pago TEXT, valor TEXT, modo TEXT)').run();
 const aleatorio = n => [...crypto.getRandomValues(new Uint8Array(n))].map(b => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[b % 32]).join('');
-const pago = o => o && (o.status === 'processed' || /accredited|approved/.test(o.status_detail || '') || (o.transactions?.payments || []).some(p => p.status === 'processed' || /accredited|approved/.test(p.status_detail || '')));
+const pago = o => o && (o.status === 'approved' || o.status === 'processed' || /accredited|approved/.test(o.status_detail || '') || (o.transactions?.payments || []).some(p => p.status === 'processed' || /accredited|approved/.test(p.status_detail || '')));
 
+const MP_PAY = 'https://api.mercadopago.com/v1/payments';
 async function consultaOrdem(env, id){
-  const r = await fetch(`${env.MP_API || MP_PADRAO}/${encodeURIComponent(id)}`, {headers: {Authorization: `Bearer ${env.MP_TOKEN}`}});
+  // "pay:123" = pagamento pela API clássica (/v1/payments); senão, order da API de Orders
+  const url = id.startsWith('pay:') ? `${env.MP_PAY_API || MP_PAY}/${encodeURIComponent(id.slice(4))}` : `${env.MP_API || MP_PADRAO}/${encodeURIComponent(id)}`;
+  const r = await fetch(url, {headers: {Authorization: `Bearer ${env.MP_TOKEN}`}});
   return r.ok ? r.json() : null;
 }
 // marca como paga e cria o código (uma vez só)
@@ -41,19 +44,34 @@ export async function criar({request, env}){
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return json({error: 'email'}, 400);
   await tabela(env);
   const ref = crypto.randomUUID();
-  const payer = {email};
-  if (modo(env) === 'teste') payer.first_name = 'APRO'; // credencial de teste: aprova sozinho
+  const teste = modo(env) === 'teste';
+  // credencial de teste: comprador de teste e APRO (aprova sozinho)
+  const payer = teste ? {email: 'test@testuser.com', first_name: 'APRO'} : {email};
   const corpo = {
     type: 'online', processing_mode: 'automatic', total_amount: PRECO, external_reference: ref,
     description: 'Retrozap: grupos ilimitados',
     payer,
     transactions: {payments: [{amount: PRECO, payment_method: {id: 'pix', type: 'bank_transfer'}, expiration_time: 'PT30M'}]}
   };
-  const r = await fetch(env.MP_API || MP_PADRAO, {method: 'POST', headers: {'content-type': 'application/json', accept: 'application/json', Authorization: `Bearer ${env.MP_TOKEN}`, 'X-Idempotency-Key': ref}, body: JSON.stringify(corpo)});
-  const o = await r.json().catch(() => null);
-  if (!r.ok || !o?.id){ console.log('mp erro', r.status, JSON.stringify(o).slice(0, 500)); return json({error: 'mp'}, 502); }
-  const pm = o.transactions?.payments?.[0]?.payment_method || {};
-  await env.DB.prepare('INSERT INTO compras (ref, ordem, email, status, criado, valor, modo) VALUES (?, ?, ?, ?, ?, ?, ?)').bind(ref, o.id, email, 'pendente', new Date().toISOString(), PRECO, modo(env)).run();
+  const cab = {'content-type': 'application/json', accept: 'application/json', Authorization: `Bearer ${env.MP_TOKEN}`};
+  const motivo = (st, o) => `${st} ${o?.message || o?.error || ''} ${(o?.errors || o?.cause || []).map(e => e.message || e.description || e.code || '').join('; ')}`.trim().slice(0, 300);
+  // 1) API de Orders
+  let r = await fetch(env.MP_API || MP_PADRAO, {method: 'POST', headers: {...cab, 'X-Idempotency-Key': ref}, body: JSON.stringify(corpo)});
+  let o = await r.json().catch(() => null), ordem, pm;
+  const erros = [];
+  if (r.ok && o?.id){ ordem = o.id; pm = o.transactions?.payments?.[0]?.payment_method || {}; }
+  else {
+    erros.push('orders: ' + motivo(r.status, o));
+    // 2) API clássica de pagamentos
+    const classico = {transaction_amount: 4.99, description: corpo.description, payment_method_id: 'pix', external_reference: ref, payer,
+      date_of_expiration: new Date(Date.now() + 30*60e3).toISOString().replace('Z', '-00:00')};
+    r = await fetch(env.MP_PAY_API || MP_PAY, {method: 'POST', headers: {...cab, 'X-Idempotency-Key': ref + '-p'}, body: JSON.stringify(classico)});
+    o = await r.json().catch(() => null);
+    if (r.ok && o?.id){ ordem = 'pay:' + o.id; const t = o.point_of_interaction?.transaction_data || {}; pm = {qr_code: t.qr_code, qr_code_base64: t.qr_code_base64, ticket_url: t.ticket_url}; }
+    else erros.push('payments: ' + motivo(r.status, o));
+  }
+  if (!ordem){ console.log('mp erro', erros.join(' | ')); return json({error: 'mp', detalhe: teste ? erros.join(' | ') : undefined}, 502); }
+  await env.DB.prepare('INSERT INTO compras (ref, ordem, email, status, criado, valor, modo) VALUES (?, ?, ?, ?, ?, ?, ?)').bind(ref, ordem, email, 'pendente', new Date().toISOString(), PRECO, modo(env)).run();
   return json({ref, qr: pm.qr_code || '', qr64: pm.qr_code_base64 || '', link: pm.ticket_url || ''});
 }
 
@@ -75,7 +93,7 @@ export async function webhook({request, env}){
   const id = String(c?.data?.id || '').slice(0, 80);
   if (!id) return json({ok: true});
   await tabela(env);
-  const linha = await env.DB.prepare('SELECT ref FROM compras WHERE ordem = ?').bind(id).first();
+  const linha = await env.DB.prepare('SELECT ref FROM compras WHERE ordem = ? OR ordem = ?').bind(id, 'pay:' + id).first();
   if (linha) await confirma(env, linha.ref);
   return json({ok: true});
 }
