@@ -795,6 +795,8 @@ function tutorial(how){
 }
 /* ---------- cobrança: 1º grupo grátis, depois R$ 4,99 (Pix) libera ilimitado neste navegador ---------- */
 const TESTE_COBRANCA = /[?&]teste_cobranca=1/.test(location.search);
+// ?zerar=1: este navegador volta a ser visitante novo (apaga grupos feitos e código de acesso guardados aqui)
+if (/[?&]zerar=1/.test(location.search)) { try { localStorage.removeItem('rz_grupos'); localStorage.removeItem('rz_acesso'); } catch {} }
 const lsGet = k => { try { return localStorage.getItem(k); } catch { return null; } };
 const lsSet = (k, v) => { try { localStorage.setItem(k, v); return true; } catch { return false; } };
 // identidade do grupo: a primeira mensagem (continua igual quando o grupo cresce)
