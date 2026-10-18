@@ -8,6 +8,9 @@ const MP_PADRAO = 'https://api.mercadopago.com/v1/orders';
 const json = (obj, status = 200) => new Response(JSON.stringify(obj), {status, headers: {'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store'}});
 const modo = env => (env.COBRANCA === 'ligada' ? 'ligada' : env.COBRANCA === 'desligada' ? 'desligada' : 'teste');
 const tabela = env => env.DB.prepare('CREATE TABLE IF NOT EXISTS compras (ref TEXT PRIMARY KEY, ordem TEXT, email TEXT, status TEXT, codigo TEXT, criado TEXT, pago TEXT, valor TEXT, modo TEXT)').run();
+// token limpo: sem espaços, aspas ou "Bearer" colados por engano
+const tok = env => String(env.MP_TOKEN || '').trim().replace(/^['"]|['"]$/g, '').replace(/^Bearer\s+/i, '').trim();
+const formaTok = env => { const t = tok(env); return `token ${t.slice(0, 8)}… (${t.length} caracteres)`; };
 const aleatorio = n => [...crypto.getRandomValues(new Uint8Array(n))].map(b => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[b % 32]).join('');
 const pago = o => o && (o.status === 'approved' || o.status === 'processed' || /accredited|approved/.test(o.status_detail || '') || (o.transactions?.payments || []).some(p => p.status === 'processed' || /accredited|approved/.test(p.status_detail || '')));
 
@@ -15,7 +18,7 @@ const MP_PAY = 'https://api.mercadopago.com/v1/payments';
 async function consultaOrdem(env, id){
   // "pay:123" = pagamento pela API clássica (/v1/payments); senão, order da API de Orders
   const url = id.startsWith('pay:') ? `${env.MP_PAY_API || MP_PAY}/${encodeURIComponent(id.slice(4))}` : `${env.MP_API || MP_PADRAO}/${encodeURIComponent(id)}`;
-  const r = await fetch(url, {headers: {Authorization: `Bearer ${env.MP_TOKEN}`}});
+  const r = await fetch(url, {headers: {Authorization: `Bearer ${tok(env)}`}});
   return r.ok ? r.json() : null;
 }
 // marca como paga e cria o código (uma vez só)
@@ -53,7 +56,7 @@ export async function criar({request, env}){
     payer,
     transactions: {payments: [{amount: PRECO, payment_method: {id: 'pix', type: 'bank_transfer'}, expiration_time: 'PT30M'}]}
   };
-  const cab = {'content-type': 'application/json', accept: 'application/json', Authorization: `Bearer ${env.MP_TOKEN}`};
+  const cab = {'content-type': 'application/json', accept: 'application/json', Authorization: `Bearer ${tok(env)}`};
   const motivo = (st, o) => `${st} ${o?.message || o?.error || ''} ${(o?.errors || o?.cause || []).map(e => e.message || e.description || e.code || '').join('; ')}`.trim().slice(0, 300);
   // 1) API de Orders
   let r = await fetch(env.MP_API || MP_PADRAO, {method: 'POST', headers: {...cab, 'X-Idempotency-Key': ref}, body: JSON.stringify(corpo)});
@@ -70,7 +73,7 @@ export async function criar({request, env}){
     if (r.ok && o?.id){ ordem = 'pay:' + o.id; const t = o.point_of_interaction?.transaction_data || {}; pm = {qr_code: t.qr_code, qr_code_base64: t.qr_code_base64, ticket_url: t.ticket_url}; }
     else erros.push('payments: ' + motivo(r.status, o));
   }
-  if (!ordem){ console.log('mp erro', erros.join(' | ')); return json({error: 'mp', detalhe: teste ? erros.join(' | ') : undefined}, 502); }
+  if (!ordem){ console.log('mp erro', erros.join(' | ')); return json({error: 'mp', detalhe: teste ? erros.join(' | ') + ' | ' + formaTok(env) : undefined}, 502); }
   await env.DB.prepare('INSERT INTO compras (ref, ordem, email, status, criado, valor, modo) VALUES (?, ?, ?, ?, ?, ?, ?)').bind(ref, ordem, email, 'pendente', new Date().toISOString(), PRECO, modo(env)).run();
   return json({ref, qr: pm.qr_code || '', qr64: pm.qr_code_base64 || '', link: pm.ticket_url || ''});
 }
