@@ -292,6 +292,7 @@ body.has-cookies .acao{bottom:150px}
 .card-fim .btn-row{width:100%;display:flex;gap:8px}.card-fim .btn{flex:1;padding:12px 10px;font-size:15px}
 .patro{position:fixed;inset:0;z-index:40;background:rgba(10,4,20,.82);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
 .patro-box{background:var(--acai);border:1px solid var(--linha);border-radius:24px;padding:18px;width:min(100%,440px);display:flex;flex-direction:column;gap:10px;text-align:center;animation:pop .4s cubic-bezier(.2,1.4,.4,1)}
+.tiles>.tile:last-child:nth-child(odd){grid-column:1/-1}
 .lemb{gap:12px;padding:26px 22px}
 .lemb-ic{font-size:44px;line-height:1}
 .lemb-tx{margin:0;font-size:17px;line-height:1.45}.lemb-tx b{color:var(--manga)}
@@ -1098,16 +1099,11 @@ function story(){
     <h2 style="font-size:28px">O grupo em números</h2>
     <div class="tiles">
       ${tile(fmt(tot), 'mensagens')}
-      ${tile(P.length, 'integrantes')}
       ${tile(fmt(sum('audio')), 'áudios 🎙️')}
       ${tile(fmt(sum('sticker')), 'figurinhas 🖼️')}
       ${tile(fmt(sum('photo')), 'fotos e vídeos 📸')}
-      ${tile(fmt(sum('laugh')), 'mensagens com risada 😂')}
       ${tile(tempoLeitura(d.palavras), 'para ler tudo, sem parar ⏱️')}
-      ${d.recorde ? tile(new Date(d.recorde[0] + 'T12:00').toLocaleDateString('pt-BR'), `dia recorde: ${fmt(d.recorde[1])} mensagens 📅`) : ''}
       ${d.silencio > 864e5 ? tile(Math.round(d.silencio/864e5) + ' dias', 'maior silêncio do grupo 🤐') : ''}
-      ${tile(DIAS[bd], 'dia mais movimentado')}
-      ${tile(peak + 'h', 'horário de pico')}
       ${d.word ? `<div class="tile"><span class="n" style="font-size:24px;overflow-wrap:anywhere">${esc(d.word[0])}</span><span class="l">palavra do grupo (${fmt(d.word[1])}×)</span></div>` : ''}
     </div>
     ${anosL.length > 1 ? `<div class="panel">
