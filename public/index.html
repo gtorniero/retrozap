@@ -630,7 +630,7 @@ function picoSemana(days, minSem){
 // títulos com (a) são aplicados logo abaixo da lista: for (const a of AW) a.n = gtit(a.n)
 const AW = [
  {m:['amigos','familia','trabalho','comunidade'],e:'🗣️',n:'O Tagarela',crit:'Mais mensagens enviadas',k:'count',u:'mensagens',mech:'podio',p:'{w} mandou {v} mensagens. Respira, {w}.'},
- {m:['amigos','familia','trabalho','comunidade'],e:'⌨️',n:'Máquina de Escrever',crit:'Mais caracteres digitados no total',k:'chars',u:'caracteres',mech:'chute',p:'{w} digitou {v} caracteres. Dava um livro.'},
+ {m:['amigos','familia','trabalho','comunidade'],e:'⌨️',n:'Máquina de Escrever',crit:'Mais caracteres digitados no total',k:'chars',u:'caracteres',mech:'podio',p:'{w} digitou {v} caracteres. Dava um livro.'},
  {m:['amigos'],e:'🖼️',n:'Figurinha de Ouro',crit:'Mais figurinhas enviadas',k:'sticker',u:'figurinhas',mech:'chute',p:'{v} figurinhas. {w} se comunica por hieróglifos modernos.'},
  {m:['amigos'],e:'😂',n:'Rei do Kkkk',crit:'Mais mensagens com risada',k:'laugh',u:'risadas',mech:'chute',p:'{w} riu {v} vezes. Plateia profissional.'},
  {m:['amigos'],e:'🤬',n:'Boca-Suja',crit:'Palavrões a cada 1.000 mensagens',k:'palavrao',rate:true,u:'por 1.000 msgs',mech:'raspadinha',p:'{v} palavrões a cada mil mensagens. A mãe de {w} está decepcionada.'},
@@ -1364,7 +1364,7 @@ function award(){
       <div id="game" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:12px"></div>
       <div id="res" class="reveal" aria-live="polite" hidden></div>
     </div>
-    <div class="acao"><button class="btn btn-main" id="rvl"></button><button class="btn btn-ghost" id="next" style="flex:0 0 auto">${state.idx === n-1 ? 'Pular para o resumo' : 'Pular →'}</button></div>
+    <div class="acao"><button class="btn btn-main" id="rvl"></button><button class="btn btn-ghost" id="next" style="flex:0 0 auto">${state.idx === n-1 ? (state.noBonus ? 'Pular para os personagens' : 'Pular para o resumo') : 'Pular →'}</button></div>
   </section>`;
   view.querySelector('section').classList.add('com-acao');
   $('#next').onclick = next;
@@ -1375,7 +1375,7 @@ function award(){
 function next(){
   state.idx++;
   if (state.idx < state.awards.length) return award();
-  if (state.bonus?.length && !state.bonusShown) return maisPremios();
+  if (state.noBonus) return personagensTela();
   suspense();
 }
 // O auge: o resumo do grupo, revelado fato a fato, terminando no card para mandar no WhatsApp
@@ -1460,9 +1460,8 @@ function suspense(){
         $('#sv2').onclick = () => abre(() => drawComparacao(d), convite('ranking'), altComparacao());
       }
       bt.style.display = 'none';
-      const q = document.createElement('button'); q.className = 'btn btn-ghost'; q.style.width = '100%'; q.textContent = '🟪 Resumo em versão quadrada'; q.onclick = () => openCard(() => drawResumoQ(d), convite('resumo'), altResumo(d));
-      const vf = document.createElement('button'); vf.className = 'btn btn-main'; vf.id = 'vf'; vf.style.width = '100%'; vf.textContent = 'Ver os personagens do grupo →'; vf.onclick = () => final();
-      bt.after(q, vf);
+      const vf = document.createElement('button'); vf.className = 'btn btn-main'; vf.id = 'vf'; vf.style.width = '100%'; vf.textContent = 'Ver o destaque do grupo 👑'; vf.onclick = () => final();
+      bt.after(vf);
     }
   };
   bt.onclick = () => {
@@ -1481,20 +1480,20 @@ function maisPremios(){
   const b = state.bonus;
   view.innerHTML = `<section class="screen">
     ${state.sample ? '<span class="sample">Grupo de exemplo</span>' : ''}
-    <p class="eyebrow">Ato II · Bônus</p>
+    <p class="eyebrow">Ato bônus</p>
     <div class="crown" style="font-size:72px;text-align:center" aria-hidden="true">🎁</div>
     <h1 style="font-size:34px;text-align:center">Ainda tem ${b.length} prêmios guardados</h1>
     <div class="chips" style="justify-content:center">${b.map(a => `<span class="chip">${a.e} ${a.n}</span>`).join('')}</div>
     <button class="btn btn-main" id="mais">🎁 Ver mais prêmios</button>
-    <button class="btn btn-ghost" id="pular">Ir para o resumo do grupo 🥁</button>
+    <button class="btn btn-ghost" id="pular">Pular para os personagens →</button>
   </section>`;
   $('#mais').onclick = () => {
-    state.bonusShown = true;
+    state.bonusShown = true; state.noBonus = true;
     const antes = state.awards.filter(a => !a.honra), inicio = antes.length;
     state.awards = comHonra(antes.concat(b), state.data);
     state.idx = inicio; award();
   };
-  $('#pular').onclick = () => { state.bonusShown = true; suspense(); };
+  $('#pular').onclick = () => { state.bonusShown = true; personagensTela(); };
   window.scrollTo(0,0);
 }
 // Cada jogo devolve a ação do botão amarelo fixo (sempre no mesmo lugar, embaixo da tela)
@@ -1570,41 +1569,96 @@ function showResult(a, extra=''){
   confetti();
 }
 /* mecânicas */
+function principais(){ const b = state.bonus || []; return state.awards.filter(a => !a.honra && !b.includes(a)).slice(0, 10); }
+function campeao(){
+  const by = {}; for (const a of state.awards.filter(a => !a.honra)) (by[a.winner.name] = by[a.winner.name] || []).push(a);
+  return {by, champ: Object.entries(by).sort((x,y) => y[1].length - x[1].length)[0]};
+}
 function final(semFesta){
   anchor(true);
   ir('/destaque'); if (!semFesta) evento('final_visto', {modo: state.modo});
-  pilha(() => final(), 'final');
+  pilha(() => final(), 'destaque');
   setSteps(3);
-  const d = state.data, real = state.awards.filter(a => !a.honra), by = {};
-  for (const a of real) (by[a.winner.name] = by[a.winner.name] || []).push(a);
-  const champ = Object.entries(by).sort((x,y) => y[1].length - x[1].length)[0];
+  const d = state.data, {champ} = campeao(), b = state.bonus || [], temBonus = b.length && !state.bonusShown;
   view.innerHTML = `<section class="screen final">
     ${state.sample ? '<span class="sample">Grupo de exemplo</span>' : ''}
-    <p class="eyebrow">Ato III · Os personagens</p>
+    <p class="eyebrow">Ato III · O destaque</p>
     <div class="crown" aria-hidden="true">👑</div>
     <h1 style="font-size:38px;text-align:center">O destaque do grupo é ${esc(champ[0])}</h1>
     <p class="lead" style="text-align:center">${champ[1].length} troféus: ${champ[1].map(a=>gtit(a.n, champ[0])).join(', ')}. Um verdadeiro monopólio.</p>
-    <button class="btn btn-main" id="rs">✨ Resumo do grupo para os stories</button>
-    <button class="btn btn-ghost" id="rq">🟪 Resumo quadrado para mandar no grupo</button>
-    ${destaquesBrasil().length ? '<button class="btn btn-main" id="rk">🏅 Ranking do grupo para os stories</button>' : ''}
-    <button class="btn btn-ghost" id="cc">📲 Card do destaque do grupo</button>
-    <h2 style="font-size:30px;margin-top:8px">Os personagens</h2>
+    <p class="ask" style="text-align:center;margin:6px 0 0">📲 Imagens para mandar no grupo e nos stories</p>
+    <button class="btn btn-main" id="rs">✨ Resumo do grupo em imagem</button>
+    ${destaquesBrasil().length ? '<button class="btn btn-main" id="rk">🏅 Ranking do grupo em imagem</button>' : ''}
+    <button class="btn btn-main" id="t10">🏆 Top 10 categorias e ganhadores</button>
+    <button class="btn btn-ghost" id="cc">👑 Card do destaque do grupo</button>
+    ${temBonus ? `<div class="panel" style="text-align:center;margin-top:8px">
+      <div style="font-size:52px" aria-hidden="true">🎁</div>
+      <h2 style="font-size:26px;margin:0">Ainda tem ${b.length} prêmios guardados</h2>
+      <div class="chips" style="justify-content:center">${b.map(a => `<span class="chip">${a.e} ${a.n}</span>`).join('')}</div>
+      <button class="btn btn-main" id="mais">🎁 Ver os prêmios bônus</button>
+      <button class="btn btn-ghost" id="pular">Pular para os personagens →</button>
+    </div>` : '<button class="btn btn-main" id="vp">Ver os personagens do grupo →</button>'}
+  </section>`;
+  $('#rs').onclick = () => openCard(() => drawResumo(d), convite('resumo'), altResumo(d));
+  $('#rk')?.addEventListener('click', () => openCard(() => drawComparacao(d), convite('ranking'), altComparacao()));
+  $('#t10').onclick = () => openCard(() => drawTop10(), convite('resumo'), altTop10());
+  $('#cc').onclick = () => openCard(() => drawCard({emoji:'👑', title:'Destaque do grupo', winner:champ[0], line:`${champ[1].length} troféus no grupo`}), convite('destaque', champ[0]), `Card: ${champ[0]} é o destaque do grupo, com ${champ[1].length} troféus`);
+  if (temBonus){
+    $('#mais').onclick = () => {
+      state.bonusShown = true; state.noBonus = true;
+      const antes = state.awards.filter(a => !a.honra), inicio = antes.length;
+      state.awards = comHonra(antes.concat(b), d);
+      state.idx = inicio; award();
+    };
+    $('#pular').onclick = () => { state.bonusShown = true; personagensTela(); };
+  } else $('#vp').onclick = () => personagensTela();
+  if (!semFesta){ confetti(); window.scrollTo(0,0); }
+}
+function personagensTela(){
+  anchor(true);
+  ir('/personagens'); evento('personagens_visto');
+  pilha(personagensTela, 'final');
+  setSteps(3);
+  const d = state.data, {by} = campeao();
+  view.innerHTML = `<section class="screen final">
+    ${state.sample ? '<span class="sample">Grupo de exemplo</span>' : ''}
+    <p class="eyebrow">Final · Os personagens</p>
+    <h1 style="font-size:36px;text-align:center">Os personagens do grupo</h1>
     <p class="lead">Os 5 que mais movimentam o grupo, e o que faz cada um ser quem é.</p>
     <div class="persos">${personagens(d, by).map(x => `<div class="perso">
       <div class="ph"><span class="em" aria-hidden="true">${x.e}</span><div><span class="small">${esc(x.nome)}</span><h3>${x.titulo}</h3></div></div>
       <p class="bio">${esc(x.texto)}</p>
       ${x.fala.length || x.emojis.length ? `<div class="fala"><span class="rot">Jeito de falar</span><div class="chips">${x.fala.map(f => `<span class="chip">${esc(f)}</span>`).join('')}${x.emojis.length ? `<span class="chip emo">${x.emojis.join(' ')}</span>` : ''}</div></div>` : ''}
       <ul>${x.fatos.map(f => `<li>${esc(f)}</li>`).join('')}</ul></div>`).join('')}</div>
-    <div class="badge"><span aria-hidden="true">👀</span><span><b>Em breve: Bolão do Grupo.</b> Mande um link para todo mundo palpitar os vencedores antes da revelação.</span></div>
+    <button class="btn btn-ghost" id="vd">← Voltar às imagens do grupo</button>
     <a class="btn btn-ghost" id="conv" href="https://wa.me/?text=${encodeURIComponent(convite('amigos'))}" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">📣 Chamar a galera para fazer o grupo deles</a>
     <button class="btn btn-ghost" id="again">Fazer outro grupo</button>
   </section>`;
-  $('#rs').onclick = () => openCard(() => drawResumo(d), convite('resumo'), altResumo(d));
-  $('#rq').onclick = () => openCard(() => drawResumoQ(d), convite('resumo'), altResumo(d));
-  $('#rk')?.addEventListener('click', () => openCard(() => drawComparacao(d), convite('ranking'), altComparacao()));
-  $('#cc').onclick = () => openCard(() => drawCard({emoji:'👑', title:'Destaque do grupo', winner:champ[0], line:`${champ[1].length} troféus no grupo`}), convite('destaque', champ[0]), `Card: ${champ[0]} é o destaque do grupo, com ${champ[1].length} troféus`);
+  $('#vd').onclick = () => final(true);
   $('#again').onclick = () => { state.arquivo = null; state.grupo = ''; home(); };
-  if (!semFesta){ confetti(); window.scrollTo(0,0); }
+  confetti(); window.scrollTo(0,0);
+}
+function altTop10(){ return `Top 10 categorias${state.grupo ? ' do grupo ' + state.grupo : ''}: ${principais().map(a => `${gtit(a.n, a.winner.name)}: ${a.winner.name}`).join('; ')}.`; }
+function drawTop10(){
+  const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
+  const BR = '"Bricolage Grotesque", sans-serif', DM = '"DM Sans", sans-serif';
+  fundo(c, W, H, 1100);
+  c.textAlign = 'center';
+  c.fillStyle = '#FFC23C'; c.font = `800 48px ${BR}`; c.fillText('retrozap 🏆', W/2, 100);
+  c.fillStyle = '#B9A8CC'; c.font = `700 30px ${DM}`; c.fillText('TOP 10 CATEGORIAS', W/2, 172);
+  c.fillStyle = '#FFF4E0'; caber(c, limpaTxt(state.grupo || 'Nosso grupo'), W/2, 250, 940, 800, 60, BR);
+  const ps = principais(), topo = 300, base = 1790, passo = (base - topo)/Math.max(ps.length, 1), alt = passo - 14;
+  ps.forEach((a, i) => {
+    const y = topo + i*passo;
+    c.fillStyle = 'rgba(61,26,92,.88)'; c.beginPath(); c.roundRect(70, y, W-140, alt, 26); c.fill();
+    c.textAlign = 'left';
+    c.fillStyle = '#FFC23C'; c.font = `800 ${Math.round(alt*.34)}px ${BR}`; c.fillText(String(i + 1), 100, y + alt*.62);
+    c.font = `${Math.round(alt*.46)}px serif`; c.fillStyle = '#FFF4E0'; c.fillText(a.e, 168, y + alt*.66);
+    c.fillStyle = '#B9A8CC'; caber(c, gtit(a.n, a.winner.name).toUpperCase(), 270, y + alt*.42, 720, 700, Math.round(alt*.2), DM);
+    c.fillStyle = '#FFC23C'; caber(c, a.winner.name, 270, y + alt*.8, 720, 800, Math.round(alt*.34), BR);
+  });
+  c.textAlign = 'center'; c.fillStyle = '#FFF4E0'; c.font = `700 36px ${DM}`; c.fillText('Todo grupo tem uma história · retrozap.com.br', W/2, 1868);
+  return cv.toDataURL('image/png');
 }
 
 function tempoLeitura(palavras){
