@@ -1111,11 +1111,6 @@ function story(){
       <p class="small">O ano recorde foi ${recorde}, com ${fmt(maxA)} mensagens.</p>
       <div class="years">${anosL.map(y => `<div class="yr${y === recorde ? ' rec' : ''}"><span class="yv">${porAno[y] >= 1000 ? (porAno[y]/1000).toFixed(1).replace('.',',') + ' mil' : porAno[y]}</span><div class="yb" style="height:${porAno[y]/maxA*100}%"></div><span class="yl">${y}</span></div>`).join('')}</div>
     </div>` : ''}
-    <div class="panel">
-      <h3 style="font-size:20px">A que horas o grupo ferve</h3>
-      <div class="hours">${d.hours.map((h,i) => `<div class="${i===peak?'pk':''}" style="height:${h/maxH*100}%" title="${i}h: ${fmt(h)} mensagens"></div>`).join('')}</div>
-      <div class="haxis"><span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>23h</span></div>
-    </div>
     <p class="lead" style="text-align:center;font-size:20px"><b style="color:var(--areia)">Quem fala mais? Quem some? Quem manda figurinha às 3 da manhã?</b><br>Tudo isso vai ser revelado agora.</p>
     <button class="btn btn-main" id="go">Ver as categorias →</button>
   </section>`;
