@@ -657,7 +657,7 @@ function home(){
       <span class="big" aria-hidden="true">${state.arquivo ? '✅' : '📲'}</span>
       <b>2. Toque para escolher o arquivo</b>
       <span class="small" id="fname">${state.arquivo ? 'Arquivo escolhido: ' + esc(state.arquivo.name) : 'Aceita o .zip ou o .txt que o WhatsApp gera'}</span>
-      <input type="file" id="file" accept=".txt,.zip,text/plain,application/zip">
+      <input type="file" id="file">
     </label>
     <div class="badge priv"><span aria-hidden="true">🔒</span><span><b>Suas mensagens não saem do seu celular.</b> Tudo é analisado aqui no navegador. A gente não recebe, não lê e não guarda nenhuma mensagem. <a href="/privacidade" style="color:var(--areia)">Entenda</a></span></div>
     <div class="panel">
@@ -676,7 +676,9 @@ function home(){
   view.querySelectorAll('[data-h]').forEach(b => b.onclick = () => { const y = scrollY, k = b.dataset.h; state.how = k; home(); scrollTo(0, y); view.querySelector(`[data-h="${k}"]`)?.focus({preventScroll:true}); });
   $('#file').onchange = e => {
     const f = e.target.files[0]; if (!f) return;
-    state.arquivo = f; const lb = view.querySelector('.drop'); lb.classList.add('ok'); lb.querySelector('.big').textContent = '✅';
+    state.arquivo = f; state.bytes = null;
+    // Android: lê já na escolha, porque o acesso ao arquivo pode expirar depois
+    f.arrayBuffer().then(b => { if (state.arquivo === f) state.bytes = b; }).catch(() => {}); const lb = view.querySelector('.drop'); lb.classList.add('ok'); lb.querySelector('.big').textContent = '✅';
     $('#fname').textContent = 'Arquivo escolhido: ' + f.name; $('#start').disabled = false; $('#err').hidden = true;
     view.querySelector('.modes').scrollIntoView({behavior:'smooth', block:'center'});
   };
@@ -716,14 +718,27 @@ async function readFile(f){
   const err = $('#err');
   try{
     let text;
-    if (/\.zip$/i.test(f.name) || f.type.includes('zip')){
-      const zip = await JSZip.loadAsync(f);
-      const entry = Object.values(zip.files).find(z => /\.txt$/i.test(z.name));
+    let buf = state.arquivo === f && state.bytes;
+    if (!buf){
+      try { buf = await f.arrayBuffer(); }
+      catch { throw new Error('O celular não deixou o site abrir esse arquivo. Escolha o arquivo de novo (de preferência salvo em Downloads) e toque em Fazer a retrospectiva.'); }
+    }
+    const u8 = new Uint8Array(buf);
+    // zip pelo conteúdo (PK), não pelo nome: no Android o nome às vezes chega sem extensão
+    if (u8[0] === 0x50 && u8[1] === 0x4B){
+      const zip = await JSZip.loadAsync(buf);
+      const txts = Object.values(zip.files).filter(z => !z.dir && /\.txt$/i.test(z.name) && !/(^|\/)__MACOSX\//.test(z.name));
+      const entry = txts.find(z => /^(?:.*\/)?(?:_chat|Conversa do WhatsApp|WhatsApp Chat|Chat de WhatsApp)/i.test(z.name)) || txts.sort((a, b) => (b._data?.uncompressedSize || 0) - (a._data?.uncompressedSize || 0))[0];
       if (!entry) throw new Error('Não achei a conversa dentro do .zip. Exporte de novo escolhendo "Sem mídia".');
       text = await entry.async('string');
       if (!state.grupo) state.grupo = nomeDoArquivo(entry.name);
       DUR = await duracoes(zip);
-    } else text = await f.text();
+    } else {
+      // texto: UTF-8 (com ou sem BOM) ou UTF-16, que alguns Androids geram
+      const bom16 = (u8[0] === 0xFF && u8[1] === 0xFE) || (u8[0] === 0xFE && u8[1] === 0xFF);
+      text = new TextDecoder(bom16 ? (u8[0] === 0xFF ? 'utf-16le' : 'utf-16be') : 'utf-8').decode(u8);
+    }
+    text = text.replace(/^\uFEFF/, '');
     run(text, false);
   }catch(e){ evento('upload_erro'); err.hidden = false; err.textContent = e.message || 'Não consegui abrir esse arquivo. Tente exportar de novo.'; }
 }
