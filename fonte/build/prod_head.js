@@ -19,7 +19,8 @@ function ir(rota){
   evento('page_view', {page_location: location.origin + rota, page_path: rota, page_title: document.title});
 }
 window.addEventListener('popstate', () => {
-  if (!state.data || location.pathname === '/') return home();
+  if (location.pathname === '/') return inicio();
+  if (!state.data) return home();
   voltarPilha();
 });
 

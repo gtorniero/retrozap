@@ -1,7 +1,7 @@
 // POST /api/ideias: guarda sugestões enviadas pela página "Envie sua ideia" no banco D1 (tabela ideias).
 // Para ler: Cloudflare > Storage & Databases > D1 > retrozap > Console:  SELECT * FROM ideias ORDER BY criado DESC;
 const resposta = (obj, status = 200) => new Response(JSON.stringify(obj), {status, headers: {'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store'}});
-const TIPOS = ['premio', 'recurso', 'problema', 'outro'];
+const TIPOS = ['premio', 'recurso', 'problema', 'outro', 'novidades']; // novidades = e-mail para avisos de lançamento
 
 export async function onRequestPost({request, env}){
   let c; try { c = await request.json(); } catch { return resposta({error: 'bad_request'}, 400); }

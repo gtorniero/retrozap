@@ -83,7 +83,8 @@ rep('<script>\n/* ---------- utilidades ---------- */', '<script>\n' + open(os.p
 
 
 # rotas por tela
-ROTAS = {"function home(){\n  anchor(true);": "ir('/');", "function story(){\n  anchor(true);": "ir('/prologo'); evento('prologo_visto');",
+ROTAS = {"function inicio(){\n  anchor(true);": "ir('/');", "function home(){\n  anchor(true);": "ir('/comecar');", "function story(){\n  anchor(true);": "ir('/conhecendo'); evento('prologo_visto');",
+         "function fimTela(semFesta){\n  anchor(false);": "ir('/fim'); if (!semFesta) evento('final_visto', {modo: state.modo});",
          "function lineup(){\n  anchor(true);": "ir('/categorias');",
          "function award(){\n  anchor(true);": "ir('/premios/' + (state.idx + 1));", "function maisPremios(){\n  anchor(true);": "ir('/bonus');",
          "function suspense(){\n  anchor(false);": "ir('/resumo');",
@@ -121,7 +122,7 @@ rep("async function openCard(fazer, texto = convite('resumo'), alt = 'Card para 
 # rodapé e textos de protótipo
 rep('    <p class="small">Protótipo do Retrozap. Nos testes, o grupo de exemplo é inventado.</p>',
     '    <p class="small">O grupo de exemplo é inventado, para você ver como funciona antes de usar o seu.</p>\n    <nav class="rodape" aria-label="Links do site"><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a></nav>')
-rep("$('#voltar').onclick = () => voltar();\nsetModo('amigos'); home();", "$('#voltar').onclick = () => voltar();\nsetModo('amigos');\nif (location.pathname !== '/') history.replaceState({}, '', '/');\nhome(); avisoCookies();")
+rep("$('#voltar').onclick = () => voltar();\nsetModo('amigos'); inicio();", "$('#voltar').onclick = () => voltar();\nsetModo('amigos');\nif (location.pathname !== '/') history.replaceState({}, '', '/');\ninicio(); avisoCookies();")
 rep("<p>No site final, este botão abre o WhatsApp direto com a imagem. Aqui no protótipo, toque e segure a imagem para salvar.</p>", "") if "No site final, este botão" in s else None
 
 # sobras do artefato que não podem ir para produção

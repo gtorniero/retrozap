@@ -10,9 +10,10 @@ async def audit(pg, nome):
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(); pg = await b.new_page(viewport={'width':390,'height':844})
-        await pg.goto('http://localhost:8767/'); await pg.click('.cookies button'); await audit(pg,'home')
+        await pg.goto('http://localhost:8767/'); await pg.click('.cookies button'); await audit(pg,'inicio')
+        await pg.click('#comecar'); await pg.wait_for_selector('#demo'); await audit(pg,'home')
         await pg.click('#demo'); await pg.wait_for_selector('#go'); await audit(pg,'turma')
-        await pg.click('#go'); await pg.wait_for_selector('.persona', timeout=20000); await pg.wait_for_timeout(1500); await audit(pg,'prologo')
+        await pg.click('#go'); await pg.wait_for_selector('.persona', timeout=20000); await pg.wait_for_timeout(1500); await audit(pg,'conhecendo')
         await pg.click('#go'); await pg.wait_for_timeout(400); await audit(pg,'categorias')
         if await pg.query_selector('#patroFecha'): await pg.click('#patroFecha'); await pg.wait_for_timeout(200)
         await pg.click('#go'); await pg.wait_for_timeout(400); await audit(pg,'premio-antes')
@@ -28,10 +29,11 @@ async def main():
         for k in range(14):
             t = await pg.inner_text('#rl'); await pg.click('#rl'); await pg.wait_for_timeout(300)
             if k==1: await audit(pg,'resumo-fato')
-            if 'Ver o resumo' in t: break
-        await pg.wait_for_timeout(2700); await audit(pg,'resumo-final')
-        await pg.click('#vf'); await pg.wait_for_timeout(500); await audit(pg,'final')
-        await pg.click('#rs'); await pg.wait_for_timeout(1200); await audit(pg,'modal-card')
+            if 'Ver o resumo' in t or not await pg.query_selector('#rl'): break
+        await pg.wait_for_selector('#concluir'); await pg.wait_for_timeout(1500); await audit(pg,'fim')
+        await pg.click('#sv1'); await pg.wait_for_timeout(1200); await audit(pg,'modal-card'); await pg.click('#cl'); await pg.wait_for_timeout(200)
+        await pg.click('#concluir'); await pg.wait_for_selector('#obNovo'); await pg.wait_for_timeout(600); await audit(pg,'obrigado')
+        await pg.click('#obPres'); await pg.wait_for_selector('#obCupom'); await pg.wait_for_timeout(400); await audit(pg,'presente')
         await b.close()
 asyncio.run(main()); srv.terminate()
 for k,v in res.items():

@@ -20,7 +20,8 @@ function ir(rota){
   evento('page_view', {page_location: location.origin + rota, page_path: rota, page_title: document.title});
 }
 window.addEventListener('popstate', () => {
-  if (!state.data || location.pathname === '/') return home();
+  if (location.pathname === '/') return inicio();
+  if (!state.data) return home();
   voltarPilha();
 });
 
@@ -56,7 +57,7 @@ function pilha(f, k){
 }
 function voltarPilha(){
   PILHA.pop(); const t = PILHA[PILHA.length-1];
-  if (!t) return home();
+  if (!t) return inicio();
   VOLTANDO = true; t.f();
 }
 function voltar(){ history.back(); } // o navegador volta e o popstate redesenha a tela anterior
@@ -231,7 +232,6 @@ function picoSemana(days, minSem){
 // títulos com (a) são aplicados logo abaixo da lista: for (const a of AW) a.n = gtit(a.n)
 const AW = [
  {m:['amigos','familia','trabalho','comunidade'],e:'🗣️',n:'O Tagarela',crit:'Mais mensagens enviadas',k:'count',u:'mensagens',mech:'podio',p:'{w} mandou {v} mensagens. Respira, {w}.'},
- {m:['amigos','familia','trabalho','comunidade'],e:'⌨️',n:'Máquina de Escrever',crit:'Mais caracteres digitados no total',k:'chars',u:'caracteres',mech:'podio',p:'{w} digitou {v} caracteres. Dava um livro.'},
  {m:['amigos'],e:'🖼️',n:'Figurinha de Ouro',crit:'Mais figurinhas enviadas',k:'sticker',u:'figurinhas',mech:'chute',p:'{v} figurinhas. {w} se comunica por hieróglifos modernos.'},
  {m:['amigos'],e:'😂',n:'Rei do Kkkk',crit:'Mais mensagens com risada',k:'laugh',u:'risadas',mech:'chute',p:'{w} riu {v} vezes. Plateia profissional.'},
  {m:['amigos'],e:'🤬',n:'Boca-Suja',crit:'Palavrões a cada 1.000 mensagens',k:'palavrao',rate:true,u:'por 1.000 msgs',mech:'raspadinha',p:'{v} palavrões a cada mil mensagens. A mãe de {w} está decepcionada.'},
@@ -286,7 +286,7 @@ function buildAwards(d){
   // cerimônia principal = categorias escolhidas para o modo; o resto fica como bônus ("Ver mais prêmios")
   const escolhidas = PRINCIPAIS[state.modo].map(gtit);
   const shown = list.filter(a => escolhidas.includes(a.n));
-  state.bonus = list.filter(a => !escolhidas.includes(a.n)); state.bonusShown = false;
+  state.bonus = list.filter(a => !escolhidas.includes(a.n)); state.bonusShown = false; state.noBonus = false;
   return comHonra(shown, d);
 }
 function comHonra(lista, d){
@@ -296,9 +296,9 @@ function comHonra(lista, d){
   return shown;
 }
 const PRINCIPAIS = {
-  amigos:['O Tagarela','Máquina de Escrever','Boca-Suja','Puxa-Assunto','Mata-Conversa','O Fantasma','Coração Mole','O Arrependido','Podcaster do Grupo','Escritor de Textão'],
+  amigos:['O Tagarela','Rei do Kkkk','Boca-Suja','Puxa-Assunto','Mata-Conversa','O Fantasma','Coração Mole','O Arrependido','Podcaster do Grupo','Escritor de Textão'],
   familia:['O Tagarela','Tio do Bom Dia','Mãe Coruja','Rei do Parabéns','Repórter da Família','Fotógrafo Oficial','Visualiza e Não Responde','Quem Mais Ama','Puxa-Assunto','Podcaster do Grupo'],
-  trabalho:['O Tagarela','Rei do "Ok"','Fora do Expediente','Mestre das Reuniões','Salva-Vidas','Locutor Corporativo','Escritor de Textão','Madrugador','Máquina de Escrever'],
+  trabalho:['O Tagarela','Rei do "Ok"','Fora do Expediente','Mestre das Reuniões','Salva-Vidas','Locutor Corporativo','Escritor de Textão','Madrugador'],
   comunidade:['O Tagarela','Rei da Indicação','Classificados do Grupo','Fiscal do Barulho','Comitê de Boas-Vindas','Mais Agradecido','Repórter da Comunidade','Visualiza e Não Responde','Síndico de Plantão','Achados e Perdidos']
 };
 
@@ -424,9 +424,15 @@ async function precisaPagar(){
   }
   return true;
 }
+// premium liberado? (grupo de exemplo, código de acesso guardado ou cobrança desligada)
+async function premiumLiberado(){
+  if (state.sample || lsGet('rz_acesso')) return true;
+  try { const r = await fetch('/api/cobranca', {cache: 'no-store'}); if (!r.ok) return true; const c = await r.json();
+    return !(c.pronto && (c.modo === 'ligada' || (c.modo === 'teste' && TESTE_COBRANCA))); } catch { return true; }
+}
 let QR_LIB = null;
 const carregaQR = () => QR_LIB || (QR_LIB = new Promise((ok, falha) => { const s = document.createElement('script'); s.src = '/assets/qrcode.js'; s.onload = () => ok(window.qrcode); s.onerror = falha; document.head.appendChild(s); }));
-function paywall(seguir){
+function paywall(seguir, ctx){
   const antes = document.activeElement, m = document.createElement('div');
   let vivo = true, tm = null;
   m.className = 'patro'; m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true'); m.setAttribute('aria-labelledby','pwT');
@@ -439,7 +445,7 @@ function paywall(seguir){
       <p class="lemb-tx">Agora é ilimitado neste navegador. Guarde seu código para usar em outro celular:</p>
       <div class="pw-cod">${esc(codigo)}</div>
       <button type="button" class="btn btn-ghost" id="pwCopC">Copiar código</button>
-      <button type="button" class="btn btn-main" id="pwSeg">Continuar a retrospectiva 🏆</button>`;
+      <button type="button" class="btn btn-main" id="pwSeg">${ctx === 'bonus' ? 'Ver as categorias extras 🎁' : 'Continuar a retrospectiva 🏆'}</button>`;
     caixa.querySelector('#pwCopC').onclick = e => { navigator.clipboard?.writeText(codigo).then(() => { e.target.textContent = 'Copiado ✓'; }).catch(() => {}); };
     caixa.querySelector('#pwSeg').onclick = () => { fecha(); seguir(); };
     caixa.querySelector('#pwSeg').focus();
@@ -449,8 +455,8 @@ function paywall(seguir){
   const inicio = () => {
     caixa.innerHTML = `<button type="button" class="pw-x" id="pwX" aria-label="Fechar">✕</button>
       <div class="lemb-ic" aria-hidden="true">🎁</div>
-      <h2 id="pwT" style="font-size:24px;margin:0">Seu primeiro grupo foi por nossa conta</h2>
-      <p class="lemb-tx">Para fazer a retrospectiva de <b>quantos grupos quiser</b>, é um pagamento único de <b>R$ 4,99</b> no Pix.</p>
+      <h2 id="pwT" style="font-size:24px;margin:0">${ctx === 'bonus' ? 'Categorias extras são Premium' : 'Seu primeiro grupo foi por nossa conta'}</h2>
+      <p class="lemb-tx">${ctx === 'bonus' ? 'Com um pagamento único de <b>R$ 4,99</b> no Pix você libera <b>as categorias extras</b> e faz a retrospectiva de <b>quantos grupos quiser</b>.' : 'Para fazer a retrospectiva de <b>quantos grupos quiser</b> e ver <b>as categorias extras</b>, é um pagamento único de <b>R$ 4,99</b> no Pix.'}</p>
       <label class="pw-lb" for="pwEm">Seu e-mail (para o comprovante)</label>
       <input id="pwEm" type="email" inputmode="email" autocomplete="email" placeholder="voce@email.com" class="pw-in">
       <p class="err" id="pwErr" hidden></p>
@@ -529,7 +535,13 @@ function paywall(seguir){
   m.addEventListener('keydown', e => { if (e.key === 'Escape') fecha(); });
   inicio();
 }
-function home(){
+// abre o app do WhatsApp: no Android o Chrome só aceita o formato intent:// (whatsapp:// vazio é ignorado)
+function linkAbreWhats(){
+  if (/Android/i.test(navigator.userAgent)) return 'intent://send/#Intent;scheme=whatsapp;S.browser_fallback_url=' + encodeURIComponent('https://www.whatsapp.com/download') + ';end';
+  return 'whatsapp://send';
+}
+// página inicial: o que a pessoa vai encontrar + Vamos começar
+function inicio(){
   anchor(true);
   ir('/');
   PILHA.length = 0; const vb = document.getElementById('voltar'); if (vb) vb.hidden = true;
@@ -540,6 +552,29 @@ function home(){
     <h1>Todo grupo tem uma história. <em>Descubra a do seu.</em></h1>
     <p class="lead">O Retrozap lê a conversa do seu grupo e conta tudo: quem fala demais, quem some, quem manda figurinha às 3 da manhã e quem nunca esquece um aniversário. No fim, cada um leva o seu troféu. 🏆</p>
     <div class="badge"><span aria-hidden="true">🔒</span><span><b>Suas mensagens não saem do seu celular.</b> Tudo é analisado aqui no navegador. A gente não recebe, não lê e não guarda nenhuma mensagem. <a href="/privacidade" style="color:var(--areia)">Entenda</a></span></div>
+    <div class="panel oque">
+      <p class="ask">O que você vai encontrar</p>
+      <ol class="oque-l">
+        <li><span class="em" aria-hidden="true">🎭</span><div><b>Os personagens do grupo</b><span>Conhecendo o grupo: quem é quem e o jeito de cada um falar.</span></div></li>
+        <li><span class="em" aria-hidden="true">🏆</span><div><b>10 categorias com troféus</b><span>Do Tagarela ao Fantasma, com pódio e card para mandar no grupo.</span></div></li>
+        <li><span class="em" aria-hidden="true">📊</span><div><b>Os números do grupo e o ranking</b><span>Mensagens, áudios, figurinhas e como o grupo se compara aos grupos do Brasil.</span></div></li>
+      </ol>
+    </div>
+    <button class="btn btn-main" id="comecar">Vamos começar →</button>
+    <nav class="rodape" aria-label="Links do site"><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos</a></nav>
+  </section>`;
+  $('#comecar').onclick = () => home();
+  window.scrollTo(0,0);
+}
+function home(){
+  anchor(true);
+  ir('/comecar');
+  PILHA.length = 0; PILHA.push({f: inicio, k: 'inicio'}); pilha(home, 'comecar');
+  setSteps(0); state.data = null;
+  view.innerHTML = `
+  <section class="screen">
+    <p class="eyebrow">Passo a passo</p>
+    <h1 style="font-size:clamp(30px,8vw,40px)">Traga a conversa do seu grupo</h1>
     <div class="panel">
       <p class="ask">1. Exporte a conversa do WhatsApp</p>
       <div class="tabs" role="tablist">
@@ -557,7 +592,7 @@ function home(){
         <li>Toque em <b>Mais</b> e depois em <b>Exportar conversa</b>.</li>
         <li>Escolha <b>Sem mídia</b>.</li>
         <li>Salve em <b>Downloads</b> ou no Drive.</li></ol>`}
-      <a class="btn btn-wa" href="whatsapp://" style="text-decoration:none">🟢 Abrir o WhatsApp para exportar</a>
+      <a class="btn btn-wa" href="${linkAbreWhats()}" style="text-decoration:none">🟢 Abrir o WhatsApp para exportar</a>
     </div>
     <label class="drop${state.arquivo ? ' ok' : ''}" for="file">
       <span class="big" aria-hidden="true">${state.arquivo ? '✅' : '📲'}</span>
@@ -830,7 +865,7 @@ function sugerir(x, pessoas, raw){
 const juntar = arr => arr.length > 1 ? arr.slice(0,-1).join(', ') + ' e ' + arr.at(-1) : (arr[0] || '');
 function story(){
   anchor(true);
-  ir('/prologo'); evento('prologo_visto');
+  ir('/conhecendo'); evento('prologo_visto');
   pilha(story, 'prologo');
   const d = state.data, P = d.people, tot = d.total, m = state.modo; setSteps(1);
   const nome = classificar(d, m), [em, porque] = PERSONAS[nome];
@@ -849,25 +884,17 @@ function story(){
   const tile = (n, l) => { const t = String(n).length; return `<div class="tile"><span class="n"${t > 8 ? ' style="font-size:clamp(17px,5vw,22px)"' : t > 5 ? ' style="font-size:clamp(20px,6.4vw,26px)"' : ''}>${n}</span><span class="l">${l}</span></div>`; };
   view.innerHTML = `<section class="screen">
     ${state.sample ? '<span class="sample">Grupo de exemplo</span>' : ''}
-    <p class="eyebrow">Prólogo · Este é o seu grupo</p>
+    <p class="eyebrow">Ato I · Conhecendo o grupo</p>
     <div class="persona"><span class="em" aria-hidden="true">${em}</span><div><span class="small">A classificação do grupo é</span><h1>${nome}</h1><span class="small">${porque}</span></div></div>
     <div class="tale">${ps.map((p,i) => `<p style="animation-delay:${i*.35}s">${p}</p>`).join('')}</div>
     <div class="badge"><span aria-hidden="true">📅</span><span>A primeira mensagem foi em <b>${dataLonga(d.start)}</b>. A última, em <b>${dataLonga(d.end)}</b>.${d.perdidas ? ` ${fmt(d.perdidas)} linhas não puderam ser lidas.` : ''}</span></div>
-    <h2 style="font-size:28px">O grupo em números</h2>
-    <div class="tiles">
-      ${tile(fmt(tot), 'mensagens')}
-      ${tile(fmt(sum('audio')), 'áudios 🎙️')}
-      ${tile(fmt(sum('sticker')), 'figurinhas 🖼️')}
-      ${tile(fmt(sum('photo')), 'fotos e vídeos 📸')}
-      ${tile(tempoLeitura(d.palavras), 'para ler tudo, sem parar ⏱️')}
-      ${d.silencio > 864e5 ? tile(Math.round(d.silencio/864e5) + ' dias', 'maior silêncio do grupo 🤐') : ''}
-      ${d.word ? `<div class="tile"><span class="n" style="font-size:24px;overflow-wrap:anywhere">${esc(d.word[0])}</span><span class="l">palavra do grupo (${fmt(d.word[1])}×)</span></div>` : ''}
-    </div>
-    ${anosL.length > 1 ? `<div class="panel">
-      <h3 style="font-size:20px">Mensagens ano a ano</h3>
-      <p class="small">O ano recorde foi ${recorde}, com ${fmt(maxA)} mensagens.</p>
-      <div class="years">${anosL.map(y => `<div class="yr${y === recorde ? ' rec' : ''}"><span class="yv">${porAno[y] >= 1000 ? (porAno[y]/1000).toFixed(1).replace('.',',') + ' mil' : porAno[y]}</span><div class="yb" style="height:${porAno[y]/maxA*100}%"></div><span class="yl">${y}</span></div>`).join('')}</div>
-    </div>` : ''}
+    <h2 style="font-size:28px">Os personagens do grupo</h2>
+    <p class="lead">Os 5 que mais movimentam o grupo, e o que faz cada um ser quem é.</p>
+    <div class="persos">${personagens(d, campeao().by).map(x => `<div class="perso">
+      <div class="ph"><span class="em" aria-hidden="true">${x.e}</span><div><span class="small">${esc(x.nome)}</span><h3>${x.titulo}</h3></div></div>
+      <p class="bio">${esc(x.texto)}</p>
+      ${x.fala.length || x.emojis.length ? `<div class="fala"><span class="rot">Jeito de falar</span><div class="chips">${x.fala.map(f => `<span class="chip">${esc(f)}</span>`).join('')}${x.emojis.length ? `<span class="chip emo">${x.emojis.join(' ')}</span>` : ''}</div></div>` : ''}
+      <ul>${x.fatos.map(f => `<li>${esc(f)}</li>`).join('')}</ul></div>`).join('')}</div>
     <p class="lead" style="text-align:center;font-size:20px"><b style="color:var(--areia)">Quem fala mais? Quem some? Quem manda figurinha às 3 da manhã?</b><br>Tudo isso vai ser revelado agora.</p>
     <button class="btn btn-main" id="go">Ver as categorias →</button>
   </section>`;
@@ -968,7 +995,7 @@ function award(){
       <div id="game" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:12px"></div>
       <div id="res" class="reveal" aria-live="polite" hidden></div>
     </div>
-    <div class="acao"><button class="btn btn-main" id="rvl"></button><button class="btn btn-ghost" id="next" style="flex:0 0 auto">${state.idx === n-1 ? (state.noBonus ? 'Pular para os personagens' : 'Pular para o resumo') : 'Pular →'}</button></div>
+    <div class="acao"><button class="btn btn-main" id="rvl"></button><button class="btn btn-ghost" id="next" style="flex:0 0 auto">${state.idx === n-1 ? (state.noBonus ? 'Voltar ao final' : 'Pular para o resumo') : 'Pular →'}</button></div>
   </section>`;
   view.querySelector('section').classList.add('com-acao');
   $('#next').onclick = next;
@@ -979,7 +1006,7 @@ function award(){
 function next(){
   state.idx++;
   if (state.idx < state.awards.length) return award();
-  if (state.noBonus) return personagensTela();
+  if (state.noBonus) return fimTela(true);
   suspense();
 }
 // O auge: o resumo do grupo, revelado fato a fato, terminando no card para mandar no WhatsApp
@@ -1042,32 +1069,7 @@ function suspense(){
       : `<div class="em-g" aria-hidden="true">${x.e}</div><div class="big" id="bg">${esc(x.big)}</div><p class="sub">${esc(x.sub)}</p><p class="piada">${esc(x.piada)}</p>`;
     if (x.num && /^[\d.]+/.test(x.big)) conta($('#bg'), x.num, x.big);
   };
-  const vibeFinal = () => {
-    {
-      if (!sl.isConnected) return;
-      dots.forEach(el => el.classList.add('on'));
-      sl.innerHTML = `<div class="em-g" aria-hidden="true">📸</div><p class="eyebrow" style="margin:0">Resumo do grupo</p><div class="roleta ok"${(state.grupo || '').length > 18 ? ' style="font-size:clamp(24px,7vw,34px)"' : ''}>${esc(state.grupo || 'Nosso grupo')}</div>
-        <p class="lead">${destaquesBrasil().length ? 'Duas imagens para o grupo: o resumo e o ranking.' : 'Esse é o resumo do grupo.'} Agora é mandar no WhatsApp e ver quem se ofende primeiro.</p>
-        <div class="duas">
-          <figure class="card-fim"><figcaption>📸 Resumo do grupo</figcaption><img id="rimg" class="rimg" alt="${esc(altResumo(d))}">
-            <div class="btn-row"><button type="button" class="btn btn-wa" id="wa1">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv1">⬇️ Salvar</button></div></figure>
-          ${destaquesBrasil().length ? `<figure class="card-fim"><figcaption>🏅 Ranking do grupo</figcaption><img id="rimg2" class="rimg" alt="${esc(altComparacao())}">
-            <div class="btn-row"><button type="button" class="btn btn-wa" id="wa2">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv2">⬇️ Salvar</button></div></figure>` : ''}
-        </div>`;
-      confetti();
-      document.fonts.ready.then(() => { const im = $('#rimg'); if (im) im.src = drawResumo(d); const im2 = $('#rimg2'); if (im2) im2.src = drawComparacao(d); });
-      const abre = (fz, txt, alt) => openCard(fz, txt, alt);
-      $('#wa1').onclick = () => mandarWhats(paraBlob(drawResumo(d)), 'retrozap-resumo.png', convite('resumo'), null, () => abre(() => drawResumo(d), convite('resumo'), altResumo(d)));
-      $('#sv1').onclick = () => abre(() => drawResumo(d), convite('resumo'), altResumo(d));
-      if ($('#wa2')){
-        $('#wa2').onclick = () => mandarWhats(paraBlob(drawComparacao(d)), 'retrozap-ranking.png', convite('ranking'), null, () => abre(() => drawComparacao(d), convite('ranking'), altComparacao()));
-        $('#sv2').onclick = () => abre(() => drawComparacao(d), convite('ranking'), altComparacao());
-      }
-      bt.style.display = 'none';
-      const vf = document.createElement('button'); vf.className = 'btn btn-main'; vf.id = 'vf'; vf.style.width = '100%'; vf.textContent = 'Ver o destaque do grupo 👑'; vf.onclick = () => final();
-      bt.after(vf);
-    }
-  };
+  const vibeFinal = () => { if (sl.isConnected) fimTela(); };
   bt.onclick = () => {
     i++;
     if (i < fatos.length){ dots[i].classList.add('on'); mostra(fatos[i]); bt.textContent = i === fatos.length - 1 ? 'Ver o resumo do grupo ✨' : 'Próximo →'; }
@@ -1075,6 +1077,123 @@ function suspense(){
     window.scrollTo(0,0);
   };
   window.scrollTo(0,0);
+}
+// final: as imagens do grupo, as categorias extras (premium) e o agradecimento
+function fimTela(semFesta){
+  anchor(false);
+  ir('/fim'); if (!semFesta) evento('final_visto', {modo: state.modo});
+  pilha(() => fimTela(true), 'fim');
+  setSteps(3);
+  const d = state.data, b = state.bonus || [], temBonus = b.length && !state.bonusShown, temRank = destaquesBrasil().length;
+  view.innerHTML = `<section class="screen wr" style="align-items:center;text-align:center">
+    ${state.sample ? '<span class="sample">Grupo de exemplo</span>' : ''}
+    <p class="eyebrow">Ato III · O resumo do grupo</p>
+    <div class="em-g" aria-hidden="true">📸</div>
+    <h1 class="roleta ok"${(state.grupo || '').length > 18 ? ' style="font-size:clamp(24px,7vw,34px)"' : ''}>${esc(state.grupo || 'Nosso grupo')}</h1>
+    <p class="lead">${temRank ? 'Três' : 'Duas'} imagens para mandar no grupo e nos stories. Agora é ver quem se ofende primeiro.</p>
+    <div class="duas">
+      <figure class="card-fim"><figcaption>📸 Resumo do grupo</figcaption><img id="rimg" class="rimg" alt="${esc(altResumo(d))}">
+        <div class="btn-row"><button type="button" class="btn btn-wa" id="wa1">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv1">⬇️ Salvar</button></div></figure>
+      ${temRank ? `<figure class="card-fim"><figcaption>🏅 Ranking do grupo</figcaption><img id="rimg2" class="rimg" alt="${esc(altComparacao())}">
+        <div class="btn-row"><button type="button" class="btn btn-wa" id="wa2">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv2">⬇️ Salvar</button></div></figure>` : ''}
+      <figure class="card-fim"><figcaption>🏆 Top 10 categorias</figcaption><img id="rimg3" class="rimg" alt="${esc(altTop10())}">
+        <div class="btn-row"><button type="button" class="btn btn-wa" id="wa3">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv3">⬇️ Salvar</button></div></figure>
+    </div>
+    ${temBonus ? `<div class="panel" style="text-align:center;width:100%">
+      <div style="font-size:48px" aria-hidden="true">🎁</div>
+      <h2 style="font-size:26px;margin:0">Categorias extras</h2>
+      <p class="small" style="margin:0">Mais ${b.length} prêmios guardados para o grupo:</p>
+      <div class="chips" style="justify-content:center">${b.map(a => `<span class="chip">${a.e} ${a.n}</span>`).join('')}</div>
+      <button class="btn btn-main" id="mais">🔓 Ver as categorias extras</button>
+      <p class="small" id="maisInfo" style="margin:0"></p>
+    </div>` : ''}
+    <button class="btn btn-main" id="concluir" style="width:100%">Concluir 🎉</button>
+  </section>`;
+  document.fonts.ready.then(() => {
+    const im = $('#rimg'); if (im) im.src = drawResumo(d);
+    const im2 = $('#rimg2'); if (im2) im2.src = drawComparacao(d);
+    const im3 = $('#rimg3'); if (im3) im3.src = drawTop10();
+  });
+  const abre = (fz, txt, alt) => openCard(fz, txt, alt);
+  $('#wa1').onclick = () => mandarWhats(paraBlob(drawResumo(d)), 'retrozap-resumo.png', convite('resumo'), null, () => abre(() => drawResumo(d), convite('resumo'), altResumo(d)));
+  $('#sv1').onclick = () => abre(() => drawResumo(d), convite('resumo'), altResumo(d));
+  if ($('#wa2')){
+    $('#wa2').onclick = () => mandarWhats(paraBlob(drawComparacao(d)), 'retrozap-ranking.png', convite('ranking'), null, () => abre(() => drawComparacao(d), convite('ranking'), altComparacao()));
+    $('#sv2').onclick = () => abre(() => drawComparacao(d), convite('ranking'), altComparacao());
+  }
+  $('#wa3').onclick = () => mandarWhats(paraBlob(drawTop10()), 'retrozap-top10.png', convite('resumo'), null, () => abre(() => drawTop10(), convite('resumo'), altTop10()));
+  $('#sv3').onclick = () => abre(() => drawTop10(), convite('resumo'), altTop10());
+  if (temBonus){
+    const joga = () => {
+      state.bonusShown = true; state.noBonus = true;
+      const antes = state.awards.filter(a => !a.honra), ini = antes.length;
+      state.awards = comHonra(antes.concat(b), d);
+      state.idx = ini; award();
+    };
+    premiumLiberado().then(ok => { const t = $('#maisInfo'); if (t && !ok) t.textContent = '🔒 Premium: R$ 4,99 no Pix libera as categorias extras e grupos ilimitados.'; });
+    $('#mais').onclick = async () => { const bt = $('#mais'); bt.disabled = true; const ok = await premiumLiberado(); bt.disabled = false; ok ? joga() : paywall(joga, 'bonus'); };
+  }
+  $('#concluir').onclick = () => obrigado();
+  if (!semFesta){ confetti(); window.scrollTo(0,0); }
+}
+// pop-up final: novidades por e-mail, presente para o grupo, fazer de novo
+const PRESENTE_LINK = 'https://playpartygames.com.br/?utm_source=retrozap&utm_medium=presente&utm_campaign=final';
+function obrigado(){
+  const ev = n => { try { if (typeof evento === 'function') evento(n); } catch {} };
+  const antes = document.activeElement, m = document.createElement('div');
+  m.className = 'patro'; m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true'); m.setAttribute('aria-labelledby','obT');
+  m.innerHTML = '<div class="patro-box lemb pw" aria-live="polite"></div>';
+  const caixa = m.firstElementChild;
+  const fecha = () => { m.remove(); try { antes?.focus(); } catch {} };
+  const denovo = () => { fecha(); state.arquivo = null; state.grupo = ''; state.bonusShown = false; state.noBonus = false; home(); };
+  const principal = () => {
+    caixa.innerHTML = `<button type="button" class="pw-x" id="obX" aria-label="Fechar">✕</button>
+      <div class="lemb-ic" aria-hidden="true">🏆</div>
+      <h2 id="obT" style="font-size:26px;margin:0">Valeu por usar o Retrozap!</h2>
+      <p class="lemb-tx">Esperamos que o grupo tenha se divertido (e se ofendido só um pouquinho).</p>
+      <form id="obForm" class="ob-form">
+        <label class="pw-lb" for="obEm">📬 Quer saber das novidades e do próximo lançamento?</label>
+        <div class="ob-linha"><input id="obEm" class="pw-in" type="email" inputmode="email" autocomplete="email" placeholder="seu@email.com"><button type="submit" class="btn btn-ghost" id="obOk">Avise-me</button></div>
+        <p class="small" id="obMsg" style="margin:0"></p>
+      </form>
+      <button type="button" class="btn btn-ghost" id="obPres">🎁 Receber um presente especial para o grupo</button>
+      <button type="button" class="btn btn-main ob-denovo" id="obNovo">🔁 Fazer a retrospectiva de outro grupo</button>`;
+    caixa.querySelector('#obX').onclick = fecha;
+    caixa.querySelector('#obNovo').onclick = denovo;
+    caixa.querySelector('#obPres').onclick = presente;
+    caixa.querySelector('#obForm').onsubmit = async e => {
+      e.preventDefault();
+      const email = caixa.querySelector('#obEm').value.trim(), msg = caixa.querySelector('#obMsg');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){ msg.textContent = 'Confira o e-mail.'; return; }
+      caixa.querySelector('#obOk').disabled = true;
+      try {
+        const r = await fetch('/api/ideias', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({tipo: 'novidades', texto: 'Quero receber as novidades do Retrozap', contato: email})});
+        if (!r.ok) throw 0;
+        msg.textContent = 'Pronto! Você vai ser o primeiro a saber. 🎉'; ev('novidades_email');
+      } catch { msg.textContent = 'Não consegui salvar agora. Tente de novo.'; caixa.querySelector('#obOk').disabled = false; }
+    };
+    caixa.querySelector('#obNovo').focus();
+  };
+  const presente = () => {
+    ev('presente_visto');
+    caixa.innerHTML = `<button type="button" class="pw-x" id="obX" aria-label="Fechar">✕</button>
+      <h2 id="obT" style="font-size:24px;margin:0">🎁 Um presente para o grupo</h2>
+      <a href="${PRESENTE_LINK}" target="_blank" rel="noopener sponsored" class="patro-img" id="obImg"><img src="${PATRO_IMG}" alt="Party Games: os melhores jogos em família, casais e amigos. Cupom RETROZAP."></a>
+      <p class="lemb-tx">Oferta especial para se divertir com <b>amigos, família e casais</b>. Use o cupom:</p>
+      <button type="button" class="pw-cod" id="obCupom" aria-label="Copiar o cupom RETROZAP">RETROZAP</button>
+      <a href="${PRESENTE_LINK}" target="_blank" rel="noopener sponsored" class="btn btn-main" id="obIr" style="text-decoration:none">🎲 Ver os jogos da Party Games</a>
+      <button type="button" class="pw-lk" id="obVolta">← Voltar</button>
+      <p class="small" style="margin:0">Link de parceiro: o Retrozap pode receber uma comissão, sem custo extra para você.</p>`;
+    caixa.querySelector('#obX').onclick = fecha;
+    caixa.querySelector('#obVolta').onclick = principal;
+    caixa.querySelector('#obCupom').onclick = e => { navigator.clipboard?.writeText('RETROZAP').then(() => { e.target.textContent = 'Copiado ✓'; }).catch(() => {}); };
+    caixa.querySelectorAll('a').forEach(a => a.addEventListener('click', () => ev('presente_clique')));
+    caixa.querySelector('#obIr').focus();
+  };
+  document.body.appendChild(m);
+  m.addEventListener('keydown', e => { if (e.key === 'Escape') fecha(); });
+  m.addEventListener('click', e => { if (e.target === m) fecha(); });
+  principal();
 }
 function maisPremios(){
   anchor(true);
@@ -1169,7 +1288,7 @@ function showResult(a, extra=''){
     <button class="btn btn-main" id="card" style="width:100%">📲 Gerar card para o grupo</button>`;
   $('#card').onclick = () => openCard(() => cardAward(a), convite('premio', a), `Card do prêmio ${a.n}: ${a.winner.name}, com ${vfmt(a, a.winner.v)} ${a.u}`);
   const nx = $('#next'), rv = $('#rvl'); if (rv) rv.remove();
-  if (nx){ nx.classList.replace('btn-ghost','btn-main'); nx.style.flex = '1'; nx.textContent = state.idx < state.awards.length-1 ? 'Próximo prêmio →' : 'Ver o resumo do grupo 🥁'; }
+  if (nx){ nx.classList.replace('btn-ghost','btn-main'); nx.style.flex = '1'; nx.textContent = state.idx < state.awards.length-1 ? 'Próximo prêmio →' : state.noBonus ? 'Voltar ao final →' : 'Ver o resumo do grupo 🥁'; }
   confetti();
 }
 /* mecânicas */
@@ -1472,7 +1591,7 @@ const RANKING = [
   {k:'risadas', e:'😂', t:'mais risonhos'},
   {k:'por_dia', e:'💬', t:'mais tagarelas'},
   {k:'madrugada', e:'🦉', t:'mais insones'},
-  {k:'palavrao', e:'🤬', t:'mais boca-suja', m:['amigos']},
+  {k:'palavrao', e:'🤬', t:'mais boca-suja'},
   {k:'furos', e:'🙅', t:'em rolê cancelado', m:['amigos']},
   {k:'bomdia', e:'☀️', t:'em bom dia', m:['familia','comunidade']},
   {k:'parabens', e:'🎂', t:'em parabéns', m:['familia']},
@@ -1489,10 +1608,11 @@ const RANKING = [
 function destaquesBrasil(){
   const c = state.comp; if (!c) return [];
   const tipo = {amigos:'de amigos', familia:'de família', trabalho:'de trabalho', comunidade:'de comunidade'}[state.modo];
-  const sub = `entre os grupos ${tipo} no Retrozap${c.exemplo ? ' (simulação do exemplo)' : ''}`;
-  return RANKING.filter(x => (!x.m || x.m.includes(state.modo)) && c.top[x.k] <= 35)
+  const sub = `entre os grupos ${c.escopo === 'todos' ? '' : tipo + ' '}no Retrozap${c.exemplo ? ' (simulação do exemplo)' : ''}`;
+  const SEMPRE = ['total', 'audios', 'figurinhas', 'risadas', 'palavrao'];
+  return RANKING.filter(x => (!x.m || x.m.includes(state.modo)) && c.top[x.k] != null && (SEMPRE.includes(x.k) || c.top[x.k] <= 35))
     .map(x => ({k:x.k, e:x.e, top:c.top[x.k], big: x.antigo ? `Mais antigo que ${100 - c.top[x.k]}%` : `Top ${c.top[x.k]}%`, rot: x.antigo ? 'dos grupos' : x.t, txt: x.antigo ? `Mais antigo que ${100 - c.top[x.k]}% dos grupos` : `Top ${c.top[x.k]}% ${x.t}`, sub}))
-    .sort((a,b) => a.top - b.top).slice(0, 6);
+    .sort((a,b) => a.top - b.top).slice(0, 8);
 }
 // imagem 2: nosso grupo no ranking
 function drawComparacao(d){
@@ -1505,7 +1625,7 @@ function drawComparacao(d){
   if (state.grupo){ c.fillStyle = '#FFF4E0'; caber(c, state.grupo, W/2, 178, 960, 800, 62, BR); }
   c.font = '120px serif'; c.fillText('🏅', W/2, 340);
   c.fillStyle = '#FFC23C'; c.font = `800 78px ${BR}`; c.fillText('NOSSO GRUPO', W/2, 450); c.fillText('NO RANKING', W/2, 535);
-  c.fillStyle = '#B9A8CC'; c.font = `700 30px ${DM}`; c.fillText(`ENTRE OS GRUPOS ${tipo} DO RETROZAP`, W/2, 595, 980);
+  c.fillStyle = '#B9A8CC'; c.font = `700 30px ${DM}`; c.fillText(state.comp?.escopo === 'todos' ? 'ENTRE OS GRUPOS DO RETROZAP' : `ENTRE OS GRUPOS ${tipo} DO RETROZAP`, W/2, 595, 980);
   const y0 = 650, passo = Math.min(190, 1040/Math.max(1, lista.length)), alt = passo - 18;
   lista.forEach((x, i) => {
     const y = y0 + i*passo;
@@ -1650,7 +1770,7 @@ function wrap(c, text, x, y, maxW, lh){
     c.save(); c.direction = 'ltr'; c.textAlign = 'left'; c.fillText(l, x0, y + i*lh); c.restore(); });
   return lines.length;
 }
-function cardAward(a){ return drawCard({podio: a.mech === 'podio' ? a.ranked.slice(1,3).map((r,i) => `${['🥈','🥉'][i]} ${r.name} · ${vfmt(a, r.v)}`) : null, emoji:a.e, title:gtit(a.n, a.winner.name), winner:a.winner.name, line:`${vfmt(a,a.winner.v)} ${a.u}${a.custom ? ' · categoria criada pelo grupo' : ''}`}); }
+function cardAward(a){ return drawCard({podio: (a.ranked || []).length > 1 ? a.ranked.slice(1,3).map((r,i) => `${['🥈','🥉'][i]} ${r.name} · ${vfmt(a, r.v)}`) : null, emoji:a.e, title:gtit(a.n, a.winner.name), winner:a.winner.name, line:`${vfmt(a,a.winner.v)} ${a.u}${a.custom ? ' · categoria criada pelo grupo' : ''}`}); }
 
 /* ---------- Crie seu prêmio (grátis no lançamento) ---------- */
 const BLOCK = /feio|feia|burr|idiot|gord|nojent|lixo|retardad|imbecil|otari|macac|viad|bicha|piranha|vagabund|corno|baleia|aleijad|pobre|doente|religi|gay|lesbic/;
@@ -1863,8 +1983,8 @@ function demoChat(){
   return '01/01/2024 08:00 - As mensagens e as ligações são protegidas com a criptografia de ponta a ponta.\n' + out.map(o=>o.line).join('\n');
 }
 
-$('#home').onclick = home;
+$('#home').onclick = inicio;
 $('#voltar').onclick = () => voltar();
 setModo('amigos');
 if (location.pathname !== '/') history.replaceState({}, '', '/');
-home(); avisoCookies();
+inicio(); avisoCookies();
