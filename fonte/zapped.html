@@ -858,6 +858,11 @@ function paywall(seguir){
   m.addEventListener('keydown', e => { if (e.key === 'Escape') fecha(); });
   inicio();
 }
+// abre o app do WhatsApp: no Android o Chrome só aceita o formato intent:// (whatsapp:// vazio é ignorado)
+function linkAbreWhats(){
+  if (/Android/i.test(navigator.userAgent)) return 'intent://send/#Intent;scheme=whatsapp;S.browser_fallback_url=' + encodeURIComponent('https://www.whatsapp.com/download') + ';end';
+  return 'whatsapp://send';
+}
 function home(){
   anchor(true);
   PILHA.length = 0; const vb = document.getElementById('voltar'); if (vb) vb.hidden = true;
@@ -885,7 +890,7 @@ function home(){
         <li>Toque em <b>Mais</b> e depois em <b>Exportar conversa</b>.</li>
         <li>Escolha <b>Sem mídia</b>.</li>
         <li>Salve em <b>Downloads</b> ou no Drive.</li></ol>`}
-      <a class="btn btn-wa" href="whatsapp://" style="text-decoration:none">🟢 Abrir o WhatsApp para exportar</a>
+      <a class="btn btn-wa" href="${linkAbreWhats()}" style="text-decoration:none">🟢 Abrir o WhatsApp para exportar</a>
     </div>
     <label class="drop${state.arquivo ? ' ok' : ''}" for="file">
       <span class="big" aria-hidden="true">${state.arquivo ? '✅' : '📲'}</span>
