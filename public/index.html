@@ -292,6 +292,9 @@ body.has-cookies .acao{bottom:150px}
 .card-fim .btn-row{width:100%;display:flex;gap:8px}.card-fim .btn{flex:1;padding:12px 10px;font-size:15px}
 .patro{position:fixed;inset:0;z-index:40;background:rgba(10,4,20,.82);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
 .patro-box{background:var(--acai);border:1px solid var(--linha);border-radius:24px;padding:18px;width:min(100%,440px);display:flex;flex-direction:column;gap:10px;text-align:center;animation:pop .4s cubic-bezier(.2,1.4,.4,1)}
+.lemb{gap:12px;padding:26px 22px}
+.lemb-ic{font-size:44px;line-height:1}
+.lemb-tx{margin:0;font-size:17px;line-height:1.45}.lemb-tx b{color:var(--manga)}
 .patro-of{font-size:15px;color:var(--neblina);margin:0}.patro-of b{color:var(--areia)}
 .patro-img img{width:100%;border-radius:16px;display:block}
 .cookies{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--acai);border-top:1px solid var(--linha);padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));font-size:14px;color:var(--neblina);display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
@@ -807,7 +810,7 @@ function home(){
         <li>Toque em <b>Mais</b> e depois em <b>Exportar conversa</b>.</li>
         <li>Escolha <b>Sem mídia</b>.</li>
         <li>Salve em <b>Downloads</b> ou no Drive.</li></ol>`}
-      <a class="btn btn-wa" href="whatsapp://" style="text-decoration:none">🟢 Abrir o WhatsApp</a>
+      <a class="btn btn-wa" href="whatsapp://" style="text-decoration:none">🟢 Abrir o WhatsApp para exportar</a>
     </div>
     <label class="drop${state.arquivo ? ' ok' : ''}" for="file">
       <span class="big" aria-hidden="true">${state.arquivo ? '✅' : '📲'}</span>
@@ -838,7 +841,7 @@ function home(){
     $('#fname').textContent = 'Arquivo escolhido: ' + f.name; $('#start').disabled = false; $('#err').hidden = true;
     view.querySelector('.modes').scrollIntoView({behavior:'smooth', block:'center'});
   };
-  $('#start').onclick = () => state.arquivo && readFile(state.arquivo);
+  $('#start').onclick = () => state.arquivo && lembrete(() => readFile(state.arquivo));
   tutorial(state.how);
   $('#demo').onclick = () => { DUR = {}; run(demoChat(), true); };
   window.scrollTo(0,0);
@@ -1720,6 +1723,26 @@ const PATRO_IMG = '/assets/partygames.jpg';
 const PATRO_LINK = 'https://playpartygames.com.br/?utm_source=retrozap&utm_medium=popup&utm_campaign=intervalo';
 // Desligado até fechar o patrocínio. Para ligar: true. O pop-up está pronto e aprovado no visual.
 const PATROCINIO_ATIVO = false;
+// nudge de privacidade antes de ler o arquivo (uma vez por visita)
+let LEMBRETE_VISTO = false;
+function lembrete(seguir){
+  if (LEMBRETE_VISTO) return seguir();
+  const antes = document.activeElement, m = document.createElement('div');
+  m.className = 'patro'; m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true'); m.setAttribute('aria-labelledby','lbT'); m.setAttribute('aria-describedby','lbD');
+  m.innerHTML = `<div class="patro-box lemb">
+    <div class="lemb-ic" aria-hidden="true">🔒</div>
+    <p class="eyebrow" style="margin:0" id="lbT">Lembrete</p>
+    <p class="lemb-tx" id="lbD">A gente <b>não lê nem guarda</b> nenhuma mensagem sua. Tudo é analisado aqui no seu navegador e funciona até em <b>modo avião ✈️</b>.</p>
+    <button type="button" class="btn btn-main" id="lbOk">Entendi, bora! 🏆</button>
+    <a href="/privacidade" class="small" style="color:var(--neblina)">Ver a política de privacidade</a>
+  </div>`;
+  document.body.appendChild(m);
+  const fecha = () => { m.remove(); try { antes?.focus(); } catch {} };
+  m.querySelector('#lbOk').onclick = () => { LEMBRETE_VISTO = true; fecha(); seguir(); };
+  m.addEventListener('click', e => { if (e.target === m) fecha(); });
+  m.addEventListener('keydown', e => { if (e.key === 'Escape') fecha(); });
+  m.querySelector('#lbOk').focus();
+}
 function intervaloComercial(){
   if (!PATROCINIO_ATIVO) return;
   if (state.intervaloVisto) return; state.intervaloVisto = true;
