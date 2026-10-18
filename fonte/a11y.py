@@ -33,7 +33,6 @@ async def main():
         await pg.wait_for_selector('#concluir'); await pg.wait_for_timeout(1500); await audit(pg,'fim')
         await pg.click('#sv1'); await pg.wait_for_timeout(1200); await audit(pg,'modal-card'); await pg.click('#cl'); await pg.wait_for_timeout(200)
         await pg.click('#concluir'); await pg.wait_for_selector('#obNovo'); await pg.wait_for_timeout(600); await audit(pg,'obrigado')
-        await pg.click('#obPres'); await pg.wait_for_selector('#obCupom'); await pg.wait_for_timeout(400); await audit(pg,'presente')
         await b.close()
 asyncio.run(main()); srv.terminate()
 for k,v in res.items():

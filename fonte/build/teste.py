@@ -59,9 +59,8 @@ async def main():
             print('bonus revelados:', nb, 'volta para:', pg.url)
         await pg.wait_for_selector('#concluir'); await pg.click('#concluir'); await pg.wait_for_selector('#obNovo')
         await pg.screenshot(path=f'{SHOTS}/9-obrigado.png')
-        await pg.click('#obPres'); await pg.wait_for_selector('#obCupom'); await pg.wait_for_timeout(400)
-        await pg.screenshot(path=f'{SHOTS}/9b-presente.png')
-        await pg.click('#obVolta'); await pg.wait_for_selector('#obNovo'); await pg.click('#obNovo'); await pg.wait_for_selector('#demo')
+        print('presente no pop-up?', await pg.query_selector('#obPres') is not None)
+        await pg.click('#obNovo'); await pg.wait_for_selector('#demo')
         print('fazer de novo ->', pg.url)
         # páginas legais e blog
         for u in ['/privacidade.html','/blog/index.html','/blog/como-exportar-conversa-whatsapp.html']:

@@ -128,11 +128,11 @@ ol.how b{color:var(--manga)}
 .opt.wrong{border-color:var(--goiaba);opacity:.7}
 .ask{font-weight:700;font-size:15px}
 .reveal{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%}
-.selo{font-family:var(--titulo);font-weight:800;font-size:clamp(30px,9vw,44px);background:var(--manga);color:var(--noite);padding:8px 22px;border-radius:14px;transform:rotate(-4deg);box-shadow:6px 6px 0 var(--modo);animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+.selo{font-family:var(--titulo);font-weight:800;font-size:clamp(30px,9vw,44px);background:var(--manga);color:var(--noite);padding:8px 22px;border-radius:14px;transform:rotate(-4deg);box-shadow:6px 6px 0 var(--modo);animation:pop .5s cubic-bezier(.2,1.6,.4,1);margin:6px 0 22px;max-width:100%;text-align:center;overflow-wrap:anywhere}
 @keyframes pop{from{transform:rotate(-4deg) scale(.3);opacity:0}}
-.frase{font-size:17px;max-width:32ch}
-.podium{display:flex;align-items:flex-end;justify-content:center;gap:8px;width:100%;min-height:200px}
-.pod{flex:1;max-width:140px;display:flex;flex-direction:column;align-items:center;gap:6px;opacity:0;transform:translateY(24px);transition:all .5s cubic-bezier(.2,1.3,.4,1)}
+.frase{font-size:17px;max-width:32ch;margin-top:4px}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:8px;width:100%;min-height:200px;overflow:hidden}
+.pod{flex:1;min-width:0;max-width:140px;display:flex;flex-direction:column;align-items:center;gap:6px;opacity:0;transform:translateY(24px);transition:all .5s cubic-bezier(.2,1.3,.4,1)}
 .pod.up{opacity:1;transform:none}
 .pod .blk{width:100%;border-radius:12px 12px 4px 4px;background:var(--acai-2);display:flex;align-items:flex-start;justify-content:center;padding-top:8px;font-family:var(--titulo);font-weight:800;font-size:22px;color:var(--neblina)}
 .pod.p1 .blk{background:var(--manga);color:var(--noite)}
@@ -273,7 +273,8 @@ body.has-anchor{padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 .slide .big{font-family:var(--titulo);font-weight:800;font-size:clamp(38px,12vw,64px);color:var(--manga);line-height:1.05;text-wrap:balance;font-variant-numeric:tabular-nums}
 .slide .sub{color:var(--areia);font-size:18px;margin:0}
 .piada{font-size:17px;color:var(--neblina);font-style:italic;margin:4px 0 0}
-.dest{display:flex;flex-direction:column;gap:10px;width:100%}.dest>div{display:flex;gap:14px;align-items:center;background:var(--acai);border-radius:16px;padding:12px 16px;text-align:left}.dest>div>span{font-size:40px}.dest b{display:block;font-family:var(--titulo);font-size:24px;color:var(--manga)}
+.dest{display:flex;flex-direction:column;gap:10px;width:100%}
+.dest.rk b{color:var(--manga)}.dest.rk b i{font-style:normal;color:var(--areia);font-size:.75em}.dest.rk .num{display:block;color:var(--areia);font-size:15px}.dest>div{display:flex;gap:14px;align-items:center;background:var(--acai);border-radius:16px;padding:12px 16px;text-align:left}.dest>div>span{font-size:40px}.dest b{display:block;font-family:var(--titulo);font-size:24px;color:var(--manga)}
 .rimg{width:min(100%,360px);border-radius:18px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
 .btn-wa{background:#25D366;color:#0B2E13}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
@@ -1438,7 +1439,7 @@ function fatosResumo(d){
     piada: d.giria[0] === 'bora' ? 'E quantas vezes foram mesmo?' : 'O dicionário do grupo agradece.'});
   if (au) f.push({e:'🎧', big:au.txt, sub:au.comp, piada:'E ninguém ouviu em 2x. Mentira.'});
   const br = destaquesBrasil();
-  if (br.length) f.push({e:'🏅', brasil:br.slice(0, 3), piada: br[0].top <= 5 ? 'Grupo de elite. Ou de gente sem nada para fazer.' : 'Esse grupo não brinca em serviço.'});
+  if (br.length) f.push({e:'🏅', brasil:br.slice(0, 6), piada: br[0].top <= 5 ? 'Grupo de elite. Ou de gente sem nada para fazer.' : 'Esse grupo não brinca em serviço.'});
   f.push({e:'🏅', destaques:ds, piada:'Ninguém foi poupado.'});
   return f;
 }
@@ -1468,8 +1469,8 @@ function suspense(){
     requestAnimationFrame(passo);
   };
   const mostra = x => {
-    if (x.brasil){ sl.innerHTML = `<div class="em-g" aria-hidden="true">${x.e}</div><h2 style="font-size:30px">Comparado com outros grupos</h2>
-         <div class="dest">${x.brasil.map(y => `<div><span aria-hidden="true">${y.e}</span><div><b>${esc(y.txt)}</b><span class="small">${esc(y.sub)}</span></div></div>`).join('')}</div>
+    if (x.brasil){ sl.innerHTML = `<div class="em-g" aria-hidden="true">${x.e}</div><h2 style="font-size:30px">Comparado com outros grupos</h2><p class="small" style="margin:0">${esc(x.brasil[0].sub)}</p>
+         <div class="dest rk">${x.brasil.map(y => `<div><span aria-hidden="true">${y.e}</span><div><b>${esc(y.big)} <i>${esc(y.rot)}</i></b>${y.num ? `<span class="num">${esc(y.num)}</span>` : ''}</div></div>`).join('')}</div>
          <p class="piada">${esc(x.piada)}</p>`; return; }
     sl.innerHTML = x.destaques
       ? `<div class="em-g" aria-hidden="true">${x.e}</div><h2 style="font-size:30px">Os destaques</h2>
@@ -1500,6 +1501,14 @@ function fimTela(semFesta){
     <div class="em-g" aria-hidden="true">📸</div>
     <h1 class="roleta ok"${(state.grupo || '').length > 18 ? ' style="font-size:clamp(24px,7vw,34px)"' : ''}>${esc(state.grupo || 'Nosso grupo')}</h1>
     <p class="lead">${temRank ? 'Três' : 'Duas'} imagens para mandar no grupo e nos stories. Agora é ver quem se ofende primeiro.</p>
+    ${temBonus ? `<div class="panel" style="text-align:center;width:100%">
+      <div style="font-size:48px" aria-hidden="true">🎁</div>
+      <h2 style="font-size:26px;margin:0" id="maisT">🔒 Categorias bloqueadas</h2>
+      <p class="small" style="margin:0">Mais ${b.length} prêmios guardados para o grupo:</p>
+      <div class="chips" style="justify-content:center">${b.map(a => `<span class="chip">🔒 ${a.e} ${a.n}</span>`).join('')}</div>
+      <button class="btn btn-main" id="mais">🔓 Ver as categorias extras</button>
+      <p class="small" id="maisInfo" style="margin:0"></p>
+    </div>` : ''}
     <div class="duas">
       <figure class="card-fim"><figcaption>📸 Resumo do grupo</figcaption><img id="rimg" class="rimg" alt="${esc(altResumo(d))}">
         <div class="btn-row"><button type="button" class="btn btn-wa" id="wa1">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv1">⬇️ Salvar</button></div></figure>
@@ -1508,14 +1517,6 @@ function fimTela(semFesta){
       <figure class="card-fim"><figcaption>🏆 Top 10 categorias</figcaption><img id="rimg3" class="rimg" alt="${esc(altTop10())}">
         <div class="btn-row"><button type="button" class="btn btn-wa" id="wa3">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv3">⬇️ Salvar</button></div></figure>
     </div>
-    ${temBonus ? `<div class="panel" style="text-align:center;width:100%">
-      <div style="font-size:48px" aria-hidden="true">🎁</div>
-      <h2 style="font-size:26px;margin:0">Categorias extras</h2>
-      <p class="small" style="margin:0">Mais ${b.length} prêmios guardados para o grupo:</p>
-      <div class="chips" style="justify-content:center">${b.map(a => `<span class="chip">${a.e} ${a.n}</span>`).join('')}</div>
-      <button class="btn btn-main" id="mais">🔓 Ver as categorias extras</button>
-      <p class="small" id="maisInfo" style="margin:0"></p>
-    </div>` : ''}
     <button class="btn btn-main" id="concluir" style="width:100%">Concluir 🎉</button>
   </section>`;
   document.fonts.ready.then(() => {
@@ -1539,7 +1540,7 @@ function fimTela(semFesta){
       state.awards = comHonra(antes.concat(b), d);
       state.idx = ini; award();
     };
-    premiumLiberado().then(ok => { const t = $('#maisInfo'); if (t && !ok) t.textContent = '🔒 Premium: R$ 4,99 no Pix libera as categorias extras e grupos ilimitados.'; });
+    premiumLiberado().then(ok => { const t = $('#maisInfo'); if (!t) return; if (!ok) t.textContent = 'Premium: R$ 4,99 no Pix libera as categorias extras e grupos ilimitados.'; else { $('#maisT').textContent = '🎁 Categorias extras'; view.querySelectorAll('.panel .chip').forEach(c => c.textContent = c.textContent.replace('🔒 ', '')); } });
     $('#mais').onclick = async () => { const bt = $('#mais'); bt.disabled = true; const ok = await premiumLiberado(); bt.disabled = false; ok ? joga() : paywall(joga, 'bonus'); };
   }
   $('#concluir').onclick = () => obrigado();
@@ -1565,11 +1566,9 @@ function obrigado(){
         <div class="ob-linha"><input id="obEm" class="pw-in" type="email" inputmode="email" autocomplete="email" placeholder="seu@email.com"><button type="submit" class="btn btn-ghost" id="obOk">Avise-me</button></div>
         <p class="small" id="obMsg" style="margin:0"></p>
       </form>
-      <button type="button" class="btn btn-ghost" id="obPres">🎁 Receber um presente especial para o grupo</button>
       <button type="button" class="btn btn-main ob-denovo" id="obNovo">🔁 Fazer a retrospectiva de outro grupo</button>`;
     caixa.querySelector('#obX').onclick = fecha;
     caixa.querySelector('#obNovo').onclick = denovo;
-    caixa.querySelector('#obPres').onclick = presente;
     caixa.querySelector('#obForm').onsubmit = async e => {
       e.preventDefault();
       const email = caixa.querySelector('#obEm').value.trim(), msg = caixa.querySelector('#obMsg');
@@ -2000,7 +1999,7 @@ const RANKING = [
   {k:'risadas', e:'😂', t:'mais risonhos'},
   {k:'por_dia', e:'💬', t:'mais tagarelas'},
   {k:'madrugada', e:'🦉', t:'mais insones'},
-  {k:'palavrao', e:'🤬', t:'mais boca-suja'},
+  {k:'palavrao', e:'🤬', t:'mais boca-suja', m:['amigos','familia','comunidade']},
   {k:'furos', e:'🙅', t:'em rolê cancelado', m:['amigos']},
   {k:'bomdia', e:'☀️', t:'em bom dia', m:['familia','comunidade']},
   {k:'parabens', e:'🎂', t:'em parabéns', m:['familia']},
@@ -2009,7 +2008,7 @@ const RANKING = [
   {k:'audios', e:'🎙️', t:'em podcast não solicitado'},
   {k:'figurinhas', e:'🖼️', t:'em figurinha'},
   {k:'recorde', e:'🔥', t:'em dia de caos'},
-  {k:'apagadas', e:'🗑️', t:'em arrependimento'},
+  {k:'apagadas', e:'🗑️', t:'em mensagens apagadas'},
   {k:'total', e:'📨', t:'em mensagens'},
   {k:'dias', e:'📅', t:'', antigo:true}
 ];
@@ -2018,10 +2017,20 @@ function destaquesBrasil(){
   const c = state.comp; if (!c) return [];
   const tipo = {amigos:'de amigos', familia:'de família', trabalho:'de trabalho', comunidade:'de comunidade'}[state.modo];
   const sub = `entre os grupos ${c.escopo === 'todos' ? '' : tipo + ' '}no Retrozap${c.exemplo ? ' (simulação do exemplo)' : ''}`;
-  const SEMPRE = ['total', 'audios', 'figurinhas', 'risadas', 'palavrao'];
-  return RANKING.filter(x => (!x.m || x.m.includes(state.modo)) && c.top[x.k] != null && (SEMPRE.includes(x.k) || c.top[x.k] <= 35))
-    .map(x => ({k:x.k, e:x.e, top:c.top[x.k], big: x.antigo ? `Mais antigo que ${100 - c.top[x.k]}%` : `Top ${c.top[x.k]}%`, rot: x.antigo ? 'dos grupos' : x.t, txt: x.antigo ? `Mais antigo que ${100 - c.top[x.k]}% dos grupos` : `Top ${c.top[x.k]}% ${x.t}`, sub}))
-    .sort((a,b) => a.top - b.top).slice(0, 8);
+  const d = state.data, soma = k => d ? d.people.reduce((t,p) => t + (p[k] || 0), 0) : 0;
+  const dias = d ? Math.max(1, Math.round((d.end - d.start)/864e5) + 1) : 1, txs = Math.max(1, soma('text'));
+  const NUM = {total: () => `${fmt(d.total)} mensagens`, audios: () => `${fmt(soma('audio'))} áudios`, figurinhas: () => `${fmt(soma('sticker'))} figurinhas`,
+    risadas: () => `${fmt(soma('laugh'))} mensagens com risada`, palavrao: () => `${fmt(soma('palavrao'))} palavrões`,
+    por_dia: () => `${(d.total/dias).toLocaleString('pt-BR', {maximumFractionDigits: 1})} mensagens por dia`, madrugada: () => `${fmt(soma('night'))} mensagens de madrugada`,
+    furos: () => `${fmt(soma('furo'))} furos`, bomdia: () => `${fmt(soma('bomdia'))} bons dias`, parabens: () => `${fmt(soma('parabens'))} parabéns`,
+    fora: () => `${fmt(soma('after'))} mensagens fora do expediente`, textao: () => `${fmt(Math.round(soma('chars')/txs))} caracteres por mensagem`,
+    recorde: () => d.recorde ? `${fmt(d.recorde[1])} mensagens num dia só` : '', apagadas: () => `${fmt(soma('deleted'))} mensagens apagadas`, dias: () => `${fmt(dias)} dias de conversa`};
+  const BASICOS = ['total', 'audios', 'figurinhas'];
+  const lista = RANKING.filter(x => (!x.m || x.m.includes(state.modo)) && c.top[x.k] != null && c.top[x.k] <= 90)
+    .map(x => ({k:x.k, e:x.e, top:c.top[x.k], big: x.antigo ? `Mais antigo que ${100 - c.top[x.k]}%` : `Top ${c.top[x.k]}%`, rot: x.antigo ? 'dos grupos' : x.t,
+      txt: x.antigo ? `Mais antigo que ${100 - c.top[x.k]}% dos grupos` : `Top ${c.top[x.k]}% ${x.t}`, num: d && NUM[x.k] ? NUM[x.k]() : '', sub}));
+  // primeiro os básicos (mensagens, áudios, figurinhas), depois o que mais destaca
+  return [...BASICOS.map(k => lista.find(x => x.k === k)).filter(Boolean), ...lista.filter(x => !BASICOS.includes(x.k)).sort((a,b) => a.top - b.top)].slice(0, 8);
 }
 // imagem 2: nosso grupo no ranking
 function drawComparacao(d){
@@ -2041,7 +2050,7 @@ function drawComparacao(d){
     c.fillStyle = 'rgba(61,26,92,.88)'; c.beginPath(); c.roundRect(70, y, W-140, alt, 30); c.fill();
     c.textAlign = 'left'; c.font = `${Math.round(alt*.45)}px serif`; c.fillStyle = '#FFF4E0'; c.fillText(x.e, 105, y + alt*.64);
     c.fillStyle = '#FFC23C'; caber(c, x.big, 240, y + alt*.5, 740, 800, Math.round(alt*.38), BR);
-    c.fillStyle = '#FFF4E0'; caber(c, x.rot, 240, y + alt*.84, 740, 700, Math.round(alt*.22), DM);
+    c.fillStyle = '#FFF4E0'; caber(c, x.num ? `${x.rot} · ${x.num}` : x.rot, 240, y + alt*.84, 740, 700, Math.round(alt*.22), DM);
   });
   c.textAlign = 'center';
   if (state.comp?.exemplo){ c.fillStyle = '#B9A8CC'; c.font = `500 26px ${DM}`; c.fillText('simulação do grupo de exemplo', W/2, 1745); }
