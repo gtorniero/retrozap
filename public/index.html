@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-R8R1EN0KQN"></script>
 <title>Retrozap · Todo grupo tem uma história</title>
 <meta name="description" content="Descubra a história do seu grupo de WhatsApp: quem fala mais, quem some, quem manda figurinha às 3 da manhã. Prêmios, números e cards para mandar no grupo. Grátis e suas mensagens não saem do celular.">
 <meta name="theme-color" content="#1A0B2E">
@@ -408,10 +410,7 @@ const configurado = v => !!v && !/X{4}|^0+$/.test(v);
 /* ---------- Analytics (só contagens, nunca nomes ou mensagens) ---------- */
 window.dataLayer = window.dataLayer || [];
 function gtag(){ dataLayer.push(arguments); }
-if (configurado(CONFIG.GA_ID)){
-  const g = document.createElement('script'); g.async = true; g.src = 'https://www.googletagmanager.com/gtag/js?id=' + CONFIG.GA_ID; document.head.appendChild(g);
-  gtag('js', new Date()); gtag('config', CONFIG.GA_ID, {send_page_view: false, anonymize_ip: true});
-}
+if (configurado(CONFIG.GA_ID)){ gtag('js', new Date()); gtag('config', CONFIG.GA_ID, {send_page_view: false, anonymize_ip: true}); } // a tag oficial fica no <head>
 function evento(nome, params = {}){ try { if (configurado(CONFIG.GA_ID)) gtag('event', nome, params); } catch {} }
 
 /* ---------- Uma página por tela: cada tela conta como página vista ---------- */
