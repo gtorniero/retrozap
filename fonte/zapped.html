@@ -560,7 +560,6 @@ function picoSemana(days, minSem){
 // títulos com (a) são aplicados logo abaixo da lista: for (const a of AW) a.n = gtit(a.n)
 const AW = [
  {m:['amigos','familia','trabalho','comunidade'],e:'🗣️',n:'O Tagarela',crit:'Mais mensagens enviadas',k:'count',u:'mensagens',mech:'podio',p:'{w} mandou {v} mensagens. Respira, {w}.'},
- {m:['amigos','familia','trabalho','comunidade'],e:'⌨️',n:'Máquina de Escrever',crit:'Mais caracteres digitados no total',k:'chars',u:'caracteres',mech:'podio',p:'{w} digitou {v} caracteres. Dava um livro.'},
  {m:['amigos'],e:'🖼️',n:'Figurinha de Ouro',crit:'Mais figurinhas enviadas',k:'sticker',u:'figurinhas',mech:'chute',p:'{v} figurinhas. {w} se comunica por hieróglifos modernos.'},
  {m:['amigos'],e:'😂',n:'Rei do Kkkk',crit:'Mais mensagens com risada',k:'laugh',u:'risadas',mech:'chute',p:'{w} riu {v} vezes. Plateia profissional.'},
  {m:['amigos'],e:'🤬',n:'Boca-Suja',crit:'Palavrões a cada 1.000 mensagens',k:'palavrao',rate:true,u:'por 1.000 msgs',mech:'raspadinha',p:'{v} palavrões a cada mil mensagens. A mãe de {w} está decepcionada.'},
@@ -625,9 +624,9 @@ function comHonra(lista, d){
   return shown;
 }
 const PRINCIPAIS = {
-  amigos:['O Tagarela','Máquina de Escrever','Boca-Suja','Puxa-Assunto','Mata-Conversa','O Fantasma','Coração Mole','O Arrependido','Podcaster do Grupo','Escritor de Textão'],
+  amigos:['O Tagarela','Rei do Kkkk','Boca-Suja','Puxa-Assunto','Mata-Conversa','O Fantasma','Coração Mole','O Arrependido','Podcaster do Grupo','Escritor de Textão'],
   familia:['O Tagarela','Tio do Bom Dia','Mãe Coruja','Rei do Parabéns','Repórter da Família','Fotógrafo Oficial','Visualiza e Não Responde','Quem Mais Ama','Puxa-Assunto','Podcaster do Grupo'],
-  trabalho:['O Tagarela','Rei do "Ok"','Fora do Expediente','Mestre das Reuniões','Salva-Vidas','Locutor Corporativo','Escritor de Textão','Madrugador','Máquina de Escrever'],
+  trabalho:['O Tagarela','Rei do "Ok"','Fora do Expediente','Mestre das Reuniões','Salva-Vidas','Locutor Corporativo','Escritor de Textão','Madrugador'],
   comunidade:['O Tagarela','Rei da Indicação','Classificados do Grupo','Fiscal do Barulho','Comitê de Boas-Vindas','Mais Agradecido','Repórter da Comunidade','Visualiza e Não Responde','Síndico de Plantão','Achados e Perdidos']
 };
 
@@ -1811,7 +1810,7 @@ const RANKING = [
 function destaquesBrasil(){
   const c = state.comp; if (!c) return [];
   const tipo = {amigos:'de amigos', familia:'de família', trabalho:'de trabalho', comunidade:'de comunidade'}[state.modo];
-  const sub = `entre os grupos ${tipo} no Retrozap${c.exemplo ? ' (simulação do exemplo)' : ''}`;
+  const sub = `entre os grupos ${c.escopo === 'todos' ? '' : tipo + ' '}no Retrozap${c.exemplo ? ' (simulação do exemplo)' : ''}`;
   return RANKING.filter(x => (!x.m || x.m.includes(state.modo)) && c.top[x.k] <= 35)
     .map(x => ({k:x.k, e:x.e, top:c.top[x.k], big: x.antigo ? `Mais antigo que ${100 - c.top[x.k]}%` : `Top ${c.top[x.k]}%`, rot: x.antigo ? 'dos grupos' : x.t, txt: x.antigo ? `Mais antigo que ${100 - c.top[x.k]}% dos grupos` : `Top ${c.top[x.k]}% ${x.t}`, sub}))
     .sort((a,b) => a.top - b.top).slice(0, 6);
@@ -1827,7 +1826,7 @@ function drawComparacao(d){
   if (state.grupo){ c.fillStyle = '#FFF4E0'; caber(c, state.grupo, W/2, 178, 960, 800, 62, BR); }
   c.font = '120px serif'; c.fillText('🏅', W/2, 340);
   c.fillStyle = '#FFC23C'; c.font = `800 78px ${BR}`; c.fillText('NOSSO GRUPO', W/2, 450); c.fillText('NO RANKING', W/2, 535);
-  c.fillStyle = '#B9A8CC'; c.font = `700 30px ${DM}`; c.fillText(`ENTRE OS GRUPOS ${tipo} DO RETROZAP`, W/2, 595, 980);
+  c.fillStyle = '#B9A8CC'; c.font = `700 30px ${DM}`; c.fillText(state.comp?.escopo === 'todos' ? 'ENTRE OS GRUPOS DO RETROZAP' : `ENTRE OS GRUPOS ${tipo} DO RETROZAP`, W/2, 595, 980);
   const y0 = 650, passo = Math.min(190, 1040/Math.max(1, lista.length)), alt = passo - 18;
   lista.forEach((x, i) => {
     const y = y0 + i*passo;
@@ -1972,7 +1971,7 @@ function wrap(c, text, x, y, maxW, lh){
     c.save(); c.direction = 'ltr'; c.textAlign = 'left'; c.fillText(l, x0, y + i*lh); c.restore(); });
   return lines.length;
 }
-function cardAward(a){ return drawCard({podio: a.mech === 'podio' ? a.ranked.slice(1,3).map((r,i) => `${['🥈','🥉'][i]} ${r.name} · ${vfmt(a, r.v)}`) : null, emoji:a.e, title:gtit(a.n, a.winner.name), winner:a.winner.name, line:`${vfmt(a,a.winner.v)} ${a.u}${a.custom ? ' · categoria criada pelo grupo' : ''}`}); }
+function cardAward(a){ return drawCard({podio: (a.ranked || []).length > 1 ? a.ranked.slice(1,3).map((r,i) => `${['🥈','🥉'][i]} ${r.name} · ${vfmt(a, r.v)}`) : null, emoji:a.e, title:gtit(a.n, a.winner.name), winner:a.winner.name, line:`${vfmt(a,a.winner.v)} ${a.u}${a.custom ? ' · categoria criada pelo grupo' : ''}`}); }
 
 /* ---------- Crie seu prêmio (grátis no lançamento) ---------- */
 const BLOCK = /feio|feia|burr|idiot|gord|nojent|lixo|retardad|imbecil|otari|macac|viad|bicha|piranha|vagabund|corno|baleia|aleijad|pobre|doente|religi|gay|lesbic/;

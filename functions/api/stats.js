@@ -5,7 +5,8 @@
 // Configuração (uma vez, no painel da Cloudflare): Settings > Bindings > D1 database, nome da variável: DB.
 // A tabela é criada sozinha na primeira chamada. Sem o banco ligado, a função responde {pronto:false} e o site segue normal.
 
-const MIN_AMOSTRA = 100; // só mostra comparação quando já houver grupos suficientes do mesmo tipo
+const MIN_TIPO = 30;  // com 30+ grupos do mesmo tipo, compara só com eles
+const MIN_TODOS = 10; // antes disso, compara com todos os grupos (amigos, família...) a partir de 10
 const MODOS = ['amigos', 'familia', 'trabalho', 'comunidade'];
 // campo: [mínimo, máximo] aceitos
 const CAMPOS = {
@@ -35,13 +36,15 @@ export async function onRequestPost({request, env}){
   // o mesmo grupo enviado de novo só atualiza a linha (não conta duas vezes)
   await env.DB.prepare(`INSERT OR REPLACE INTO grupos (id, modo, criado, ${cols.join(', ')}) VALUES (?, ?, ?, ${cols.map(() => '?').join(', ')})`)
     .bind(id, c.modo, new Date().toISOString().slice(0, 10), ...cols.map(k => v[k])).run();
-  const r = await env.DB.prepare(`SELECT COUNT(*) AS n, ${COMPARA.map(k => `SUM(${k} > ?) AS ${k}`).join(', ')} FROM grupos WHERE modo = ?`)
-    .bind(...COMPARA.map(k => v[k]), c.modo).first();
+  const conta = (onde, ...extra) => env.DB.prepare(`SELECT COUNT(*) AS n, ${COMPARA.map(k => `SUM(${k} > ?) AS ${k}`).join(', ')} FROM grupos ${onde}`)
+    .bind(...COMPARA.map(k => v[k]), ...extra).first();
+  let r = await conta('WHERE modo = ?', c.modo), escopo = 'tipo';
+  if ((r?.n || 0) < MIN_TIPO){ r = await conta(''); escopo = 'todos'; }
   const n = r?.n || 0;
-  if (n < MIN_AMOSTRA) return resposta({pronto: false, n});
+  if (n < (escopo === 'tipo' ? MIN_TIPO : MIN_TODOS)) return resposta({pronto: false, n});
   // "Top X%": X = % de grupos com valor maior + o próprio. Métrica zerada não vira destaque.
   const top = {}; for (const k of COMPARA) top[k] = v[k] > 0 ? Math.max(1, Math.ceil(((r[k] || 0) + 1) / n * 100)) : 100;
-  return resposta({pronto: true, n, top});
+  return resposta({pronto: true, n, top, escopo});
 }
 
 export const onRequest = () => resposta({error: 'method_not_allowed'}, 405);
