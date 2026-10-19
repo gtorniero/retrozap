@@ -884,26 +884,26 @@ function roster(){
     <div class="mems">${pessoas.filter(r => !state.alias[r.n]).map(r => {
       const i = pessoas.indexOf(r), off = state.hidden.has(r.n), b = [];
       if (state.left.has(r.n)) b.push('🚪 Saiu do grupo');
-      if (meses(r) >= 12) b.push(`💤 Sem falar há ${meses(r)} meses`);
+      const sumido = meses(r) >= 12;
       const juntos = pessoas.filter(x => state.alias[x.n] === r.n), nums = numeros.filter(x => state.alias[x.n] === r.n);
       const total = r.c + juntos.reduce((s,x) => s + x.c, 0) + nums.reduce((s,x) => s + x.c, 0);
       const aberto = state.aberto === r.n;
-      const opcoes = pessoas.filter(x => x.n !== r.n && !state.alias[x.n]);
-      return `<div class="mem${off ? ' off' : ''}">
+      const pal = n => norm(n).split(/[^\p{L}]+/u).filter(w => w.length >= 3), meu = pal(r.n);
+      const opcoes = pessoas.filter(x => x.n !== r.n && !state.alias[x.n]).sort((x, y) => (pal(y.n).some(w => meu.includes(w)) - pal(x.n).some(w => meu.includes(w))) || x.n.localeCompare(y.n));
+      return `<div class="mem${off ? ' off' : ''}${sumido && !off ? ' alerta' : ''}">
         <div class="mem-line">
           <input type="checkbox" id="in-${i}" data-in="${i}" ${off ? '' : 'checked'} aria-label="Incluir ${esc(r.n)} na cerimônia">
           <div class="mem-name">
             <b>${esc(r.n)}</b><span class="small">${fmt(total)} mensagens${nums.length ? ' + número antigo' : ''} · última em ${mmaa(r.last)}</span>
             ${b.length ? `<span class="chips">${b.map(x => `<span class="chip warn">${x}</span>`).join('')}</span>` : ''}
+            ${sumido ? `<span class="sumido">⚠️ <b>Sem falar há ${meses(r)} meses.</b> ${off ? 'Fora da cerimônia.' : 'Ainda está no grupo?'} ${off ? '' : `<button type="button" class="lnk" data-tira="${i}">Tirar da cerimônia</button>`}</span>` : ''}
             <button type="button" class="lnk dup" data-open="${i}" aria-expanded="${aberto}">${aberto ? 'Cancelar' : 'Contato duplicado?'}</button>
           </div>
         </div>
         ${juntos.length ? `<p class="small">🔗 Inclui ${juntos.map(j => esc(j.n)).join(', ')} · <button type="button" class="lnk" data-sep="${i}">Separar</button></p>` : ''}
         ${aberto ? `<div class="merge">
-          <label class="small" for="mg-${i}">${esc(r.n)} é a mesma pessoa que...</label>
-          <select id="mg-${i}" data-mg="${i}"><option value="">Escolher pessoa</option>${opcoes.map(x => `<option${state.mgAlvo === x.n ? ' selected' : ''}>${esc(x.n)}</option>`).join('')}</select>
-          ${state.mgAlvo ? `<p class="small">Qual nome aparece na cerimônia?</p>
-            <div class="btn-row"><button type="button" class="btn btn-main mini" data-keep="a">${esc(r.n)}</button><button type="button" class="btn btn-ghost mini" data-keep="b">${esc(state.mgAlvo)}</button></div>` : ''}
+          <label class="small" for="mg-${i}">${esc(r.n)} é a mesma pessoa que... <span class="small">(junta na hora e fica o nome com mais mensagens)</span></label>
+          <select id="mg-${i}" data-mg="${i}"><option value="">Escolher pessoa</option>${opcoes.map(x => `<option>${esc(x.n)}</option>`).join('')}</select>
         </div>` : ''}
       </div>`; }).join('')}</div>
     <label class="optin"><input type="checkbox" id="cmp"${state.comparar === false ? '' : ' checked'}><span>📊 ${state.modo === 'casal' ? 'Comparar com outros casais do Retrozap' : 'Comparar meu grupo com outros grupos do Retrozap'}<span class="small">Só números anônimos, como o total de mensagens. Nenhuma mensagem e nenhum nome saem do celular.</span></span></label>
@@ -913,7 +913,12 @@ function roster(){
   const redraw = () => { const y = scrollY; roster(); scrollTo(0, y); };
   view.querySelectorAll('[data-ctx]').forEach(b => b.onclick = () => { const c = CONTEXTOS[state.modo][+b.dataset.ctx]; state.ctx = state.ctx === c ? '' : c; redraw(); });
   view.querySelectorAll('[data-open]').forEach(bt => bt.onclick = () => { const n = pessoas[+bt.dataset.open].n; state.aberto = state.aberto === n ? null : n; state.mgAlvo = null; redraw(); });
-  view.querySelectorAll('[data-mg]').forEach(sl => sl.onchange = () => { state.mgAlvo = sl.value || null; redraw(); });
+  view.querySelectorAll('[data-mg]').forEach(sl => sl.onchange = () => { if (!sl.value) return;
+    const a = state.aberto, b = sl.value, tot = n => pessoas.filter(x => x.n === n || state.alias[x.n] === n).reduce((t, x) => t + x.c, 0);
+    const fica = tot(a) >= tot(b) ? a : b, sai = fica === a ? b : a;
+    for (const k of Object.keys(state.alias)) if (state.alias[k] === sai) state.alias[k] = fica;
+    state.alias[sai] = fica; state.hidden.delete(fica); state.aberto = null; state.mgAlvo = null; redraw(); });
+  view.querySelectorAll('[data-tira]').forEach(bt => bt.onclick = () => { state.hidden.add(pessoas[+bt.dataset.tira].n); redraw(); });
   view.querySelectorAll('[data-keep]').forEach(bt => bt.onclick = () => {
     const a = state.aberto, b = state.mgAlvo, fica = bt.dataset.keep === 'a' ? a : b, sai = fica === a ? b : a;
     for (const k of Object.keys(state.alias)) if (state.alias[k] === sai) state.alias[k] = fica;
