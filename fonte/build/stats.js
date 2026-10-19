@@ -1,6 +1,7 @@
 // Cloudflare Pages Function: POST /api/stats
 // Recebe SÓ NÚMEROS de um grupo (nunca nomes ou mensagens), guarda no banco D1 e devolve
 // em que posição o grupo fica entre os grupos do mesmo tipo que já fizeram o Retrozap.
+// Desde out/2026 os números são só do ano (campo base = '2026'); só a antiguidade (dias) usa o histórico todo e compara com todos.
 //
 // Configuração (uma vez, no painel da Cloudflare): Settings > Bindings > D1 database, nome da variável: DB.
 // A tabela é criada sozinha na primeira chamada. Sem o banco ligado, a função responde {pronto:false} e o site segue normal.
@@ -36,19 +37,24 @@ export async function onRequestPost({request, env}){
   const cols = Object.keys(CAMPOS);
   await env.DB.prepare(`CREATE TABLE IF NOT EXISTS grupos (id TEXT PRIMARY KEY, modo TEXT NOT NULL, criado TEXT NOT NULL, ${cols.map(k => k + ' REAL').join(', ')})`).run();
   await env.DB.prepare(`CREATE INDEX IF NOT EXISTS grupos_modo ON grupos (modo)`).run();
-  if (!colunasOk){ for (const k of ['amor', 'coracoes']) try { await env.DB.prepare(`ALTER TABLE grupos ADD COLUMN ${k} REAL`).run(); } catch {} colunasOk = true; }
+  if (!colunasOk){ for (const k of ['amor REAL', 'coracoes REAL', 'base TEXT']) try { await env.DB.prepare(`ALTER TABLE grupos ADD COLUMN ${k}`).run(); } catch {} colunasOk = true; }
+  const base = /^20\d\d$/.test(String(c.base || '')) ? String(c.base) : '';
   // o mesmo grupo enviado de novo só atualiza a linha (não conta duas vezes)
-  await env.DB.prepare(`INSERT OR REPLACE INTO grupos (id, modo, criado, ${cols.join(', ')}) VALUES (?, ?, ?, ${cols.map(() => '?').join(', ')})`)
-    .bind(id, c.modo, new Date().toISOString().slice(0, 10), ...cols.map(k => v[k])).run();
-  const conta = (onde, ...extra) => env.DB.prepare(`SELECT COUNT(*) AS n, ${COMPARA.map(k => `SUM(${k} > ?) AS ${k}`).join(', ')} FROM grupos ${onde}`)
-    .bind(...COMPARA.map(k => v[k]), ...extra).first();
+  await env.DB.prepare(`INSERT OR REPLACE INTO grupos (id, modo, criado, base, ${cols.join(', ')}) VALUES (?, ?, ?, ?, ${cols.map(() => '?').join(', ')})`)
+    .bind(id, c.modo, new Date().toISOString().slice(0, 10), base, ...cols.map(k => v[k])).run();
+  // só compara com quem mandou números do mesmo período
+  const conta = (onde, ...extra) => env.DB.prepare(`SELECT COUNT(*) AS n, ${COMPARA.map(k => `SUM(${k} > ?) AS ${k}`).join(', ')} FROM grupos ${onde} AND COALESCE(base, '') = ?`)
+    .bind(...COMPARA.map(k => v[k]), ...extra, base).first();
   let r = await conta('WHERE modo = ?', c.modo), escopo = 'tipo';
   // casal compara só com casais; os grupos nunca se comparam com casais
   if (c.modo !== 'casal' && (r?.n || 0) < MIN_TIPO){ r = await conta('WHERE modo != ?', 'casal'); escopo = 'todos'; }
+  // antiguidade: o histórico todo de todos os envios (antigos e novos), no mesmo escopo
+  const ant = await env.DB.prepare(`SELECT COUNT(*) AS n, SUM(dias > ?) AS d FROM grupos WHERE ${escopo === 'tipo' ? 'modo = ?' : 'modo != ?'}`).bind(v.dias, escopo === 'tipo' ? c.modo : 'casal').first();
   const n = r?.n || 0;
   if (n < (c.modo === 'casal' ? MIN_CASAL : escopo === 'tipo' ? MIN_TIPO : MIN_TODOS)) return resposta({pronto: false, n});
   // "Top X%": X = % de grupos com valor maior + o próprio. Métrica zerada não vira destaque.
   const top = {}; for (const k of COMPARA) top[k] = v[k] > 0 ? Math.max(1, Math.ceil(((r[k] || 0) + 1) / n * 100)) : 100;
+  if (ant?.n) top.dias = Math.max(1, Math.ceil(((ant.d || 0) + 1) / ant.n * 100));
   return resposta({pronto: true, n, top, escopo});
 }
 

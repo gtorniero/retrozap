@@ -16,7 +16,7 @@ Site **retrozap.com.br**: lê o export de um grupo de WhatsApp **no navegador** 
   - `fonte/build/build.py`: transforma `zapped.html` em `public/index.html` (troca CDN por /assets, injeta `prod_head.js` com Analytics/rotas/cookies, AdSense, rodapé).
   - `fonte/build/pages.py` + `conteudo.py`: páginas (privacidade, termos, FAQ, blog, ideias), `_headers`, sitemap, ads.txt. `COBRANCA_PUBLICA` em conteudo.py controla textos de preço.
   - `fonte/build/og.py`: imagem de prévia e ícones (Playwright).
-  - APIs: `stats.js` (ranking: 10+ grupos compara com todos; 30+ do mesmo tipo compara por tipo), `ideias.js` (sugestões e e-mails de novidades, tipo `novidades`), `pix.js` (cobrança).
+  - APIs: `stats.js` (ranking só com números de 2026, campo `base`; 10+ grupos compara com todos; 30+ do mesmo tipo compara por tipo; casal só com casais, 10+; antiguidade usa o histórico todo), `ideias.js` (sugestões e e-mails de novidades, tipo `novidades`), `pix.js` (cobrança).
   - `fonte/build/worker/`: `index.js` (roteador) e `wrangler.jsonc` (var `COBRANCA`: `ligada`/`teste`/`desligada`).
   - Testes: `fonte/build/teste.py` (cerimônia completa) e `fonte/a11y.py` (axe, acessibilidade).
 

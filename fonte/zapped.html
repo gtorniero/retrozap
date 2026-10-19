@@ -1624,6 +1624,13 @@ function fimTela(semFesta){
       <button class="btn btn-main" id="mais">🔓 Ver as categorias extras</button>
       <p class="small" id="maisInfo" style="margin:0"></p>
     </div>` : ''}
+    <div class="panel livre" style="width:100%">
+      <h2 style="font-size:26px;margin:0">🔎 Categoria livre${premiumLocal() ? '' : ' <span class="tag-periodo">🔒 Premium</span>'}</h2>
+      <p class="small" style="margin:0">Escolha uma palavra e descubra quem ${casal ? 'de vocês dois' : 'do grupo'} mais falou ela. <span class="tag-periodo">desde o início</span></p>
+      <form id="lvF" class="livre-f"><label for="lvP" class="sr-only">Uma palavra</label><input id="lvP" maxlength="24" autocomplete="off" autocapitalize="none" placeholder="${casal ? 'ex.: saudade' : 'ex.: cerveja'}"><button type="submit" class="btn btn-main">Ver quem ganha</button></form>
+      <p class="err" id="lvE" hidden></p>
+      <div id="lvR" aria-live="polite"></div>
+    </div>
     <div class="duas">
       <figure class="card-fim"><figcaption>📸 ${casal ? 'Resumo do casal' : 'Resumo do grupo'} <span class="small">· desde o início</span></figcaption><img id="rimg" class="rimg" alt="${esc(altResumo(d))}">
         <div class="btn-row"><button type="button" class="btn btn-wa" id="wa1">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv1">⬇️ Salvar</button></div></figure>
@@ -1633,17 +1640,10 @@ function fimTela(semFesta){
         <div class="vid"><img id="vcapa" class="rimg" alt="Prévia do vídeo do casal: números, ranking e troféus de cada um"><video id="vplay" class="rimg" playsinline loop muted hidden></video></div>
         <p class="small" id="vmsg" role="status" style="margin:0">O vídeo é feito aqui no seu celular. Leva 10 segundos.</p>
         <div class="btn-row"><button type="button" class="btn btn-main" id="vger">🎬 Gerar o vídeo</button><button type="button" class="btn btn-wa" id="vsh" hidden>🟢 Compartilhar</button><button type="button" class="btn btn-ghost" id="vsv" hidden>⬇️ Salvar</button></div></figure>` : ''}
-      ${temRank ? `<figure class="card-fim"><figcaption>🏅 Ranking ${casal ? 'do casal' : 'do grupo'}</figcaption><img id="rimg2" class="rimg" alt="${esc(altComparacao())}">
+      ${temRank ? `<figure class="card-fim"><figcaption>🏅 Ranking ${casal ? 'do casal' : 'do grupo'} <span class="small">· só 2026</span></figcaption><img id="rimg2" class="rimg" alt="${esc(altComparacao())}">
         <div class="btn-row"><button type="button" class="btn btn-wa" id="wa2">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv2">⬇️ Salvar</button></div></figure>` : ''}
       <figure class="card-fim"><figcaption>🏆 Top 10 categorias <span class="small">· desde o início</span></figcaption><img id="rimg3" class="rimg" alt="${esc(altTop10())}">
         <div class="btn-row"><button type="button" class="btn btn-wa" id="wa3">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv3">⬇️ Salvar</button></div></figure>
-    </div>
-    <div class="panel livre" style="width:100%">
-      <h2 style="font-size:26px;margin:0">🔎 Categoria livre${premiumLocal() ? '' : ' <span class="tag-periodo">🔒 Premium</span>'}</h2>
-      <p class="small" style="margin:0">Escolha uma palavra e descubra quem ${casal ? 'de vocês dois' : 'do grupo'} mais falou ela. <span class="tag-periodo">desde o início</span></p>
-      <form id="lvF" class="livre-f"><label for="lvP" class="sr-only">Uma palavra</label><input id="lvP" maxlength="24" autocomplete="off" autocapitalize="none" placeholder="${casal ? 'ex.: saudade' : 'ex.: cerveja'}"><button type="submit" class="btn btn-main">Ver quem ganha</button></form>
-      <p class="err" id="lvE" hidden></p>
-      <div id="lvR" aria-live="polite"></div>
     </div>
     ${d26.length ? `<div class="panel d26" style="width:100%">
       <h2 style="font-size:26px;margin:0">✨ ${casal ? 'O nosso 2026' : 'Destaques de 2026'}</h2>
@@ -2080,7 +2080,7 @@ function vibe(d){
 }
 function destaques(d){
   const ps = d.people.filter(p => p.count > 0), out = [], dono = ps[0];
-  out.push({e:'👑', t:gtit('Dono da Razão', dono.name), n:dono.name, v:`${Math.round(dono.count/Math.max(1,d.total)*100)}% das mensagens`});
+  out.push({e:'🎤', t:'Fala Mais', n:dono.name, v:`${Math.round(dono.count/Math.max(1,d.total)*100)}% das mensagens`});
   const voz = [...ps].sort((a,b) => (b.audioMax - a.audioMax) || (b.audio - a.audio))[0];
   if (voz && voz.audioMax) out.push({e:'🎙️', t:'Podcast Humano', n:voz.name, v:`áudio de ${Math.floor(voz.audioMax/60)}min ${String(Math.round(voz.audioMax%60)).padStart(2,'0')}s`});
   else if (voz && voz.audio) out.push({e:'🎙️', t:'Podcast Humano', n:voz.name, v:`${fmt(voz.audio)} áudios`});
@@ -2225,14 +2225,19 @@ function drawSpoiler(lista){
 
 /* ---------- comparação com outros grupos (só números anônimos; no site com servidor) ---------- */
 async function comparar(d){
-  state.comp = null;
+  state.comp = null; state.compD = null;
   if (state.comparar === false) return;
   // grupo de exemplo: comparação simulada, e nada é enviado ao banco
   if (state.sample){ state.comp = {pronto:true, n:1000, exemplo:true, top:{risadas:3, palavrao:2, furos:4, por_dia:6, madrugada:7, recorde:9, audios:12, total:4, figurinhas:38, textao:60, apagadas:41, dias:30, bomdia:70, parabens:55, fora:80, amor:3, coracoes:5}}; return; }
+  // a comparação usa só as mensagens de 2026 (grupo de 10 anos não leva vantagem); a antiguidade usa o histórico todo
+  const m26 = d.msgs.filter(m => m.t.getFullYear() === ANO_MOMENTO);
+  state.compD = null;
+  if (m26.length >= 20) try { state.compD = await analyze(m26); } catch {}
+  if (!state.compD){ if (AMBIENTE_TESTE) state.comp = {pronto:true, n:120, exemplo:true, escopo:'tipo', top:{dias:45}}; return; }
   try {
     const base = `${+d.start}|${d.total}|${d.people.length}|${state.modo}`;
     const h = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(base)))].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
-    const r = await fetch('/api/stats', {method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({id: h, modo: state.modo, ...numerosDoGrupo(d)})});
+    const r = await fetch('/api/stats', {method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({id: h, modo: state.modo, base: String(ANO_MOMENTO), ...numerosDoGrupo(state.compD), dias: Math.max(1, Math.round((d.end - d.start)/864e5) + 1)})});
     const j = await r.json(); if (j && j.pronto) state.comp = j;
   } catch {}
   // prévia (sem servidor): ranking simulado só para ver o layout
@@ -2271,15 +2276,15 @@ const RANKING = [
 function destaquesBrasil(){
   const c = state.comp; if (!c) return [];
   const tipo = {casal:'de casais', amigos:'de amigos', familia:'de família', trabalho:'de trabalho', comunidade:'de comunidade'}[state.modo];
-  const sub = state.modo === 'casal' ? `entre os casais do Retrozap${c.exemplo ? ' (simulação)' : ''}` : `entre os grupos ${c.escopo === 'todos' ? '' : tipo + ' '}no Retrozap${c.exemplo ? ' (simulação do exemplo)' : ''}`;
-  const d = state.data, soma = k => d ? d.people.reduce((t,p) => t + (p[k] || 0), 0) : 0;
-  const dias = d ? Math.max(1, Math.round((d.end - d.start)/864e5) + 1) : 1, txs = Math.max(1, soma('text'));
+  const sub = state.modo === 'casal' ? `entre os casais do Retrozap em ${ANO_MOMENTO}${c.exemplo ? ' (simulação)' : ''}` : `entre os grupos ${c.escopo === 'todos' ? '' : tipo + ' '}no Retrozap em ${ANO_MOMENTO}${c.exemplo ? ' (simulação do exemplo)' : ''}`;
+  const dTot = state.data, d = state.compD || state.data, soma = k => d ? d.people.reduce((t,p) => t + (p[k] || 0), 0) : 0;
+  const dias = d ? Math.max(1, Math.round((d.end - d.start)/864e5) + 1) : 1, txs = Math.max(1, soma('text')), diasTot = dTot ? Math.max(1, Math.round((dTot.end - dTot.start)/864e5) + 1) : 1;
   const NUM = {total: () => `${fmt(d.total)} mensagens`, audios: () => `${fmt(soma('audio'))} áudios`, figurinhas: () => `${fmt(soma('sticker'))} figurinhas`,
     risadas: () => `${fmt(soma('laugh'))} mensagens com risada`, palavrao: () => `${fmt(soma('palavrao'))} palavrões`,
     por_dia: () => `${(d.total/dias).toLocaleString('pt-BR', {maximumFractionDigits: 1})} mensagens por dia`, madrugada: () => `${fmt(soma('night'))} mensagens de madrugada`,
     furos: () => `${fmt(soma('furo'))} furos`, bomdia: () => `${fmt(soma('bomdia'))} bons dias`, parabens: () => `${fmt(soma('parabens'))} parabéns`,
     fora: () => `${fmt(soma('after'))} mensagens fora do expediente`, textao: () => `${fmt(Math.round(soma('chars')/txs))} caracteres por mensagem`,
-    recorde: () => d.recorde ? `${fmt(d.recorde[1])} mensagens num dia só` : '', apagadas: () => `${fmt(soma('deleted'))} mensagens apagadas`, dias: () => `${fmt(dias)} dias de conversa`, amor: () => `${fmt(soma('teamo'))} declarações de amor`, coracoes: () => `${fmt(soma('coracao'))} coraçõezinhos`};
+    recorde: () => d.recorde ? `${fmt(d.recorde[1])} mensagens num dia só` : '', apagadas: () => `${fmt(soma('deleted'))} mensagens apagadas`, dias: () => `${fmt(diasTot)} dias de conversa`, amor: () => `${fmt(soma('teamo'))} declarações de amor`, coracoes: () => `${fmt(soma('coracao'))} coraçõezinhos`};
   const BASICOS = ['total', 'audios', 'figurinhas'];
   const lista = RANKING.filter(x => (!x.m || x.m.includes(state.modo)) && c.top[x.k] != null && c.top[x.k] <= 90)
     .map(x => ({k:x.k, e:x.e, top:c.top[x.k], big: x.antigo ? `Mais antigo que ${100 - c.top[x.k]}%` : `Top ${c.top[x.k]}%`, rot: x.antigo ? 'dos grupos' : x.t,
@@ -2298,7 +2303,7 @@ function drawComparacao(d){
   if (state.grupo){ c.fillStyle = CV().txt; caber(c, state.grupo, W/2, 178, 960, 800, 62, BR); }
   c.font = '120px serif'; c.fillText('🏅', W/2, 340);
   c.fillStyle = CV().ouro; c.font = `800 78px ${BR}`; c.fillText(state.modo === 'casal' ? 'NÓS DOIS' : 'NOSSO GRUPO', W/2, 450); c.fillText('NO RANKING', W/2, 535);
-  c.fillStyle = CV().sub; c.font = `700 30px ${DM}`; c.fillText(`${state.modo === 'casal' ? 'ENTRE OS CASAIS DO RETROZAP' : state.comp?.escopo === 'todos' ? 'ENTRE OS GRUPOS DO RETROZAP' : `ENTRE OS GRUPOS ${tipo} DO RETROZAP`} · ${periodo().replace('DESDE O INÍCIO · ', '')}`, W/2, 595, 980);
+  c.fillStyle = CV().sub; c.font = `700 30px ${DM}`; c.fillText(`${state.modo === 'casal' ? 'ENTRE OS CASAIS DO RETROZAP' : state.comp?.escopo === 'todos' ? 'ENTRE OS GRUPOS DO RETROZAP' : `ENTRE OS GRUPOS ${tipo} DO RETROZAP`} · ${periodo26()}`, W/2, 595, 980);
   const y0 = 650, passo = Math.min(190, 1040/Math.max(1, lista.length)), alt = passo - 18;
   lista.forEach((x, i) => {
     const y = y0 + i*passo;
