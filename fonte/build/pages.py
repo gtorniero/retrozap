@@ -21,7 +21,8 @@ a{color:var(--manga)}p,li{color:var(--areia)}.small{color:var(--neblina);font-si
 .cards{display:grid;gap:12px}.card{background:var(--acai);border-radius:16px;padding:16px 18px;text-decoration:none;color:var(--areia);display:block}
 .card b{font-family:'Bricolage Grotesque',sans-serif;font-size:20px;display:block;margin-bottom:4px}
 footer{display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:center;font-size:13px;color:var(--neblina);padding-top:24px;margin-top:40px;border-top:1px solid var(--linha)}
-footer a{color:var(--areia)}"""
+footer a{color:var(--areia)}
+footer a.seguro{font-weight:700;color:var(--manga);flex-basis:100%;text-align:center}"""
 
 import sys; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import conteudo
@@ -53,7 +54,7 @@ if(ad==='denied'){{(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersona
 <style>{CSS}</style></head><body>
 <header><a class="logo" href="/">retrozap 🏆</a><a class="cta" href="/">Fazer o meu grupo</a></header>
 <main>{body.replace('<!--AD-->', adhtml)}</main>
-<footer><a href="/">Início</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a></footer>
+<footer><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/">Início</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a></footer>
 </body></html>
 """
     full = os.path.join(PUB, path); os.makedirs(os.path.dirname(full), exist_ok=True)
