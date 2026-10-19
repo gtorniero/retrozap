@@ -271,6 +271,27 @@ body.has-cookies .acao{bottom:150px}
 .patro-box{background:var(--acai);border:1px solid var(--linha);border-radius:24px;padding:18px;width:min(100%,440px);display:flex;flex-direction:column;gap:10px;text-align:center;animation:pop .4s cubic-bezier(.2,1.4,.4,1)}
 .tiles>.tile:last-child:nth-child(odd){grid-column:1/-1}
 .pw{position:relative;text-align:center}
+.perso.trancado,.d26.trancado{position:relative}
+.perso.trancado h3,.perso.trancado .bio,.perso.trancado .fala,.perso.trancado ul,.d26.trancado .dest{filter:blur(7px);user-select:none;pointer-events:none}
+.destrava{position:absolute;left:50%;top:55%;transform:translate(-50%,-50%);z-index:2;width:auto;white-space:nowrap;padding:12px 18px;font-size:15px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.d26 .dest .small{display:block;color:var(--neblina)}
+.chip-casal{border:1px solid var(--linha);background:rgba(232,51,109,.12);color:var(--areia);border-radius:999px;padding:10px 16px;font:inherit;font-size:15px;cursor:pointer}
+.chip-casal b{color:#FF8FB1}
+.tipo-conversa{display:flex;gap:6px;background:var(--acai-2);border-radius:999px;padding:4px}
+.tipo-conversa button{flex:1;border:0;background:transparent;border-radius:999px;padding:10px;font:inherit;font-weight:700;font-size:15px;color:var(--neblina);cursor:pointer}
+.tipo-conversa button[aria-pressed="true"]{background:var(--manga);color:var(--noite)}
+#planoTeste{position:fixed;right:6px;top:calc(66px + env(safe-area-inset-top,0px));z-index:60;opacity:.94;display:flex;align-items:center;gap:4px;background:#111;color:#fff;border-radius:999px;padding:4px 6px;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+#planoTeste span{padding:0 4px}
+#planoTeste button{border:0;border-radius:999px;padding:6px 10px;font:inherit;font-weight:700;background:#333;color:#fff;cursor:pointer}
+#planoTeste button[aria-pressed="true"]{background:#FFC23C;color:#111}
+/* Retrozap Casais: tema claro com corações */
+html.casal{--noite:#FFF5F8;--acai:#FFE4EE;--acai-2:#FFD3E1;--manga:#CC1D59;--chiclete:#CC1D59;--areia:#3B1230;--neblina:#7E4B65;--linha:#F2B5CA;color-scheme:light}
+html.casal body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cpath d='M20 30c-4-6-14-4-12 4 2 6 12 12 12 12s10-6 12-12c2-8-8-10-12-4z' fill='%23E8336D' opacity='.08'/%3E%3Cpath d='M66 70c-3-4-10-3-9 3 1 4 9 9 9 9s8-5 9-9c1-6-6-7-9-3z' fill='%23E8336D' opacity='.06'/%3E%3C/svg%3E"),radial-gradient(circle at 50% -10%, rgba(232,51,109,.14), transparent 55%)}
+html.casal .top{background:rgba(255,245,248,.95)}
+html.casal .acao{background:linear-gradient(to top,var(--noite) 70%,rgba(255,245,248,0))}
+html.casal .btn-main,html.casal .tipo-conversa button[aria-pressed="true"]{color:#fff}
+html.casal .chip-casal b{color:var(--manga)}
+html.casal .perso .chip{background:rgba(232,51,109,.12)}
 .pw-ctx{margin:0;font-size:14px;font-weight:700;color:var(--neblina)}
 .pw-tit{font-size:30px;margin:0;line-height:1.05}.pw-tit em{font-style:normal;color:var(--manga)}
 .pw-preco{display:flex;flex-direction:column;align-items:center;gap:2px}
@@ -389,6 +410,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const DIAS = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
 const MODOS = {
+  casal:{n:'Casal',e:'💑',c:'#E8336D'},
   amigos:{n:'Amigos',e:'🍻',c:'#FF4F8B'},
   familia:{n:'Família',e:'🏡',c:'#FF7A59'},
   trabalho:{n:'Trabalho',e:'💼',c:'#2EC4F1'},
@@ -409,7 +431,7 @@ function voltarPilha(){
 }
 function voltar(){ voltarPilha(); }
 function setSteps(n){ document.querySelectorAll('.steps i').forEach((el,i)=>el.classList.toggle('on', i<=n)); }
-function setModo(m){ state.modo=m; document.documentElement.style.setProperty('--modo', MODOS[m].c); }
+function setModo(m){ state.modo=m; if (m !== 'casal') state.ultimoGrupo = m; document.documentElement.style.setProperty('--modo', MODOS[m].c); document.documentElement.classList.toggle('casal', m === 'casal'); }
 
 /* ---------- parser do export ---------- */
 const STRIP = /[‎‏‪-‮⁦-⁩]/g;
@@ -494,8 +516,14 @@ const RX = {
   barulho:/barulho|\bobra\b|furadeira|som alto|sil[eê]ncio|latindo|martelo/i,
   boasvindas:/bem[- ]vind/i,
   agradece:/obrigad|gratid[aã]o|valeu|agrade[cç]/i,
-  fofoca:/n[aã]o v[aã]o acreditar|fiquei sabendo|ficaram sabendo|babado|fofoca|sabiam que|adivinha quem|contar uma coisa/i
+  fofoca:/n[aã]o v[aã]o acreditar|fiquei sabendo|ficaram sabendo|babado|fofoca|sabiam que|adivinha quem|contar uma coisa/i,
+  teamo:/\bte amo\b|\bte adoro\b|\bamo voc[eê]\b|\bamo vc\b|\bte quero\b|\bmeu amor\b/i,
+  apelido:/\b(?:amor|mor|mozão|mozao|bb|beb[eê]|vida|gato|gata|lindo|linda|princesa|nen[eé]m|chuchu|xuxu|vidinha|benzinho)\b/i,
+  desculpa:/desculpa|perd[aã]o|me perdoa|foi mal|sinto muito/i,
+  fome:/\b(?:fome|jantar|janta|almo[cç]o|pizza|ifood|comer|lanche|hamb[uú]rguer|sushi|a[cç]a[ií]|sobremesa|chocolate)\b/i,
+  saudade:/saudade/i
 };
+const CORACOES = /❤️|❤|💕|💖|💗|💘|💞|💓|😍|🥰|😘|💋|🫶/gu;
 const GIRIA = /(?<!\p{L})(mano|mana|véi|vei|vey|slk|mds|vish|vixe|oxe|oxente|eita|tmj|sqn|aff|affs|bagulho|parça|mó|topzera|sextou|partiu|crush|cringe|flopou|flopar|tankar|rolê|miga|migo|amg|trampo|firmeza|suave|demorou|pprt|tlgd|nóis|uai|bah|tchê|massa|arretado|visse|mermão|brabo|braba|zica|zoeira|resenha|lacrou|mitou|bora|de boa|deu ruim|tá ligado|ta ligado|sem condições|pode pá|é nóis)(?!\p{L})/giu;
 const GIRIA_NORM = {vei:'véi', vey:'véi', affs:'aff', vixe:'vish', 'ta ligado':'tá ligado', oxente:'oxe'};
 let DUR = {}; // duração dos áudios (s), só quando o export vem "com mídia"
@@ -522,7 +550,7 @@ async function analyze(msgs, prog){
   const P = {}, hours = Array(24).fill(0), days = Array(7).fill(0), words = {}, full = {}, emo = {}, porDia = {};
   let palavras = 0, risadas = 0, silencio = 0, silIni = null, audioN = 0, audioSeg = 0, audioMedidos = 0;
   const giria = {}, minSem = new Int32Array(7*1440);
-  const get = a => P[a] || (P[a] = {name:a,count:0,text:0,chars:0,sticker:0,audio:0,photo:0,media:0,deleted:0,laugh:0,bomdia:0,parabens:0,amo:0,palavrao:0,link:0,furo:0,org:0,mae:0,ok:0,reuniao:0,salva:0,aviso:0,perdido:0,indica:0,vende:0,barulho:0,boasvindas:0,agradece:0,fofoca:0,audioMax:0,night:0,after:0,first:0,revive:0,kill:0,h:Array(24).fill(0),emo:{},words:{},y:{},wd:Array(7).fill(0),rep:{},ini:null,fim:null,giria:{},tema:{}});
+  const get = a => P[a] || (P[a] = {name:a,count:0,text:0,chars:0,sticker:0,audio:0,photo:0,media:0,deleted:0,laugh:0,bomdia:0,parabens:0,amo:0,palavrao:0,link:0,furo:0,org:0,mae:0,ok:0,reuniao:0,salva:0,aviso:0,perdido:0,indica:0,vende:0,barulho:0,boasvindas:0,agradece:0,fofoca:0,audioMax:0,night:0,after:0,first:0,revive:0,kill:0,teamo:0,apelido:0,desculpa:0,fome:0,saudade:0,coracao:0,respT:0,respN:0,h:Array(24).fill(0),emo:{},words:{},y:{},wd:Array(7).fill(0),rep:{},ini:null,fim:null,giria:{},tema:{}});
   let prev = null, lastDay = '';
   for (let q = 0; q < msgs.length; q++){
     if (q % 5000 === 0 && q){ prog && prog(q/msgs.length); await sleep(0); }
@@ -532,6 +560,7 @@ async function analyze(msgs, prog){
     p.count++; p.h[h]++; p.wd[wd]++; p.y[ano] = (p.y[ano]||0) + 1; hours[h]++; days[wd]++;
     if (!p.ini || m.t < p.ini) p.ini = m.t; if (!p.fim || m.t > p.fim) p.fim = m.t;
     if (prev && prev.a !== m.a && m.t - prev.t < 30*60e3) p.rep[prev.a] = (p.rep[prev.a]||0) + 1;
+    if (prev && prev.a !== m.a && m.t - prev.t < 12*3600e3){ p.respT += m.t - prev.t; p.respN++; } // tempo para responder
     if (k !== 'text'){ p[k]++; if (k==='media') p.photo++;
       if (k === 'audio'){ audioN++; const f = m.b.match(/[\w-]+\.(?:opus|ogg|m4a|aac|mp3)/i), seg = f && DUR[f[0]];
         if (seg){ audioSeg += seg; audioMedidos++; if (seg > p.audioMax) p.audioMax = seg; } }
@@ -540,7 +569,8 @@ async function analyze(msgs, prog){
       const b = m.b.trim(); p.text++; p.chars += b.length; palavras += b.split(/\s+/).length;
       const semLink = b.toLowerCase().replace(/(?:https?:\/\/|www\.)\S+|\S+\.(?:com|br|net|org|ly|me|app|gl)\b\S*/g, ' '); // links não viram "jeito de falar"
       if (RX.laugh.test(b)) p.laugh++;
-      for (const key of ['bomdia','parabens','amo','link','furo','org','mae','reuniao','salva','aviso','perdido','indica','vende','barulho','boasvindas','agradece','fofoca']) if (RX[key].test(b)) p[key]++;
+      for (const key of ['bomdia','parabens','amo','link','furo','org','mae','reuniao','salva','aviso','perdido','indica','vende','barulho','boasvindas','agradece','fofoca','teamo','apelido','desculpa','fome','saudade']) if (RX[key].test(b)) p[key]++;
+      p.coracao += (b.match(CORACOES) || []).length;
       if (RX.ok.test(b)) p.ok++;
       const pw = b.match(RX.palavrao); if (pw) p.palavrao += pw.length;
       for (const g of semLink.match(GIRIA) || []){ const n = GIRIA_NORM[g] || g; giria[n] = (giria[n]||0) + 1; p.giria[n] = (p.giria[n]||0) + 1; }
@@ -613,18 +643,34 @@ const AW = [
  {m:['trabalho'],e:'🌙',n:'Fora do Expediente',crit:'Mensagens depois das 19h e nos fins de semana',k:'after',u:'mensagens fora do horário',mech:'chute',p:'{v} mensagens fora do expediente. {w}, desliga o celular.'},
  {m:['trabalho'],e:'📅',n:'Mestre das Reuniões',crit:'"Call", "reunião", "alinhar"',k:'reuniao',u:'convocações',mech:'chute',p:'{w} falou de reunião {v} vezes. Isso podia ter sido um e-mail.'},
  {m:['trabalho'],e:'🛟',n:'Salva-Vidas',crit:'"Resolvido", "pode deixar", "tá feito"',k:'salva',u:'resgates',mech:'podio',p:'{v} problemas resolvidos. {w} carrega o time nas costas.'},
- {m:['trabalho'],e:'🎙️',n:'Locutor Corporativo',crit:'Mais áudios no grupo do trabalho',k:'audio',u:'áudios',mech:'raspadinha',p:'{v} áudios no grupo do trabalho. Corajoso, {w}.'}
+ {m:['trabalho'],e:'🎙️',n:'Locutor Corporativo',crit:'Mais áudios no grupo do trabalho',k:'audio',u:'áudios',mech:'raspadinha',p:'{v} áudios no grupo do trabalho. Corajoso, {w}.'},
+ {m:['casal'],e:'🗣️',n:'Tagarela do Casal',crit:'Mais mensagens enviadas',k:'count',u:'mensagens',mech:'palpite',p:'{w} mandou {v} mensagens. Quem ama fala. Muito.'},
+ {m:['casal'],e:'💘',n:'Mais Romântico',crit:'"Te amo", "te adoro", "meu amor"',k:'teamo',u:'declarações',mech:'raspadinha',p:'{v} declarações de amor. {w} é poesia ambulante.'},
+ {m:['casal'],e:'🥰',n:'Coração Ambulante',crit:'Mais emojis de coração ❤️😍🥰',k:'coracao',u:'corações',mech:'chute',p:'{v} corações enviados. O teclado de {w} só tem emoji apaixonado.'},
+ {m:['casal'],e:'☀️',n:'Despertador do Amor',crit:'Quem manda a primeira mensagem do dia',k:'first',u:'dias puxando o papo',mech:'palpite',p:'{w} abriu a conversa em {v} dias. Bom dia com amor é com {w}.'},
+ {m:['casal'],e:'⚡',n:'Resposta Relâmpago',crit:'Quem responde mais rápido',k:'resp',low:true,u:'min em média para responder',mech:'raspadinha',p:'{w} responde em {v} min, em média. Celular na mão 24 horas.'},
+ {m:['casal'],e:'🐢',n:'Visualiza e Demora',crit:'Quem demora mais para responder',k:'resp',u:'min em média para responder',mech:'palpite',p:'Média de {v} min para responder. {w}, a gente vê o "online".'},
+ {m:['casal'],e:'😂',n:'Risada Fácil',crit:'Mais mensagens com risada',k:'laugh',u:'risadas',mech:'chute',p:'{v} risadas. {w} ri até de piada ruim (principalmente das suas).'},
+ {m:['casal'],e:'🍕',n:'Fominha',crit:'Mais papo de comida',k:'fome',u:'mensagens sobre comida',mech:'raspadinha',p:'{v} mensagens sobre comida. Com {w}, todo programa termina em comida.'},
+ {m:['casal'],e:'🙏',n:'Pede Desculpas',crit:'"Desculpa", "perdão", "foi mal"',k:'desculpa',u:'pedidos de desculpa',mech:'palpite',p:'{w} pediu desculpas {v} vezes. Quem ama, se desculpa (às vezes).'},
+ {m:['casal'],e:'🎙️',n:'Podcaster do Casal',crit:'Mais áudios enviados',k:'audio',u:'áudios',mech:'chute',p:'{v} áudios. {w} acha que mensagem de texto é coisa do passado.'},
+ {m:['casal'],e:'🦉',n:'Coruja do Casal',crit:'Mais mensagens entre 0h e 5h',k:'night',u:'mensagens de madrugada',mech:'palpite',p:'{v} mensagens de madrugada. {w}, vai dormir (e deixa o outro dormir).'},
+ {m:['casal'],e:'💬',n:'Apelido Fofo',crit:'"Amor", "bb", "vida", "neném"...',k:'apelido',u:'apelidos carinhosos',mech:'raspadinha',p:'{v} apelidos carinhosos. {w} esqueceu o nome verdadeiro do outro.'},
+ {m:['casal'],e:'🥺',n:'Saudade Mode',crit:'Mais "saudade"',k:'saudade',u:'saudades',mech:'palpite',p:'{v} vezes "saudade". {w} sente falta até indo ao mercado.'},
+ {m:['casal'],e:'🖼️',n:'Rei da Figurinha',crit:'Mais figurinhas enviadas',k:'sticker',u:'figurinhas',mech:'chute',p:'{v} figurinhas. A conversa de vocês é um álbum da Copa.'},
+ {m:['casal'],e:'📸',n:'Fotógrafo do Casal',crit:'Mais fotos e vídeos',k:'photo',u:'fotos e vídeos',mech:'palpite',p:'{v} fotos e vídeos. {w} registra cada momento.'}
 ];
 for (const a of AW) a.n = gtit(a.n);
 function val(a, p){
   if (a.rate) return p.text >= 30 ? Math.round(p[a.k]/p.text*10000)/10 : null;
   if (a.k === 'avg') return p.text >= 20 ? Math.round(p.chars/p.text) : null;
+  if (a.k === 'resp') return p.respN >= 10 ? Math.max(1, Math.round(p.respT/p.respN/60000)) : null;
   return p[a.k];
 }
 function buildAwards(d){
   const list = [];
   for (const a of AW.filter(a => a.m.includes(state.modo))){
-    if (a.low && d.people.length < 3) continue;
+    if (a.low && d.people.length < 3 && state.modo !== 'casal') continue;
     const ranked = d.people.map(p => ({name:p.name, v:val(a,p)})).filter(r => r.v !== null)
       .sort((x,y) => a.low ? x.v - y.v : y.v - x.v);
     if (!ranked.length || (!a.low && ranked[0].v <= 0)) continue;
@@ -644,6 +690,7 @@ function comHonra(lista, d){
   return shown;
 }
 const PRINCIPAIS = {
+  casal:['Tagarela do Casal','Mais Romântico','Coração Ambulante','Despertador do Amor','Resposta Relâmpago','Visualiza e Demora','Risada Fácil','Fominha','Pede Desculpas','Podcaster do Casal'],
   amigos:['O Tagarela','Rei do Kkkk','Boca-Suja','Puxa-Assunto','Mata-Conversa','O Fantasma','Coração Mole','O Arrependido','Podcaster do Grupo','Escritor de Textão'],
   familia:['O Tagarela','Tio do Bom Dia','Mãe Coruja','Rei do Parabéns','Repórter da Família','Fotógrafo Oficial','Visualiza e Não Responde','Quem Mais Ama','Puxa-Assunto','Podcaster do Grupo'],
   trabalho:['O Tagarela','Rei do "Ok"','Fora do Expediente','Mestre das Reuniões','Salva-Vidas','Locutor Corporativo','Escritor de Textão','Madrugador'],
@@ -665,6 +712,12 @@ const TT_SITE = (ok, fim) => `<div class="tt-url">🔒 retrozap.com.br</div>
     : `<div class="tt-drop${ok ? ' ok' : ' alvo'}">${ok ? '✅<span>Conversa do WhatsApp.zip</span>' : '📲<span>Toque para escolher o arquivo</span>'}</div>
        <div class="tt-cta${ok ? ' alvo' : ' off'}">🏆 Fazer a retrospectiva</div>`}
   </div>`;
+// modo casal: troca os textos de grupo por textos de conversa a dois
+const casalTxt = t => state.modo !== 'casal' ? t : String(t).replace(/Turma do Churras/g, 'Amor 💕').replace(/🍖/g, '💕').replace(/toque para dados do grupo/g, 'toque para dados do contato')
+  .replace(/Toque no nome do grupo/g, 'Toque no nome da pessoa').replace(/Grupo · 6 membros/g, 'Contato').replace(/No grupo desde/g, 'Na conversa desde').replace(/a média do grupo/g, 'a média do casal')
+  .replace(/\bdo grupo\b/g, 'da conversa').replace(/\bo grupo\b/g, 'a conversa').replace(/\bno grupo\b/g, 'na conversa');
+const TAGLINE = () => state.modo === 'casal' ? 'Toda história de amor merece um troféu · retrozap.com.br' : 'Todo grupo tem uma história · retrozap.com.br';
+const nomePadrao = () => state.modo === 'casal' ? 'Nós dois' : 'Nosso grupo';
 const TT_CENAS = {
   android: [
     {p:0, cap:'Toque nos três pontinhos ⋮', x:90, y:6.5, h:`<div class="tt-bar a"><span>←</span><i class="tt-av">🍖</i><b>Turma do Churras</b><span class="tt-r alvo">⋮</span></div>${TT_BOLHAS}`},
@@ -715,7 +768,7 @@ function tutorial(how){
   const vivo = () => id === TT_RUN && scr.isConnected;
   const espera = ms => new Promise(r => { tm = setTimeout(r, ms); });
   const pinta = c => {
-    scr.innerHTML = c.h; cap.textContent = c.cap;
+    scr.innerHTML = casalTxt(c.h); cap.textContent = casalTxt(c.cap);
     lis.forEach((li, k) => li.classList.toggle('on', k === c.p));
     dedo.classList.remove('tap');
     dedo.style.opacity = c.fim ? 0 : 1;
@@ -772,8 +825,13 @@ async function precisaPagar(){
   }
   return true;
 }
+// ambiente de teste (prévia fora do site oficial): alterna Grátis/Premium e simula o Pix
+const AMBIENTE_TESTE = !/(^|\.)retrozap\.com\.br$|workers\.dev$|^localhost$|^127\./.test(location.hostname) || /[?&]plano_teste=1/.test(location.search);
+if (AMBIENTE_TESTE) state.planoTeste = 'gratis';
+const premiumLocal = () => state.planoTeste ? state.planoTeste === 'premium' : !!(state.sample || lsGet('rz_acesso'));
 // premium liberado? (grupo de exemplo, código de acesso guardado ou cobrança desligada)
 async function premiumLiberado(){
+  if (state.planoTeste) return state.planoTeste === 'premium';
   if (state.sample || lsGet('rz_acesso')) return true;
   try { const r = await fetch('/api/cobranca', {cache: 'no-store'}); if (!r.ok) return true; const c = await r.json();
     return !(c.pronto && (c.modo === 'ligada' || (c.modo === 'teste' && TESTE_COBRANCA))); } catch { return true; }
@@ -802,13 +860,16 @@ function paywall(seguir, ctx){
   const caixa = m.firstElementChild;
   const inicio = () => {
     caixa.innerHTML = `<button type="button" class="pw-x" id="pwX" aria-label="Fechar">✕</button>
-      <p class="pw-ctx">${ctx === 'bonus' ? '🔒 Essas categorias são Premium' : '🎁 Seu primeiro grupo foi por nossa conta'}</p>
+      <p class="pw-ctx">${{bonus: '🔒 Essas categorias são Premium', personagens: '🔒 Os outros personagens são Premium', destaques: '🔒 Os destaques de 2026 são Premium'}[ctx] || '🎁 Seu primeiro grupo foi por nossa conta'}</p>
       <h2 id="pwT" class="pw-tit">Acesso ilimitado.<br><em>Pague 1x só.</em></h2>
       <div class="pw-preco"><b>R$ 4,99</b><span>não dá nem pro cafezinho do editor ☕</span></div>
       <ul class="pw-lista">
         <li><span aria-hidden="true">♾️</span><div><b>Quantos grupos quiser</b>Família, amigos, trabalho, condomínio, a pelada de quinta...</div></li>
+        <li><span aria-hidden="true">🎭</span><div><b>Todos os personagens</b>Ninguém escapa: cada um com seu título, jeito de falar e manias.</div></li>
         <li><span aria-hidden="true">🎁</span><div><b>Categorias extras</b>Mais troféus e mais gente sendo exposta com carinho.</div></li>
-        <li><span aria-hidden="true">✨</span><div><b>Tudo o que vier de novo</b>Novidades Premium já incluídas, sem pagar de novo.</div></li>
+        <li><span aria-hidden="true">✨</span><div><b>Destaques de 2026</b>Revelação do ano, sumiço do ano, dupla do ano, top momentos e o card "Nosso 2026".</div></li>
+        <li><span aria-hidden="true">💕</span><div><b>Retrozap Casais</b>A retrospectiva de vocês dois, quantas vezes quiser.</div></li>
+        <li><span aria-hidden="true">🚀</span><div><b>Tudo o que vier de novo</b>Novidades Premium já incluídas, sem pagar de novo.</div></li>
         <li><span aria-hidden="true">🔥</span><div><b>Seus grupos nunca mais vão ser os mesmos</b>Prepare-se para agitar (muito) a conversa.</div></li>
       </ul>
       <p class="small" style="margin:0">Pagamento único no Pix · sem assinatura · liberado na hora</p>
@@ -826,6 +887,7 @@ function paywall(seguir, ctx){
       const email = em.value.trim();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){ err.hidden = false; err.textContent = 'Confira o e-mail.'; em.focus(); return; }
       lsSet('rz_email', email);
+      if (AMBIENTE_TESTE){ state.planoTeste = 'premium'; marcaPlano(); return libera('RZ-TEST-TEST'); } // prévia: pagamento simulado
       bt.disabled = true; bt.textContent = 'Gerando o Pix...'; err.hidden = true;
       try {
         const r = await fetch('/api/pix', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({email})});
@@ -915,9 +977,11 @@ function inicio(){
       </ol>
     </div>
     <button class="btn btn-main" id="comecar">Vamos começar →</button>
+    <button type="button" class="chip-casal" id="irCasal">💕 Novo: <b>Retrozap Casais</b>. A retrospectiva de vocês dois →</button>
     <nav class="rodape" aria-label="Links do site"><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos</a></nav>
   </section>`;
-  $('#comecar').onclick = () => home();
+  $('#comecar').onclick = () => { if (state.modo === 'casal') setModo(state.ultimoGrupo || 'amigos'); home(); };
+  $('#irCasal').onclick = () => { setModo('casal'); home(); };
   window.scrollTo(0,0);
 }
 function home(){
@@ -927,7 +991,11 @@ function home(){
   view.innerHTML = `
   <section class="screen">
     <p class="eyebrow">Passo a passo</p>
-    <h1 style="font-size:clamp(30px,8vw,40px)">Traga a conversa do seu grupo</h1>
+    <div class="tipo-conversa" role="group" aria-label="O que você vai analisar?">
+      <button type="button" data-tipo="grupo" aria-pressed="${state.modo !== 'casal'}">👥 Um grupo</button>
+      <button type="button" data-tipo="casal" aria-pressed="${state.modo === 'casal'}">💑 Um casal</button>
+    </div>
+    <h1 style="font-size:clamp(30px,8vw,40px)">${state.modo === 'casal' ? 'Traga a conversa de vocês dois 💕' : 'Traga a conversa do seu grupo'}</h1>
     <div class="panel">
       <p class="ask">1. Exporte a conversa do WhatsApp</p>
       <div class="tabs" role="tablist">
@@ -936,12 +1004,12 @@ function home(){
       </div>
       ${tutorialHTML()}
       ${state.how==='iphone' ? `<ol class="how">
-        <li>Abra o grupo e toque no <b>nome do grupo</b> lá em cima.</li>
+        <li>${state.modo === 'casal' ? 'Abra a conversa e toque no <b>nome da pessoa</b> lá em cima.' : 'Abra o grupo e toque no <b>nome do grupo</b> lá em cima.'}</li>
         <li>Role até o fim e toque em <b>Exportar conversa</b>.</li>
         <li>Escolha <b>Sem mídia</b>.</li>
         <li>Toque em <b>Salvar em Arquivos</b>.</li></ol>`
       : `<ol class="how">
-        <li>Abra o grupo e toque nos <b>três pontinhos ⋮</b>.</li>
+        <li>Abra ${state.modo === 'casal' ? 'a conversa' : 'o grupo'} e toque nos <b>três pontinhos ⋮</b>.</li>
         <li>Toque em <b>Mais</b> e depois em <b>Exportar conversa</b>.</li>
         <li>Escolha <b>Sem mídia</b>.</li>
         <li>Salve em <b>Downloads</b> ou no Drive.</li></ol>`}
@@ -954,13 +1022,13 @@ function home(){
       <input type="file" id="file">
     </label>
     <div class="badge priv"><span aria-hidden="true">🔒</span><span><b>Suas mensagens não saem do seu celular.</b> Tudo é analisado aqui no navegador. A gente não recebe, não lê e não guarda nenhuma mensagem. <a href="/privacidade" style="color:var(--areia)">Entenda</a></span></div>
-    <div class="panel">
+    ${state.modo === 'casal' ? '' : `<div class="panel">
       <p class="ask">3. Que tipo de grupo é?</p>
       <div class="modes" role="group" aria-label="Tipo de grupo">
-        ${Object.entries(MODOS).map(([k,m]) => `<button class="mode" data-m="${k}" style="--c:${m.c}" aria-pressed="${state.modo===k}"><span class="em">${m.e}</span>${m.n}</button>`).join('')}
+        ${Object.entries(MODOS).filter(([k]) => k !== 'casal').map(([k,m]) => `<button class="mode" data-m="${k}" style="--c:${m.c}" aria-pressed="${state.modo===k}"><span class="em">${m.e}</span>${m.n}</button>`).join('')}
       </div>
-    </div>
-    <button class="btn btn-main" id="start"${state.arquivo ? '' : ' disabled'}>🏆 Fazer a retrospectiva</button>
+    </div>`}
+    <button class="btn btn-main" id="start"${state.arquivo ? '' : ' disabled'}>${state.modo === 'casal' ? '💕 Fazer a retrospectiva do casal' : '🏆 Fazer a retrospectiva'}</button>
     <p class="err" id="err" hidden></p>
     <div class="btn-row"><button class="btn btn-ghost" id="demo">👀 Ver com um grupo de exemplo</button></div>
     <p class="small">Protótipo do Retrozap. Nos testes, o grupo de exemplo é inventado.</p>
@@ -973,9 +1041,10 @@ function home(){
     // Android: lê já na escolha, porque o acesso ao arquivo pode expirar depois
     f.arrayBuffer().then(b => { if (state.arquivo === f) state.bytes = b; }).catch(() => {}); const lb = view.querySelector('.drop'); lb.classList.add('ok'); lb.querySelector('.big').textContent = '✅';
     $('#fname').textContent = 'Arquivo escolhido: ' + f.name; $('#start').disabled = false; $('#err').hidden = true;
-    view.querySelector('.modes').scrollIntoView({behavior:'smooth', block:'center'});
+    (view.querySelector('.modes') || $('#start')).scrollIntoView({behavior:'smooth', block:'center'});
   };
   $('#start').onclick = () => state.arquivo && lembrete(() => readFile(state.arquivo));
+  view.querySelectorAll('[data-tipo]').forEach(b => b.onclick = () => { setModo(b.dataset.tipo === 'casal' ? 'casal' : (state.ultimoGrupo || 'amigos')); home(); });
   tutorial(state.how);
   $('#demo').onclick = () => { DUR = {}; run(demoChat(), true); };
   window.scrollTo(0,0);
@@ -1104,7 +1173,7 @@ function roster(){
     <h1 style="font-size:36px">${dentro} pessoas na cerimônia</h1>
     <div class="panel"><label class="ask" for="gn">Nome do grupo <span class="small">(aparece nos cards)</span></label>
       <input id="gn" type="text" maxlength="44" value="${esc(state.grupo)}" placeholder="Ex.: Família Silva" autocomplete="off" style="width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid var(--linha);background:var(--noite);color:var(--areia);font:inherit;font-size:17px"></div>
-    <div class="panel"><p class="ask">De onde vem esse grupo? <span class="small">(opcional)</span></p>
+    <div class="panel"><p class="ask">${state.modo === 'casal' ? 'Vocês estão...' : 'De onde vem esse grupo?'} <span class="small">(opcional)</span></p>
       <div class="chips">${CONTEXTOS[state.modo].map((c,i) => `<button type="button" class="chip ex" data-ctx="${i}" aria-pressed="${state.ctx === c}"${state.ctx === c ? ' style="border-color:var(--manga);background:rgba(255,194,60,.2)"' : ''}>${esc(c)}</button>`).join('')}</div></div>
     ${numeros.length ? `<h2 style="font-size:24px">📞 Números desconhecidos</h2>
     <p class="small">Costumam ser alguém que trocou de número. Comparamos quando cada um falou e o jeito de escrever para sugerir quem é.</p>
@@ -1174,6 +1243,7 @@ function roster(){
     { const g = $('#go'); g.disabled = true; const pagar = await precisaPagar(); g.disabled = false; if (pagar) return paywall(() => $('#go').click()); }
     const msgs = state.raw.filter(m => !state.hidden.has(m.a) && !state.hidden.has(state.alias[m.a])).map(m => ({t:m.t, a:state.alias[m.a] || m.a, b:m.b}));
     if (new Set(msgs.map(m => m.a)).size < 2){ const e = $('#rerr'); e.hidden = false; e.textContent = 'Deixe pelo menos duas pessoas na cerimônia.'; return; }
+    if (state.modo === 'casal' && new Set(msgs.map(m => m.a)).size > 2){ const e = $('#rerr'); e.hidden = false; e.textContent = 'No modo casal, deixe só as duas pessoas da conversa (ou volte e escolha "Um grupo").'; return; }
     msgs.sys = state.raw.sys; msgs.perdidas = state.raw.perdidas;
     const prog = carregando('Analisando todas as mensagens...');
     state.data = await analyze(msgs, f => prog(f, `${fmt(Math.round(f*msgs.length))} de ${fmt(msgs.length)} mensagens analisadas`));
@@ -1216,7 +1286,7 @@ const juntar = arr => arr.length > 1 ? arr.slice(0,-1).join(', ') + ' e ' + arr.
 function story(){
   anchor(true);
   pilha(story, 'prologo');
-  const d = state.data, P = d.people, tot = d.total, m = state.modo; setSteps(1);
+  const d = state.data, P = d.people, tot = d.total, m = state.modo, trava = !premiumLocal(); setSteps(1);
   const nome = classificar(d, m), [em, porque] = PERSONAS[nome];
   const dias = Math.max(1, Math.round((d.end - d.start)/864e5) + 1), porDia = tot/dias;
   const anos = Math.floor(dias/365), meses = Math.floor((dias % 365)/30.4);
@@ -1224,30 +1294,33 @@ function story(){
   const dataLonga = t => t.toLocaleDateString('pt-BR', {day:'numeric', month:'long', year:'numeric'});
   const media = porDia >= 10 ? fmt(Math.round(porDia)) : porDia.toFixed(1).replace('.',',');
   const sum = k => P.reduce((s,p) => s + p[k], 0), b = x => `<b>${esc(x)}</b>`;
-  const quem = state.grupo ? b(state.grupo) : 'Esse grupo';
-  const papo = {amigos:'a resenha nunca parou', familia:'a família nunca ficou sem assunto', trabalho:'o expediente nunca acabou de verdade', comunidade:'a vizinhança nunca ficou em silêncio'}[m];
-  const ps = [`${quem} existe há ${dur}, e ${papo}: foram ${b(fmt(tot))} mensagens, uma média de ${media} por dia.`];
+  const quem = m === 'casal' ? (P[1] ? `${b(P[0].name)} e ${b(P[1].name)}` : b(P[0].name)) : state.grupo ? b(state.grupo) : 'Esse grupo';
+  const papo = {casal:'o amor nunca ficou sem assunto', amigos:'a resenha nunca parou', familia:'a família nunca ficou sem assunto', trabalho:'o expediente nunca acabou de verdade', comunidade:'a vizinhança nunca ficou em silêncio'}[m];
+  const ps = [m === 'casal' ? `${quem} conversam há ${dur}, e ${papo}: foram ${b(fmt(tot))} mensagens, uma média de ${media} por dia.` : `${quem} existe há ${dur}, e ${papo}: foram ${b(fmt(tot))} mensagens, uma média de ${media} por dia.`];
   const maxH = Math.max(...d.hours), peak = d.hours.indexOf(maxH), bd = d.days.indexOf(Math.max(...d.days));
   const porAno = {}; for (const x of d.msgs){ const y = x.t.getFullYear(); porAno[y] = (porAno[y]||0) + 1; }
   const anosL = Object.keys(porAno).sort(), maxA = Math.max(...Object.values(porAno)), recorde = anosL.find(y => porAno[y] === maxA);
   const tile = (n, l) => { const t = String(n).length; return `<div class="tile"><span class="n"${t > 8 ? ' style="font-size:clamp(17px,5vw,22px)"' : t > 5 ? ' style="font-size:clamp(20px,6.4vw,26px)"' : ''}>${n}</span><span class="l">${l}</span></div>`; };
   view.innerHTML = `<section class="screen">
     ${state.sample ? '<span class="sample">Grupo de exemplo</span>' : ''}
-    <p class="eyebrow">Ato I · Conhecendo o grupo</p>
-    <div class="persona"><span class="em" aria-hidden="true">${em}</span><div><span class="small">A classificação do grupo é</span><h1>${nome}</h1><span class="small">${porque}</span></div></div>
+    <p class="eyebrow">Ato I · Conhecendo ${m === 'casal' ? 'o casal' : 'o grupo'}</p>
+    <div class="persona"><span class="em" aria-hidden="true">${em}</span><div><span class="small">A classificação ${m === 'casal' ? 'do casal' : 'do grupo'} é</span><h1>${nome}</h1><span class="small">${porque}</span></div></div>
     <div class="tale">${ps.map((p,i) => `<p style="animation-delay:${i*.35}s">${p}</p>`).join('')}</div>
     <div class="badge"><span aria-hidden="true">📅</span><span>A primeira mensagem foi em <b>${dataLonga(d.start)}</b>. A última, em <b>${dataLonga(d.end)}</b>.${d.perdidas ? ` ${fmt(d.perdidas)} linhas não puderam ser lidas.` : ''}</span></div>
-    <h2 style="font-size:28px">Os personagens do grupo</h2>
-    <p class="lead">Os 5 que mais movimentam o grupo, e o que faz cada um ser quem é.</p>
-    <div class="persos">${personagens(d, campeao().by).map(x => `<div class="perso">
-      <div class="ph"><span class="em" aria-hidden="true">${x.e}</span><div><span class="small">${esc(x.nome)}</span><h3>${x.titulo}</h3></div></div>
-      <p class="bio">${esc(x.texto)}</p>
+    <h2 style="font-size:28px">Os personagens ${m === 'casal' ? 'do casal' : 'do grupo'}</h2>
+    <p class="lead">${m === 'casal' ? 'Quem é quem nessa relação.' : 'Os 5 que mais movimentam o grupo, e o que faz cada um ser quem é.'}</p>
+    <div class="persos">${personagens(d, campeao().by).map((x, i) => { const tr = i >= 2 && trava; return `<div class="perso${tr ? ' trancado' : ''}">
+      <div class="ph"><span class="em" aria-hidden="true">${x.e}</span><div><span class="small">${esc(x.nome)}</span><h3${tr ? ' aria-hidden="true"' : ''}>${x.titulo}</h3></div></div>
+      ${tr ? '<button type="button" class="btn btn-main destrava" data-unlock>🔓 Ver todos os personagens</button>' : ''}
+      <p class="bio"${tr ? ' aria-hidden="true"' : ''}>${esc(casalTxt(x.texto))}</p>
       ${x.fala.length || x.emojis.length ? `<div class="fala"><span class="rot">Jeito de falar</span><div class="chips">${x.fala.map(f => `<span class="chip">${esc(f)}</span>`).join('')}${x.emojis.length ? `<span class="chip emo">${x.emojis.join(' ')}</span>` : ''}</div></div>` : ''}
-      <ul>${x.fatos.map(f => `<li>${esc(f)}</li>`).join('')}</ul></div>`).join('')}</div>
-    <p class="lead" style="text-align:center;font-size:20px"><b style="color:var(--areia)">Quem fala mais? Quem some? Quem manda figurinha às 3 da manhã?</b><br>Tudo isso vai ser revelado agora.</p>
+      <ul${tr ? ' aria-hidden="true"' : ''}>${x.fatos.map(f => `<li>${esc(casalTxt(f))}</li>`).join('')}</ul></div>`; }).join('')}</div>
+    <p class="lead" style="text-align:center;font-size:20px"><b style="color:var(--areia)">${m === 'casal' ? 'Quem é mais romântico? Quem demora para responder? Quem pede desculpas?' : 'Quem fala mais? Quem some? Quem manda figurinha às 3 da manhã?'}</b><br>Tudo isso vai ser revelado agora.</p>
     <button class="btn btn-main" id="go">Ver as categorias →</button>
   </section>`;
   $('#go').onclick = lineup;
+  view.querySelectorAll('[data-unlock]').forEach(bt => bt.onclick = () => paywall(() => story(), 'personagens'));
+  if (trava && view.querySelector('.trancado')) premiumLiberado().then(ok => { if (ok && view.querySelector('.trancado')) story(); });
   window.scrollTo(0,0);
 }
 function stats(){ story(); } // os números agora fazem parte do prólogo
@@ -1264,24 +1337,33 @@ const PERSONAS = {
   'Time Engajado':['🚀','Time que conversa com frequência, sem exagero de horário.'],
   'Central de Avisos':['📋','Muitos avisos, lembretes e comunicados.'],
   'Feirinha do Bairro':['🏷️','Anúncios de venda, desapego e doação dominam a conversa.'],
-  'Comunidade Ativa':['🏘️','Comunidade que conversa, se ajuda e troca indicações.']
+  'Comunidade Ativa':['🏘️','Comunidade que conversa, se ajuda e troca indicações.'],
+  'Casal Grudento':['🫶','Mais de 40 mensagens por dia. Vocês não desgrudam.'],
+  'Casal Coruja':['🌙','Mais de 12% das mensagens saem de madrugada.'],
+  'Casal Meme':['😂','Risada em mais de 20% das mensagens. O amor é uma piada interna.'],
+  'Casal Podcast':['🎙️','Áudios passam de 5% das mensagens.'],
+  'Casal Romântico':['💘','Declarações de amor em mais de 3% das mensagens.'],
+  'Casal Equilibrado':['💑','Amor, rotina e conversa na medida certa.']
 };
 const PERSONAS_MODO = {
   amigos:['Resenha da Madrugada','Fábrica de Risada','Museu da Figurinha','Rádio do Grupo','Escritório Paralelo','Resenha Raiz'],
   familia:['Resenha da Madrugada','Fábrica de Risada','Museu da Figurinha','Rádio do Grupo','Escritório Paralelo','Família Unida e Barulhenta'],
   trabalho:['O Time que Não Desliga','Expediente Raiz','Time Engajado'],
-  comunidade:['Feirinha do Bairro','Central de Avisos','Comunidade Ativa']
+  comunidade:['Feirinha do Bairro','Central de Avisos','Comunidade Ativa'],
+  casal:['Casal Grudento','Casal Coruja','Casal Meme','Casal Podcast','Casal Romântico','Casal Equilibrado']
 };
 const CONTEXTOS = {
   amigos:['da escola','da faculdade','de infância','do futebol','do trabalho','da balada'],
   familia:['da família toda','dos primos','dos irmãos','de pais e filhos'],
   trabalho:['do time','da empresa','de um projeto','com clientes'],
-  comunidade:['do prédio','do bairro','da escola dos filhos','de um hobby','de corrida','de pets']
+  comunidade:['do prédio','do bairro','da escola dos filhos','de um hobby','de corrida','de pets'],
+  casal:['namorando','casados','ficando','à distância','juntos há anos']
 };
 function classificar(d, m){
   const P = d.people, tot = d.total, sum = k => P.reduce((s,p) => s + p[k], 0), texts = sum('text') || 1;
   const util = (d.days[1]+d.days[2]+d.days[3]+d.days[4]+d.days[5])/5, fds = (d.days[0]+d.days[6])/2;
   const night = sum('night')/tot, laugh = sum('laugh')/texts, stick = sum('sticker')/tot, audio = sum('audio')/tot, after = sum('after')/tot;
+  if (m === 'casal'){ const dias = Math.max(1, (d.end - d.start)/864e5); return tot/dias > 40 ? 'Casal Grudento' : night > .12 ? 'Casal Coruja' : laugh > .2 ? 'Casal Meme' : audio > .05 ? 'Casal Podcast' : sum('teamo')/texts > .03 ? 'Casal Romântico' : 'Casal Equilibrado'; }
   if (m === 'trabalho') return after > .35 ? 'O Time que Não Desliga' : util > fds*2 ? 'Expediente Raiz' : 'Time Engajado';
   if (m === 'comunidade') return sum('vende') > sum('aviso') && sum('vende') > 5 ? 'Feirinha do Bairro' : sum('aviso') > 5 ? 'Central de Avisos' : 'Comunidade Ativa';
   if (night > .12) return 'Resenha da Madrugada';
@@ -1432,12 +1514,12 @@ function fimTela(semFesta){
   anchor(false);
   pilha(() => fimTela(true), 'fim');
   setSteps(3);
-  const d = state.data, b = state.bonus || [], temBonus = b.length && !state.bonusShown, temRank = destaquesBrasil().length;
+  const d = state.data, b = state.bonus || [], temBonus = b.length && !state.bonusShown, temRank = destaquesBrasil().length, d26 = destaques2026(d), trava26 = !premiumLocal();
   view.innerHTML = `<section class="screen wr" style="align-items:center;text-align:center">
     ${state.sample ? '<span class="sample">Grupo de exemplo</span>' : ''}
     <p class="eyebrow">Ato III · O resumo do grupo</p>
     <div class="em-g" aria-hidden="true">📸</div>
-    <h1 class="roleta ok"${(state.grupo || '').length > 18 ? ' style="font-size:clamp(24px,7vw,34px)"' : ''}>${esc(state.grupo || 'Nosso grupo')}</h1>
+    <h1 class="roleta ok"${(state.grupo || '').length > 18 ? ' style="font-size:clamp(24px,7vw,34px)"' : ''}>${esc(state.grupo || nomePadrao())}</h1>
     <p class="lead">${temRank ? 'Três' : 'Duas'} imagens para mandar no grupo e nos stories. Agora é ver quem se ofende primeiro.</p>
     ${temBonus ? `<div class="panel" style="text-align:center;width:100%">
       <div style="font-size:48px" aria-hidden="true">🎁</div>
@@ -1455,12 +1537,20 @@ function fimTela(semFesta){
       <figure class="card-fim"><figcaption>🏆 Top 10 categorias</figcaption><img id="rimg3" class="rimg" alt="${esc(altTop10())}">
         <div class="btn-row"><button type="button" class="btn btn-wa" id="wa3">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv3">⬇️ Salvar</button></div></figure>
     </div>
+    ${d26.length ? `<div class="panel d26${trava26 ? ' trancado' : ''}" style="width:100%">
+      <h2 style="font-size:26px;margin:0">✨ Destaques de 2026</h2>
+      ${trava26 ? '<button type="button" class="btn btn-main destrava" id="dest26">🔓 Ver os destaques de 2026</button>' : ''}
+      <div class="dest rk"${trava26 ? ' aria-hidden="true"' : ''}>${d26.map(x => `<div><span aria-hidden="true">${x.e}</span><div><span class="small">${esc(x.t)}</span><b>${esc(x.big)}</b><span class="num">${esc(x.sub)}</span></div></div>`).join('')}</div>
+      ${trava26 ? '' : `<figure class="card-fim" style="width:100%"><figcaption>🗓️ Nosso 2026</figcaption><img id="rimg4" class="rimg" alt="${esc(altNosso2026(d))}">
+        <div class="btn-row"><button type="button" class="btn btn-wa" id="wa4">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv4">⬇️ Salvar</button></div></figure>`}
+    </div>` : ''}
     <button class="btn btn-main" id="concluir" style="width:100%">Concluir 🎉</button>
   </section>`;
   document.fonts.ready.then(() => {
     const im = $('#rimg'); if (im) im.src = drawResumo(d);
     const im2 = $('#rimg2'); if (im2) im2.src = drawComparacao(d);
     const im3 = $('#rimg3'); if (im3) im3.src = drawTop10();
+    const im4 = $('#rimg4'); if (im4) im4.src = drawNosso2026(d);
   });
   const abre = (fz, txt, alt) => openCard(fz, txt, alt);
   $('#wa1').onclick = () => mandarWhats(paraBlob(drawResumo(d)), 'retrozap-resumo.png', convite('resumo'), null, () => abre(() => drawResumo(d), convite('resumo'), altResumo(d)));
@@ -1481,6 +1571,12 @@ function fimTela(semFesta){
     premiumLiberado().then(ok => { const t = $('#maisInfo'); if (!t) return; if (!ok) t.textContent = 'Premium: R$ 4,99 no Pix libera as categorias extras e grupos ilimitados.'; else { $('#maisT').textContent = '🎁 Categorias extras'; view.querySelectorAll('.panel .chip').forEach(c => c.textContent = c.textContent.replace('🔒 ', '')); } });
     $('#mais').onclick = async () => { const bt = $('#mais'); bt.disabled = true; const ok = await premiumLiberado(); bt.disabled = false; ok ? joga() : paywall(joga, 'bonus'); };
   }
+  if ($('#wa4')){
+    $('#wa4').onclick = () => mandarWhats(paraBlob(drawNosso2026(d)), 'retrozap-2026.png', convite('resumo'), null, () => abre(() => drawNosso2026(d), convite('resumo'), altNosso2026(d)));
+    $('#sv4').onclick = () => abre(() => drawNosso2026(d), convite('resumo'), altNosso2026(d));
+  }
+  $('#dest26')?.addEventListener('click', () => paywall(() => fimTela(true), 'destaques'));
+  if (trava26 && d26.length) premiumLiberado().then(ok => { if (ok && $('#dest26')) fimTela(true); });
   $('#concluir').onclick = () => obrigado();
   if (!semFesta){ confetti(); window.scrollTo(0,0); }
 }
@@ -1709,7 +1805,7 @@ function drawTop10(){
   c.textAlign = 'center';
   c.fillStyle = '#FFC23C'; c.font = `800 48px ${BR}`; c.fillText('retrozap 🏆', W/2, 100);
   c.fillStyle = '#B9A8CC'; c.font = `700 30px ${DM}`; c.fillText('TOP 10 CATEGORIAS', W/2, 172);
-  c.fillStyle = '#FFF4E0'; caber(c, limpaTxt(state.grupo || 'Nosso grupo'), W/2, 250, 940, 800, 60, BR);
+  c.fillStyle = '#FFF4E0'; caber(c, limpaTxt(state.grupo || nomePadrao()), W/2, 250, 940, 800, 60, BR);
   const ps = principais(), topo = 300, base = 1790, passo = (base - topo)/Math.max(ps.length, 1), alt = passo - 14;
   ps.forEach((a, i) => {
     const y = topo + i*passo;
@@ -1720,7 +1816,7 @@ function drawTop10(){
     c.fillStyle = '#B9A8CC'; caber(c, gtit(a.n, a.winner.name).toUpperCase(), 270, y + alt*.42, 720, 700, Math.round(alt*.2), DM);
     c.fillStyle = '#FFC23C'; caber(c, a.winner.name, 270, y + alt*.8, 720, 800, Math.round(alt*.34), BR);
   });
-  c.textAlign = 'center'; c.fillStyle = '#FFF4E0'; c.font = `700 36px ${DM}`; c.fillText('Todo grupo tem uma história · retrozap.com.br', W/2, 1868);
+  c.textAlign = 'center'; c.fillStyle = '#FFF4E0'; c.font = `700 36px ${DM}`; c.fillText(TAGLINE(), W/2, 1868);
   return cv.toDataURL('image/png');
 }
 
@@ -1769,23 +1865,26 @@ function momentoMarcante(d){
   if (lista.length < 10) return (d._momento = null); // pouca conversa em 2026 para comparar
   const ns = lista.map(x => x.n).sort((a,b) => a - b), normal = Math.max(1, ns[Math.floor(ns.length/2)]);
   const pessoas = Math.max(2, d.people.length);
-  let melhor = null;
+  const cands = [];
   for (const x of lista){
     if ((x.tema.luto || 0) >= 2) continue; // dia triste não vira "momento marcante"
     const falaram = Object.keys(x.quem).length, vezes = x.n / normal;
     if (x.n < 20 || vezes < 2.5) continue;
-    const score = vezes * (0.6 + falaram/pessoas) + x.risos/Math.max(10, x.n) * 3 + Math.min(x.midia, 30)/10;
-    if (!melhor || score > melhor.score) melhor = {...x, score, vezes, falaram};
+    cands.push({...x, vezes, falaram, score: vezes * (0.6 + falaram/pessoas) + x.risos/Math.max(10, x.n) * 3 + Math.min(x.midia, 30)/10});
   }
-  if (!melhor) return (d._momento = null);
-  const temaTop = Object.entries(melhor.tema).filter(([k]) => k !== 'luto').sort((a,b) => b[1] - a[1])[0];
-  let tema = temaTop && temaTop[1] >= 3 ? TEMAS_MOMENTO.find(t => t[0] === temaTop[0])[1] : null;
-  if (!tema) tema = melhor.risos / melhor.n > .2 ? ['😂', 'zoeira pura'] : melhor.midia >= 10 ? ['📸', 'chuva de fotos'] : ['💬', 'conversa que não acabava'];
-  const quem = Object.entries(melhor.quem).sort((a,b) => b[1] - a[1])[0][0];
-  const emoji = Object.entries(melhor.emo).sort((a,b) => b[1] - a[1])[0]?.[0] || '';
-  const data = melhor.t.toLocaleDateString('pt-BR', {day: 'numeric', month: 'long'});
-  return (d._momento = {data, n: melhor.n, vezes: Math.round(melhor.vezes), falaram: melhor.falaram, risos: melhor.risos, midia: melhor.midia, tema, quem, emoji});
+  const monta = melhor => {
+    const temaTop = Object.entries(melhor.tema).filter(([k]) => k !== 'luto').sort((a,b) => b[1] - a[1])[0];
+    let tema = temaTop && temaTop[1] >= 3 ? TEMAS_MOMENTO.find(t => t[0] === temaTop[0])[1] : null;
+    if (!tema) tema = melhor.risos / melhor.n > .2 ? ['😂', 'zoeira pura'] : melhor.midia >= 10 ? ['📸', 'chuva de fotos'] : ['💬', 'conversa que não acabava'];
+    const quem = Object.entries(melhor.quem).sort((a,b) => b[1] - a[1])[0][0];
+    const emoji = Object.entries(melhor.emo).sort((a,b) => b[1] - a[1])[0]?.[0] || '';
+    const data = melhor.t.toLocaleDateString('pt-BR', {day: 'numeric', month: 'long'});
+    return {data, n: melhor.n, vezes: Math.round(melhor.vezes), falaram: melhor.falaram, risos: melhor.risos, midia: melhor.midia, tema, quem, emoji};
+  };
+  d._momentos = cands.sort((a,b) => b.score - a.score).slice(0, 3).map(monta);
+  return (d._momento = d._momentos[0] || null);
 }
+
 function livro(d){
   const pags = Math.max(1, Math.round(d.palavras/300)), hp = d.palavras/77000; // 300 palavras por página; Harry Potter e a Pedra Filosofal ≈ 77 mil palavras
   const comp = hp >= .95 ? `o mesmo que ${nfmt1(hp)} ${Math.round(hp*10) === 10 ? 'livro' : 'livros'} do Harry Potter`
@@ -1817,7 +1916,7 @@ function vibe(d){
     ['Indicações e Desapegos', (s('indica') + s('vende'))/tx/.02, '🏘️'], ['Palavrões', s('palavrao')/tx/.03, '🤬'],
     ['Parabéns', s('parabens')/tx/.02, '🎂'], ['Reuniões', s('reuniao')/tx/.03, '📅'], ['Amor', s('amo')/tx/.02, '💖']
   ].sort((a,b) => b[1] - a[1]);
-  const pad = {amigos:['Zoeira','😎'], familia:['Amor e Correntes','💖'], trabalho:['Prazos e Cafezinho','☕'], comunidade:['Avisos e Vizinhança','🏘️']}[m] || ['Zoeira','😎'];
+  const pad = {casal:['Amor e Memes','💕'], amigos:['Zoeira','😎'], familia:['Amor e Correntes','💖'], trabalho:['Prazos e Cafezinho','☕'], comunidade:['Avisos e Vizinhança','🏘️']}[m] || ['Zoeira','😎'];
   let txt = cand[0][1] >= 1 ? cand[0][0] : pad[0], e = cand[0][1] >= 1 ? cand[0][2] : pad[1];
   if (cand[0][1] >= 1 && cand[1][1] >= .8 && !/ e /.test(txt) && !/ e /.test(cand[1][0])) txt += ' e ' + cand[1][0];
   const pico = d.hours.indexOf(Math.max(...d.hours));
@@ -1836,8 +1935,9 @@ function destaques(d){
   if (ps.length >= 3 && fant !== dono) out.push({e:'👻', t:'O Fantasma', n:fant.name, v:`só ${fmt(fant.count)} ${fant.count === 1 ? 'mensagem' : 'mensagens'}`});
   return out;
 }
+const corFundo = () => state.modo === 'casal' ? '#3A0F2A' : '#1A0B2E';
 function fundo(c, W, H, raio){
-  c.fillStyle = '#1A0B2E'; c.fillRect(0,0,W,H);
+  c.fillStyle = corFundo(); c.fillRect(0,0,W,H);
   const g = c.createRadialGradient(W/2,0,60,W/2,0,raio); g.addColorStop(0,'rgba(255,194,60,.30)'); g.addColorStop(1,'rgba(255,194,60,0)'); c.fillStyle = g; c.fillRect(0,0,W,H);
   const cols = ['#FFC23C','#FF4F8B','#FF7A59','#2EC4F1','#A98BFF']; let sd = 7;
   for (let i=0;i<Math.round(H/22);i++){ sd = (sd*9301+49297)%233280; const r = sd/233280; c.fillStyle = cols[i%5]; c.globalAlpha = .5; c.save(); c.translate(r*W, (i*211)%H); c.rotate(r*6); c.fillRect(-8,-3,16,6); c.restore(); }
@@ -1863,7 +1963,7 @@ function drawResumo(d){
   c.fillStyle = '#FFC23C'; c.font = `800 48px ${BR}`; c.fillText('retrozap 🏆', W/2, 100);
   c.fillStyle = '#B9A8CC'; c.font = `700 30px ${DM}`; c.fillText('RESUMO DO GRUPO', W/2, 175);
   c.fillStyle = '#FFC23C';
-  const nomeT = limpaTxt(state.grupo || 'Nosso grupo');
+  const nomeT = limpaTxt(state.grupo || nomePadrao());
   let tam = 84; c.font = `800 ${tam}px ${BR}`;
   while (tam > 50 && linhasDe(c, nomeT, 960) > 2){ tam -= 4; c.font = `800 ${tam}px ${BR}`; }
   const nl = Math.min(2, wrap(c, nomeT, W/2, 285, 960, Math.round(tam * 1.1)));
@@ -1895,7 +1995,7 @@ function drawResumo(d){
     c.fillStyle = '#FFC23C'; caber(c, x.n, cx, 1748, bw - 24, 800, 34, BR);
     c.fillStyle = '#FFF4E0'; caber(c, x.v, cx, 1778, bw - 24, 500, 22, DM);
   });
-  c.fillStyle = '#FFF4E0'; c.font = `700 36px ${DM}`; c.fillText('Todo grupo tem uma história · retrozap.com.br', W/2, 1868);
+  c.fillStyle = '#FFF4E0'; c.font = `700 36px ${DM}`; c.fillText(TAGLINE(), W/2, 1868);
   return cv.toDataURL('image/png');
 }
 function drawResumoQ(d){
@@ -1906,7 +2006,7 @@ function drawResumoQ(d){
   c.textAlign = 'center';
   c.fillStyle = '#FFC23C'; c.font = `800 40px ${BR}`; c.fillText('retrozap 🏆', W/2, 76);
   c.fillStyle = '#B9A8CC'; c.font = `700 24px ${DM}`; c.fillText('RESUMO DO GRUPO', W/2, 130);
-  c.fillStyle = '#FFC23C'; caber(c, state.grupo || 'Nosso grupo', W/2, 215, 960, 800, 64, BR);
+  c.fillStyle = '#FFC23C'; caber(c, state.grupo || nomePadrao(), W/2, 215, 960, 800, 64, BR);
   const tiles = [
     ['💬', fmt(d.total), `mensagens desde ${desde}`],
     ['📚', `${fmt(lv.pags)} páginas`, /Harry|Príncipe/.test(lv.comp) ? lv.comp : 'se o grupo fosse um livro'],
@@ -1921,14 +2021,14 @@ function drawResumoQ(d){
     c.fillStyle = '#FFC23C'; caber(c, num, cx, y + 190, w - 40, 800, 56, BR);
     c.fillStyle = '#B9A8CC'; c.font = `500 27px ${DM}`; wrap(c, rot, cx, y + 245, w - 50, 34);
   });
-  c.fillStyle = '#FFF4E0'; c.font = `700 30px ${DM}`; c.fillText('Todo grupo tem uma história · retrozap.com.br', W/2, 1048);
+  c.fillStyle = '#FFF4E0'; c.font = `700 30px ${DM}`; c.fillText(TAGLINE(), W/2, 1048);
   return cv.toDataURL('image/png');
 }
 
 /* ---------- títulos com (a): "O Locutor(a)", "Rei(nha) do Parabéns" ---------- */
 function gtit(t){
   return t.replace(/(^|\s)Rei(?!\(nha\))(?=\s|$)/g, '$1Rei(nha)')
-    .replace(/(Locutor|Escritor|Organizador|Madrugador|Risonho|Figurinheiro|Fotógrafo|Agradecido|Arrependido|Síndico|Objetivo|Corporativo|Dono|Tio)(?!\p{L}|\(a\))/gu, '$1(a)');
+    .replace(/(Locutor|Escritor|Organizador|Madrugador|Risonho|Figurinheiro|Fotógrafo|Agradecido|Arrependido|Síndico|Objetivo|Corporativo|Dono|Tio|Romântico)(?!\p{L}|\(a\))/gu, '$1(a)');
 }
 
 // Card de spoiler: as categorias em disputa, para o grupo palpitar antes da revelação
@@ -2000,7 +2100,7 @@ const RANKING = [
 // as melhores posições do grupo (até 6), da melhor para a pior
 function destaquesBrasil(){
   const c = state.comp; if (!c) return [];
-  const tipo = {amigos:'de amigos', familia:'de família', trabalho:'de trabalho', comunidade:'de comunidade'}[state.modo];
+  const tipo = {casal:'de casais', amigos:'de amigos', familia:'de família', trabalho:'de trabalho', comunidade:'de comunidade'}[state.modo];
   const sub = `entre os grupos ${c.escopo === 'todos' ? '' : tipo + ' '}no Retrozap${c.exemplo ? ' (simulação do exemplo)' : ''}`;
   const d = state.data, soma = k => d ? d.people.reduce((t,p) => t + (p[k] || 0), 0) : 0;
   const dias = d ? Math.max(1, Math.round((d.end - d.start)/864e5) + 1) : 1, txs = Math.max(1, soma('text'));
@@ -2021,7 +2121,7 @@ function destaquesBrasil(){
 function drawComparacao(d){
   const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
   const BR = '"Bricolage Grotesque", sans-serif', DM = '"DM Sans", sans-serif', lista = destaquesBrasil();
-  const tipo = {amigos:'DE AMIGOS', familia:'DE FAMÍLIA', trabalho:'DE TRABALHO', comunidade:'DE COMUNIDADE'}[state.modo];
+  const tipo = {casal:'DE CASAIS', amigos:'DE AMIGOS', familia:'DE FAMÍLIA', trabalho:'DE TRABALHO', comunidade:'DE COMUNIDADE'}[state.modo];
   fundo(c, W, H, 1100);
   c.textAlign = 'center';
   c.fillStyle = '#FFC23C'; c.font = `800 48px ${BR}`; c.fillText('retrozap 🏆', W/2, 100);
@@ -2040,7 +2140,75 @@ function drawComparacao(d){
   c.textAlign = 'center';
   if (state.comp?.exemplo){ c.fillStyle = '#B9A8CC'; c.font = `500 26px ${DM}`; c.fillText('simulação do grupo de exemplo', W/2, 1745); }
   c.fillStyle = '#B9A8CC'; c.font = `500 30px ${DM}`; c.fillText('E o seu grupo, em que posição fica?', W/2, 1800);
-  c.fillStyle = '#FFF4E0'; c.font = `700 36px ${DM}`; c.fillText('Todo grupo tem uma história · retrozap.com.br', W/2, 1868);
+  c.fillStyle = '#FFF4E0'; c.font = `700 36px ${DM}`; c.fillText(TAGLINE(), W/2, 1868);
+  return cv.toDataURL('image/png');
+}
+
+// Destaques de 2026 (Premium): comparações com 2025, revelação, sumiço, dupla, top momentos, palavra do ano
+const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+function destaques2026(d){
+  if (d._d26) return d._d26;
+  const A = ANO_MOMENTO, B = A - 1, casal = state.modo === 'casal', itens = [];
+  const m26 = d.msgs.filter(m => m.t.getFullYear() === A);
+  if (m26.length < 50) return (d._d26 = itens);
+  const pct = x => `${Math.round(x*100)}%`;
+  // 2026 x 2025, até a mesma data
+  const ult = m26.reduce((a, m) => m.t > a ? m.t : a, m26[0].t), lim = new Date(B, ult.getMonth(), ult.getDate(), 23, 59);
+  const m25 = d.msgs.filter(m => m.t.getFullYear() === B), n25 = m25.filter(m => m.t <= lim).length;
+  if (n25 >= 50){ const v = Math.round((m26.length/n25 - 1)*100), sujeito = casal ? 'Vocês falaram' : 'O grupo falou';
+    itens.push({e:'📊', t:'2026 x 2025', big: v >= 0 ? `+${v}%` : `${v}%`, sub: `${sujeito} ${Math.abs(v)}% ${v >= 0 ? 'a mais' : 'a menos'} que em 2025 (até ${ult.getDate()} de ${MESES[ult.getMonth()]})`}); }
+  if (!casal && d.people.length >= 3){
+    if (m25.length >= 100){
+      const s = d.people.map(p => ({n: p.name, a: (p.y[A]||0)/m26.length, b: (p.y[B]||0)/m25.length, c: p.y[A]||0}));
+      const rev = s.filter(x => x.c >= 20).sort((x,y) => (y.a - y.b) - (x.a - x.b))[0];
+      if (rev && rev.a - rev.b > .02) itens.push({e:'🚀', t:'Revelação de 2026', big: rev.n, sub: `de ${pct(rev.b)} para ${pct(rev.a)} das mensagens do grupo`});
+      const sum = s.filter(x => x.b >= .05).sort((x,y) => (x.a - x.b) - (y.a - y.b))[0];
+      if (sum && sum.b - sum.a > .02) itens.push({e:'👻', t:'Sumiço do ano', big: sum.n, sub: `de ${pct(sum.b)} para ${pct(sum.a)} das mensagens. Cadê você?`});
+    }
+    const par = {}; for (let i = 1; i < m26.length; i++){ const a = m26[i-1], b2 = m26[i]; if (a.a !== b2.a && b2.t - a.t < 30*60e3){ const k = [a.a, b2.a].sort().join(' & '); par[k] = (par[k]||0) + 1; } }
+    const dupla = Object.entries(par).sort((x,y) => y[1] - x[1])[0];
+    if (dupla) itens.push({e:'🤝', t:'Dupla do ano', big: dupla[0], sub: `${fmt(dupla[1])} trocas de mensagem em 2026`});
+  }
+  if (casal){
+    const fd = {}; let ult2 = ''; for (const m of m26){ const k = m.t.toDateString(); if (k !== ult2){ fd[m.a] = (fd[m.a]||0) + 1; ult2 = k; } }
+    const pux = Object.entries(fd).sort((x,y) => y[1] - x[1])[0];
+    if (pux) itens.push({e:'☀️', t:'Quem puxou mais papo', big: pux[0], sub: `abriu a conversa em ${fmt(pux[1])} dias de 2026`});
+    const am = Array(12).fill(0); for (const m of m26) if (RX.teamo.test(m.b)) am[m.t.getMonth()]++;
+    const mx = Math.max(...am); if (mx >= 3) itens.push({e:'💘', t:'Mês mais apaixonado', big: MESES[am.indexOf(mx)], sub: `${fmt(mx)} declarações de amor`});
+  }
+  momentoMarcante(d); const mom = d._momentos || [];
+  if (mom.length) itens.push({e:'🌟', t:`Top ${mom.length} momento${mom.length > 1 ? 's' : ''} de 2026`, big: mom.map(x => x.data).join(' · '), sub: mom.map(x => `${x.tema[0]} ${x.tema[1]}`).join(' · ')});
+  // palavra de 2026: a que mais cresceu em relação aos anos anteriores
+  const conta = (lista) => { const o = {}; let t = 0; for (const m of lista){ if (kind(m.b) !== 'text' || RX.laugh.test(m.b)) continue;
+    const sl = m.b.toLowerCase().replace(/(?:https?:\/\/|www\.)\S+|\S+\.(?:com|br|net|org)\b\S*/g, ' ');
+    for (const w of sl.normalize('NFC').match(/\p{L}{4,}/gu) || []) if (!STOP.has(w)){ o[w] = (o[w]||0) + 1; t++; } } return [o, Math.max(1, t)]; };
+  const [w26, t26] = conta(m26), [wAnt, tAnt] = conta(d.msgs.filter(m => m.t.getFullYear() < A));
+  const pal = Object.entries(w26).filter(([, n]) => n >= 8).map(([w, n]) => [w, n, (n/t26) / (((wAnt[w]||0) + 1)/tAnt)]).sort((x,y) => y[2] - x[2])[0];
+  if (pal) itens.push({e:'🗣️', t:'Palavra de 2026', big: `“${pal[0]}”`, sub: `${fmt(pal[1])} vezes em 2026${tAnt > 500 ? `, ${Math.max(2, Math.round(pal[2]))}× mais que antes` : ''}`});
+  const meses = Array(12).fill(0); for (const m of m26) meses[m.t.getMonth()]++;
+  const mi = meses.indexOf(Math.max(...meses)); itens.push({e:'📈', t:'Mês mais agitado', big: MESES[mi], sub: `${fmt(meses[mi])} mensagens`});
+  return (d._d26 = itens.slice(0, 7));
+}
+function altNosso2026(d){ return `Nosso 2026${state.grupo ? ' no grupo ' + state.grupo : ''}: ${destaques2026(d).map(x => `${x.t}: ${x.big}`).join('; ')}.`; }
+function drawNosso2026(d){
+  const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
+  const BR = '"Bricolage Grotesque", sans-serif', DM = '"DM Sans", sans-serif', lista = destaques2026(d);
+  fundo(c, W, H, 1100); c.textAlign = 'center';
+  c.fillStyle = '#FFC23C'; c.font = `800 48px ${BR}`; c.fillText('retrozap 🏆', W/2, 100);
+  if (state.grupo){ c.fillStyle = '#FFF4E0'; caber(c, state.grupo, W/2, 178, 960, 800, 62, BR); }
+  c.font = '120px serif'; c.fillText('🗓️', W/2, 340);
+  c.fillStyle = '#FFC23C'; c.font = `800 92px ${BR}`; c.fillText(state.modo === 'casal' ? 'O NOSSO 2026' : 'NOSSO 2026', W/2, 470);
+  c.fillStyle = '#B9A8CC'; c.font = `700 30px ${DM}`; c.fillText('OS DESTAQUES DO ANO', W/2, 525);
+  const y0 = 580, passo = Math.min(190, 1140/Math.max(1, lista.length)), alt = passo - 18;
+  lista.forEach((x, i) => {
+    const y = y0 + i*passo;
+    c.fillStyle = 'rgba(61,26,92,.88)'; c.beginPath(); c.roundRect(70, y, W-140, alt, 30); c.fill();
+    c.textAlign = 'left'; c.font = `${Math.round(alt*.45)}px serif`; c.fillStyle = '#FFF4E0'; c.fillText(x.e, 105, y + alt*.64);
+    c.fillStyle = '#B9A8CC'; caber(c, x.t.toUpperCase(), 240, y + alt*.3, 740, 700, Math.round(alt*.17), DM);
+    c.fillStyle = '#FFC23C'; caber(c, x.big, 240, y + alt*.62, 740, 800, Math.round(alt*.3), BR);
+    c.fillStyle = '#FFF4E0'; caber(c, x.sub, 240, y + alt*.86, 740, 500, Math.round(alt*.17), DM);
+  });
+  c.textAlign = 'center'; c.fillStyle = '#FFF4E0'; c.font = `700 36px ${DM}`; c.fillText(TAGLINE(), W/2, 1868);
   return cv.toDataURL('image/png');
 }
 function altComparacao(){ return `Nosso grupo${state.grupo ? ' ' + state.grupo : ''} no ranking do Retrozap: ${destaquesBrasil().map(x => x.txt).join('; ')}.`; }
@@ -2245,7 +2413,7 @@ const custom = (texto = '') => {
 function drawCard({emoji, title, winner, line, small, podio}){
   const cv = document.createElement('canvas'); cv.width = cv.height = 1080; const c = cv.getContext('2d');
   const modo = MODOS[state.modo].c;
-  c.fillStyle = '#1A0B2E'; c.fillRect(0,0,1080,1080);
+  c.fillStyle = corFundo(); c.fillRect(0,0,1080,1080);
   const g = c.createRadialGradient(540,0,50,540,0,800); g.addColorStop(0,'rgba(255,194,60,.28)'); g.addColorStop(1,'rgba(255,194,60,0)');
   c.fillStyle = g; c.fillRect(0,0,1080,1080);
   const cols = ['#FFC23C','#FF4F8B','#FF7A59','#2EC4F1','#FFF4E0']; let s = 11;
@@ -2266,7 +2434,7 @@ function drawCard({emoji, title, winner, line, small, podio}){
   c.restore();
   c.fillStyle = '#B9A8CC'; c.font = '500 44px "DM Sans", sans-serif'; c.fillText(line, 540, podio?.length ? 820 : 850, 980);
   if (podio?.length){ c.fillStyle = '#FFF4E0'; c.font = '700 40px "DM Sans", sans-serif'; c.fillText(podio.join('     '), 540, 905, 980); }
-  c.fillStyle = '#FFF4E0'; c.font = '700 34px "DM Sans", sans-serif'; c.fillText('Todo grupo tem uma história · retrozap.com.br', 540, 1010);
+  c.fillStyle = '#FFF4E0'; c.font = '700 34px "DM Sans", sans-serif'; c.fillText(TAGLINE(), 540, 1010);
   return cv.toDataURL('image/png');
 }
 let DOWN = null;
@@ -2282,7 +2450,7 @@ const LINK = 'https://retrozap.com.br';
 function convite(tipo, x){
   if (tipo === 'premio') return `Saiu o resultado no nosso grupo: ${x.winner.name} levou "${x.n}" 🏆😂 Descubra quem leva cada prêmio no SEU grupo, de graça e sem as mensagens saírem do celular: ${LINK}`;
   if (tipo === 'destaque') return `${x} é o destaque do nosso grupo 👑 Descubra quem é o destaque do SEU grupo no Retrozap: ${LINK}`;
-  if (tipo === 'ranking'){ const b = destaquesBrasil()[0], ti = {amigos:'de amigos', familia:'de família', trabalho:'de trabalho', comunidade:'de comunidade'}[state.modo];
+  if (tipo === 'ranking'){ const b = destaquesBrasil()[0], ti = {casal:'de casais', amigos:'de amigos', familia:'de família', trabalho:'de trabalho', comunidade:'de comunidade'}[state.modo];
     const frase = !b ? 'tem posição no ranking' : b.k === 'dias' ? `é ${b.txt.toLowerCase()} ${ti}` : `está no ${b.txt} entre os grupos ${ti}`;
     return `Nosso grupo ${frase} do Retrozap 😂🏆 Descubra a posição do SEU grupo. É grátis: retrozap.com.br`; }
   if (tipo === 'spoiler') return `👀 SPOILER! Fiz a retrospectiva do nosso grupo no Retrozap e esses são os ${x} troféus em disputa. Quem leva cada um? Mandem os palpites! Todo grupo tem uma história, descubra a do seu em www.retrozap.com.br`;
@@ -2355,10 +2523,10 @@ async function openCard(fazer, texto = convite('resumo'), alt = 'Card para compa
 function confetti(){
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const cv = $('#confetti'), c = cv.getContext('2d'); cv.width = innerWidth; cv.height = innerHeight;
-  const cols = ['#FFC23C','#FF4F8B','#FF7A59','#2EC4F1','#FFF4E0'];
+  const casal = state.modo === 'casal', cols = casal ? ['#E8336D','#FF8FB1','#FFC2D4','#C2185B','#FFFFFF'] : ['#FFC23C','#FF4F8B','#FF7A59','#2EC4F1','#FFF4E0'];
   const ps = Array.from({length:120}, () => ({x:innerWidth/2, y:innerHeight*.35, vx:(Math.random()-.5)*14, vy:-Math.random()*14-4, r:Math.random()*6, c:cols[Math.random()*5|0], s:Math.random()*.3}));
   let t = 0; (function f(){ c.clearRect(0,0,cv.width,cv.height);
-    for (const p of ps){ p.x += p.vx; p.y += p.vy; p.vy += .45; p.r += p.s; c.save(); c.translate(p.x,p.y); c.rotate(p.r); c.fillStyle = p.c; c.fillRect(-5,-3,10,6); c.restore(); }
+    for (const p of ps){ p.x += p.vx; p.y += p.vy; p.vy += .45; p.r += p.s; c.save(); c.translate(p.x,p.y); c.rotate(p.r); c.fillStyle = p.c; if (casal){ c.font = '16px serif'; c.fillText('❤', -6, 6); } else c.fillRect(-5,-3,10,6); c.restore(); }
     if (++t < 110) requestAnimationFrame(f); else c.clearRect(0,0,cv.width,cv.height); })();
 }
 
@@ -2397,4 +2565,12 @@ function demoChat(){
 $('#home').onclick = inicio;
 $('#voltar').onclick = () => voltar();
 setModo('amigos'); inicio();
+// prévia: alternar o plano para ver como fica grátis x premium
+function marcaPlano(){ document.querySelectorAll('#planoTeste button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.plano === state.planoTeste))); }
+if (AMBIENTE_TESTE){
+  const t = document.createElement('div'); t.id = 'planoTeste'; t.setAttribute('role', 'group'); t.setAttribute('aria-label', 'Versão de teste: plano');
+  t.innerHTML = '<span>🧪 Teste</span><button type="button" data-plano="gratis">Grátis</button><button type="button" data-plano="premium">Premium</button>';
+  document.body.appendChild(t); marcaPlano();
+  t.querySelectorAll('button').forEach(b => b.onclick = () => { state.planoTeste = b.dataset.plano; marcaPlano(); const topo = PILHA[PILHA.length-1]; if (topo) topo.f(); });
+}
 </script>
