@@ -1059,7 +1059,7 @@ function home(){
     </div>`}
     <button class="btn btn-main" id="start"${state.arquivo ? '' : ' disabled'}>${state.modo === 'casal' ? '💕 Fazer a retrospectiva do casal' : '🏆 Fazer a retrospectiva'}</button>
     <p class="err" id="err" hidden></p>
-    <div class="btn-row"><button class="btn btn-ghost" id="demo">👀 Ver com um grupo de exemplo</button></div>
+    <div class="btn-row"><button class="btn btn-ghost" id="demo">${state.modo === 'casal' ? '👀 Ver com um casal de exemplo' : '👀 Ver com um grupo de exemplo'}</button></div>
     <p class="small">Protótipo do Retrozap. Nos testes, o grupo de exemplo é inventado.</p>
   </section>`;
   view.querySelectorAll('.mode').forEach(b => b.onclick = () => { const y = scrollY, k = b.dataset.m; setModo(k); home(); scrollTo(0, y); view.querySelector(`[data-m="${k}"]`)?.focus({preventScroll:true}); });
@@ -1075,7 +1075,7 @@ function home(){
   $('#start').onclick = () => state.arquivo && lembrete(() => readFile(state.arquivo));
   view.querySelectorAll('[data-tipo]').forEach(b => b.onclick = () => { const k = b.dataset.tipo, y = scrollY; setModo(k === 'casal' ? 'casal' : (state.ultimoGrupo || 'amigos')); home(); scrollTo(0, y); view.querySelector(`[data-tipo="${k}"]`)?.focus({preventScroll: true}); });
   tutorial(state.how);
-  $('#demo').onclick = () => { DUR = {}; run(demoChat(), true); };
+  $('#demo').onclick = () => { DUR = {}; run(state.modo === 'casal' ? demoCasal() : demoChat(), true); };
   window.scrollTo(0,0);
 }
 // duração de cada áudio .opus do zip (só exports "com mídia"): lê a última página Ogg do arquivo
@@ -1169,7 +1169,7 @@ async function run(text, sample){
     home(); const err = $('#err'); err.hidden = false;
     err.textContent = 'Esse arquivo não parece um export de grupo. Confira o passo a passo e tente de novo.'; return;
   }
-  if (sample) state.grupo = 'Turma do Churras'; else if (!state.grupo) state.grupo = nomeDaConversa(text);
+  if (sample) state.grupo = state.modo === 'casal' ? 'Nosso Cantinho 💕' : 'Turma do Churras'; else if (!state.grupo) state.grupo = nomeDaConversa(text);
   state.raw = msgs; state.alias = {}; state.hidden = new Set(); state.ctx = ''; state.intervaloVisto = false;
   state.left = new Set(msgs.sys.filter(e => e.type === 'saiu' || e.type === 'removido').map(e => e.who));
   state.changed = new Set(msgs.sys.filter(e => e.type === 'numero').map(e => e.who));
@@ -1197,10 +1197,10 @@ function roster(){
   const dentro = todos.filter(r => !state.hidden.has(r.n) && !state.alias[r.n]).length;
   const sug = {}; for (const x of numeros) sug[x.n] = sugerir(x, pessoas, raw);
   view.innerHTML = `<section class="screen">
-    ${state.sample ? '<span class="sample">Grupo de exemplo</span>' : ''}
-    <p class="eyebrow">Antes de começar · Confira a turma</p>
+    ${state.sample ? `<span class="sample">${state.modo === 'casal' ? 'Casal de exemplo' : 'Grupo de exemplo'}</span>` : ''}
+    <p class="eyebrow">Antes de começar · ${state.modo === 'casal' ? 'Confira os nomes' : 'Confira a turma'}</p>
     <h1 style="font-size:36px">${dentro} pessoas na cerimônia</h1>
-    <div class="panel"><label class="ask" for="gn">Nome do grupo <span class="small">(aparece nos cards)</span></label>
+    <div class="panel"><label class="ask" for="gn">${state.modo === 'casal' ? 'Nome do casal' : 'Nome do grupo'} <span class="small">(aparece nos cards)</span></label>
       <input id="gn" type="text" maxlength="44" value="${esc(state.grupo)}" placeholder="Ex.: Família Silva" autocomplete="off" style="width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid var(--linha);background:var(--noite);color:var(--areia);font:inherit;font-size:17px"></div>
     <div class="panel"><p class="ask">${state.modo === 'casal' ? 'Vocês estão...' : 'De onde vem esse grupo?'} <span class="small">(opcional)</span></p>
       <div class="chips">${CONTEXTOS[state.modo].map((c,i) => `<button type="button" class="chip ex" data-ctx="${i}" aria-pressed="${state.ctx === c}"${state.ctx === c ? ' style="border-color:var(--manga);background:rgba(255,194,60,.2)"' : ''}>${esc(c)}</button>`).join('')}</div></div>
@@ -1218,9 +1218,9 @@ function roster(){
           <label class="small" for="pick-${i}">${s ? 'Não é? Escolha quem é:' : 'Se souber, escolha quem é:'}</label>
           <select id="pick-${i}" data-pick="${i}"><option value="">Escolher pessoa</option>${pessoas.map(p => `<option>${esc(p.n)}</option>`).join('')}</select>`}
       </div>`; }).join('')}</div>` : ''}
-    <h2 style="font-size:24px">👥 Integrantes</h2>
-    <p class="small">Desmarque quem não está mais no grupo. Se alguém aparece duas vezes, toque em "Contato duplicado?".</p>
-    <div class="btn-row"><button class="btn btn-ghost mini" id="inat">💤 Tirar quem não fala há 12+ meses</button><button class="btn btn-ghost mini" id="todos">Incluir todo mundo</button></div>
+    <h2 style="font-size:24px">${state.modo === 'casal' ? '💘 Vocês dois' : '👥 Integrantes'}</h2>
+    <p class="small">${state.modo === 'casal' ? 'Se a mesma pessoa aparece duas vezes (trocou de número), toque em "Contato duplicado?".' : 'Desmarque quem não está mais no grupo. Se alguém aparece duas vezes, toque em "Contato duplicado?".'}</p>
+    <div class="btn-row"${state.modo === 'casal' ? ' hidden' : ''}><button class="btn btn-ghost mini" id="inat">💤 Tirar quem não fala há 12+ meses</button><button class="btn btn-ghost mini" id="todos">Incluir todo mundo</button></div>
     <div class="mems">${pessoas.filter(r => !state.alias[r.n]).map(r => {
       const i = pessoas.indexOf(r), off = state.hidden.has(r.n), b = [];
       if (state.left.has(r.n)) b.push('🚪 Saiu do grupo');
@@ -1331,7 +1331,7 @@ function story(){
   const anosL = Object.keys(porAno).sort(), maxA = Math.max(...Object.values(porAno)), recorde = anosL.find(y => porAno[y] === maxA);
   const tile = (n, l) => { const t = String(n).length; return `<div class="tile"><span class="n"${t > 8 ? ' style="font-size:clamp(17px,5vw,22px)"' : t > 5 ? ' style="font-size:clamp(20px,6.4vw,26px)"' : ''}>${n}</span><span class="l">${l}</span></div>`; };
   view.innerHTML = `<section class="screen">
-    ${state.sample ? '<span class="sample">Grupo de exemplo</span>' : ''}
+    ${state.sample ? `<span class="sample">${state.modo === 'casal' ? 'Casal de exemplo' : 'Grupo de exemplo'}</span>` : ''}
     <p class="eyebrow">Ato I · Conhecendo ${m === 'casal' ? 'o casal' : 'o grupo'}</p>
     <div class="persona"><span class="em" aria-hidden="true">${em}</span><div><span class="small">A classificação ${m === 'casal' ? 'do casal' : 'do grupo'} é</span><h1>${nome}</h1><span class="small">${porque}</span></div></div>
     <div class="tale">${ps.map((p,i) => `<p style="animation-delay:${i*.35}s">${p}</p>`).join('')}</div>
@@ -1410,7 +1410,7 @@ function lineup(){
   const ativos = state.awards.filter(a => !a.honra), bonus = state.bonus || [];
   const linha = (a, tag) => `<div class="cat${tag ? ' bon' : ''}"><span class="em" aria-hidden="true">${a.e}</span><div class="ct"><b>${a.n}</b><span class="small">${esc(a.crit)}</span></div>${tag ? '<span class="st">extra</span>' : ''}</div>`;
   view.innerHTML = `<section class="screen">
-    ${state.sample ? '<span class="sample">Grupo de exemplo</span>' : ''}
+    ${state.sample ? `<span class="sample">${state.modo === 'casal' ? 'Casal de exemplo' : 'Grupo de exemplo'}</span>` : ''}
     <p class="eyebrow">Intervalo · As categorias</p>
     <h1 style="font-size:36px">${ativos.length} troféus em disputa. Quem leva?</h1>
     <p class="lead">As categorias do modo ${MODOS[state.modo].n}${bonus.length ? `, mais ${bonus.length} extras guardadas para o final` : ''}.</p>
@@ -1444,7 +1444,7 @@ function award(){
     $('#next').onclick = next; return;
   }
   view.innerHTML = `<section class="screen">
-    ${state.sample ? '<span class="sample">Grupo de exemplo</span>' : ''}
+    ${state.sample ? `<span class="sample">${state.modo === 'casal' ? 'Casal de exemplo' : 'Grupo de exemplo'}</span>` : ''}
     <p class="count">Ato II · Prêmio ${state.idx+1} de ${n}</p>
     <div class="award">
       <div class="em" aria-hidden="true">${a.e}</div>
@@ -1501,7 +1501,7 @@ function suspense(){
   const d = state.data, fatos = fatosResumo(d), v = vibe(d);
   let i = -1;
   view.innerHTML = `<section class="screen wr" style="align-items:center;text-align:center">
-    ${state.sample ? '<span class="sample">Grupo de exemplo</span>' : ''}
+    ${state.sample ? `<span class="sample">${state.modo === 'casal' ? 'Casal de exemplo' : 'Grupo de exemplo'}</span>` : ''}
     <h1 class="sr-only">O resumo do grupo</h1>
     <p class="eyebrow" aria-hidden="true">Ato III · O resumo do grupo</p>
     <div class="dots" aria-hidden="true">${fatos.map(() => '<i></i>').join('')}<i></i></div>
@@ -1546,7 +1546,7 @@ function fimTela(semFesta){
   setSteps(3);
   const d = state.data, b = state.bonus || [], temBonus = b.length && !state.bonusShown, temRank = destaquesBrasil().length, d26 = destaques2026(d), trava26 = !premiumLocal() && d26.length > 2, casal = state.modo === 'casal' && d.people.length === 2;
   view.innerHTML = `<section class="screen wr" style="align-items:center;text-align:center">
-    ${state.sample ? '<span class="sample">Grupo de exemplo</span>' : ''}
+    ${state.sample ? `<span class="sample">${state.modo === 'casal' ? 'Casal de exemplo' : 'Grupo de exemplo'}</span>` : ''}
     <p class="eyebrow">Ato III · ${casal ? 'O resumo de vocês' : 'O resumo do grupo'}</p>
     <div class="em-g" aria-hidden="true">📸</div>
     <h1 class="roleta ok"${(state.grupo || '').length > 18 ? ' style="font-size:clamp(24px,7vw,34px)"' : ''}>${esc(state.grupo || nomePadrao())}</h1>
@@ -1706,7 +1706,7 @@ function maisPremios(){
   setSteps(2);
   const b = state.bonus;
   view.innerHTML = `<section class="screen">
-    ${state.sample ? '<span class="sample">Grupo de exemplo</span>' : ''}
+    ${state.sample ? `<span class="sample">${state.modo === 'casal' ? 'Casal de exemplo' : 'Grupo de exemplo'}</span>` : ''}
     <p class="eyebrow">Ato bônus</p>
     <div class="crown" style="font-size:72px;text-align:center" aria-hidden="true">🎁</div>
     <h1 style="font-size:34px;text-align:center">Ainda tem ${b.length} prêmios guardados</h1>
@@ -1806,7 +1806,7 @@ function final(semFesta){
   setSteps(3);
   const d = state.data, {champ} = campeao(), b = state.bonus || [], temBonus = b.length && !state.bonusShown;
   view.innerHTML = `<section class="screen final">
-    ${state.sample ? '<span class="sample">Grupo de exemplo</span>' : ''}
+    ${state.sample ? `<span class="sample">${state.modo === 'casal' ? 'Casal de exemplo' : 'Grupo de exemplo'}</span>` : ''}
     <p class="eyebrow">Ato III · O destaque</p>
     <div class="crown" aria-hidden="true">👑</div>
     <h1 style="font-size:38px;text-align:center">O destaque do grupo é ${esc(champ[0])}</h1>
@@ -1843,7 +1843,7 @@ function personagensTela(){
   setSteps(3);
   const d = state.data, {by} = campeao();
   view.innerHTML = `<section class="screen final">
-    ${state.sample ? '<span class="sample">Grupo de exemplo</span>' : ''}
+    ${state.sample ? `<span class="sample">${state.modo === 'casal' ? 'Casal de exemplo' : 'Grupo de exemplo'}</span>` : ''}
     <p class="eyebrow">Final · Os personagens</p>
     <h1 style="font-size:36px;text-align:center">Os personagens do grupo</h1>
     <p class="lead">Os 5 que mais movimentam o grupo, e o que faz cada um ser quem é.</p>
@@ -2134,7 +2134,7 @@ async function comparar(d){
   state.comp = null;
   if (state.comparar === false) return;
   // grupo de exemplo: comparação simulada, e nada é enviado ao banco
-  if (state.sample){ state.comp = {pronto:true, n:1000, exemplo:true, top:{risadas:3, palavrao:2, furos:4, por_dia:6, madrugada:7, recorde:9, audios:12, total:4, figurinhas:38, textao:60, apagadas:41, dias:30, bomdia:70, parabens:55, fora:80}}; return; }
+  if (state.sample){ state.comp = {pronto:true, n:1000, exemplo:true, top:{risadas:3, palavrao:2, furos:4, por_dia:6, madrugada:7, recorde:9, audios:12, total:4, figurinhas:38, textao:60, apagadas:41, dias:30, bomdia:70, parabens:55, fora:80, amor:3, coracoes:5}}; return; }
   try {
     const base = `${+d.start}|${d.total}|${d.people.length}|${state.modo}`;
     const h = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(base)))].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
@@ -2593,7 +2593,7 @@ const custom = (texto = '') => {
   pilha(() => custom(), 'custom');
   setSteps(3);
   view.innerHTML = `<section class="screen">
-    ${state.sample ? '<span class="sample">Grupo de exemplo</span>' : ''}
+    ${state.sample ? `<span class="sample">${state.modo === 'casal' ? 'Casal de exemplo' : 'Grupo de exemplo'}</span>` : ''}
     <p class="eyebrow">Crie sua categoria · grátis no lançamento</p>
     <h1 style="font-size:38px">Escolha mais uma categoria. A gente descobre quem leva.</h1>
     <div class="panel">
@@ -2614,7 +2614,7 @@ const custom = (texto = '') => {
   function reveal(a){
     a.custom = true; a.mech = 'podio';
     view.innerHTML = `<section class="screen">
-      ${state.sample ? '<span class="sample">Grupo de exemplo</span>' : ''}
+      ${state.sample ? `<span class="sample">${state.modo === 'casal' ? 'Casal de exemplo' : 'Grupo de exemplo'}</span>` : ''}
       <p class="count">Prêmio criado pelo grupo${a.nota ? ' · ' + esc(a.nota) : ''}</p>
       <div class="award"><div class="em" aria-hidden="true">${esc(a.e)}</div><h2>${esc(a.n)}</h2><p class="crit">${esc(a.crit)}</p>
         <div id="game" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:12px"></div>
@@ -2751,6 +2751,29 @@ function confetti(){
     if (++t < 110) requestAnimationFrame(f); else c.clearRect(0,0,cv.width,cv.height); })();
 }
 
+/* ---------- casal de exemplo (inventado, nomes neutros) ---------- */
+function demoCasal(){
+  let s = 11; const rnd = () => (s = (s*16807) % 2147483647) / 2147483647;
+  const P = [
+    {n:'Dani', w:52, h:[7,23], m:['figurinha omitida','figurinha omitida','imagem ocultada'], t:['bom dia amor ☀️','te amo ❤️','chegou bem?','saudade de vc 🥰','kkkkkk','to com fome','oq vamos jantar hoje?','amorzinho 😘','vc viu isso?','desculpa, tava em reunião','pizza ou japa?','to saindo agora','te amo muito 💕','que dia longo','me liga quando puder']},
+    {n:'Cris', w:48, h:[8,1], m:['áudio omitido','áudio omitido','imagem ocultada'], t:['bom diaaa','te amo também ❤️','kkkk','to morrendo de fome','japa!!','meu bem 💕','haha','saudades','desculpa a demora','vamos no cinema sábado?','chegando em 10 min','dorme bem 😘','to com saudade','olha que lindo','amo vc']}
+  ];
+  const pad = n => String(n).padStart(2,'0'), base = new Date(2024,8,1).getTime(), dias = 770, out = [];
+  let ult = null;
+  for (let i = 0; i < 9000; i++){
+    const day = Math.floor(rnd()*dias), q = rnd() < (ult === 'Dani' ? .55 : .45) ? P[1] : P[0]; ult = q.n;
+    let h = q.h[0] + Math.floor(rnd()*(((q.h[1] + 24 - q.h[0]) % 24) + 1)); h %= 24;
+    const t = new Date(base + day*864e5); t.setHours(h, Math.floor(rnd()*60));
+    const body = rnd() < .14 ? q.m[Math.floor(rnd()*q.m.length)] : q.t[Math.floor(rnd()*q.t.length)];
+    out.push({t, line:`${pad(t.getDate())}/${pad(t.getMonth()+1)}/${t.getFullYear()} ${pad(t.getHours())}:${pad(t.getMinutes())} - ${q.n}: ${body}`});
+  }
+  // um dia especial em 2026: aniversário de namoro
+  const festa = ['FELIZ 1 ANO, AMOR!!! 💕','Feliz aniversário de namoro!! ❤️','Te amo muito 🥰','<Mídia oculta>','Olha essa foto nossa','kkkkkk que vergonha','Melhor ano da minha vida','Jantar hoje à noite?','Já reservei!!','💕💕💕'];
+  for (let i = 0; i < 60; i++){ const t = new Date(2026,5,12,8 + Math.floor(i/5), (i*7) % 60), nome = i % 2 ? 'Cris' : 'Dani';
+    out.push({t, line:`${pad(t.getDate())}/${pad(t.getMonth()+1)}/${t.getFullYear()} ${pad(t.getHours())}:${pad(t.getMinutes())} - ${nome}: ${festa[i % festa.length]}`}); }
+  out.sort((a,b) => a.t - b.t);
+  return '01/09/2024 08:00 - As mensagens e as ligações são protegidas com a criptografia de ponta a ponta.\n' + out.map(o => o.line).join('\n');
+}
 /* ---------- grupo de exemplo (inventado) ---------- */
 function demoChat(){
   let s = 7; const rnd = () => (s = (s*16807) % 2147483647) / 2147483647;
