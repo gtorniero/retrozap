@@ -1355,6 +1355,9 @@ function fatosResumo(d){
   f.push({e:'📚', big:`${fmt(lv.pags)} ${lv.pags === 1 ? 'página' : 'páginas'}`, num:lv.pags, sub:`se esse grupo virasse livro · ${lv.comp}`,
     piada: lv.pags > 500 ? 'Tolstói ficaria com inveja.' : lv.pags > 100 ? 'Já dava para lançar na Bienal.' : 'Um livrinho de bolso. Fofo.'});
   f.push({e:'⏱️', big:tempoLeitura(d.palavras), sub:'para ler tudo, sem parar', piada:'Sugestão: não tente.'});
+  const mo = momentoMarcante(d);
+  if (mo) f.push({e:'🌟', big:mo.data, sub:`o momento mais marcante de ${ANO_MOMENTO} · ${fmt(mo.n)} mensagens, ${mo.vezes}× um dia normal · ${mo.falaram} pessoas falando`,
+    piada:`Assunto: ${mo.tema[0]} ${mo.tema[1]}. Quem mais falou: ${mo.quem}.${mo.emoji ? ' Emoji do dia: ' + mo.emoji : ''}`});
   if (fr) f.push({e:'🗣️', big:fr.txt, sub:fr.sub, piada: d.lema && d.lema[1] >= 3 ? 'Já pode virar tatuagem coletiva.' : 'Os assuntos que nunca morrem.'});
   if (d.giria && d.giria[1] >= 3) f.push({e:'🤙', big:`“${d.giria[0]}”`, sub:`a gíria oficial · ${fmt(d.giria[1])} vezes`,
     piada: d.giria[0] === 'bora' ? 'E quantas vezes foram mesmo?' : 'O dicionário do grupo agradece.'});
@@ -1718,6 +1721,55 @@ function duracaoTxt(seg){
   if (h >= 1) return '1 hora';
   return Math.max(1, Math.round(seg/60)) + ' min';
 }
+// o momento mais marcante de 2026: o dia em que o grupo "parou" (volume acima do normal, gente falando, risadas, fotos)
+const ANO_MOMENTO = 2026;
+const TEMAS_MOMENTO = [
+  ['luto', null, /faleceu|falecimento|morreu|velorio|sepultamento|luto|meus sentimentos|descanse em paz/],
+  ['bebe', ['👶', 'chegada de um bebê'], /nasceu|bebe|gravida|gravidez|maternidade|parto|cha de bebe/],
+  ['casamento', ['💍', 'casamento à vista'], /casamento|casou|casar|noiv|alianca|pedido de casamento/],
+  ['aniversario', ['🎂', 'aniversário'], /parabens|feliz aniversario|niver|muitos anos de vida|felicidades/],
+  ['jogo', ['⚽', 'dia de jogo'], /\bgo+l+\b|campeao|titulo|jogo|partida|classificou|final do|juiz|penalti/],
+  ['viagem', ['✈️', 'viagem ou rolê'], /viagem|aeroporto|praia|chegamos|voo|hotel|role|festa|show/],
+  ['noticia', ['📰', 'notícia que agitou todo mundo'], /noticia|viu isso|urgente|saiu agora|ta sabendo|olha isso/]
+];
+function momentoMarcante(d){
+  if (d._momento !== undefined) return d._momento;
+  const norm = x => x.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
+  const dias = {};
+  for (const m of d.msgs){
+    if (m.t.getFullYear() !== ANO_MOMENTO) continue;
+    const k = m.t.getFullYear() + '-' + String(m.t.getMonth()+1).padStart(2,'0') + '-' + String(m.t.getDate()).padStart(2,'0');
+    const x = dias[k] || (dias[k] = {k, t: m.t, n: 0, risos: 0, midia: 0, quem: {}, emo: {}, tema: {}});
+    x.n++; x.quem[m.a] = (x.quem[m.a] || 0) + 1;
+    const tipo = kind(m.b);
+    if (tipo === 'photo' || tipo === 'media') x.midia++;
+    if (tipo !== 'text') continue;
+    if (RX.laugh.test(m.b)) x.risos++;
+    for (const e of m.b.match(/\p{Extended_Pictographic}/gu) || []) x.emo[e] = (x.emo[e] || 0) + 1;
+    const b = norm(m.b);
+    for (const [k2, , rx] of TEMAS_MOMENTO) if (rx.test(b)) x.tema[k2] = (x.tema[k2] || 0) + 1;
+  }
+  const lista = Object.values(dias);
+  if (lista.length < 10) return (d._momento = null); // pouca conversa em 2026 para comparar
+  const ns = lista.map(x => x.n).sort((a,b) => a - b), normal = Math.max(1, ns[Math.floor(ns.length/2)]);
+  const pessoas = Math.max(2, d.people.length);
+  let melhor = null;
+  for (const x of lista){
+    if ((x.tema.luto || 0) >= 2) continue; // dia triste não vira "momento marcante"
+    const falaram = Object.keys(x.quem).length, vezes = x.n / normal;
+    if (x.n < 20 || vezes < 2.5) continue;
+    const score = vezes * (0.6 + falaram/pessoas) + x.risos/Math.max(10, x.n) * 3 + Math.min(x.midia, 30)/10;
+    if (!melhor || score > melhor.score) melhor = {...x, score, vezes, falaram};
+  }
+  if (!melhor) return (d._momento = null);
+  const temaTop = Object.entries(melhor.tema).filter(([k]) => k !== 'luto').sort((a,b) => b[1] - a[1])[0];
+  let tema = temaTop && temaTop[1] >= 3 ? TEMAS_MOMENTO.find(t => t[0] === temaTop[0])[1] : null;
+  if (!tema) tema = melhor.risos / melhor.n > .2 ? ['😂', 'zoeira pura'] : melhor.midia >= 10 ? ['📸', 'chuva de fotos'] : ['💬', 'conversa que não acabava'];
+  const quem = Object.entries(melhor.quem).sort((a,b) => b[1] - a[1])[0][0];
+  const emoji = Object.entries(melhor.emo).sort((a,b) => b[1] - a[1])[0]?.[0] || '';
+  const data = melhor.t.toLocaleDateString('pt-BR', {day: 'numeric', month: 'long'});
+  return (d._momento = {data, n: melhor.n, vezes: Math.round(melhor.vezes), falaram: melhor.falaram, risos: melhor.risos, midia: melhor.midia, tema, quem, emoji});
+}
 function livro(d){
   const pags = Math.max(1, Math.round(d.palavras/300)), hp = d.palavras/77000; // 300 palavras por página; Harry Potter e a Pedra Filosofal ≈ 77 mil palavras
   const comp = hp >= .95 ? `o mesmo que ${nfmt1(hp)} ${Math.round(hp*10) === 10 ? 'livro' : 'livros'} do Harry Potter`
@@ -1803,6 +1855,7 @@ function drawResumo(d){
     ['💬', fmt(d.total), `mensagens desde ${desde}`],
     ['📚', lv.txt, lv.comp],
     ['⏱️', tempoLeitura(d.palavras), 'para ler tudo, sem parar'],
+    momentoMarcante(d) && ['🌟', momentoMarcante(d).data, `o dia mais marcante de ${ANO_MOMENTO} · ${momentoMarcante(d).vezes}× um dia normal`],
     fr && ['🗣️', fr.txt, fr.sub],
     d.giria && d.giria[1] >= 3 && ['🤙', `“${d.giria[0]}”`, `a gíria oficial · ${fmt(d.giria[1])} vezes`],
     au && ['🎧', au.txt, au.comp]
@@ -1842,6 +1895,7 @@ function drawResumoQ(d){
     ['💬', fmt(d.total), `mensagens desde ${desde}`],
     ['📚', `${fmt(lv.pags)} páginas`, /Harry|Príncipe/.test(lv.comp) ? lv.comp : 'se o grupo fosse um livro'],
     ['⏱️', tempoLeitura(d.palavras), 'para ler tudo, sem parar'],
+    momentoMarcante(d) && ['🌟', momentoMarcante(d).data, `o dia mais marcante de ${ANO_MOMENTO} · ${momentoMarcante(d).vezes}× um dia normal`],
     fr ? ['🗣️', fr.txt, fr.sub] : ['😂', fmt(d.people.reduce((s,p) => s + p.laugh, 0)), 'mensagens com risada']
   ];
   tiles.forEach(([ic, num, rot], i) => {
@@ -2313,6 +2367,11 @@ function demoChat(){
     const nome = p.n === 'Rafa' && day < 520 ? '+55 11 98877-1234' : p.n;
     out.push({t, line:`${pad(t.getDate())}/${pad(t.getMonth()+1)}/${t.getFullYear()} ${pad(t.getHours())}:${pad(t.getMinutes())} - ${nome}: ${body}`});
   }
+  // um dia de festa em 2026 para o "momento mais marcante" aparecer no exemplo
+  { const festa = ['PARABÉNS PEDRÃO!!! 🎂🎉','Parabéns meu amigo!! 🥳','kkkkkk o bolo caiu','Feliz aniversário!! Muitos anos de vida 🎉','Manda foto do bolo','<Mídia oculta>','kkkkkkkk não acredito','Parabéns!!! 🎂','Que dia hein','Bora comemorar hoje!','<Mídia oculta>','Felicidades, Pedrão!! 🥂'];
+    const quem = ['Lu','Caio','Bia','Rafa','Juninho','Pedrão'];
+    for (let i = 0; i < 70; i++){ const t = new Date(2026,2,14,9 + Math.floor(i/6), (i*7) % 60); const nome = quem[i % quem.length], body = festa[i % festa.length];
+      out.push({t, line:`${pad(t.getDate())}/${pad(t.getMonth()+1)}/${t.getFullYear()} ${pad(t.getHours())}:${pad(t.getMinutes())} - ${nome}: ${body}`}); } }
   out.push({t:new Date(2025,2,16,10,0), line:'16/03/2025 10:00 - Tiago saiu'});
   out.push({t:new Date(2025,5,4,9,0), line:'04/06/2025 09:00 - Rafa mudou para um novo número. Toque para enviar uma mensagem ou adicionar o novo número.'});
   out.sort((a,b) => a.t-b.t);
