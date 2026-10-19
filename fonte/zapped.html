@@ -267,10 +267,21 @@ body.has-cookies .acao{bottom:150px}
 .card-fim figcaption{font-family:var(--titulo);font-weight:800;font-size:20px;color:var(--areia)}
 .card-fim .rimg{width:100%;max-width:340px}
 .card-fim .btn-row{width:100%;display:flex;gap:8px}.card-fim .btn{flex:1;padding:12px 10px;font-size:15px}
-.patro{position:fixed;inset:0;z-index:40;background:rgba(10,4,20,.82);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
+.patro{position:fixed;inset:0;z-index:40;background:rgba(10,4,20,.82);display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto}
+.patro>*{margin-block:auto}
 .patro-box{background:var(--acai);border:1px solid var(--linha);border-radius:24px;padding:18px;width:min(100%,440px);display:flex;flex-direction:column;gap:10px;text-align:center;animation:pop .4s cubic-bezier(.2,1.4,.4,1)}
 .tiles>.tile:last-child:nth-child(odd){grid-column:1/-1}
 .pw{position:relative;text-align:center}
+.livre-f{display:flex;gap:8px;flex-wrap:wrap}
+.livre-f input{flex:1 1 160px;min-width:0;font:inherit;font-size:17px;padding:12px 14px;border-radius:14px;border:1px solid var(--linha);background:var(--acai-2);color:var(--areia)}
+.livre-f .btn{flex:0 0 auto;width:auto}
+.lv-tit{margin:4px 0 8px}
+.lv-l{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:8px}
+.lv-l li{display:grid;grid-template-columns:24px minmax(0,1fr) 90px auto;align-items:center;gap:8px;text-align:left}
+.lv-l b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lv-bar{height:10px;border-radius:5px;background:var(--acai-2);overflow:hidden}
+.lv-bar i{display:block;height:100%;background:var(--manga);border-radius:5px}
+.tag-periodo{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--acai-2)}
 .escolha{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
 .esc{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;border-radius:20px;padding:18px 16px 16px;font:inherit;cursor:pointer;border:2px solid transparent;transition:transform .15s,border-color .15s,background .15s;min-width:0}
 .esc .em{font-size:36px;line-height:1}
@@ -1348,7 +1359,7 @@ function story(){
     <button class="btn btn-main" id="go">Ver as categorias →</button>
   </section>`;
   $('#go').onclick = lineup;
-  view.querySelectorAll('[data-unlock]').forEach(bt => bt.onclick = () => paywall(() => story(), 'personagens'));
+  view.querySelectorAll('.perso.trancado').forEach(cd => { cd.style.cursor = 'pointer'; cd.onclick = () => paywall(() => story(), 'personagens'); });
   if (trava && view.querySelector('.trancado')) premiumLiberado().then(ok => { if (ok && view.querySelector('.trancado')) story(); });
   window.scrollTo(0,0);
 }
@@ -1539,6 +1550,12 @@ function suspense(){
   window.scrollTo(0,0);
 }
 // final: as imagens do grupo, as categorias extras (premium) e o agradecimento
+// categoria livre: a pessoa digita uma palavra e vê quem mais falou (tudo calculado aqui no aparelho)
+function contaPalavra(d, palavra){
+  const w = norm(palavra).replace(/[^\p{L}\p{N}]/gu, ''), rx = new RegExp(`(^|[^\\p{L}\\p{N}])${w}(s|es)?(?=[^\\p{L}\\p{N}]|$)`, 'gu'), c = {};
+  for (const m of d.msgs){ if (kind(m.b) !== 'text') continue; const n = (norm(m.b).match(rx) || []).length; if (n) c[m.a] = (c[m.a]||0) + n; }
+  return Object.entries(c).sort((x, y) => y[1] - x[1]);
+}
 const item26 = x => `<div><span aria-hidden="true">${x.e}</span><div><span class="small">${esc(x.t)}</span><b>${esc(x.big)}</b><span class="num">${esc(x.sub)}</span></div></div>`;
 function fimTela(semFesta){
   anchor(false);
@@ -1572,6 +1589,13 @@ function fimTela(semFesta){
         <div class="btn-row"><button type="button" class="btn btn-wa" id="wa2">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv2">⬇️ Salvar</button></div></figure>` : ''}
       <figure class="card-fim"><figcaption>🏆 Top 10 categorias <span class="small">· desde o início</span></figcaption><img id="rimg3" class="rimg" alt="${esc(altTop10())}">
         <div class="btn-row"><button type="button" class="btn btn-wa" id="wa3">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv3">⬇️ Salvar</button></div></figure>
+    </div>
+    <div class="panel livre" style="width:100%">
+      <h2 style="font-size:26px;margin:0">🔎 Categoria livre</h2>
+      <p class="small" style="margin:0">Escolha uma palavra e descubra quem ${casal ? 'de vocês dois' : 'do grupo'} mais falou ela. <span class="tag-periodo">desde o início</span></p>
+      <form id="lvF" class="livre-f"><label for="lvP" class="sr-only">Uma palavra</label><input id="lvP" maxlength="24" autocomplete="off" autocapitalize="none" placeholder="${casal ? 'ex.: saudade' : 'ex.: cerveja'}"><button type="submit" class="btn btn-main">Ver quem ganha</button></form>
+      <p class="err" id="lvE" hidden></p>
+      <div id="lvR" aria-live="polite"></div>
     </div>
     ${d26.length ? `<div class="panel d26" style="width:100%">
       <h2 style="font-size:26px;margin:0">✨ ${casal ? 'O nosso 2026' : 'Destaques de 2026'}</h2>
@@ -1639,6 +1663,22 @@ function fimTela(semFesta){
       if (dw){ try { await dw.save({filename: nome, data: vid.blob}); $('#vmsg').textContent = 'Vídeo salvo!'; return; } catch {} }
       const a = document.createElement('a'); a.href = URL.createObjectURL(vid.blob); a.download = nome; document.body.appendChild(a); a.click(); a.remove(); };
   }
+  $('#lvF').onsubmit = e => {
+    e.preventDefault(); const er = $('#lvE'), out = $('#lvR'), w = $('#lvP').value.trim();
+    er.hidden = true; out.innerHTML = '';
+    if (!w) return;
+    if (/\s/.test(w)){ er.hidden = false; er.textContent = 'Só uma palavra 😉'; return; }
+    if (norm(w).replace(/[^\p{L}\p{N}]/gu, '').length < 2){ er.hidden = false; er.textContent = 'Escreva uma palavra com pelo menos 2 letras.'; return; }
+    try { if (typeof evento === 'function') evento('categoria_livre'); } catch {}
+    const r = contaPalavra(d, w), tot = r.reduce((x, y) => x + y[1], 0);
+    if (!tot){ out.innerHTML = `<p class="small">Ninguém falou "${esc(w)}". Tenta outra palavra!</p>`; return; }
+    const md = ['🥇','🥈','🥉'], mx = r[0][1], vez = n => `${fmt(n)} ${n === 1 ? 'vez' : 'vezes'}`;
+    out.innerHTML = `<p class="lv-tit">Quem mais falou <b>"${esc(w)}"</b>: ${vez(tot)} no total</p>
+      <ol class="lv-l">${r.slice(0, 5).map(([n, v], i) => `<li><span aria-hidden="true">${md[i] || '·'}</span><b>${esc(n)}</b><span class="lv-bar"><i style="width:${Math.max(4, v/mx*100)}%"></i></span><span class="num">${vez(v)}</span></li>`).join('')}</ol>
+      <button type="button" class="btn btn-ghost" id="lvC">🃏 Gerar card</button>`;
+    $('#lvC').onclick = () => openCard(() => drawCard({emoji:'🔎', title:`Quem mais falou "${w}"`, winner: r[0][0], line: vez(r[0][1]),
+      podio: r.length > 1 ? r.slice(1, 3).map(([n, v], i) => `${md[i+1]} ${n} · ${fmt(v)}`) : null}), convite('resumo'), `Categoria livre: quem mais falou "${w}" foi ${r[0][0]}, ${vez(r[0][1])}.`);
+  };
   $('#dest26')?.addEventListener('click', () => paywall(() => fimTela(true), 'destaques'));
   if (trava26) premiumLiberado().then(ok => { if (ok && $('#dest26')) fimTela(true); });
   $('#concluir').onclick = () => obrigado();
@@ -2266,28 +2306,10 @@ function destaques2026(d){
   const [w26, t26] = conta(m26), [wAnt, tAnt] = conta(d.msgs.filter(m => m.t.getFullYear() < A));
   const pal = Object.entries(w26).filter(([, n]) => n >= 8).map(([w, n]) => [w, n, (n/t26) / (((wAnt[w]||0) + 1)/tAnt)]).sort((x,y) => y[2] - x[2])[0];
   if (pal) itens.push({e:'🗣️', t:'Palavra de 2026', big: `“${pal[0]}”`, sub: `${fmt(pal[1])} vezes em 2026${tAnt > 500 ? `, ${Math.max(2, Math.round(pal[2]))}× mais que antes` : ''}`});
-  const hora = t => `${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;
-  const diaN = (y, mo, da) => m26.filter(m => m.t.getMonth() === mo && m.t.getDate() === da).length;
-  const normal = m26.length / Math.max(1, Math.round((ult - new Date(A, 0, 1))/864e5) + 1);
-  // quem abriu 2026
-  const pri = m26.reduce((x, m) => m.t < x.t ? m : x, m26[0]);
-  if (pri.t.getMonth() === 0 && pri.t.getDate() <= 2) itens.push({e:'🎆', t:'Quem abriu 2026', big: pri.a, sub: `primeira mensagem do ano, ${pri.t.getDate()} de janeiro às ${hora(pri.t)}`});
-  // Carnaval (14 a 17 de fevereiro de 2026)
-  if (ult >= new Date(A, 1, 18)){ const n = [14,15,16,17].reduce((x, dd) => x + diaN(A, 1, dd), 0), v = n / 4 / Math.max(.1, normal);
-    if (n >= 10) itens.push({e:'🎭', t:'Carnaval', big: v >= 1.15 ? `+${Math.round((v-1)*100)}%` : v <= .85 ? `${Math.round((v-1)*100)}%` : 'no ritmo', sub: v >= 1.15 ? `${casal ? 'vocês falaram' : 'o grupo falou'} mais que o normal no Carnaval` : v <= .85 ? `${casal ? 'vocês sumiram' : 'o grupo sumiu'} no Carnaval. Bloquinho?` : 'nem o Carnaval mudou a conversa'}); }
-  // Copa do Mundo (11 de junho a 19 de julho de 2026)
-  if (ult >= new Date(A, 6, 20)){ const ini = new Date(A, 5, 11), fim = new Date(A, 6, 19, 23, 59), copa = m26.filter(m => m.t >= ini && m.t <= fim);
-    const bola = copa.filter(m => /\bgo+l+\b|copa|brasil|sele[çc][ãa]o|jogo|neymar|vini|ancelotti/i.test(m.b)).length, v = copa.length / 39 / Math.max(.1, normal);
-    if (bola >= 5) itens.push({e:'⚽', t:'Copa do Mundo', big: `${fmt(bola)} mensagens`, sub: `falando de jogo, gol e seleção${v >= 1.1 ? `, e ${Math.round((v-1)*100)}% mais conversa que o normal` : ''}`}); }
-  // Dia dos Namorados (casal)
-  if (casal && ult >= new Date(A, 5, 13)){ const n = diaN(A, 5, 12); if (n >= 5) itens.push({e:'💝', t:'Dia dos Namorados', big: `${fmt(n)} mensagens`, sub: `em 12 de junho${n > normal*1.3 ? `, ${Math.round(n/normal*10)/10}× um dia normal` : ''}`}); }
-  // o maior silêncio do ano
-  { let gap = 0, gi = null; for (let i = 1; i < m26.length; i++){ const g = m26[i].t - m26[i-1].t; if (g > gap){ gap = g; gi = m26[i-1].t; } }
-    const dd = Math.floor(gap / 864e5); if (dd >= 3) itens.push({e:'🤫', t:'O maior silêncio', big: `${dd} dias`, sub: `sem ninguém falar, a partir de ${gi.getDate()} de ${MESES[gi.getMonth()]}${casal ? '. Viagem juntos?' : '. Todo mundo de férias?'}`}); }
   const meses = Array(12).fill(0); for (const m of m26) meses[m.t.getMonth()]++;
   const mi = meses.indexOf(Math.max(...meses)); itens.push({e:'📈', t:'Mês mais agitado', big: MESES[mi], sub: `${fmt(meses[mi])} mensagens`});
   const ag = itens.pop(); itens.splice(Math.min(1, itens.length), 0, ag);
-  return (d._d26 = itens.slice(0, 10));
+  return (d._d26 = itens.slice(0, 7));
 }
 function altNosso2026(d){ return `Nosso 2026${state.grupo ? ' no grupo ' + state.grupo : ''}: ${destaques2026(d).map(x => `${x.t}: ${x.big}`).join('; ')}.`; }
 function drawNosso2026(d){
