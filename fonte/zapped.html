@@ -529,15 +529,16 @@ async function analyze(msgs, prog){
     }
     else {
       const b = m.b.trim(); p.text++; p.chars += b.length; palavras += b.split(/\s+/).length;
+      const semLink = b.toLowerCase().replace(/(?:https?:\/\/|www\.)\S+|\S+\.(?:com|br|net|org|ly|me|app|gl)\b\S*/g, ' '); // links não viram "jeito de falar"
       if (RX.laugh.test(b)) p.laugh++;
       for (const key of ['bomdia','parabens','amo','link','furo','org','mae','reuniao','salva','aviso','perdido','indica','vende','barulho','boasvindas','agradece','fofoca']) if (RX[key].test(b)) p[key]++;
       if (RX.ok.test(b)) p.ok++;
       const pw = b.match(RX.palavrao); if (pw) p.palavrao += pw.length;
-      for (const g of b.toLowerCase().match(GIRIA) || []){ const n = GIRIA_NORM[g] || g; giria[n] = (giria[n]||0) + 1; p.giria[n] = (p.giria[n]||0) + 1; }
+      for (const g of semLink.match(GIRIA) || []){ const n = GIRIA_NORM[g] || g; giria[n] = (giria[n]||0) + 1; p.giria[n] = (p.giria[n]||0) + 1; }
       if (b.length > 3){ const bn = b.toLowerCase().normalize('NFD').replace(/\p{M}/gu,''); for (const [k, rx] of TEMAS) if (rx.test(bn)) p.tema[k] = (p.tema[k]||0) + 1; }
       for (const e of b.match(/\p{Extended_Pictographic}/gu) || []){ emo[e] = (emo[e]||0)+1; p.emo[e] = (p.emo[e]||0)+1; }
       if (!RX.laugh.test(b)){
-        for (const w of b.toLowerCase().normalize('NFC').match(/\p{L}{4,}/gu) || []) if (!STOP.has(w)){ words[w] = (words[w]||0)+1; p.words[w] = (p.words[w]||0)+1; }
+        for (const w of semLink.normalize('NFC').match(/\p{L}{4,}/gu) || []) if (!STOP.has(w) && !/^(?:https?|www|http)$/.test(w)){ words[w] = (words[w]||0)+1; p.words[w] = (p.words[w]||0)+1; }
         const n = b.toLowerCase().replace(/[!?.]+$/,'');
         if (n.split(/\s+/).length >= 2 && n.length <= 40 && !RX.link.test(n)) full[n] = (full[n]||0)+1;
       }
