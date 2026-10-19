@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-R8R1EN0KQN"></script>
-<title>Retrozap · Todo grupo tem uma história</title>
+<title>Retrozap · Retrospectiva do grupo de WhatsApp</title>
 <meta name="description" content="Descubra a história do seu grupo de WhatsApp: quem fala mais, quem some, quem manda figurinha às 3 da manhã. Prêmios, números e cards para mandar no grupo. Grátis e suas mensagens não saem do celular.">
 <meta name="theme-color" content="#1A0B2E">
 <link rel="canonical" href="https://retrozap.com.br/">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="Retrozap">
 <meta property="og:title" content="Retrozap · Todo grupo tem uma história. Descubra a do seu.">
 <meta property="og:description" content="A retrospectiva oficial dos grupos de WhatsApp do Brasil. Grátis, e suas mensagens não saem do celular.">
 <meta property="og:image" content="https://retrozap.com.br/og-retrozap.png">
@@ -24,7 +25,7 @@
 <link rel="preload" href="/assets/bricolage.woff2" as="font" type="font/woff2" crossorigin>
 <meta name="google-adsense-account" content="ca-pub-4039247360984618">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4039247360984618" crossorigin="anonymous"></script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Retrozap","url":"https://retrozap.com.br/","applicationCategory":"EntertainmentApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"BRL"},"inLanguage":"pt-BR"}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebSite", "@id": "https://retrozap.com.br/#site", "name": "Retrozap", "alternateName": ["Retrozap Brasil", "retrozap.com.br"], "url": "https://retrozap.com.br/", "inLanguage": "pt-BR"}, {"@type": "Organization", "@id": "https://retrozap.com.br/#org", "name": "Retrozap", "url": "https://retrozap.com.br/", "logo": "https://retrozap.com.br/icon-512.png", "email": "contato@retrozap.com.br"}, {"@type": "WebApplication", "name": "Retrozap", "url": "https://retrozap.com.br/", "description": "Retrospectiva do grupo de WhatsApp: prêmios, números e cards para mandar no grupo.", "applicationCategory": "EntertainmentApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "BRL"}, "inLanguage": "pt-BR", "publisher": {"@id": "https://retrozap.com.br/#org"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "O Retrozap é grátis?", "acceptedAnswer": {"@type": "Answer", "text": "A primeira retrospectiva é grátis. Para fazer quantos grupos quiser, o acesso ilimitado custa R$ 4,99, pago uma única vez no Pix."}}, {"@type": "Question", "name": "Minhas mensagens são enviadas para algum servidor?", "acceptedAnswer": {"@type": "Answer", "text": "Não. A leitura do arquivo acontece no seu navegador. As mensagens, os nomes e os telefones não saem do seu celular ou computador."}}, {"@type": "Question", "name": "Funciona no iPhone e no Android?", "acceptedAnswer": {"@type": "Answer", "text": "Sim. O site aceita o .zip ou o .txt que o WhatsApp gera nos dois sistemas, e também funciona no computador."}}, {"@type": "Question", "name": "Quais prêmios o grupo pode ganhar?", "acceptedAnswer": {"@type": "Answer", "text": "São 10 categorias escolhidas para o tipo de grupo, como O Tagarela, O Fantasma, Coruja da Madrugada e Tio do Bom Dia, além do ranking do grupo comparado a outros grupos do Brasil."}}]}]}</script>
 <script src="/assets/jszip.min.js" defer></script>
 <style>
 @font-face{font-family:'Bricolage Grotesque';src:url(/assets/bricolage.woff2) format('woff2');font-weight:200 800;font-display:swap}
@@ -72,6 +73,15 @@ button:focus-visible,input:focus-visible,label:focus-visible{outline:3px solid v
 .oque-l .em{font-size:30px;line-height:1;flex:0 0 auto}
 .oque-l b{display:block;font-family:var(--titulo);font-size:19px;color:var(--areia)}
 .oque-l span:not(.em){display:block;font-size:15px;color:var(--neblina)}
+.seo-home{display:flex;flex-direction:column;gap:12px;margin-top:8px}
+.seo-home h2{font-family:var(--titulo);font-weight:800;font-size:22px;line-height:1.15;margin:12px 0 0;color:var(--areia)}
+.seo-home p,.seo-home li{font-size:15px;color:var(--neblina);line-height:1.55;margin:0}
+.seo-home ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px}
+.seo-home b{color:var(--areia)}
+.seo-home a{color:var(--areia)}
+.seo-home details{background:var(--acai);border-radius:14px;padding:12px 16px}
+.seo-home summary{cursor:pointer;font-weight:700;color:var(--areia);font-size:15px}
+.seo-home details p{margin-top:8px}
 .lead{color:var(--neblina);font-size:17px}
 .btn{border:0;border-radius:999px;padding:16px 22px;font-weight:700;font-size:17px;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:transform .12s}
 .btn:active{transform:scale(.97)}
@@ -410,7 +420,37 @@ ol.how li.on{color:var(--manga);font-weight:700}
     <button class="logo" id="home" aria-label="Retrozap, voltar ao início">retrozap<span>🏆</span></button>
     <div class="steps" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i></div>
   </header>
-  <main id="view"></main>
+  <main id="view">
+  <section class="screen hero">
+    <p class="eyebrow">A retrospectiva oficial dos grupos do Brasil</p>
+    <h1>Todo grupo tem uma história. <em>Descubra a do seu.</em></h1>
+    <p class="lead">Quem fala demais, quem some, quem manda figurinha às 3 da manhã: cada um leva o seu troféu. 🏆</p>
+    <div class="badge"><span aria-hidden="true">🔒</span><span><b>Suas mensagens não saem do seu celular.</b> Tudo é analisado aqui no navegador. A gente não recebe, não lê e não guarda nenhuma mensagem. <a href="/privacidade" style="color:var(--areia)">Entenda</a></span></div>
+    <div class="panel oque">
+      <p class="ask">O que você vai encontrar</p>
+      <ol class="oque-l">
+        <li><span class="em" aria-hidden="true">🎭</span><div><b>Os personagens do grupo</b><span>Conhecendo o grupo: quem é quem e o jeito de cada um falar.</span></div></li>
+        <li><span class="em" aria-hidden="true">🏆</span><div><b>10 categorias com troféus</b><span>Do Tagarela ao Fantasma, com pódio e card para mandar no grupo.</span></div></li>
+        <li><span class="em" aria-hidden="true">📊</span><div><b>Os números do grupo e o ranking</b><span>Mensagens, áudios, figurinhas e como o grupo se compara aos grupos do Brasil.</span></div></li>
+      </ol>
+    </div>
+    <button class="btn btn-main" id="comecar">Vamos começar →</button>
+    <section class="seo-home" aria-labelledby="seo-t">
+      <h2 id="seo-t">Como fazer a retrospectiva do seu grupo de WhatsApp</h2>
+      <p>O Retrozap é o "Wrapped" do seu grupo de WhatsApp: transforma a conversa em números, prêmios e um resumo para mandar no grupo. Funciona com grupo de amigos, da família, do trabalho e do condomínio.</p>
+      <ol>
+        <li><b>Exporte a conversa.</b> No WhatsApp, abra o grupo, toque no nome dele e escolha Exportar conversa, Sem mídia. <a href="/blog/como-exportar-conversa-whatsapp">Passo a passo</a>.</li>
+        <li><b>Escolha o arquivo aqui.</b> A leitura acontece no seu navegador, em menos de um minuto, e as mensagens não saem do celular.</li>
+        <li><b>Revele os prêmios e mande o card no grupo.</b> Quem mais fala, quem some, a tia do bom dia e o coruja da madrugada levam o troféu.</li>
+      </ol>
+      <h2>Perguntas frequentes</h2>
+      <details><summary>O Retrozap é grátis?</summary><p>A primeira retrospectiva é grátis. Para fazer quantos grupos quiser, o acesso ilimitado custa R$ 4,99, pago uma única vez no Pix.</p></details>
+      <details><summary>Minhas mensagens são enviadas para algum servidor?</summary><p>Não. A leitura do arquivo acontece no seu navegador. As mensagens, os nomes e os telefones não saem do seu celular ou computador.</p></details>
+      <details><summary>Funciona no iPhone e no Android?</summary><p>Sim. O site aceita o .zip ou o .txt que o WhatsApp gera nos dois sistemas, e também funciona no computador.</p></details>
+      <details><summary>Quais prêmios o grupo pode ganhar?</summary><p>São 10 categorias escolhidas para o tipo de grupo, como O Tagarela, O Fantasma, Coruja da Madrugada e Tio do Bom Dia, além do ranking do grupo comparado a outros grupos do Brasil.</p></details>
+    </section>
+    <nav class="rodape" aria-label="Links do site"><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos</a></nav>
+  </section></main>
 </div>
 <canvas id="confetti" aria-hidden="true"></canvas>
 <script>
@@ -988,6 +1028,20 @@ function inicio(){
       </ol>
     </div>
     <button class="btn btn-main" id="comecar">Vamos começar →</button>
+    <section class="seo-home" aria-labelledby="seo-t">
+      <h2 id="seo-t">Como fazer a retrospectiva do seu grupo de WhatsApp</h2>
+      <p>O Retrozap é o "Wrapped" do seu grupo de WhatsApp: transforma a conversa em números, prêmios e um resumo para mandar no grupo. Funciona com grupo de amigos, da família, do trabalho e do condomínio.</p>
+      <ol>
+        <li><b>Exporte a conversa.</b> No WhatsApp, abra o grupo, toque no nome dele e escolha Exportar conversa, Sem mídia. <a href="/blog/como-exportar-conversa-whatsapp">Passo a passo</a>.</li>
+        <li><b>Escolha o arquivo aqui.</b> A leitura acontece no seu navegador, em menos de um minuto, e as mensagens não saem do celular.</li>
+        <li><b>Revele os prêmios e mande o card no grupo.</b> Quem mais fala, quem some, a tia do bom dia e o coruja da madrugada levam o troféu.</li>
+      </ol>
+      <h2>Perguntas frequentes</h2>
+      <details><summary>O Retrozap é grátis?</summary><p>A primeira retrospectiva é grátis. Para fazer quantos grupos quiser, o acesso ilimitado custa R$ 4,99, pago uma única vez no Pix.</p></details>
+      <details><summary>Minhas mensagens são enviadas para algum servidor?</summary><p>Não. A leitura do arquivo acontece no seu navegador. As mensagens, os nomes e os telefones não saem do seu celular ou computador.</p></details>
+      <details><summary>Funciona no iPhone e no Android?</summary><p>Sim. O site aceita o .zip ou o .txt que o WhatsApp gera nos dois sistemas, e também funciona no computador.</p></details>
+      <details><summary>Quais prêmios o grupo pode ganhar?</summary><p>São 10 categorias escolhidas para o tipo de grupo, como O Tagarela, O Fantasma, Coruja da Madrugada e Tio do Bom Dia, além do ranking do grupo comparado a outros grupos do Brasil.</p></details>
+    </section>
     <nav class="rodape" aria-label="Links do site"><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos</a></nav>
   </section>`;
   $('#comecar').onclick = () => home();

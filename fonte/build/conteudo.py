@@ -4,6 +4,20 @@ COBRANCA_PUBLICA = True
 CTA = '<p><a class="cta" href="/">Fazer a retrospectiva do meu grupo</a></p>'
 
 NOVOS = [
+('whatsapp-wrapped', 'WhatsApp Wrapped: como fazer o "Wrapped" do seu grupo de WhatsApp',
+ 'O Spotify tem o Wrapped; o seu grupo de WhatsApp também pode ter. Veja como gerar a retrospectiva do grupo com prêmios, números e cards.', """
+<h1>WhatsApp Wrapped: como fazer o "Wrapped" do seu grupo</h1>
+<p>Todo dezembro o feed se enche de retrospectivas de música. Mas o lugar onde o seu ano realmente aconteceu foi o grupo de WhatsApp: o rolê que quase não saiu, o áudio de quatro minutos, a tia do bom dia que não falhou um dia sequer. O WhatsApp não tem um "Wrapped" oficial, mas dá para fazer um, de graça e sem expor ninguém.</p>
+<h2>O que entra no Wrapped do grupo</h2>
+<ul><li><b>Os números do ano:</b> total de mensagens, o dia recorde, o horário em que o grupo mais ferve e o maior silêncio.</li><li><b>Os prêmios:</b> O Tagarela, O Fantasma, Coruja da Madrugada, Rei do Kkkk, Tio do Bom Dia e outros, escolhidos para o tipo de grupo.</li><li><b>Os personagens:</b> quem é quem no grupo e o jeito de cada um falar.</li><li><b>O ranking:</b> como o seu grupo se compara aos outros grupos do Brasil.</li><li><b>O card do grupo:</b> uma imagem pronta para mandar no próprio grupo ou postar nos stories.</li></ul>
+<h2>Passo a passo</h2>
+<ol><li>No WhatsApp, abra o grupo, toque no nome dele, role até o fim e escolha <b>Exportar conversa</b> e <b>Sem mídia</b>. <a href="/blog/como-exportar-conversa-whatsapp">Veja com fotos</a>.</li><li>Abra o <a href="/">Retrozap</a>, escolha o arquivo e o tipo de grupo: amigos, família, trabalho ou comunidade.</li><li>Confira a turma (dá para juntar contatos repetidos e tirar quem saiu).</li><li>Revele os prêmios um por um e mande o card de resumo no grupo.</li></ol>
+<h2>E a privacidade?</h2>
+<p>A leitura do arquivo acontece no seu navegador, como uma calculadora. As mensagens, os nomes e os telefones não são enviados para nenhum servidor. <a href="/blog/privacidade-ao-analisar-conversas-do-whatsapp">Entenda como funciona</a>.</p>
+<h2>Dica para a revelação render</h2>
+<p>Antes de mostrar os vencedores, mande no grupo a lista de categorias e peça palpites. Depois revele um prêmio por vez. Mais ideias em <a href="/blog/retrospectiva-do-grupo-de-whatsapp">como fazer a retrospectiva do grupo</a>.</p>
+""" + CTA),
+
 ('retrospectiva-do-grupo-de-whatsapp', 'Como fazer a retrospectiva do ano do seu grupo de WhatsApp',
  'Um passo a passo para transformar o ano do grupo em números, prêmios e um resumo para mandar no próprio grupo.', """
 <h1>Como fazer a retrospectiva do ano do seu grupo de WhatsApp</h1>

@@ -43,11 +43,12 @@ HEAD = """<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-R8R1EN0KQN"></script>
-<title>Retrozap · Todo grupo tem uma história</title>
+<title>Retrozap · Retrospectiva do grupo de WhatsApp</title>
 <meta name="description" content="Descubra a história do seu grupo de WhatsApp: quem fala mais, quem some, quem manda figurinha às 3 da manhã. Prêmios, números e cards para mandar no grupo. Grátis e suas mensagens não saem do celular.">
 <meta name="theme-color" content="#1A0B2E">
 <link rel="canonical" href="https://retrozap.com.br/">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="Retrozap">
 <meta property="og:title" content="Retrozap · Todo grupo tem uma história. Descubra a do seu.">
 <meta property="og:description" content="A retrospectiva oficial dos grupos de WhatsApp do Brasil. Grátis, e suas mensagens não saem do celular.">
 <meta property="og:image" content="https://retrozap.com.br/og-retrozap.png">
@@ -62,7 +63,7 @@ HEAD = """<!doctype html>
 <link rel="preload" href="/assets/bricolage.woff2" as="font" type="font/woff2" crossorigin>
 <meta name="google-adsense-account" content="ca-pub-4039247360984618">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4039247360984618" crossorigin="anonymous"></script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Retrozap","url":"https://retrozap.com.br/","applicationCategory":"EntertainmentApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"BRL"},"inLanguage":"pt-BR"}</script>
+<!--LD-->
 """
 s = HEAD + s
 rep('<style>\n', '<style>\n' + FONTES, 1)
@@ -124,6 +125,20 @@ rep('    <p class="small">Protótipo do Retrozap. Nos testes, o grupo de exemplo
     '    <p class="small">O grupo de exemplo é inventado, para você ver como funciona antes de usar o seu.</p>\n    <nav class="rodape" aria-label="Links do site"><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a></nav>')
 rep("$('#voltar').onclick = () => voltar();\nsetModo('amigos'); inicio();", "$('#voltar').onclick = () => voltar();\nsetModo('amigos');\nif (location.pathname !== '/') history.replaceState({}, '', '/');\ninicio(); avisoCookies();")
 rep("<p>No site final, este botão abre o WhatsApp direto com a imagem. Aqui no protótipo, toque e segure a imagem para salvar.</p>", "") if "No site final, este botão" in s else None
+
+# ---------- SEO: home pré-renderizada + dados estruturados ----------
+import html as _html
+_i = s.index("function inicio(){"); _a = s.index("view.innerHTML = `", _i) + len("view.innerHTML = `"); _b = s.index("`;", _a)
+HERO = s[_a:_b]
+if '${' in HERO: sys.exit('inicio() tem interpolacao; nao da para pre-renderizar')
+rep('<main id="view"></main>', '<main id="view">' + HERO + '</main>')
+_faq = [(_html.unescape(re.sub('<[^>]+>', '', q)), _html.unescape(re.sub('<[^>]+>', '', a))) for q, a in re.findall(r'<details><summary>(.*?)</summary><p>(.*?)</p></details>', HERO)]
+LD = {"@context": "https://schema.org", "@graph": [
+  {"@type": "WebSite", "@id": "https://retrozap.com.br/#site", "name": "Retrozap", "alternateName": ["Retrozap Brasil", "retrozap.com.br"], "url": "https://retrozap.com.br/", "inLanguage": "pt-BR"},
+  {"@type": "Organization", "@id": "https://retrozap.com.br/#org", "name": "Retrozap", "url": "https://retrozap.com.br/", "logo": "https://retrozap.com.br/icon-512.png", "email": "contato@retrozap.com.br"},
+  {"@type": "WebApplication", "name": "Retrozap", "url": "https://retrozap.com.br/", "description": "Retrospectiva do grupo de WhatsApp: prêmios, números e cards para mandar no grupo.", "applicationCategory": "EntertainmentApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "BRL"}, "inLanguage": "pt-BR", "publisher": {"@id": "https://retrozap.com.br/#org"}},
+  {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in _faq]}]}
+rep('<!--LD-->', '<script type="application/ld+json">' + json.dumps(LD, ensure_ascii=False) + '</script>')
 
 # sobras do artefato que não podem ir para produção
 for proibido in ['window.claude', 'SAMPLE', 'DOWN', 'simulação', 'protótipo', 'Protótipo']:

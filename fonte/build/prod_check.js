@@ -191,15 +191,16 @@ async function analyze(msgs, prog){
     }
     else {
       const b = m.b.trim(); p.text++; p.chars += b.length; palavras += b.split(/\s+/).length;
+      const semLink = b.toLowerCase().replace(/(?:https?:\/\/|www\.)\S+|\S+\.(?:com|br|net|org|ly|me|app|gl)\b\S*/g, ' '); // links não viram "jeito de falar"
       if (RX.laugh.test(b)) p.laugh++;
       for (const key of ['bomdia','parabens','amo','link','furo','org','mae','reuniao','salva','aviso','perdido','indica','vende','barulho','boasvindas','agradece','fofoca']) if (RX[key].test(b)) p[key]++;
       if (RX.ok.test(b)) p.ok++;
       const pw = b.match(RX.palavrao); if (pw) p.palavrao += pw.length;
-      for (const g of b.toLowerCase().match(GIRIA) || []){ const n = GIRIA_NORM[g] || g; giria[n] = (giria[n]||0) + 1; p.giria[n] = (p.giria[n]||0) + 1; }
+      for (const g of semLink.match(GIRIA) || []){ const n = GIRIA_NORM[g] || g; giria[n] = (giria[n]||0) + 1; p.giria[n] = (p.giria[n]||0) + 1; }
       if (b.length > 3){ const bn = b.toLowerCase().normalize('NFD').replace(/\p{M}/gu,''); for (const [k, rx] of TEMAS) if (rx.test(bn)) p.tema[k] = (p.tema[k]||0) + 1; }
       for (const e of b.match(/\p{Extended_Pictographic}/gu) || []){ emo[e] = (emo[e]||0)+1; p.emo[e] = (p.emo[e]||0)+1; }
       if (!RX.laugh.test(b)){
-        for (const w of b.toLowerCase().normalize('NFC').match(/\p{L}{4,}/gu) || []) if (!STOP.has(w)){ words[w] = (words[w]||0)+1; p.words[w] = (p.words[w]||0)+1; }
+        for (const w of semLink.normalize('NFC').match(/\p{L}{4,}/gu) || []) if (!STOP.has(w) && !/^(?:https?|www|http)$/.test(w)){ words[w] = (words[w]||0)+1; p.words[w] = (p.words[w]||0)+1; }
         const n = b.toLowerCase().replace(/[!?.]+$/,'');
         if (n.split(/\s+/).length >= 2 && n.length <= 40 && !RX.link.test(n)) full[n] = (full[n]||0)+1;
       }
@@ -454,13 +455,20 @@ function paywall(seguir, ctx){
   const caixa = m.firstElementChild;
   const inicio = () => {
     caixa.innerHTML = `<button type="button" class="pw-x" id="pwX" aria-label="Fechar">✕</button>
-      <div class="lemb-ic" aria-hidden="true">🎁</div>
-      <h2 id="pwT" style="font-size:24px;margin:0">${ctx === 'bonus' ? 'Categorias extras são Premium' : 'Seu primeiro grupo foi por nossa conta'}</h2>
-      <p class="lemb-tx">${ctx === 'bonus' ? 'Com um pagamento único de <b>R$ 4,99</b> no Pix você libera <b>as categorias extras</b> e faz a retrospectiva de <b>quantos grupos quiser</b>.' : 'Para fazer a retrospectiva de <b>quantos grupos quiser</b> e ver <b>as categorias extras</b>, é um pagamento único de <b>R$ 4,99</b> no Pix.'}</p>
+      <p class="pw-ctx">${ctx === 'bonus' ? '🔒 Essas categorias são Premium' : '🎁 Seu primeiro grupo foi por nossa conta'}</p>
+      <h2 id="pwT" class="pw-tit">Acesso ilimitado.<br><em>Pague 1x só.</em></h2>
+      <div class="pw-preco"><b>R$ 4,99</b><span>não dá nem pro cafezinho do editor ☕</span></div>
+      <ul class="pw-lista">
+        <li><span aria-hidden="true">♾️</span><div><b>Quantos grupos quiser</b>Família, amigos, trabalho, condomínio, a pelada de quinta...</div></li>
+        <li><span aria-hidden="true">🎁</span><div><b>Categorias extras</b>Mais troféus e mais gente sendo exposta com carinho.</div></li>
+        <li><span aria-hidden="true">✨</span><div><b>Tudo o que vier de novo</b>Novidades Premium já incluídas, sem pagar de novo.</div></li>
+        <li><span aria-hidden="true">🔥</span><div><b>Seus grupos nunca mais vão ser os mesmos</b>Prepare-se para agitar (muito) a conversa.</div></li>
+      </ul>
+      <p class="small" style="margin:0">Pagamento único no Pix · sem assinatura · liberado na hora</p>
       <label class="pw-lb" for="pwEm">Seu e-mail (para o comprovante)</label>
       <input id="pwEm" type="email" inputmode="email" autocomplete="email" placeholder="voce@email.com" class="pw-in">
       <p class="err" id="pwErr" hidden></p>
-      <button type="button" class="btn btn-main" id="pwPix">Pagar R$ 4,99 com Pix</button>
+      <button type="button" class="btn btn-main" id="pwPix">🔓 Liberar tudo por R$ 4,99</button>
       <button type="button" class="pw-lk" id="pwTenho">Já paguei, tenho um código</button>
       <p class="small" style="margin:0">Continua igual: suas mensagens não saem do seu celular. O pagamento é processado pelo Mercado Pago.</p>`;
     caixa.querySelector('#pwX').onclick = fecha;
@@ -478,9 +486,9 @@ function paywall(seguir, ctx){
         if (!r.ok || !j.ref) throw new Error(j.error === 'email' ? 'Confira o e-mail.' : 'Não consegui gerar o Pix agora. Tente de novo em instantes.' + (TESTE_COBRANCA ? ` [${r.status}${j.detalhe ? ': ' + j.detalhe : ''}]` : ''));
         try { if (typeof evento === 'function') evento('pix_gerado'); } catch {}
         pixTela(j);
-      } catch (e) { bt.disabled = false; bt.textContent = 'Pagar R$ 4,99 com Pix'; err.hidden = false; err.textContent = e.message || 'Sem conexão. Tente de novo.'; }
+      } catch (e) { bt.disabled = false; bt.textContent = '🔓 Liberar tudo por R$ 4,99'; err.hidden = false; err.textContent = e.message || 'Sem conexão. Tente de novo.'; }
     };
-    em.focus();
+    caixa.querySelector('#pwX').focus({preventScroll:true}); requestAnimationFrame(() => { m.scrollTop = 0; });
   };
   const pixTela = j => {
     caixa.innerHTML = `<button type="button" class="pw-x" id="pwX" aria-label="Fechar">✕</button>
@@ -561,6 +569,20 @@ function inicio(){
       </ol>
     </div>
     <button class="btn btn-main" id="comecar">Vamos começar →</button>
+    <section class="seo-home" aria-labelledby="seo-t">
+      <h2 id="seo-t">Como fazer a retrospectiva do seu grupo de WhatsApp</h2>
+      <p>O Retrozap é o "Wrapped" do seu grupo de WhatsApp: transforma a conversa em números, prêmios e um resumo para mandar no grupo. Funciona com grupo de amigos, da família, do trabalho e do condomínio.</p>
+      <ol>
+        <li><b>Exporte a conversa.</b> No WhatsApp, abra o grupo, toque no nome dele e escolha Exportar conversa, Sem mídia. <a href="/blog/como-exportar-conversa-whatsapp">Passo a passo</a>.</li>
+        <li><b>Escolha o arquivo aqui.</b> A leitura acontece no seu navegador, em menos de um minuto, e as mensagens não saem do celular.</li>
+        <li><b>Revele os prêmios e mande o card no grupo.</b> Quem mais fala, quem some, a tia do bom dia e o coruja da madrugada levam o troféu.</li>
+      </ol>
+      <h2>Perguntas frequentes</h2>
+      <details><summary>O Retrozap é grátis?</summary><p>A primeira retrospectiva é grátis. Para fazer quantos grupos quiser, o acesso ilimitado custa R$ 4,99, pago uma única vez no Pix.</p></details>
+      <details><summary>Minhas mensagens são enviadas para algum servidor?</summary><p>Não. A leitura do arquivo acontece no seu navegador. As mensagens, os nomes e os telefones não saem do seu celular ou computador.</p></details>
+      <details><summary>Funciona no iPhone e no Android?</summary><p>Sim. O site aceita o .zip ou o .txt que o WhatsApp gera nos dois sistemas, e também funciona no computador.</p></details>
+      <details><summary>Quais prêmios o grupo pode ganhar?</summary><p>São 10 categorias escolhidas para o tipo de grupo, como O Tagarela, O Fantasma, Coruja da Madrugada e Tio do Bom Dia, além do ranking do grupo comparado a outros grupos do Brasil.</p></details>
+    </section>
     <nav class="rodape" aria-label="Links do site"><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos</a></nav>
   </section>`;
   $('#comecar').onclick = () => home();
@@ -1024,6 +1046,9 @@ function fatosResumo(d){
   f.push({e:'📚', big:`${fmt(lv.pags)} ${lv.pags === 1 ? 'página' : 'páginas'}`, num:lv.pags, sub:`se esse grupo virasse livro · ${lv.comp}`,
     piada: lv.pags > 500 ? 'Tolstói ficaria com inveja.' : lv.pags > 100 ? 'Já dava para lançar na Bienal.' : 'Um livrinho de bolso. Fofo.'});
   f.push({e:'⏱️', big:tempoLeitura(d.palavras), sub:'para ler tudo, sem parar', piada:'Sugestão: não tente.'});
+  const mo = momentoMarcante(d);
+  if (mo) f.push({e:'🌟', big:mo.data, sub:`o momento mais marcante de ${ANO_MOMENTO} · ${fmt(mo.n)} mensagens, ${mo.vezes}× um dia normal · ${mo.falaram} pessoas falando`,
+    piada:`Assunto: ${mo.tema[0]} ${mo.tema[1]}. Quem mais falou: ${mo.quem}.${mo.emoji ? ' Emoji do dia: ' + mo.emoji : ''}`});
   if (fr) f.push({e:'🗣️', big:fr.txt, sub:fr.sub, piada: d.lema && d.lema[1] >= 3 ? 'Já pode virar tatuagem coletiva.' : 'Os assuntos que nunca morrem.'});
   if (d.giria && d.giria[1] >= 3) f.push({e:'🤙', big:`“${d.giria[0]}”`, sub:`a gíria oficial · ${fmt(d.giria[1])} vezes`,
     piada: d.giria[0] === 'bora' ? 'E quantas vezes foram mesmo?' : 'O dicionário do grupo agradece.'});
@@ -1393,6 +1418,55 @@ function duracaoTxt(seg){
   if (h >= 1) return '1 hora';
   return Math.max(1, Math.round(seg/60)) + ' min';
 }
+// o momento mais marcante de 2026: o dia em que o grupo "parou" (volume acima do normal, gente falando, risadas, fotos)
+const ANO_MOMENTO = 2026;
+const TEMAS_MOMENTO = [
+  ['luto', null, /faleceu|falecimento|morreu|velorio|sepultamento|luto|meus sentimentos|descanse em paz/],
+  ['bebe', ['👶', 'chegada de um bebê'], /nasceu|bebe|gravida|gravidez|maternidade|parto|cha de bebe/],
+  ['casamento', ['💍', 'casamento à vista'], /casamento|casou|casar|noiv|alianca|pedido de casamento/],
+  ['aniversario', ['🎂', 'aniversário'], /parabens|feliz aniversario|niver|muitos anos de vida|felicidades/],
+  ['jogo', ['⚽', 'dia de jogo'], /\bgo+l+\b|campeao|titulo|jogo|partida|classificou|final do|juiz|penalti/],
+  ['viagem', ['✈️', 'viagem ou rolê'], /viagem|aeroporto|praia|chegamos|voo|hotel|role|festa|show/],
+  ['noticia', ['📰', 'notícia que agitou todo mundo'], /noticia|viu isso|urgente|saiu agora|ta sabendo|olha isso/]
+];
+function momentoMarcante(d){
+  if (d._momento !== undefined) return d._momento;
+  const norm = x => x.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
+  const dias = {};
+  for (const m of d.msgs){
+    if (m.t.getFullYear() !== ANO_MOMENTO) continue;
+    const k = m.t.getFullYear() + '-' + String(m.t.getMonth()+1).padStart(2,'0') + '-' + String(m.t.getDate()).padStart(2,'0');
+    const x = dias[k] || (dias[k] = {k, t: m.t, n: 0, risos: 0, midia: 0, quem: {}, emo: {}, tema: {}});
+    x.n++; x.quem[m.a] = (x.quem[m.a] || 0) + 1;
+    const tipo = kind(m.b);
+    if (tipo === 'photo' || tipo === 'media') x.midia++;
+    if (tipo !== 'text') continue;
+    if (RX.laugh.test(m.b)) x.risos++;
+    for (const e of m.b.match(/\p{Extended_Pictographic}/gu) || []) x.emo[e] = (x.emo[e] || 0) + 1;
+    const b = norm(m.b);
+    for (const [k2, , rx] of TEMAS_MOMENTO) if (rx.test(b)) x.tema[k2] = (x.tema[k2] || 0) + 1;
+  }
+  const lista = Object.values(dias);
+  if (lista.length < 10) return (d._momento = null); // pouca conversa em 2026 para comparar
+  const ns = lista.map(x => x.n).sort((a,b) => a - b), normal = Math.max(1, ns[Math.floor(ns.length/2)]);
+  const pessoas = Math.max(2, d.people.length);
+  let melhor = null;
+  for (const x of lista){
+    if ((x.tema.luto || 0) >= 2) continue; // dia triste não vira "momento marcante"
+    const falaram = Object.keys(x.quem).length, vezes = x.n / normal;
+    if (x.n < 20 || vezes < 2.5) continue;
+    const score = vezes * (0.6 + falaram/pessoas) + x.risos/Math.max(10, x.n) * 3 + Math.min(x.midia, 30)/10;
+    if (!melhor || score > melhor.score) melhor = {...x, score, vezes, falaram};
+  }
+  if (!melhor) return (d._momento = null);
+  const temaTop = Object.entries(melhor.tema).filter(([k]) => k !== 'luto').sort((a,b) => b[1] - a[1])[0];
+  let tema = temaTop && temaTop[1] >= 3 ? TEMAS_MOMENTO.find(t => t[0] === temaTop[0])[1] : null;
+  if (!tema) tema = melhor.risos / melhor.n > .2 ? ['😂', 'zoeira pura'] : melhor.midia >= 10 ? ['📸', 'chuva de fotos'] : ['💬', 'conversa que não acabava'];
+  const quem = Object.entries(melhor.quem).sort((a,b) => b[1] - a[1])[0][0];
+  const emoji = Object.entries(melhor.emo).sort((a,b) => b[1] - a[1])[0]?.[0] || '';
+  const data = melhor.t.toLocaleDateString('pt-BR', {day: 'numeric', month: 'long'});
+  return (d._momento = {data, n: melhor.n, vezes: Math.round(melhor.vezes), falaram: melhor.falaram, risos: melhor.risos, midia: melhor.midia, tema, quem, emoji});
+}
 function livro(d){
   const pags = Math.max(1, Math.round(d.palavras/300)), hp = d.palavras/77000; // 300 palavras por página; Harry Potter e a Pedra Filosofal ≈ 77 mil palavras
   const comp = hp >= .95 ? `o mesmo que ${nfmt1(hp)} ${Math.round(hp*10) === 10 ? 'livro' : 'livros'} do Harry Potter`
@@ -1478,6 +1552,7 @@ function drawResumo(d){
     ['💬', fmt(d.total), `mensagens desde ${desde}`],
     ['📚', lv.txt, lv.comp],
     ['⏱️', tempoLeitura(d.palavras), 'para ler tudo, sem parar'],
+    momentoMarcante(d) && ['🌟', momentoMarcante(d).data, `o dia mais marcante de ${ANO_MOMENTO} · ${momentoMarcante(d).vezes}× um dia normal`],
     fr && ['🗣️', fr.txt, fr.sub],
     d.giria && d.giria[1] >= 3 && ['🤙', `“${d.giria[0]}”`, `a gíria oficial · ${fmt(d.giria[1])} vezes`],
     au && ['🎧', au.txt, au.comp]
@@ -1517,6 +1592,7 @@ function drawResumoQ(d){
     ['💬', fmt(d.total), `mensagens desde ${desde}`],
     ['📚', `${fmt(lv.pags)} páginas`, /Harry|Príncipe/.test(lv.comp) ? lv.comp : 'se o grupo fosse um livro'],
     ['⏱️', tempoLeitura(d.palavras), 'para ler tudo, sem parar'],
+    momentoMarcante(d) && ['🌟', momentoMarcante(d).data, `o dia mais marcante de ${ANO_MOMENTO} · ${momentoMarcante(d).vezes}× um dia normal`],
     fr ? ['🗣️', fr.txt, fr.sub] : ['😂', fmt(d.people.reduce((s,p) => s + p.laugh, 0)), 'mensagens com risada']
   ];
   tiles.forEach(([ic, num, rot], i) => {
@@ -1985,6 +2061,11 @@ function demoChat(){
     const nome = p.n === 'Rafa' && day < 520 ? '+55 11 98877-1234' : p.n;
     out.push({t, line:`${pad(t.getDate())}/${pad(t.getMonth()+1)}/${t.getFullYear()} ${pad(t.getHours())}:${pad(t.getMinutes())} - ${nome}: ${body}`});
   }
+  // um dia de festa em 2026 para o "momento mais marcante" aparecer no exemplo
+  { const festa = ['PARABÉNS PEDRÃO!!! 🎂🎉','Parabéns meu amigo!! 🥳','kkkkkk o bolo caiu','Feliz aniversário!! Muitos anos de vida 🎉','Manda foto do bolo','<Mídia oculta>','kkkkkkkk não acredito','Parabéns!!! 🎂','Que dia hein','Bora comemorar hoje!','<Mídia oculta>','Felicidades, Pedrão!! 🥂'];
+    const quem = ['Lu','Caio','Bia','Rafa','Juninho','Pedrão'];
+    for (let i = 0; i < 70; i++){ const t = new Date(2026,2,14,9 + Math.floor(i/6), (i*7) % 60); const nome = quem[i % quem.length], body = festa[i % festa.length];
+      out.push({t, line:`${pad(t.getDate())}/${pad(t.getMonth()+1)}/${t.getFullYear()} ${pad(t.getHours())}:${pad(t.getMinutes())} - ${nome}: ${body}`}); } }
   out.push({t:new Date(2025,2,16,10,0), line:'16/03/2025 10:00 - Tiago saiu'});
   out.push({t:new Date(2025,5,4,9,0), line:'04/06/2025 09:00 - Rafa mudou para um novo número. Toque para enviar uma mensagem ou adicionar o novo número.'});
   out.sort((a,b) => a.t-b.t);
