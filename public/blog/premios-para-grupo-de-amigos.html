@@ -1,11 +1,13 @@
 <!doctype html>
 <html lang="pt-BR"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<!-- Google tag (gtag.js) -->
+<!-- Consentimento (LGPD) + Google tag (gtag.js) -->
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+(function(){var ok=null;try{ok=localStorage.getItem('rz_cookies');}catch(e){}var ad=ok==='sim'?'granted':'denied';
+gtag('consent','default',{ad_storage:ad,ad_user_data:ad,ad_personalization:ad,analytics_storage:ok==='nao'?'denied':'granted'});
+if(ad==='denied'){(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersonalizedAds=1;}})();</script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-R8R1EN0KQN"></script>
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
   gtag('config', 'G-R8R1EN0KQN', {anonymize_ip: true});
 </script>
@@ -32,6 +34,7 @@ a{color:var(--manga)}p,li{color:var(--areia)}.small{color:var(--neblina);font-si
 .card b{font-family:'Bricolage Grotesque',sans-serif;font-size:20px;display:block;margin-bottom:4px}
 footer{display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:center;font-size:13px;color:var(--neblina);padding-top:24px;margin-top:40px;border-top:1px solid var(--linha)}
 footer a{color:var(--areia)}
+footer a.seguro{font-weight:700;color:var(--manga);flex-basis:100%;text-align:center}
 .form{display:flex;flex-direction:column;gap:8px;background:var(--acai);border-radius:16px;padding:18px;margin:16px 0}
 .form label{font-weight:700;font-size:15px;margin-top:6px}
 .form input,.form select,.form textarea{font:inherit;font-size:16px;color:var(--areia);background:var(--noite);border:1.5px solid var(--linha);border-radius:12px;padding:12px 14px;width:100%}
@@ -53,5 +56,5 @@ ol,ul{padding-left:22px}li{margin:4px 0}
 <ol start="21"><li><b>Melhor Meme do Ano.</b></li><li><b>Mensagem Mais Polêmica.</b></li><li><b>Maior Sumiço:</b> quanto tempo alguém ficou sem aparecer.</li><li><b>Dia do Caos:</b> o dia com mais mensagens no ano.</li><li><b>Gíria Oficial:</b> "bora", "mano", "slk".</li><li><b>Frase do Ano:</b> a que mais se repetiu.</li><li><b>Dupla Inseparável:</b> quem mais conversa entre si.</li><li><b>Revelação do Ano:</b> quem entrou e já dominou.</li><li><b>Calado(a) que Surpreende:</b> fala pouco, mas quando fala é ouro.</li><li><b>Destaque do Grupo:</b> quem levou mais troféus.</li></ol>
 <p>Boa parte dessas categorias o <a href="/">Retrozap</a> descobre sozinho, lendo a conversa no seu celular: do Tagarela ao Rei do Furo, passando pela gíria oficial e pelo dia de caos.</p>
 <p><a class="cta" href="/">Fazer a retrospectiva do meu grupo</a></p></main>
-<footer><a href="/">Início</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a></footer>
+<footer><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/">Início</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a></footer>
 </body></html>
