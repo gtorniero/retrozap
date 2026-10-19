@@ -4,6 +4,7 @@ from PIL import Image, ImageDraw, ImageFont
 SCR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(SCR, os.environ.get('RZ_OUT', 'retrozap-site')); PUB = os.path.join(OUT, 'public')
 SITE = 'https://retrozap.com.br'
+import datetime; HOJE = datetime.date.today().isoformat()
 
 CSS = """@font-face{font-family:'Bricolage Grotesque';src:url(/assets/bricolage.woff2) format('woff2');font-weight:200 800;font-display:swap}
 @font-face{font-family:'DM Sans';src:url(/assets/dmsans-400.woff2) format('woff2');font-weight:400;font-display:swap}
@@ -218,7 +219,7 @@ for slug, t, d, body in ARTIGOS:
 # ---------- arquivos técnicos ----------
 open(os.path.join(PUB, 'ads.txt'), 'w').write('google.com, pub-4039247360984618, DIRECT, f08c47fec0942fa0\n')
 open(os.path.join(PUB, 'robots.txt'), 'w').write(f'User-agent: *\nAllow: /\nSitemap: {SITE}/sitemap.xml\n')
-open(os.path.join(PUB, 'sitemap.xml'), 'w').write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + ''.join(f'  <url><loc>{u}</loc></url>\n' for u in urls) + '</urlset>\n')
+open(os.path.join(PUB, 'sitemap.xml'), 'w').write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + ''.join(f'  <url><loc>{u}</loc><lastmod>{HOJE}</lastmod></url>\n' for u in urls) + '</urlset>\n')
 json.dump({"name":"Retrozap","short_name":"Retrozap","description":"A retrospectiva oficial dos grupos de WhatsApp","start_url":"/","display":"standalone","background_color":"#1A0B2E","theme_color":"#1A0B2E","lang":"pt-BR",
            "icons":[{"src":"/icon-192.png","sizes":"192x192","type":"image/png"},{"src":"/icon-512.png","sizes":"512x512","type":"image/png"},{"src":"/apple-touch-icon.png","sizes":"180x180","type":"image/png"}]},
           open(os.path.join(PUB, 'manifest.webmanifest'), 'w'), ensure_ascii=False, indent=2)
