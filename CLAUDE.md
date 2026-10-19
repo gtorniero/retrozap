@@ -33,7 +33,12 @@ cd .. && git add -A && git commit && git push origin main         # Cloudflare p
 Workers Builds (Cloudflare) roda `npx wrangler deploy` a cada push na `main` do `gtorniero/retrozap`. Worker: **retrozap-v2** (domínio retrozap.com.br; www redireciona por Redirect Rule). D1: banco `retrozap` (tabelas `grupos`, `ideias`, `compras`, `envios`).
 
 ## Fluxo do site (telas e rotas)
-`/` início (o que vai encontrar + "Vamos começar") → `/comecar` exportar e escolher arquivo (tutorial animado iPhone/Android, lembrete de privacidade) → `/turma` contatos (+ cobrança a partir do 2º grupo) → `/conhecendo` Ato I: classificação + 5 personagens → `/categorias` → `/premios/N` (10; trabalho tem 8) → `/resumo` fatos + ranking ("Top X%", básicos primeiro, some acima de 90%) → `/fim` categorias bloqueadas (premium), 3 imagens (resumo, ranking, top 10), "Concluir" → pop-up (e-mail de novidades + presente, fazer outro grupo).
+`/` início (cards Grupos/Casais + o que vai encontrar + "Vamos começar") → `/comecar` exportar e escolher arquivo (tutorial animado iPhone/Android, lembrete de privacidade) → `/turma` contatos (+ cobrança a partir do 2º grupo) → `/conhecendo` Ato I: classificação + 5 personagens → `/categorias` → `/premios/N` (10; trabalho tem 8) → `/resumo` fatos + ranking ("Top X%", básicos primeiro, some acima de 90%) → `/fim` categorias bloqueadas (premium), 3 imagens (resumo, ranking, top 10), "Concluir" → pop-up (e-mail de novidades + presente, fazer outro grupo).
+
+## Retrozap Casais (modo `casal`)
+Início tem cards Grupos/Casais; `/comecar` passo 1 = grupo ou casal. Casal = tema claro rosa (`html.casal`), 15 categorias próprias, card "Nós dois" (um contra o outro), vídeo de 10s para stories (MediaRecorder, gerado no aparelho). Conversa de 2 pessoas no modo grupo pergunta "É um casal?". Ranking: casal só compara com casais (mín. 10); grupos nunca com casais.
+**Premium:** 2 personagens grátis (resto embaçado), Destaques 2026 (2 grátis), categoria livre (1 palavra), categorias extras. Versão de teste: publicar `zapped.html` como Artifact; fora do site oficial aparece a chave 🧪 Grátis/Premium e o Pix é simulado (`?plano_teste=1` só vale em localhost).
+LGPD: aviso de cookies com Aceitar / Só o essencial (Consent Mode v2: anúncio personalizado só com Aceitar). Pendente: nome do controlador na política (Gui decide).
 
 ## Cobrança (Mercado Pago, Pix R$ 4,99)
 1º grupo grátis; depois paywall. Premium = grupos ilimitados + categorias extras. Código `RZ-XXXX-XXXX` salvo no navegador (`localStorage rz_acesso`); recuperar com código **ou e-mail do Pix**. `?zerar=1` limpa o navegador para testar; `?teste_cobranca=1` só vale com `COBRANCA=teste`. Envio de e-mail (Resend) está pronto mas **desligado** (sem `RESEND_KEY`) — Gui decidiu não usar.
