@@ -34,11 +34,13 @@ def page(path, title, desc, body, ad=True):
     html = f"""<!doctype html>
 <html lang="pt-BR"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<!-- Google tag (gtag.js) -->
+<!-- Consentimento (LGPD) + Google tag (gtag.js) -->
+<script>window.dataLayer=window.dataLayer||[];function gtag(){{dataLayer.push(arguments);}}
+(function(){{var ok=null;try{{ok=localStorage.getItem('rz_cookies');}}catch(e){{}}var ad=ok==='sim'?'granted':'denied';
+gtag('consent','default',{{ad_storage:ad,ad_user_data:ad,ad_personalization:ad,analytics_storage:ok==='nao'?'denied':'granted'}});
+if(ad==='denied'){{(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersonalizedAds=1;}}}})();</script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-R8R1EN0KQN"></script>
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){{dataLayer.push(arguments);}}
   gtag('js', new Date());
   gtag('config', 'G-R8R1EN0KQN', {{anonymize_ip: true}});
 </script>
@@ -62,13 +64,13 @@ urls = [SITE + '/']
 
 urls.append(page('privacidade.html', 'Política de Privacidade', 'Como o Retrozap trata seus dados: as mensagens do seu grupo nunca saem do seu aparelho. Cookies, anúncios e seus direitos pela LGPD.', """
 <h1>Política de Privacidade</h1>
-<p class="small">Última atualização: 18 de outubro de 2026</p>
+<p class="small">Última atualização: 19 de outubro de 2026</p>
 <div class="resumo-priv">
 <h2 style="margin-top:0">Resumo em 30 segundos</h2>
 <ul>
 <li><b>🔒 Suas mensagens ficam no seu aparelho.</b> O arquivo do WhatsApp é lido pelo seu navegador. Nenhuma mensagem, nome ou telefone é enviado para nós.</li>
-<li><b>📊 Só números, e só se você quiser.</b> Para comparar seu grupo com outros, enviamos números anônimos do grupo inteiro (como o total de mensagens). Dá para desmarcar.</li>
-<li><b>🍪 Cookies de visitas e anúncios.</b> Usamos o Google Analytics para contar visitas e o Google AdSense para exibir anúncios. O Google pode usar cookies para personalizar anúncios, e você pode desativar isso.</li>
+<li><b>📊 Só números, e só se você quiser.</b> Para comparar seu grupo (ou casal) com outros, enviamos números anônimos do grupo inteiro (como o total de mensagens). Dá para desmarcar.</li>
+<li><b>🍪 Cookies de visitas e anúncios.</b> Usamos o Google Analytics para contar visitas e o Google AdSense para exibir anúncios. Anúncios personalizados só aparecem se você tocar em "Aceitar" no aviso de cookies.</li>
 <li><b>✉️ Só guardamos o que você manda de propósito:</b> sugestões da página "Envie sua ideia", e-mails para o contato e, se você comprar o acesso ilimitado, o e-mail da compra.</li>
 <li><b>💳 Pagamento pelo Mercado Pago.</b> O primeiro grupo é grátis; o acesso ilimitado custa R$ 4,99 no Pix, processado pelo Mercado Pago. Não recebemos dados do seu banco.</li>
 <li><b>⚖️ Você tem direitos pela LGPD</b> e pode falar com a gente em <a href="mailto:contato@retrozap.com.br">contato@retrozap.com.br</a>.</li>
@@ -77,14 +79,16 @@ urls.append(page('privacidade.html', 'Política de Privacidade', 'Como o Retroza
 <h2>1. Quem somos</h2>
 <p>O Retrozap (retrozap.com.br) é um projeto independente de entretenimento, criado em São Paulo, sem relação com o WhatsApp ou a Meta. Somos o controlador dos poucos dados descritos aqui. Contato e encarregado de dados: <a href="mailto:contato@retrozap.com.br">contato@retrozap.com.br</a>.</p>
 <h2>2. Suas mensagens não saem do seu aparelho</h2>
-<p>Quando você escolhe o arquivo exportado do WhatsApp, a leitura e a análise acontecem inteiramente no seu navegador, como uma calculadora que roda no celular ou no computador. O arquivo, as mensagens, os nomes e os telefones <b>não são enviados aos nossos servidores, não são lidos por pessoas e não são guardados por nós</b>. Ao fechar a página, tudo é descartado. Os cards com os resultados também são gerados no seu aparelho; eles só são compartilhados se você decidir mandar.</p>
+<p>Quando você escolhe o arquivo exportado do WhatsApp, a leitura e a análise acontecem inteiramente no seu navegador, como uma calculadora que roda no celular ou no computador. O arquivo, as mensagens, os nomes e os telefones <b>não são enviados aos nossos servidores, não são lidos por pessoas e não são guardados por nós</b>. Ao fechar a página, tudo é descartado. Os cards e o vídeo com os resultados também são gerados no seu aparelho; eles só são compartilhados se você decidir mandar. Vale o mesmo para o modo Casal: a conversa de vocês dois nunca sai do aparelho.</p>
 <p>Os anúncios e as ferramentas de medição nunca têm acesso ao conteúdo do seu grupo.</p>
-<h2>3. Comparação com outros grupos (opcional, só números)</h2>
-<p>Se a opção "Comparar meu grupo com outros grupos" estiver marcada na tela da turma, o site envia apenas números anônimos sobre o grupo inteiro: o tipo de grupo, o total de mensagens, a média por dia, o recorde de mensagens em um dia, a quantidade de áudios e de figurinhas, o número de integrantes, o número de dias da conversa e proporções (como a porcentagem de mensagens com risada ou de madrugada, e quantos "bom dia", parabéns, palavrões ou mensagens apagadas aparecem a cada mil mensagens). Junto vai um código gerado a partir desses números, para o mesmo grupo não ser contado duas vezes. Nenhuma mensagem, nome, telefone ou conteúdo é enviado, e não é possível identificar o grupo ou as pessoas a partir desses números. Eles servem só para mostrar frases como "Top 5% mais risonhos entre os grupos de amigos". O grupo de exemplo nunca é enviado. Você pode desmarcar a opção antes de começar.</p>
+<h2>3. Comparação com outros grupos e casais (opcional, só números)</h2>
+<p>Se a opção "Comparar meu grupo com outros grupos" estiver marcada na tela da turma, o site envia apenas números anônimos sobre o grupo inteiro: o tipo de grupo, o total de mensagens, a média por dia, o recorde de mensagens em um dia, a quantidade de áudios e de figurinhas, o número de integrantes, o número de dias da conversa e proporções (como a porcentagem de mensagens com risada ou de madrugada, e quantos "bom dia", parabéns, palavrões ou mensagens apagadas aparecem a cada mil mensagens; no modo Casal, também quantos "te amo" e corações aparecem, em proporção). Casais são comparados só com casais. Junto vai um código gerado a partir desses números, para o mesmo grupo não ser contado duas vezes. Nenhuma mensagem, nome, telefone ou conteúdo é enviado, e não é possível identificar o grupo ou as pessoas a partir desses números. Eles servem só para mostrar frases como "Top 5% mais risonhos entre os grupos de amigos". O grupo de exemplo nunca é enviado. Você pode desmarcar a opção antes de começar.</p>
 <h2>4. Sugestões e contato</h2>
-<p>Se você usar a página <a href="/ideias">Envie sua ideia</a>, guardamos o texto da sugestão, o tipo e, se você preencher, o e-mail ou WhatsApp para resposta. Usamos esses dados só para avaliar a ideia e responder. Se você pedir para receber as novidades no final da retrospectiva, guardamos o e-mail informado para enviar novidades e lançamentos do Retrozap e, eventualmente, ofertas de parceiros (como o presente prometido no final). Não vendemos nem repassamos o seu e-mail a ninguém, e é só pedir para sair a qualquer momento. Se você escrever para o nosso e-mail, guardamos a conversa para responder. Por favor, não envie mensagens do seu grupo nem dados de outras pessoas.</p>
+<p>Se você usar a página <a href="/ideias">Envie sua ideia</a>, guardamos o texto da sugestão, o tipo e, se você preencher, o e-mail ou WhatsApp para resposta. Usamos esses dados só para avaliar a ideia e responder. Se você pedir para receber as novidades no final da retrospectiva, guardamos o e-mail informado para enviar novidades e lançamentos do Retrozap e, eventualmente, ofertas de parceiros. Não vendemos nem repassamos o seu e-mail a ninguém, e é só pedir para sair a qualquer momento. Se você escrever para o nosso e-mail, guardamos a conversa para responder. Por favor, não envie mensagens do seu grupo nem dados de outras pessoas.</p>
 <h3>Pagamento do acesso ilimitado</h3>
-<p>A primeira retrospectiva é grátis. Para fazer outras, o acesso ilimitado custa R$ 4,99, pago uma única vez por Pix. O pagamento é processado pelo Mercado Pago, que trata os dados da transação conforme a <a href="https://www.mercadopago.com.br/privacidade" rel="noopener">política de privacidade do Mercado Pago</a>. Nós guardamos apenas o e-mail informado, o identificador da compra, o valor, a situação do pagamento e o código de acesso gerado. Não recebemos dados da sua conta bancária. Para lembrar que o primeiro grupo já foi feito e que o acesso foi liberado, o site guarda no seu navegador um código curto de cada grupo (calculado a partir da data da primeira mensagem, sem conteúdo) e o código de acesso.</p>
+<p>A primeira retrospectiva é grátis. Para fazer outras, o acesso ilimitado custa R$ 4,99, pago uma única vez por Pix. O pagamento é processado pelo Mercado Pago, que trata os dados da transação conforme a <a href="https://www.mercadopago.com.br/privacidade" rel="noopener">política de privacidade do Mercado Pago</a>. Nós guardamos apenas o e-mail informado, o identificador da compra, o valor, a situação do pagamento e o código de acesso gerado. Não recebemos dados da sua conta bancária. Para lembrar que o primeiro grupo já foi feito e que o acesso foi liberado, o site guarda no seu navegador um código curto de cada grupo (calculado a partir da data da primeira mensagem, sem conteúdo), o código de acesso e o e-mail informado na compra. Isso fica só no seu aparelho e some se você limpar os dados do navegador.</p>
+<h3>Quem nos ajuda a operar o site</h3>
+<p>Usamos fornecedores que tratam dados em nosso nome: a Cloudflare (hospedagem do site e banco de dados dos números anônimos, sugestões, e-mails e compras), o Mercado Pago (pagamento) e o Google (medição de visitas e anúncios). Alguns desses servidores ficam fora do Brasil; nesses casos, a transferência segue as garantias previstas na LGPD e nos contratos desses fornecedores.</p>
 <h2>5. Dados de uso (Google Analytics)</h2>
 <p>Usamos o Google Analytics para entender, de forma agregada, quantas pessoas visitam o site, quais páginas acessam e quantas retrospectivas são concluídas. Registramos eventos como "prêmio revelado" ou "card compartilhado", sem nomes, mensagens ou conteúdo do grupo. O Google coleta dados técnicos como endereço IP aproximado, tipo de aparelho e navegador, conforme a <a href="https://policies.google.com/privacy" rel="noopener">política de privacidade do Google</a>.</p>
 <h2>6. Cookies e publicidade (Google AdSense)</h2>
@@ -93,22 +97,24 @@ urls.append(page('privacidade.html', 'Política de Privacidade', 'Como o Retroza
 <li>Também é possível desativar o uso de cookies de outros fornecedores para publicidade personalizada em <a href="https://www.aboutads.info/choices/" rel="noopener">aboutads.info</a>.</li>
 <li>Saiba como o Google usa dados de sites parceiros em <a href="https://policies.google.com/technologies/partner-sites" rel="noopener">policies.google.com/technologies/partner-sites</a>.</li>
 <li>Você pode bloquear ou apagar cookies a qualquer momento nas configurações do seu navegador. O site continua funcionando normalmente.</li></ul>
+<p>No primeiro acesso, o aviso de cookies pergunta a sua escolha. Com <b>"Aceitar"</b>, o Google pode mostrar anúncios personalizados. Com <b>"Só o essencial"</b>, os anúncios continuam, mas sem personalização e sem cookies de publicidade. Para mudar de ideia, limpe os dados do site no navegador e o aviso aparece de novo.</p>
 <h2>7. Links de parceiros</h2>
 <p>Alguns conteúdos têm links de parceiros, sempre sinalizados. Se você comprar por eles, o Retrozap pode receber uma comissão, sem custo extra para você. Ao sair do Retrozap, vale a política de privacidade do site de destino.</p>
 <h2>8. Bases legais (LGPD)</h2>
-<ul><li><b>Legítimo interesse:</b> medição de visitas e exibição de anúncios, para manter o site gratuito.</li>
+<ul><li><b>Legítimo interesse:</b> medição de visitas e exibição de anúncios não personalizados, para manter o site gratuito.</li>
 <li><b>Execução de contrato:</b> dados da compra do acesso ilimitado.</li>
-<li><b>Consentimento:</b> comparação com outros grupos (opção que você pode desmarcar) e dados que você envia de propósito (sugestões e e-mails).</li></ul>
+<li><b>Consentimento:</b> anúncios personalizados (botão "Aceitar"), comparação com outros grupos ou casais (opção que você pode desmarcar) e dados que você envia de propósito (sugestões e e-mails).</li></ul>
 <h2>9. Por quanto tempo guardamos</h2>
 <ul><li>Mensagens do grupo: não guardamos.</li>
 <li>Números anônimos da comparação: enquanto o recurso existir, só de forma agregada.</li>
 <li>Sugestões e contatos: até 2 anos, ou antes, se você pedir a exclusão.</li>
+<li>E-mail para novidades: até você pedir para sair.</li>
 <li>Dados de compras: pelo prazo exigido pelas leis fiscais e de defesa do consumidor (até 5 anos).</li>
 <li>Dados do Google Analytics e do AdSense: pelos prazos definidos pelo Google.</li></ul>
 <h2>10. Seus direitos</h2>
 <p>Pela LGPD, você pode pedir confirmação de tratamento, acesso, correção, anonimização ou exclusão dos seus dados, informações sobre compartilhamento e revogar consentimentos. É só escrever para <a href="mailto:contato@retrozap.com.br">contato@retrozap.com.br</a>. Como não guardamos as suas mensagens, não há conversa sua armazenada para ser apagada.</p>
 <h2>11. Menores de idade</h2>
-<p>O Retrozap não é direcionado a menores de 13 anos.</p>
+<p>O Retrozap não é direcionado a menores de 13 anos. A compra do acesso ilimitado é para maiores de 18 anos ou com autorização dos responsáveis. Não coletamos a idade de ninguém.</p>
 <h2>12. Mudanças nesta política</h2>
 <p>Se esta política mudar, a data no topo será atualizada. Mudanças importantes serão avisadas no site.</p>
 """, ad=False))

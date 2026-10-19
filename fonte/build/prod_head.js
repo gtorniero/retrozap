@@ -26,9 +26,12 @@ window.addEventListener('popstate', () => {
 
 /* ---------- Aviso de cookies ---------- */
 function avisoCookies(){
-  try { if (localStorage.getItem('retrozap-cookies')) return; } catch {}
+  try { if (localStorage.getItem('rz_cookies')) return; } catch {}
   const b = document.createElement('div'); b.className = 'cookies';
-  b.innerHTML = 'Usamos cookies para contar visitas e mostrar anúncios do Google, que podem ser personalizados. Suas mensagens nunca saem do seu celular. <a href="/privacidade">Política de privacidade</a> <button class="btn btn-main mini" type="button">Entendi</button>';
-  b.querySelector('button').onclick = () => { try { localStorage.setItem('retrozap-cookies', '1'); } catch {} b.remove(); document.body.classList.remove('has-cookies'); };
+  b.innerHTML = 'Usamos cookies para contar visitas e, se você aceitar, mostrar anúncios personalizados do Google. Suas mensagens nunca saem do seu celular. <a href="/privacidade">Política de privacidade</a> <button class="btn btn-main mini" type="button" data-ck="sim">Aceitar</button> <button class="btn btn-ghost mini" type="button" data-ck="nao">Só o essencial</button>';
+  b.querySelectorAll('[data-ck]').forEach(bt => bt.onclick = () => {
+    const sim = bt.dataset.ck === 'sim'; try { localStorage.setItem('rz_cookies', bt.dataset.ck); } catch {}
+    try { gtag('consent', 'update', {ad_storage: sim ? 'granted' : 'denied', ad_user_data: sim ? 'granted' : 'denied', ad_personalization: sim ? 'granted' : 'denied', analytics_storage: sim ? 'granted' : 'denied'}); } catch {}
+    b.remove(); document.body.classList.remove('has-cookies'); });
   document.body.appendChild(b); document.body.classList.add('has-cookies'); // espaço extra para o aviso não cobrir nenhum botão
 }

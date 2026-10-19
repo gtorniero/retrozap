@@ -271,6 +271,21 @@ body.has-cookies .acao{bottom:150px}
 .patro-box{background:var(--acai);border:1px solid var(--linha);border-radius:24px;padding:18px;width:min(100%,440px);display:flex;flex-direction:column;gap:10px;text-align:center;animation:pop .4s cubic-bezier(.2,1.4,.4,1)}
 .tiles>.tile:last-child:nth-child(odd){grid-column:1/-1}
 .pw{position:relative;text-align:center}
+.escolha{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
+.esc{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;border-radius:20px;padding:18px 16px 16px;font:inherit;cursor:pointer;border:2px solid transparent;transition:transform .15s,border-color .15s,background .15s;min-width:0}
+.esc .em{font-size:36px;line-height:1}
+.esc b{font-family:var(--titulo);font-size:22px;font-weight:800}
+.esc span:not(.em){font-size:14px;line-height:1.35;opacity:.85}
+.esc-g{background:rgba(255,194,60,.12);color:#FFE7A8;border-color:rgba(255,194,60,.35)}
+.esc-c{background:rgba(232,51,109,.14);color:#FFC2D6;border-color:rgba(232,51,109,.4)}
+.esc[aria-pressed="true"]{transform:translateY(-2px)}
+.esc-g[aria-pressed="true"]{background:#FFC23C;color:#1A0B2E;border-color:#FFC23C}
+.esc-c[aria-pressed="true"]{background:#CC1D59;color:#fff;border-color:#CC1D59}
+.esc[aria-pressed="true"]::after{content:"✓";position:absolute;right:12px;bottom:12px;font-weight:800;font-size:18px}
+.esc .novo{position:absolute;top:10px;right:10px;font-style:normal;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:#fff;color:#CC1D59;border-radius:999px;padding:3px 8px}
+.esc:focus-visible{outline:3px solid var(--areia);outline-offset:3px}
+html.casal .esc-g{background:#FFF;color:#5A4A1A;border-color:#F2D58A}
+html.casal .esc-c:not([aria-pressed="true"]){color:#9B1648}
 .vid{position:relative;width:100%}
 .vid video{display:block;width:100%;border-radius:18px}
 .perso.trancado,.d26b.trancado{position:relative;width:100%}
@@ -293,7 +308,7 @@ html.casal .top{background:rgba(255,245,248,.95)}
 html.casal .acao{background:linear-gradient(to top,var(--noite) 70%,rgba(255,245,248,0))}
 html.casal .btn-main,html.casal .tipo-conversa button[aria-pressed="true"]{color:#fff}
 html.casal .chip-casal b{color:var(--manga)}
-html.casal .perso .chip{background:rgba(232,51,109,.12)}
+html.casal .perso .chip{background:#fff;color:#9B1648}
 .pw-ctx{margin:0;font-size:14px;font-weight:700;color:var(--neblina)}
 .pw-tit{font-size:30px;margin:0;line-height:1.05}.pw-tit em{font-style:normal;color:var(--manga)}
 .pw-preco{display:flex;flex-direction:column;align-items:center;gap:2px}
@@ -412,7 +427,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const DIAS = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
 const MODOS = {
-  casal:{n:'Casal',e:'💑',c:'#E8336D'},
+  casal:{n:'Casal',e:'💘',c:'#E8336D'},
   amigos:{n:'Amigos',e:'🍻',c:'#FF4F8B'},
   familia:{n:'Família',e:'🏡',c:'#FF7A59'},
   trabalho:{n:'Trabalho',e:'💼',c:'#2EC4F1'},
@@ -716,7 +731,7 @@ const TT_SITE = (ok, fim) => `<div class="tt-url">🔒 retrozap.com.br</div>
   </div>`;
 // modo casal: troca os textos de grupo por textos de conversa a dois
 const casalTxt = t => state.modo !== 'casal' ? t : String(t).replace(/Turma do Churras/g, 'Amor 💕').replace(/🍖/g, '💕').replace(/toque para dados do grupo/g, 'toque para dados do contato')
-  .replace(/Toque no nome do grupo/g, 'Toque no nome da pessoa').replace(/Grupo · 6 membros/g, 'Contato').replace(/No grupo desde/g, 'Na conversa desde').replace(/a média do grupo/g, 'a média do casal')
+  .replace(/Toque no nome do grupo/g, 'Toque no nome da pessoa').replace(/Grupo · 6 membros/g, 'Contato').replace(/Bora churras sábado\?/g, 'Jantar hoje?').replace(/Bora! Eu levo o carvão/g, 'Bora! Eu escolho o lugar').replace(/Quem leva a picanha\?/g, 'Pizza ou japa?').replace(/kkkkkk de novo isso/g, 'Pizza, óbvio 😂').replace(/No grupo desde/g, 'Na conversa desde').replace(/a média do grupo/g, 'a média do casal')
   .replace(/\bdo grupo\b/g, 'da conversa').replace(/\bo grupo\b/g, 'a conversa').replace(/\bno grupo\b/g, 'na conversa');
 const TAGLINE = () => state.modo === 'casal' ? 'Toda história de amor merece um troféu · retrozap.com.br' : 'Todo grupo tem uma história · retrozap.com.br';
 const nomePadrao = () => state.modo === 'casal' ? 'Nós dois' : 'Nosso grupo';
@@ -828,7 +843,7 @@ async function precisaPagar(){
   return true;
 }
 // ambiente de teste (prévia fora do site oficial): alterna Grátis/Premium e simula o Pix
-const AMBIENTE_TESTE = !/(^|\.)retrozap\.com\.br$|workers\.dev$|^localhost$|^127\./.test(location.hostname) || /[?&]plano_teste=1/.test(location.search);
+const AMBIENTE_TESTE = !/(^|\.)retrozap\.com\.br$|workers\.dev$|^localhost$|^127\./.test(location.hostname) || (/^localhost$|^127\./.test(location.hostname) && /[?&]plano_teste=1/.test(location.search)); // nunca no site oficial
 if (AMBIENTE_TESTE) state.planoTeste = 'gratis';
 const premiumLocal = () => state.planoTeste ? state.planoTeste === 'premium' : !!(state.sample || lsGet('rz_acesso'));
 // premium liberado? (grupo de exemplo, código de acesso guardado ou cobrança desligada)
@@ -963,27 +978,36 @@ function linkAbreWhats(){
 function inicio(){
   anchor(true);
   PILHA.length = 0; const vb = document.getElementById('voltar'); if (vb) vb.hidden = true;
-  setSteps(0); state.data = null;
+  setSteps(0); state.data = null; const cs = state.modo === 'casal';
   view.innerHTML = `
   <section class="screen hero">
-    <p class="eyebrow">A retrospectiva oficial dos grupos do Brasil</p>
+    ${cs ? `<p class="eyebrow">A retrospectiva dos casais do Brasil</p>
+    <h1>Toda história de amor tem números. <em>Descubra os de vocês.</em></h1>
+    <p class="lead">Quem manda mais "te amo", quem demora para responder, quem pede desculpas: cada um leva o seu troféu. 💘</p>` : `<p class="eyebrow">A retrospectiva oficial dos grupos do Brasil</p>
     <h1>Todo grupo tem uma história. <em>Descubra a do seu.</em></h1>
-    <p class="lead">Quem fala demais, quem some, quem manda figurinha às 3 da manhã: cada um leva o seu troféu. 🏆</p>
+    <p class="lead">Quem fala demais, quem some, quem manda figurinha às 3 da manhã: cada um leva o seu troféu. 🏆</p>`}
     <div class="badge"><span aria-hidden="true">🔒</span><span><b>Suas mensagens não saem do seu celular.</b> Tudo é analisado aqui no navegador. A gente não recebe, não lê e não guarda nenhuma mensagem. <a href="/privacidade" style="color:var(--areia)">Entenda</a></span></div>
+    <div class="escolha" role="group" aria-label="O que você quer analisar?">
+      <button type="button" class="esc esc-g" data-esc="grupo" aria-pressed="${!cs}"><span class="em" aria-hidden="true">🏆</span><b>Grupos</b><span>Amigos, família, trabalho, condomínio</span></button>
+      <button type="button" class="esc esc-c" data-esc="casal" aria-pressed="${cs}"><i class="novo">Novo</i><span class="em" aria-hidden="true">💘</span><b>Casais</b><span>A retrospectiva de vocês dois</span></button>
+    </div>
     <div class="panel oque">
       <p class="ask">O que você vai encontrar</p>
-      <ol class="oque-l">
+      ${cs ? `<ol class="oque-l">
+        <li><span class="em" aria-hidden="true">🎭</span><div><b>Os personagens do casal</b><span>Quem é quem na relação e o jeito de cada um falar.</span></div></li>
+        <li><span class="em" aria-hidden="true">🏆</span><div><b>10 categorias com troféus</b><span>Do Mais Romântico ao Visualiza e Demora, com card para mandar um para o outro.</span></div></li>
+        <li><span class="em" aria-hidden="true">🎬</span><div><b>Os números de vocês e um vídeo para os stories</b><span>Quem manda mais o quê, e como vocês se comparam aos casais do Brasil.</span></div></li>
+      </ol>` : `<ol class="oque-l">
         <li><span class="em" aria-hidden="true">🎭</span><div><b>Os personagens do grupo</b><span>Conhecendo o grupo: quem é quem e o jeito de cada um falar.</span></div></li>
         <li><span class="em" aria-hidden="true">🏆</span><div><b>10 categorias com troféus</b><span>Do Tagarela ao Fantasma, com pódio e card para mandar no grupo.</span></div></li>
         <li><span class="em" aria-hidden="true">📊</span><div><b>Os números do grupo e o ranking</b><span>Mensagens, áudios, figurinhas e como o grupo se compara aos grupos do Brasil.</span></div></li>
-      </ol>
+      </ol>`}
     </div>
-    <button class="btn btn-main" id="comecar">Vamos começar →</button>
-    <button type="button" class="chip-casal" id="irCasal">💕 Novo: <b>Retrozap Casais</b>. A retrospectiva de vocês dois →</button>
+    <button class="btn btn-main" id="comecar">${cs ? 'Começar a retrospectiva do casal →' : 'Vamos começar →'}</button>
     <nav class="rodape" aria-label="Links do site"><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos</a></nav>
   </section>`;
-  $('#comecar').onclick = () => { if (state.modo === 'casal') setModo(state.ultimoGrupo || 'amigos'); home(); };
-  $('#irCasal').onclick = () => { setModo('casal'); home(); };
+  $('#comecar').onclick = () => home();
+  view.querySelectorAll('[data-esc]').forEach(b => b.onclick = () => { const k = b.dataset.esc; setModo(k === 'casal' ? 'casal' : (state.ultimoGrupo || 'amigos')); const y = scrollY; inicio(); scrollTo(0, y); view.querySelector(`[data-esc="${k}"]`)?.focus({preventScroll: true}); });
   window.scrollTo(0,0);
 }
 function home(){
@@ -993,13 +1017,16 @@ function home(){
   view.innerHTML = `
   <section class="screen">
     <p class="eyebrow">Passo a passo</p>
-    <div class="tipo-conversa" role="group" aria-label="O que você vai analisar?">
-      <button type="button" data-tipo="grupo" aria-pressed="${state.modo !== 'casal'}">👥 Um grupo</button>
-      <button type="button" data-tipo="casal" aria-pressed="${state.modo === 'casal'}">💑 Um casal</button>
-    </div>
     <h1 style="font-size:clamp(30px,8vw,40px)">${state.modo === 'casal' ? 'Traga a conversa de vocês dois 💕' : 'Traga a conversa do seu grupo'}</h1>
     <div class="panel">
-      <p class="ask">1. Exporte a conversa do WhatsApp</p>
+      <p class="ask" id="passo1">1. É de um grupo ou de um casal?</p>
+      <div class="tipo-conversa" role="group" aria-labelledby="passo1">
+        <button type="button" data-tipo="grupo" aria-pressed="${state.modo !== 'casal'}">🏆 Grupo</button>
+        <button type="button" data-tipo="casal" aria-pressed="${state.modo === 'casal'}">💘 Casal</button>
+      </div>
+    </div>
+    <div class="panel">
+      <p class="ask">2. Exporte a conversa do WhatsApp</p>
       <div class="tabs" role="tablist">
         <button role="tab" id="tab-iphone" aria-selected="${state.how==='iphone'}" data-h="iphone">iPhone</button>
         <button role="tab" id="tab-android" aria-selected="${state.how==='android'}" data-h="android">Android</button>
@@ -1019,13 +1046,13 @@ function home(){
     </div>
     <label class="drop${state.arquivo ? ' ok' : ''}" for="file">
       <span class="big" aria-hidden="true">${state.arquivo ? '✅' : '📲'}</span>
-      <b>2. Toque para escolher o arquivo</b>
+      <b>3. Toque para escolher o arquivo</b>
       <span class="small" id="fname">${state.arquivo ? 'Arquivo escolhido: ' + esc(state.arquivo.name) : 'Aceita o .zip ou o .txt que o WhatsApp gera'}</span>
       <input type="file" id="file">
     </label>
     <div class="badge priv"><span aria-hidden="true">🔒</span><span><b>Suas mensagens não saem do seu celular.</b> Tudo é analisado aqui no navegador. A gente não recebe, não lê e não guarda nenhuma mensagem. <a href="/privacidade" style="color:var(--areia)">Entenda</a></span></div>
     ${state.modo === 'casal' ? '' : `<div class="panel">
-      <p class="ask">3. Que tipo de grupo é?</p>
+      <p class="ask">4. Que tipo de grupo é?</p>
       <div class="modes" role="group" aria-label="Tipo de grupo">
         ${Object.entries(MODOS).filter(([k]) => k !== 'casal').map(([k,m]) => `<button class="mode" data-m="${k}" style="--c:${m.c}" aria-pressed="${state.modo===k}"><span class="em">${m.e}</span>${m.n}</button>`).join('')}
       </div>
@@ -1046,7 +1073,7 @@ function home(){
     (view.querySelector('.modes') || $('#start')).scrollIntoView({behavior:'smooth', block:'center'});
   };
   $('#start').onclick = () => state.arquivo && lembrete(() => readFile(state.arquivo));
-  view.querySelectorAll('[data-tipo]').forEach(b => b.onclick = () => { setModo(b.dataset.tipo === 'casal' ? 'casal' : (state.ultimoGrupo || 'amigos')); home(); });
+  view.querySelectorAll('[data-tipo]').forEach(b => b.onclick = () => { const k = b.dataset.tipo, y = scrollY; setModo(k === 'casal' ? 'casal' : (state.ultimoGrupo || 'amigos')); home(); scrollTo(0, y); view.querySelector(`[data-tipo="${k}"]`)?.focus({preventScroll: true}); });
   tutorial(state.how);
   $('#demo').onclick = () => { DUR = {}; run(demoChat(), true); };
   window.scrollTo(0,0);
@@ -1219,7 +1246,7 @@ function roster(){
             <div class="btn-row"><button type="button" class="btn btn-main mini" data-keep="a">${esc(r.n)}</button><button type="button" class="btn btn-ghost mini" data-keep="b">${esc(state.mgAlvo)}</button></div>` : ''}
         </div>` : ''}
       </div>`; }).join('')}</div>
-    <label class="optin"><input type="checkbox" id="cmp"${state.comparar === false ? '' : ' checked'}><span>📊 Comparar meu grupo com outros grupos do Retrozap<span class="small">Só números anônimos, como o total de mensagens. Nenhuma mensagem e nenhum nome saem do celular.</span></span></label>
+    <label class="optin"><input type="checkbox" id="cmp"${state.comparar === false ? '' : ' checked'}><span>📊 ${state.modo === 'casal' ? 'Comparar com outros casais do Retrozap' : 'Comparar meu grupo com outros grupos do Retrozap'}<span class="small">Só números anônimos, como o total de mensagens. Nenhuma mensagem e nenhum nome saem do celular.</span></span></label>
     <p class="err" id="rerr" hidden></p>
     <button class="btn btn-main" id="go">Tudo certo, começar →</button>
   </section>`;
@@ -1345,7 +1372,7 @@ const PERSONAS = {
   'Casal Meme':['😂','Risada em mais de 20% das mensagens. O amor é uma piada interna.'],
   'Casal Podcast':['🎙️','Áudios passam de 5% das mensagens.'],
   'Casal Romântico':['💘','Declarações de amor em mais de 3% das mensagens.'],
-  'Casal Equilibrado':['💑','Amor, rotina e conversa na medida certa.']
+  'Casal Equilibrado':['💞','Amor, rotina e conversa na medida certa.']
 };
 const PERSONAS_MODO = {
   amigos:['Resenha da Madrugada','Fábrica de Risada','Museu da Figurinha','Rádio do Grupo','Escritório Paralelo','Resenha Raiz'],
