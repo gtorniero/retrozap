@@ -125,6 +125,8 @@ export async function webhook({request, env}){
   return json({ok: true});
 }
 
+const AMIGOS_HASH = ['b86dd5b2692c26982629e053cc68993bbe6b043a732546d972013bfcc0c9f5c5'];
+
 // POST /api/acesso {codigo}: confere um código digitado (recuperar acesso em outro navegador)
 export async function acesso({request, env}){
   if (!env.DB) return json({ok: false}, 503);
@@ -138,7 +140,14 @@ export async function acesso({request, env}){
     const l = await env.DB.prepare(`SELECT codigo FROM compras WHERE email = ? AND status = 'pago'${filtro} ORDER BY pago DESC LIMIT 1`).bind(email).first();
     return json(l?.codigo ? {ok: true, codigo: l.codigo} : {ok: false});
   }
-  const codigo = String(c?.codigo || '').trim().toUpperCase().slice(0, 20);
+  const codigo = String(c?.codigo || '').trim().toUpperCase().slice(0, 40);
+  // código fixo de amigos e família: sempre libera. Só o hash fica aqui; o código em si nunca entra no repositório.
+  // Para trocar ou revogar: gerar outro código e substituir o hash (ou usar o segredo CODIGOS_AMIGOS, separados por vírgula).
+  if (codigo.startsWith('RZ-AMIGOS-')){
+    const h = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(codigo)))].map(x => x.toString(16).padStart(2, '0')).join('');
+    const extras = String(env.CODIGOS_AMIGOS || '').toUpperCase().split(',').map(x => x.trim()).filter(Boolean);
+    return json({ok: AMIGOS_HASH.includes(h) || extras.includes(codigo)});
+  }
   if (!/^RZ-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(codigo)) return json({ok: false});
   // com a cobrança ligada, códigos gerados no modo teste não valem
   const linha = modo(env) === 'ligada'
