@@ -302,6 +302,15 @@ body.has-cookies .acao{bottom:150px}
 .patro-box{background:var(--acai);border:1px solid var(--linha);border-radius:24px;padding:18px;width:min(100%,440px);display:flex;flex-direction:column;gap:10px;text-align:center;animation:pop .4s cubic-bezier(.2,1.4,.4,1)}
 .tiles>.tile:last-child:nth-child(odd){grid-column:1/-1}
 .pw{position:relative;text-align:center}
+.pw-ctx{margin:0;font-size:14px;font-weight:700;color:var(--neblina)}
+.pw-tit{font-size:30px;margin:0;line-height:1.05}.pw-tit em{font-style:normal;color:var(--manga)}
+.pw-preco{display:flex;flex-direction:column;align-items:center;gap:2px}
+.pw-preco b{font-family:var(--titulo);font-size:46px;line-height:1;color:var(--manga)}
+.pw-preco span{font-size:14px;color:var(--areia)}
+.pw-lista{list-style:none;margin:0;padding:12px;display:flex;flex-direction:column;gap:10px;text-align:left;background:var(--acai-2);border-radius:16px}
+.pw-lista li{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--neblina)}
+.pw-lista li>span{font-size:22px;line-height:1.1}
+.pw-lista b{display:block;color:var(--areia);font-size:15px}
 .ob-form{display:flex;flex-direction:column;gap:8px;text-align:left;background:var(--acai-2);border-radius:16px;padding:12px}
 .ob-linha{display:flex;gap:8px}.ob-linha .pw-in{flex:1;min-width:0}.ob-linha .btn{flex:0 0 auto;padding:10px 14px}
 .ob-denovo{font-size:18px;padding:16px}
@@ -865,13 +874,20 @@ function paywall(seguir, ctx){
   const caixa = m.firstElementChild;
   const inicio = () => {
     caixa.innerHTML = `<button type="button" class="pw-x" id="pwX" aria-label="Fechar">✕</button>
-      <div class="lemb-ic" aria-hidden="true">🎁</div>
-      <h2 id="pwT" style="font-size:24px;margin:0">${ctx === 'bonus' ? 'Categorias extras são Premium' : 'Seu primeiro grupo foi por nossa conta'}</h2>
-      <p class="lemb-tx">${ctx === 'bonus' ? 'Com um pagamento único de <b>R$ 4,99</b> no Pix você libera <b>as categorias extras</b> e faz a retrospectiva de <b>quantos grupos quiser</b>.' : 'Para fazer a retrospectiva de <b>quantos grupos quiser</b> e ver <b>as categorias extras</b>, é um pagamento único de <b>R$ 4,99</b> no Pix.'}</p>
+      <p class="pw-ctx">${ctx === 'bonus' ? '🔒 Essas categorias são Premium' : '🎁 Seu primeiro grupo foi por nossa conta'}</p>
+      <h2 id="pwT" class="pw-tit">Acesso ilimitado.<br><em>Pague 1x só.</em></h2>
+      <div class="pw-preco"><b>R$ 4,99</b><span>não dá nem pro cafezinho do editor ☕</span></div>
+      <ul class="pw-lista">
+        <li><span aria-hidden="true">♾️</span><div><b>Quantos grupos quiser</b>Família, amigos, trabalho, condomínio, a pelada de quinta...</div></li>
+        <li><span aria-hidden="true">🎁</span><div><b>Categorias extras</b>Mais troféus e mais gente sendo exposta com carinho.</div></li>
+        <li><span aria-hidden="true">✨</span><div><b>Tudo o que vier de novo</b>Novidades Premium já incluídas, sem pagar de novo.</div></li>
+        <li><span aria-hidden="true">🔥</span><div><b>Seus grupos nunca mais vão ser os mesmos</b>Prepare-se para agitar (muito) a conversa.</div></li>
+      </ul>
+      <p class="small" style="margin:0">Pagamento único no Pix · sem assinatura · liberado na hora</p>
       <label class="pw-lb" for="pwEm">Seu e-mail (para o comprovante)</label>
       <input id="pwEm" type="email" inputmode="email" autocomplete="email" placeholder="voce@email.com" class="pw-in">
       <p class="err" id="pwErr" hidden></p>
-      <button type="button" class="btn btn-main" id="pwPix">Pagar R$ 4,99 com Pix</button>
+      <button type="button" class="btn btn-main" id="pwPix">🔓 Liberar tudo por R$ 4,99</button>
       <button type="button" class="pw-lk" id="pwTenho">Já paguei, tenho um código</button>
       <p class="small" style="margin:0">Continua igual: suas mensagens não saem do seu celular. O pagamento é processado pelo Mercado Pago.</p>`;
     caixa.querySelector('#pwX').onclick = fecha;
@@ -889,9 +905,9 @@ function paywall(seguir, ctx){
         if (!r.ok || !j.ref) throw new Error(j.error === 'email' ? 'Confira o e-mail.' : 'Não consegui gerar o Pix agora. Tente de novo em instantes.' + (TESTE_COBRANCA ? ` [${r.status}${j.detalhe ? ': ' + j.detalhe : ''}]` : ''));
         try { if (typeof evento === 'function') evento('pix_gerado'); } catch {}
         pixTela(j);
-      } catch (e) { bt.disabled = false; bt.textContent = 'Pagar R$ 4,99 com Pix'; err.hidden = false; err.textContent = e.message || 'Sem conexão. Tente de novo.'; }
+      } catch (e) { bt.disabled = false; bt.textContent = '🔓 Liberar tudo por R$ 4,99'; err.hidden = false; err.textContent = e.message || 'Sem conexão. Tente de novo.'; }
     };
-    em.focus();
+    caixa.querySelector('#pwX').focus({preventScroll:true}); requestAnimationFrame(() => { m.scrollTop = 0; });
   };
   const pixTela = j => {
     caixa.innerHTML = `<button type="button" class="pw-x" id="pwX" aria-label="Fechar">✕</button>
