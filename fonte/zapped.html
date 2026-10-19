@@ -1190,7 +1190,27 @@ async function run(text, sample){
   state.changed = new Set(msgs.sys.filter(e => e.type === 'numero').map(e => e.who));
   const autores = new Set(msgs.map(m => m.a));
   for (const n of state.left) if (autores.has(n)) state.hidden.add(n);
+  if (state.modo === 'casal' && autores.has(state.grupo)) state.grupo = ''; // "Conversa com Fulano" não vira nome do casal
+  // escolheu "grupo", mas a conversa tem só 2 pessoas: pergunta se é um casal
+  if (!sample && state.modo !== 'casal' && [...autores].filter(n => !state.hidden.has(n)).length === 2) return perguntaCasal([...autores].filter(n => !state.hidden.has(n)), roster);
   roster();
+}
+function perguntaCasal(nomes, seguir){
+  const m = document.createElement('div');
+  m.className = 'patro'; m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true'); m.setAttribute('aria-labelledby','pcT'); m.setAttribute('aria-describedby','pcD');
+  m.innerHTML = `<div class="patro-box lemb">
+    <div class="lemb-ic" aria-hidden="true">💘</div>
+    <h2 id="pcT" style="font-size:26px;margin:0">É um casal?</h2>
+    <p class="lemb-tx" id="pcD">Essa conversa tem só duas pessoas: <b>${esc(nomes[0])}</b> e <b>${esc(nomes[1])}</b>. Se for um casal, a retrospectiva fica no modo Casal, com categorias de casal, o card "Nós dois" e o vídeo para os stories.</p>
+    <button type="button" class="btn btn-main" id="pcSim">💘 Sim, somos um casal</button>
+    <button type="button" class="btn btn-ghost" id="pcNao">Não, seguir como conversa normal</button>
+  </div>`;
+  document.body.appendChild(m);
+  const vai = casal => { if (casal){ setModo('casal'); if (state.grupo === nomes[0] || state.grupo === nomes[1] || !state.grupo) state.grupo = ''; } m.remove(); seguir(); };
+  m.querySelector('#pcSim').onclick = () => vai(true);
+  m.querySelector('#pcNao').onclick = () => vai(false);
+  m.addEventListener('keydown', e => { if (e.key === 'Escape') vai(false); });
+  m.querySelector('#pcSim').focus();
 }
 const isFone = n => /^\+?[\d\s()\-]{8,}$/.test(n);
 function roster(){
