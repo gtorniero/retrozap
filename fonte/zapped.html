@@ -1560,9 +1560,9 @@ function fimTela(semFesta){
       <p class="small" id="maisInfo" style="margin:0"></p>
     </div>` : ''}
     <div class="duas">
-      <figure class="card-fim"><figcaption>📸 ${casal ? 'Resumo do casal' : 'Resumo do grupo'}</figcaption><img id="rimg" class="rimg" alt="${esc(altResumo(d))}">
+      <figure class="card-fim"><figcaption>📸 ${casal ? 'Resumo do casal' : 'Resumo do grupo'} <span class="small">· desde o início</span></figcaption><img id="rimg" class="rimg" alt="${esc(altResumo(d))}">
         <div class="btn-row"><button type="button" class="btn btn-wa" id="wa1">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv1">⬇️ Salvar</button></div></figure>
-      ${casal ? `<figure class="card-fim"><figcaption>💞 Nós dois</figcaption><img id="rimg5" class="rimg" alt="${esc(altCasal(d))}">
+      ${casal ? `<figure class="card-fim"><figcaption>💞 Nós dois: um contra o outro <span class="small">· desde o início</span></figcaption><img id="rimg5" class="rimg" alt="${esc(altCasal(d))}">
         <div class="btn-row"><button type="button" class="btn btn-wa" id="wa5">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv5">⬇️ Salvar</button></div></figure>` : ''}
       ${casal && videoSuportado() ? `<figure class="card-fim"><figcaption>🎬 Vídeo de 10s para os stories</figcaption>
         <div class="vid"><img id="vcapa" class="rimg" alt="Prévia do vídeo do casal: números, ranking e troféus de cada um"><video id="vplay" class="rimg" playsinline loop muted hidden></video></div>
@@ -1570,15 +1570,16 @@ function fimTela(semFesta){
         <div class="btn-row"><button type="button" class="btn btn-main" id="vger">🎬 Gerar o vídeo</button><button type="button" class="btn btn-wa" id="vsh" hidden>🟢 Compartilhar</button><button type="button" class="btn btn-ghost" id="vsv" hidden>⬇️ Salvar</button></div></figure>` : ''}
       ${temRank ? `<figure class="card-fim"><figcaption>🏅 Ranking ${casal ? 'do casal' : 'do grupo'}</figcaption><img id="rimg2" class="rimg" alt="${esc(altComparacao())}">
         <div class="btn-row"><button type="button" class="btn btn-wa" id="wa2">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv2">⬇️ Salvar</button></div></figure>` : ''}
-      <figure class="card-fim"><figcaption>🏆 Top 10 categorias</figcaption><img id="rimg3" class="rimg" alt="${esc(altTop10())}">
+      <figure class="card-fim"><figcaption>🏆 Top 10 categorias <span class="small">· desde o início</span></figcaption><img id="rimg3" class="rimg" alt="${esc(altTop10())}">
         <div class="btn-row"><button type="button" class="btn btn-wa" id="wa3">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv3">⬇️ Salvar</button></div></figure>
     </div>
     ${d26.length ? `<div class="panel d26" style="width:100%">
       <h2 style="font-size:26px;margin:0">✨ ${casal ? 'O nosso 2026' : 'Destaques de 2026'}</h2>
+      <p class="small" style="margin:0">Só o que aconteceu em 2026. O resto da retrospectiva conta a conversa inteira, desde o início.</p>
       <div class="dest rk">${d26.slice(0, trava26 ? 2 : 9).map(item26).join('')}</div>
       ${trava26 ? `<div class="d26b trancado"><button type="button" class="btn btn-main destrava" id="dest26">🔓 Ver mais ${d26.length - 2} destaques</button>
         <div class="dest rk" aria-hidden="true">${d26.slice(2).map(item26).join('')}</div></div>` : ''}
-      ${trava26 ? '' : `<figure class="card-fim" style="width:100%"><figcaption>🗓️ Nosso 2026</figcaption><img id="rimg4" class="rimg" alt="${esc(altNosso2026(d))}">
+      ${trava26 ? '' : `<figure class="card-fim" style="width:100%"><figcaption>🗓️ Nosso 2026 <span class="small">· só 2026</span></figcaption><img id="rimg4" class="rimg" alt="${esc(altNosso2026(d))}">
         <div class="btn-row"><button type="button" class="btn btn-wa" id="wa4">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv4">⬇️ Salvar</button></div></figure>`}
     </div>` : ''}
     <button class="btn btn-main" id="concluir" style="width:100%">Concluir 🎉</button>
@@ -1867,7 +1868,7 @@ function drawTop10(){
   fundo(c, W, H, 1100);
   c.textAlign = 'center';
   c.fillStyle = CV().ouro; c.font = `800 48px ${BR}`; c.fillText(state.modo === 'casal' ? 'retrozap 💕' : 'retrozap 🏆', W/2, 100);
-  c.fillStyle = CV().sub; c.font = `700 30px ${DM}`; c.fillText('TOP 10 CATEGORIAS', W/2, 172);
+  c.fillStyle = CV().sub; c.font = `700 30px ${DM}`; c.fillText(`TOP 10 CATEGORIAS · ${periodo().replace('DESDE O INÍCIO · ', '')}`, W/2, 172, 980);
   c.fillStyle = CV().txt; caber(c, limpaTxt(state.grupo || nomePadrao()), W/2, 250, 940, 800, 60, BR);
   const ps = principais(), topo = 300, base = 1790, passo = (base - topo)/Math.max(ps.length, 1), alt = passo - 14;
   ps.forEach((a, i) => {
@@ -2004,6 +2005,10 @@ const CV = () => state.modo === 'casal'
   ? {txt:'#3B1230', ouro:'#D81B60', sub:'#8E5B74', caixa:'rgba(255,255,255,.82)', brilho:a => `rgba(232,51,109,${a})`, A:'#E8336D', B:'#8E44D9'}
   : {txt:'#FFF4E0', ouro:'#FFC23C', sub:'#B9A8CC', caixa:'rgba(61,26,92,.88)', brilho:a => `rgba(255,194,60,${a})`, A:'#FFC23C', B:'#2EC4F1'};
 function coracao(c, x, y, t){ c.beginPath(); c.moveTo(x, y + t*.35); c.bezierCurveTo(x, y - t*.3, x - t, y - t*.3, x - t, y + t*.25); c.bezierCurveTo(x - t, y + t*.75, x, y + t*1.1, x, y + t*1.35); c.bezierCurveTo(x, y + t*1.1, x + t, y + t*.75, x + t, y + t*.25); c.bezierCurveTo(x + t, y - t*.3, x, y - t*.3, x, y + t*.35); c.fill(); }
+// período que o card cobre: a conversa inteira ou só 2026
+const mesAno = t => `${MESES[t.getMonth()].slice(0,3)}/${t.getFullYear()}`;
+const periodo = () => { const d = state.data; return d ? `DESDE O INÍCIO · ${mesAno(d.start).toUpperCase()} → ${mesAno(d.end).toUpperCase()}` : ''; };
+const periodo26 = () => { const d = state.data; return d && d.end.getFullYear() === ANO_MOMENTO ? `SÓ ${ANO_MOMENTO} · JAN → ${MESES[d.end.getMonth()].slice(0,3).toUpperCase()}` : `SÓ ${ANO_MOMENTO}`; };
 function fundo(c, W, H, raio){
   c.fillStyle = corFundo(); c.fillRect(0,0,W,H);
   const g = c.createRadialGradient(W/2,0,60,W/2,0,raio); g.addColorStop(0,CV().brilho(.30)); g.addColorStop(1,CV().brilho(0)); c.fillStyle = g; c.fillRect(0,0,W,H);
@@ -2033,7 +2038,7 @@ function drawResumo(d){
   const v = vibe(d), lv = livro(d), au = audios(d), fr = frase(d), desde = d.start.toLocaleDateString('pt-BR', {month:'short', year:'numeric'}).replace('.', '');
   c.textAlign = 'center';
   c.fillStyle = CV().ouro; c.font = `800 48px ${BR}`; c.fillText(state.modo === 'casal' ? 'retrozap 💕' : 'retrozap 🏆', W/2, 100);
-  c.fillStyle = CV().sub; c.font = `700 30px ${DM}`; c.fillText(state.modo === 'casal' ? 'RESUMO DO CASAL' : 'RESUMO DO GRUPO', W/2, 175);
+  c.fillStyle = CV().sub; c.font = `700 30px ${DM}`; c.fillText(`${state.modo === 'casal' ? 'RESUMO DO CASAL' : 'RESUMO DO GRUPO'} · ${periodo()}`, W/2, 175, 980);
   c.fillStyle = CV().ouro;
   const nomeT = limpaTxt(state.grupo || nomePadrao());
   let tam = 84; c.font = `800 ${tam}px ${BR}`;
@@ -2077,7 +2082,7 @@ function drawResumoQ(d){
   const v = vibe(d), lv = livro(d), fr = frase(d), desde = d.start.toLocaleDateString('pt-BR', {month:'short', year:'numeric'}).replace('.', '');
   c.textAlign = 'center';
   c.fillStyle = CV().ouro; c.font = `800 40px ${BR}`; c.fillText(state.modo === 'casal' ? 'retrozap 💕' : 'retrozap 🏆', W/2, 76);
-  c.fillStyle = CV().sub; c.font = `700 24px ${DM}`; c.fillText(state.modo === 'casal' ? 'RESUMO DO CASAL' : 'RESUMO DO GRUPO', W/2, 130);
+  c.fillStyle = CV().sub; c.font = `700 24px ${DM}`; c.fillText(`${state.modo === 'casal' ? 'RESUMO DO CASAL' : 'RESUMO DO GRUPO'} · ${periodo()}`, W/2, 130, 1000);
   c.fillStyle = CV().ouro; caber(c, state.grupo || nomePadrao(), W/2, 215, 960, 800, 64, BR);
   const tiles = [
     ['💬', fmt(d.total), `mensagens desde ${desde}`],
@@ -2203,8 +2208,8 @@ function drawComparacao(d){
   c.fillStyle = CV().ouro; c.font = `800 48px ${BR}`; c.fillText(state.modo === 'casal' ? 'retrozap 💕' : 'retrozap 🏆', W/2, 100);
   if (state.grupo){ c.fillStyle = CV().txt; caber(c, state.grupo, W/2, 178, 960, 800, 62, BR); }
   c.font = '120px serif'; c.fillText('🏅', W/2, 340);
-  c.fillStyle = CV().ouro; c.font = `800 78px ${BR}`; c.fillText('NOSSO GRUPO', W/2, 450); c.fillText('NO RANKING', W/2, 535);
-  c.fillStyle = CV().sub; c.font = `700 30px ${DM}`; c.fillText(state.comp?.escopo === 'todos' ? 'ENTRE OS GRUPOS DO RETROZAP' : `ENTRE OS GRUPOS ${tipo} DO RETROZAP`, W/2, 595, 980);
+  c.fillStyle = CV().ouro; c.font = `800 78px ${BR}`; c.fillText(state.modo === 'casal' ? 'NÓS DOIS' : 'NOSSO GRUPO', W/2, 450); c.fillText('NO RANKING', W/2, 535);
+  c.fillStyle = CV().sub; c.font = `700 30px ${DM}`; c.fillText(`${state.modo === 'casal' ? 'ENTRE OS CASAIS DO RETROZAP' : state.comp?.escopo === 'todos' ? 'ENTRE OS GRUPOS DO RETROZAP' : `ENTRE OS GRUPOS ${tipo} DO RETROZAP`} · ${periodo().replace('DESDE O INÍCIO · ', '')}`, W/2, 595, 980);
   const y0 = 650, passo = Math.min(190, 1040/Math.max(1, lista.length)), alt = passo - 18;
   lista.forEach((x, i) => {
     const y = y0 + i*passo;
@@ -2261,10 +2266,28 @@ function destaques2026(d){
   const [w26, t26] = conta(m26), [wAnt, tAnt] = conta(d.msgs.filter(m => m.t.getFullYear() < A));
   const pal = Object.entries(w26).filter(([, n]) => n >= 8).map(([w, n]) => [w, n, (n/t26) / (((wAnt[w]||0) + 1)/tAnt)]).sort((x,y) => y[2] - x[2])[0];
   if (pal) itens.push({e:'🗣️', t:'Palavra de 2026', big: `“${pal[0]}”`, sub: `${fmt(pal[1])} vezes em 2026${tAnt > 500 ? `, ${Math.max(2, Math.round(pal[2]))}× mais que antes` : ''}`});
+  const hora = t => `${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;
+  const diaN = (y, mo, da) => m26.filter(m => m.t.getMonth() === mo && m.t.getDate() === da).length;
+  const normal = m26.length / Math.max(1, Math.round((ult - new Date(A, 0, 1))/864e5) + 1);
+  // quem abriu 2026
+  const pri = m26.reduce((x, m) => m.t < x.t ? m : x, m26[0]);
+  if (pri.t.getMonth() === 0 && pri.t.getDate() <= 2) itens.push({e:'🎆', t:'Quem abriu 2026', big: pri.a, sub: `primeira mensagem do ano, ${pri.t.getDate()} de janeiro às ${hora(pri.t)}`});
+  // Carnaval (14 a 17 de fevereiro de 2026)
+  if (ult >= new Date(A, 1, 18)){ const n = [14,15,16,17].reduce((x, dd) => x + diaN(A, 1, dd), 0), v = n / 4 / Math.max(.1, normal);
+    if (n >= 10) itens.push({e:'🎭', t:'Carnaval', big: v >= 1.15 ? `+${Math.round((v-1)*100)}%` : v <= .85 ? `${Math.round((v-1)*100)}%` : 'no ritmo', sub: v >= 1.15 ? `${casal ? 'vocês falaram' : 'o grupo falou'} mais que o normal no Carnaval` : v <= .85 ? `${casal ? 'vocês sumiram' : 'o grupo sumiu'} no Carnaval. Bloquinho?` : 'nem o Carnaval mudou a conversa'}); }
+  // Copa do Mundo (11 de junho a 19 de julho de 2026)
+  if (ult >= new Date(A, 6, 20)){ const ini = new Date(A, 5, 11), fim = new Date(A, 6, 19, 23, 59), copa = m26.filter(m => m.t >= ini && m.t <= fim);
+    const bola = copa.filter(m => /\bgo+l+\b|copa|brasil|sele[çc][ãa]o|jogo|neymar|vini|ancelotti/i.test(m.b)).length, v = copa.length / 39 / Math.max(.1, normal);
+    if (bola >= 5) itens.push({e:'⚽', t:'Copa do Mundo', big: `${fmt(bola)} mensagens`, sub: `falando de jogo, gol e seleção${v >= 1.1 ? `, e ${Math.round((v-1)*100)}% mais conversa que o normal` : ''}`}); }
+  // Dia dos Namorados (casal)
+  if (casal && ult >= new Date(A, 5, 13)){ const n = diaN(A, 5, 12); if (n >= 5) itens.push({e:'💝', t:'Dia dos Namorados', big: `${fmt(n)} mensagens`, sub: `em 12 de junho${n > normal*1.3 ? `, ${Math.round(n/normal*10)/10}× um dia normal` : ''}`}); }
+  // o maior silêncio do ano
+  { let gap = 0, gi = null; for (let i = 1; i < m26.length; i++){ const g = m26[i].t - m26[i-1].t; if (g > gap){ gap = g; gi = m26[i-1].t; } }
+    const dd = Math.floor(gap / 864e5); if (dd >= 3) itens.push({e:'🤫', t:'O maior silêncio', big: `${dd} dias`, sub: `sem ninguém falar, a partir de ${gi.getDate()} de ${MESES[gi.getMonth()]}${casal ? '. Viagem juntos?' : '. Todo mundo de férias?'}`}); }
   const meses = Array(12).fill(0); for (const m of m26) meses[m.t.getMonth()]++;
   const mi = meses.indexOf(Math.max(...meses)); itens.push({e:'📈', t:'Mês mais agitado', big: MESES[mi], sub: `${fmt(meses[mi])} mensagens`});
   const ag = itens.pop(); itens.splice(Math.min(1, itens.length), 0, ag);
-  return (d._d26 = itens.slice(0, 7));
+  return (d._d26 = itens.slice(0, 10));
 }
 function altNosso2026(d){ return `Nosso 2026${state.grupo ? ' no grupo ' + state.grupo : ''}: ${destaques2026(d).map(x => `${x.t}: ${x.big}`).join('; ')}.`; }
 function drawNosso2026(d){
@@ -2275,7 +2298,7 @@ function drawNosso2026(d){
   if (state.grupo){ c.fillStyle = CV().txt; caber(c, state.grupo, W/2, 178, 960, 800, 62, BR); }
   c.font = '120px serif'; c.fillText('🗓️', W/2, 340);
   c.fillStyle = CV().ouro; c.font = `800 92px ${BR}`; c.fillText(state.modo === 'casal' ? 'O NOSSO 2026' : 'NOSSO 2026', W/2, 470);
-  c.fillStyle = CV().sub; c.font = `700 30px ${DM}`; c.fillText('OS DESTAQUES DO ANO', W/2, 525);
+  c.fillStyle = CV().sub; c.font = `700 30px ${DM}`; c.fillText(`OS DESTAQUES DO ANO · ${periodo26()}`, W/2, 525, 980);
   const y0 = 580, passo = Math.min(190, 1140/Math.max(1, lista.length)), alt = passo - 18;
   lista.forEach((x, i) => {
     const y = y0 + i*passo;
@@ -2291,58 +2314,46 @@ function drawNosso2026(d){
 
 // card do casal: quem manda mais o quê (sem rótulo de gênero, só os nomes)
 function categoriasCasal(d){
-  const [a, b] = d.people;
-  const L = [['💬','Mensagens','count'],['💘','Declarações de amor','teamo'],['❤️','Corações e beijinhos','coracao'],['😂','Risadas','laugh'],['🎙️','Áudios','audio'],['🖼️','Figurinhas','sticker'],['📸','Fotos e vídeos','photo'],['☀️','Bom dia','bomdia'],['🥺','Saudade','saudade'],['🙏','Pedidos de desculpa','desculpa'],['🍕','Falou de comida','fome'],['🌅','Puxou o papo do dia','first']];
-  const [msg, ...resto] = L.map(([e, t, k]) => ({e, t, a: a[k]||0, b: b[k]||0})).filter((x, i) => i === 0 || x.a + x.b >= 5);
-  return {msg, cats: resto.sort((x, y) => (y.a + y.b) - (x.a + x.b)).slice(0, 6)};
+  const [a, b] = d.people, rt = p => p.respN >= 10 ? Math.max(1, Math.round(p.respT/p.respN/60000)) : null;
+  const L = [['💬','Mensagens','count'],['🎙️','Áudios','audio'],['🖼️','Figurinhas','sticker'],['❤️','Corações e beijinhos','coracao'],['🌅','Puxou o papo do dia','first'],['🍕','Falou de comida','fome']]
+    .map(([e, t, k]) => ({e, t, a: a[k]||0, b: b[k]||0}));
+  const ra = rt(a), rb = rt(b);
+  if (ra && rb) L.push({e:'⚡', t:'Tempo médio de resposta', a: ra, b: rb, menor: true, fmt: m => m >= 60 ? `${Math.round(m/60)} h` : `${m} min`});
+  return {msg: L[0], cats: L};
 }
-function altCasal(d){ const [a, b] = d.people, {msg, cats} = categoriasCasal(d);
-  return `Nós dois: ${a.name} ${Math.round(msg.a/(msg.a+msg.b)*100)}% e ${b.name} ${Math.round(msg.b/(msg.a+msg.b)*100)}% das mensagens. ` + cats.map(x => `${x.t}: ${a.name} ${x.a}, ${b.name} ${x.b}`).join('; ') + '.'; }
+function altCasal(d){ const [a, b] = d.people, {cats} = categoriasCasal(d);
+  return `${a.name} contra ${b.name}: ` + cats.map(x => `${x.t}: ${a.name} ${x.fmt ? x.fmt(x.a) : x.a}, ${b.name} ${x.fmt ? x.fmt(x.b) : x.b}`).join('; ') + '.'; }
 function drawCasal(d){
   const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
-  const BR = '"Bricolage Grotesque", sans-serif', DM = '"DM Sans", sans-serif', K = CV(), [a, b] = d.people, {msg, cats} = categoriasCasal(d);
+  const BR = '"Bricolage Grotesque", sans-serif', DM = '"DM Sans", sans-serif', K = CV(), [a, b] = d.people, {cats} = categoriasCasal(d);
   fundo(c, W, H, 1000); c.textAlign = 'center';
   c.fillStyle = K.ouro; c.font = `800 46px ${BR}`; c.fillText('retrozap 💕', W/2, 96);
-  c.fillStyle = K.txt; c.font = `800 92px ${BR}`; c.fillText('NÓS DOIS', W/2, 210);
-  c.fillStyle = K.sub; c.font = `700 30px ${DM}`; c.fillText('QUEM MANDA MAIS O QUÊ', W/2, 262);
-  // nomes com coração no meio
-  c.fillStyle = K.A; caber(c, a.name, W/2 - 300, 370, 440, 800, 58, BR);
-  c.fillStyle = K.B; caber(c, b.name, W/2 + 300, 370, 440, 800, 58, BR);
-  c.fillStyle = K.ouro; coracao(c, W/2, 318, 34);
-  const barra = (y, h, va, vb, rot) => {
-    const x0 = 80, w = W - 160, t = Math.max(1, va + vb), wa = Math.max(h, Math.min(w - h, w * va / t));
-    c.save(); c.beginPath(); c.roundRect(x0, y, w, h, h/2); c.clip();
-    c.fillStyle = K.A; c.fillRect(x0, y, wa, h); c.fillStyle = K.B; c.fillRect(x0 + wa, y, w - wa, h); c.restore();
-    if (rot){ c.fillStyle = '#FFFFFF'; c.font = `800 ${Math.round(h*.46)}px ${DM}`; c.textAlign = 'left'; c.fillText(rot[0], x0 + 22, y + h*.66); c.textAlign = 'right'; c.fillText(rot[1], x0 + w - 22, y + h*.66); c.textAlign = 'center'; }
-  };
-  const pa = Math.round(msg.a/Math.max(1, msg.a + msg.b)*100);
-  c.fillStyle = K.txt; c.font = `700 34px ${DM}`; c.fillText(`💬 ${fmt(msg.a + msg.b)} mensagens trocadas`, W/2, 470);
-  barra(500, 96, msg.a, msg.b, [`${pa}%`, `${100 - pa}%`]);
-  // 6 categorias
-  let y = 660;
+  c.fillStyle = K.sub; c.font = `700 26px ${DM}`; c.fillText(periodo(), W/2, 146, 980);
+  // os dois frente a frente
+  c.fillStyle = K.A; c.beginPath(); c.roundRect(50, 190, 430, 170, 40); c.fill();
+  c.fillStyle = K.B; c.beginPath(); c.roundRect(W - 480, 190, 430, 170, 40); c.fill();
+  c.fillStyle = '#FFFFFF'; caber(c, a.name, 265, 300, 380, 800, 64, BR); caber(c, b.name, W - 265, 300, 380, 800, 64, BR);
+  c.fillStyle = K.ouro; coracao(c, W/2, 222, 52); c.fillStyle = '#FFFFFF'; c.font = `800 30px ${BR}`; c.fillText('VS', W/2, 268);
+  let ga = 0, gb = 0, y = 410;
+  const passo = Math.min(200, 1330 / cats.length);
   for (const x of cats){
-    c.fillStyle = K.caixa; c.beginPath(); c.roundRect(60, y, W - 120, 118, 28); c.fill();
-    c.fillStyle = K.txt; c.font = `700 32px ${DM}`; c.fillText(`${x.e} ${x.t}`, W/2, y + 44);
-    c.font = `800 34px ${BR}`; c.textAlign = 'left'; c.fillStyle = K.A; c.fillText(fmt(x.a), 100, y + 44); c.textAlign = 'right'; c.fillStyle = K.B; c.fillText(fmt(x.b), W - 100, y + 44); c.textAlign = 'center';
-    barra(y + 64, 30, x.a, x.b); y += 134;
+    const ta = x.menor ? x.a < x.b : x.a > x.b, tb = x.menor ? x.b < x.a : x.b > x.a; if (ta) ga++; if (tb) gb++;
+    const f = x.fmt || fmt, h = passo - 20;
+    c.fillStyle = K.caixa; c.beginPath(); c.roundRect(50, y, W - 100, h, 32); c.fill();
+    c.fillStyle = K.txt; c.font = `700 30px ${DM}`; c.fillText(`${x.e} ${x.t}`, W/2, y + 46);
+    if (x.menor){ c.fillStyle = K.sub; c.font = `600 22px ${DM}`; c.fillText('quem responde mais rápido ganha', W/2, y + 78); }
+    c.font = `800 ${Math.round(h*.27)}px ${BR}`;
+    c.textAlign = 'left'; c.fillStyle = K.A; c.fillText(f(x.a) + (ta ? ' 👑' : ''), 90, y + h*.72);
+    c.textAlign = 'right'; c.fillStyle = K.B; c.fillText((tb ? '👑 ' : '') + f(x.b), W - 90, y + h*.72);
+    c.textAlign = 'center';
+    // barrinha: quanto cada um tem do total (no tempo de resposta, o mais rápido fica com a parte maior)
+    const va = x.menor ? x.b : x.a, vb = x.menor ? x.a : x.b, t = Math.max(1, va + vb), bx = 370, bw = W - 740, wa = bw * va / t;
+    c.save(); c.beginPath(); c.roundRect(bx, y + h*.58, bw, 22, 11); c.clip(); c.fillStyle = K.A; c.fillRect(bx, y + h*.58, wa, 22); c.fillStyle = K.B; c.fillRect(bx + wa, y + h*.58, bw - wa, 22); c.restore();
+    y += passo;
   }
-  // tempo de resposta
-  const rt = p => p.respN >= 10 ? Math.max(1, Math.round(p.respT/p.respN/60000)) : null, ra = rt(a), rb = rt(b);
-  const fm = m => m >= 60 ? `${Math.round(m/60)} h` : `${m} min`;
-  if (ra && rb){ c.fillStyle = K.txt; c.font = `700 32px ${DM}`; c.fillText(`⚡ Responde em média: ${limpaTxt(a.name).split(' ')[0]} ${fm(ra)} · ${limpaTxt(b.name).split(' ')[0]} ${fm(rb)}`, W/2, y + 40); }
-  // mensagens por mês (últimos 12 meses), uma barrinha para cada um
-  const fim = d.msgs.reduce((m, x) => x.t > m ? x.t : m, d.msgs[0].t), meses = [];
-  for (let i = 11; i >= 0; i--){ const dt = new Date(fim.getFullYear(), fim.getMonth() - i, 1); meses.push({k: dt.getFullYear()*12 + dt.getMonth(), m: dt.getMonth(), a: 0, b: 0}); }
-  const ix = Object.fromEntries(meses.map((x, i) => [x.k, i]));
-  for (const x of d.msgs){ const i = ix[x.t.getFullYear()*12 + x.t.getMonth()]; if (i === undefined) continue; if (x.a === a.name) meses[i].a++; else if (x.a === b.name) meses[i].b++; }
-  const top = y + 90, base = 1800, mx = Math.max(1, ...meses.flatMap(x => [x.a, x.b])), passo = (W - 160)/12, bw = passo*.32;
-  c.fillStyle = K.sub; c.font = `700 26px ${DM}`; c.fillText('MENSAGENS POR MÊS', W/2, top);
-  meses.forEach((x, i) => {
-    const cx = 80 + passo*i + passo/2, alt = base - top - 30;
-    c.fillStyle = K.A; c.beginPath(); c.roundRect(cx - bw - 2, base - alt*x.a/mx, bw, Math.max(4, alt*x.a/mx), 6); c.fill();
-    c.fillStyle = K.B; c.beginPath(); c.roundRect(cx + 2, base - alt*x.b/mx, bw, Math.max(4, alt*x.b/mx), 6); c.fill();
-    c.fillStyle = K.sub; c.font = `700 22px ${DM}`; c.fillText(MESES[x.m].slice(0, 3), cx, base + 30);
-  });
+  // placar
+  c.fillStyle = K.txt; c.font = `800 52px ${BR}`;
+  c.fillText(ga === gb ? `Empate: ${ga} a ${gb} 💞` : `Placar: ${limpaTxt(ga > gb ? a.name : b.name).split(' ')[0]} ${Math.max(ga, gb)} a ${Math.min(ga, gb)}`, W/2, y + 60, 980);
   c.fillStyle = K.txt; c.font = `700 34px ${DM}`; c.fillText(TAGLINE(), W/2, 1880);
   return cv.toDataURL('image/png');
 }
@@ -2655,6 +2666,7 @@ function drawCard({emoji, title, winner, line, small, podio}){
   c.restore();
   c.fillStyle = CV().sub; c.font = '500 44px "DM Sans", sans-serif'; c.fillText(line, 540, podio?.length ? 820 : 850, 980);
   if (podio?.length){ c.fillStyle = CV().txt; c.font = '700 40px "DM Sans", sans-serif'; c.fillText(podio.join('     '), 540, 905, 980); }
+  if (periodo()){ c.fillStyle = CV().sub; c.font = '700 26px "DM Sans", sans-serif'; c.fillText(periodo(), 540, 962, 980); }
   c.fillStyle = CV().txt; c.font = '700 34px "DM Sans", sans-serif'; c.fillText(TAGLINE(), 540, 1010);
   return cv.toDataURL('image/png');
 }
