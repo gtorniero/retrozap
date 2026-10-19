@@ -852,7 +852,7 @@ function paywall(seguir, ctx){
     try { if (typeof evento === 'function') evento('compra_ilimitado'); } catch {}
     caixa.innerHTML = `<div class="lemb-ic" aria-hidden="true">🎉</div>
       <h2 id="pwT" style="font-size:26px;margin:0">Liberado!</h2>
-      <p class="lemb-tx">Agora é ilimitado neste navegador, com as categorias extras. Guarde seu código (tire um print) para usar em outro celular:</p>
+      <p class="lemb-tx">Agora é ilimitado neste navegador, com as categorias extras. Para usar em outro celular, digite este código ou o e-mail que você usou no Pix:</p>
       <div class="pw-cod">${esc(codigo)}</div>
       <button type="button" class="btn btn-ghost" id="pwCopC">Copiar código</button>
       <button type="button" class="btn btn-main" id="pwSeg">${ctx === 'bonus' ? 'Ver as categorias extras 🎁' : 'Continuar a retrospectiva 🏆'}</button>`;
@@ -919,23 +919,23 @@ function paywall(seguir, ctx){
   const codigoTela = () => {
     caixa.innerHTML = `<button type="button" class="pw-x" id="pwX" aria-label="Fechar">✕</button>
       <h2 id="pwT" style="font-size:22px;margin:0">Recuperar acesso</h2>
-      <label class="pw-lb" for="pwCod">Código que apareceu depois do pagamento</label>
-      <input id="pwCod" class="pw-in" placeholder="RZ-XXXX-XXXX" autocapitalize="characters" autocomplete="off">
+      <label class="pw-lb" for="pwCod">Digite o código (RZ-XXXX-XXXX) ou o e-mail que você usou no Pix</label>
+      <input id="pwCod" class="pw-in" placeholder="RZ-XXXX-XXXX ou voce@email.com" autocapitalize="none" autocomplete="off">
       <p class="err" id="pwErr" hidden></p>
       <button type="button" class="btn btn-main" id="pwOk">Liberar</button>
       <button type="button" class="pw-lk" id="pwVolta">← Voltar</button>
-      <p class="small" style="margin:0">Perdeu o código? Escreva para <a href="mailto:contato@retrozap.com.br" style="color:var(--areia)">contato@retrozap.com.br</a> com o e-mail da compra.</p>`;
+      <p class="small" style="margin:0">Não lembra o e-mail? Escreva para <a href="mailto:contato@retrozap.com.br" style="color:var(--areia)">contato@retrozap.com.br</a>.</p>`;
     caixa.querySelector('#pwX').onclick = fecha;
     caixa.querySelector('#pwVolta').onclick = inicio;
     const inp = caixa.querySelector('#pwCod'), err = caixa.querySelector('#pwErr'), bt = caixa.querySelector('#pwOk');
     bt.onclick = async () => {
-      const codigo = inp.value.trim().toUpperCase();
+      const v = inp.value.trim(), porEmail = v.includes('@'), codigo = v.toUpperCase();
       bt.disabled = true; err.hidden = true;
       try {
-        const r = await fetch('/api/acesso', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({codigo})});
+        const r = await fetch('/api/acesso', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify(porEmail ? {email: v} : {codigo})});
         const s = await r.json();
-        if (s.ok) return libera(codigo);
-        err.hidden = false; err.textContent = 'Código não encontrado. Confira e tente de novo.';
+        if (s.ok) return libera(porEmail ? s.codigo : codigo);
+        err.hidden = false; err.textContent = porEmail ? 'Não achei uma compra paga com esse e-mail. Confira e tente de novo.' : 'Código não encontrado. Confira e tente de novo.';
       } catch { err.hidden = false; err.textContent = 'Sem conexão. Tente de novo.'; }
       bt.disabled = false;
     };

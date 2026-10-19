@@ -129,9 +129,17 @@ export async function webhook({request, env}){
 export async function acesso({request, env}){
   if (!env.DB) return json({ok: false}, 503);
   let c; try { c = await request.json(); } catch { return json({ok: false}, 400); }
+  await tabela(env);
+  // pelo e-mail usado no Pix: devolve o código da compra paga mais recente (simples; dá para melhorar se escalar)
+  const email = String(c?.email || '').trim().toLowerCase().slice(0, 120);
+  if (email){
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return json({ok: false});
+    const filtro = modo(env) === 'ligada' ? " AND modo = 'ligada'" : '';
+    const l = await env.DB.prepare(`SELECT codigo FROM compras WHERE email = ? AND status = 'pago'${filtro} ORDER BY pago DESC LIMIT 1`).bind(email).first();
+    return json(l?.codigo ? {ok: true, codigo: l.codigo} : {ok: false});
+  }
   const codigo = String(c?.codigo || '').trim().toUpperCase().slice(0, 20);
   if (!/^RZ-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(codigo)) return json({ok: false});
-  await tabela(env);
   // com a cobrança ligada, códigos gerados no modo teste não valem
   const linha = modo(env) === 'ligada'
     ? await env.DB.prepare("SELECT ref FROM compras WHERE codigo = ? AND status = 'pago' AND modo = 'ligada'").bind(codigo).first()
