@@ -442,7 +442,7 @@ function paywall(seguir, ctx){
     try { if (typeof evento === 'function') evento('compra_ilimitado'); } catch {}
     caixa.innerHTML = `<div class="lemb-ic" aria-hidden="true">🎉</div>
       <h2 id="pwT" style="font-size:26px;margin:0">Liberado!</h2>
-      <p class="lemb-tx">Agora é ilimitado neste navegador. Guarde seu código para usar em outro celular:</p>
+      <p class="lemb-tx">Agora é ilimitado neste navegador, com as categorias extras. Para usar em outro celular, digite este código ou o e-mail que você usou no Pix:</p>
       <div class="pw-cod">${esc(codigo)}</div>
       <button type="button" class="btn btn-ghost" id="pwCopC">Copiar código</button>
       <button type="button" class="btn btn-main" id="pwSeg">${ctx === 'bonus' ? 'Ver as categorias extras 🎁' : 'Continuar a retrospectiva 🏆'}</button>`;
@@ -509,23 +509,23 @@ function paywall(seguir, ctx){
   const codigoTela = () => {
     caixa.innerHTML = `<button type="button" class="pw-x" id="pwX" aria-label="Fechar">✕</button>
       <h2 id="pwT" style="font-size:22px;margin:0">Recuperar acesso</h2>
-      <label class="pw-lb" for="pwCod">Código que apareceu depois do pagamento</label>
-      <input id="pwCod" class="pw-in" placeholder="RZ-XXXX-XXXX" autocapitalize="characters" autocomplete="off">
+      <label class="pw-lb" for="pwCod">Digite o código (RZ-XXXX-XXXX) ou o e-mail que você usou no Pix</label>
+      <input id="pwCod" class="pw-in" placeholder="RZ-XXXX-XXXX ou voce@email.com" autocapitalize="none" autocomplete="off">
       <p class="err" id="pwErr" hidden></p>
       <button type="button" class="btn btn-main" id="pwOk">Liberar</button>
       <button type="button" class="pw-lk" id="pwVolta">← Voltar</button>
-      <p class="small" style="margin:0">Perdeu o código? Escreva para <a href="mailto:contato@retrozap.com.br" style="color:var(--areia)">contato@retrozap.com.br</a> com o e-mail da compra.</p>`;
+      <p class="small" style="margin:0">Não lembra o e-mail? Escreva para <a href="mailto:contato@retrozap.com.br" style="color:var(--areia)">contato@retrozap.com.br</a>.</p>`;
     caixa.querySelector('#pwX').onclick = fecha;
     caixa.querySelector('#pwVolta').onclick = inicio;
     const inp = caixa.querySelector('#pwCod'), err = caixa.querySelector('#pwErr'), bt = caixa.querySelector('#pwOk');
     bt.onclick = async () => {
-      const codigo = inp.value.trim().toUpperCase();
+      const v = inp.value.trim(), porEmail = v.includes('@'), codigo = v.toUpperCase();
       bt.disabled = true; err.hidden = true;
       try {
-        const r = await fetch('/api/acesso', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({codigo})});
+        const r = await fetch('/api/acesso', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify(porEmail ? {email: v} : {codigo})});
         const s = await r.json();
-        if (s.ok) return libera(codigo);
-        err.hidden = false; err.textContent = 'Código não encontrado. Confira e tente de novo.';
+        if (s.ok) return libera(porEmail ? s.codigo : codigo);
+        err.hidden = false; err.textContent = porEmail ? 'Não achei uma compra paga com esse e-mail. Confira e tente de novo.' : 'Código não encontrado. Confira e tente de novo.';
       } catch { err.hidden = false; err.textContent = 'Sem conexão. Tente de novo.'; }
       bt.disabled = false;
     };
@@ -550,7 +550,7 @@ function inicio(){
   <section class="screen hero">
     <p class="eyebrow">A retrospectiva oficial dos grupos do Brasil</p>
     <h1>Todo grupo tem uma história. <em>Descubra a do seu.</em></h1>
-    <p class="lead">O Retrozap lê a conversa do seu grupo e conta tudo: quem fala demais, quem some, quem manda figurinha às 3 da manhã e quem nunca esquece um aniversário. No fim, cada um leva o seu troféu. 🏆</p>
+    <p class="lead">Quem fala demais, quem some, quem manda figurinha às 3 da manhã: cada um leva o seu troféu. 🏆</p>
     <div class="badge"><span aria-hidden="true">🔒</span><span><b>Suas mensagens não saem do seu celular.</b> Tudo é analisado aqui no navegador. A gente não recebe, não lê e não guarda nenhuma mensagem. <a href="/privacidade" style="color:var(--areia)">Entenda</a></span></div>
     <div class="panel oque">
       <p class="ask">O que você vai encontrar</p>
@@ -1029,7 +1029,7 @@ function fatosResumo(d){
     piada: d.giria[0] === 'bora' ? 'E quantas vezes foram mesmo?' : 'O dicionário do grupo agradece.'});
   if (au) f.push({e:'🎧', big:au.txt, sub:au.comp, piada:'E ninguém ouviu em 2x. Mentira.'});
   const br = destaquesBrasil();
-  if (br.length) f.push({e:'🏅', brasil:br.slice(0, 3), piada: br[0].top <= 5 ? 'Grupo de elite. Ou de gente sem nada para fazer.' : 'Esse grupo não brinca em serviço.'});
+  if (br.length) f.push({e:'🏅', brasil:br.slice(0, 6), piada: br[0].top <= 5 ? 'Grupo de elite. Ou de gente sem nada para fazer.' : 'Esse grupo não brinca em serviço.'});
   f.push({e:'🏅', destaques:ds, piada:'Ninguém foi poupado.'});
   return f;
 }
@@ -1059,8 +1059,8 @@ function suspense(){
     requestAnimationFrame(passo);
   };
   const mostra = x => {
-    if (x.brasil){ sl.innerHTML = `<div class="em-g" aria-hidden="true">${x.e}</div><h2 style="font-size:30px">Comparado com outros grupos</h2>
-         <div class="dest">${x.brasil.map(y => `<div><span aria-hidden="true">${y.e}</span><div><b>${esc(y.txt)}</b><span class="small">${esc(y.sub)}</span></div></div>`).join('')}</div>
+    if (x.brasil){ sl.innerHTML = `<div class="em-g" aria-hidden="true">${x.e}</div><h2 style="font-size:30px">Comparado com outros grupos</h2><p class="small" style="margin:0">${esc(x.brasil[0].sub)}</p>
+         <div class="dest rk">${x.brasil.map(y => `<div><span aria-hidden="true">${y.e}</span><div><b>${esc(y.big)} <i>${esc(y.rot)}</i></b>${y.num ? `<span class="num">${esc(y.num)}</span>` : ''}</div></div>`).join('')}</div>
          <p class="piada">${esc(x.piada)}</p>`; return; }
     sl.innerHTML = x.destaques
       ? `<div class="em-g" aria-hidden="true">${x.e}</div><h2 style="font-size:30px">Os destaques</h2>
@@ -1091,6 +1091,14 @@ function fimTela(semFesta){
     <div class="em-g" aria-hidden="true">📸</div>
     <h1 class="roleta ok"${(state.grupo || '').length > 18 ? ' style="font-size:clamp(24px,7vw,34px)"' : ''}>${esc(state.grupo || 'Nosso grupo')}</h1>
     <p class="lead">${temRank ? 'Três' : 'Duas'} imagens para mandar no grupo e nos stories. Agora é ver quem se ofende primeiro.</p>
+    ${temBonus ? `<div class="panel" style="text-align:center;width:100%">
+      <div style="font-size:48px" aria-hidden="true">🎁</div>
+      <h2 style="font-size:26px;margin:0" id="maisT">🔒 Categorias bloqueadas</h2>
+      <p class="small" style="margin:0">Mais ${b.length} prêmios guardados para o grupo:</p>
+      <div class="chips" style="justify-content:center">${b.map(a => `<span class="chip">🔒 ${a.e} ${a.n}</span>`).join('')}</div>
+      <button class="btn btn-main" id="mais">🔓 Ver as categorias extras</button>
+      <p class="small" id="maisInfo" style="margin:0"></p>
+    </div>` : ''}
     <div class="duas">
       <figure class="card-fim"><figcaption>📸 Resumo do grupo</figcaption><img id="rimg" class="rimg" alt="${esc(altResumo(d))}">
         <div class="btn-row"><button type="button" class="btn btn-wa" id="wa1">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv1">⬇️ Salvar</button></div></figure>
@@ -1099,14 +1107,6 @@ function fimTela(semFesta){
       <figure class="card-fim"><figcaption>🏆 Top 10 categorias</figcaption><img id="rimg3" class="rimg" alt="${esc(altTop10())}">
         <div class="btn-row"><button type="button" class="btn btn-wa" id="wa3">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv3">⬇️ Salvar</button></div></figure>
     </div>
-    ${temBonus ? `<div class="panel" style="text-align:center;width:100%">
-      <div style="font-size:48px" aria-hidden="true">🎁</div>
-      <h2 style="font-size:26px;margin:0">Categorias extras</h2>
-      <p class="small" style="margin:0">Mais ${b.length} prêmios guardados para o grupo:</p>
-      <div class="chips" style="justify-content:center">${b.map(a => `<span class="chip">${a.e} ${a.n}</span>`).join('')}</div>
-      <button class="btn btn-main" id="mais">🔓 Ver as categorias extras</button>
-      <p class="small" id="maisInfo" style="margin:0"></p>
-    </div>` : ''}
     <button class="btn btn-main" id="concluir" style="width:100%">Concluir 🎉</button>
   </section>`;
   document.fonts.ready.then(() => {
@@ -1130,7 +1130,7 @@ function fimTela(semFesta){
       state.awards = comHonra(antes.concat(b), d);
       state.idx = ini; award();
     };
-    premiumLiberado().then(ok => { const t = $('#maisInfo'); if (t && !ok) t.textContent = '🔒 Premium: R$ 4,99 no Pix libera as categorias extras e grupos ilimitados.'; });
+    premiumLiberado().then(ok => { const t = $('#maisInfo'); if (!t) return; if (!ok) t.textContent = 'Premium: R$ 4,99 no Pix libera as categorias extras e grupos ilimitados.'; else { $('#maisT').textContent = '🎁 Categorias extras'; view.querySelectorAll('.panel .chip').forEach(c => c.textContent = c.textContent.replace('🔒 ', '')); } });
     $('#mais').onclick = async () => { const bt = $('#mais'); bt.disabled = true; const ok = await premiumLiberado(); bt.disabled = false; ok ? joga() : paywall(joga, 'bonus'); };
   }
   $('#concluir').onclick = () => obrigado();
@@ -1152,24 +1152,22 @@ function obrigado(){
       <h2 id="obT" style="font-size:26px;margin:0">Valeu por usar o Retrozap!</h2>
       <p class="lemb-tx">Esperamos que o grupo tenha se divertido (e se ofendido só um pouquinho).</p>
       <form id="obForm" class="ob-form">
-        <label class="pw-lb" for="obEm">📬 Quer saber das novidades e do próximo lançamento?</label>
-        <div class="ob-linha"><input id="obEm" class="pw-in" type="email" inputmode="email" autocomplete="email" placeholder="seu@email.com"><button type="submit" class="btn btn-ghost" id="obOk">Avise-me</button></div>
+        <label class="pw-lb" for="obEm">📬 Deixe seu e-mail para receber as próximas novidades e ganhe um presente 🎁 para se divertir com o grupo 👀</label>
+        <div class="ob-linha"><input id="obEm" class="pw-in" type="email" inputmode="email" autocomplete="email" placeholder="seu@email.com"><button type="submit" class="btn btn-main" id="obOk">Quero 🎁</button></div>
         <p class="small" id="obMsg" style="margin:0"></p>
       </form>
-      <button type="button" class="btn btn-ghost" id="obPres">🎁 Receber um presente especial para o grupo</button>
       <button type="button" class="btn btn-main ob-denovo" id="obNovo">🔁 Fazer a retrospectiva de outro grupo</button>`;
     caixa.querySelector('#obX').onclick = fecha;
     caixa.querySelector('#obNovo').onclick = denovo;
-    caixa.querySelector('#obPres').onclick = presente;
     caixa.querySelector('#obForm').onsubmit = async e => {
       e.preventDefault();
       const email = caixa.querySelector('#obEm').value.trim(), msg = caixa.querySelector('#obMsg');
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){ msg.textContent = 'Confira o e-mail.'; return; }
       caixa.querySelector('#obOk').disabled = true;
       try {
-        const r = await fetch('/api/ideias', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({tipo: 'novidades', texto: 'Quero receber as novidades do Retrozap', contato: email})});
+        const r = await fetch('/api/ideias', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({tipo: 'novidades', texto: 'Quero receber as novidades e o presente do Retrozap', contato: email})});
         if (!r.ok) throw 0;
-        msg.textContent = 'Pronto! Você vai ser o primeiro a saber. 🎉'; ev('novidades_email');
+        msg.textContent = 'Pronto! Seu presente vai chegar no seu e-mail. 🎁'; ev('novidades_email');
       } catch { msg.textContent = 'Não consegui salvar agora. Tente de novo.'; caixa.querySelector('#obOk').disabled = false; }
     };
     caixa.querySelector('#obNovo').focus();
@@ -1591,7 +1589,7 @@ const RANKING = [
   {k:'risadas', e:'😂', t:'mais risonhos'},
   {k:'por_dia', e:'💬', t:'mais tagarelas'},
   {k:'madrugada', e:'🦉', t:'mais insones'},
-  {k:'palavrao', e:'🤬', t:'mais boca-suja'},
+  {k:'palavrao', e:'🤬', t:'mais boca-suja', m:['amigos','familia','comunidade']},
   {k:'furos', e:'🙅', t:'em rolê cancelado', m:['amigos']},
   {k:'bomdia', e:'☀️', t:'em bom dia', m:['familia','comunidade']},
   {k:'parabens', e:'🎂', t:'em parabéns', m:['familia']},
@@ -1600,7 +1598,7 @@ const RANKING = [
   {k:'audios', e:'🎙️', t:'em podcast não solicitado'},
   {k:'figurinhas', e:'🖼️', t:'em figurinha'},
   {k:'recorde', e:'🔥', t:'em dia de caos'},
-  {k:'apagadas', e:'🗑️', t:'em arrependimento'},
+  {k:'apagadas', e:'🗑️', t:'em mensagens apagadas'},
   {k:'total', e:'📨', t:'em mensagens'},
   {k:'dias', e:'📅', t:'', antigo:true}
 ];
@@ -1609,10 +1607,20 @@ function destaquesBrasil(){
   const c = state.comp; if (!c) return [];
   const tipo = {amigos:'de amigos', familia:'de família', trabalho:'de trabalho', comunidade:'de comunidade'}[state.modo];
   const sub = `entre os grupos ${c.escopo === 'todos' ? '' : tipo + ' '}no Retrozap${c.exemplo ? ' (simulação do exemplo)' : ''}`;
-  const SEMPRE = ['total', 'audios', 'figurinhas', 'risadas', 'palavrao'];
-  return RANKING.filter(x => (!x.m || x.m.includes(state.modo)) && c.top[x.k] != null && (SEMPRE.includes(x.k) || c.top[x.k] <= 35))
-    .map(x => ({k:x.k, e:x.e, top:c.top[x.k], big: x.antigo ? `Mais antigo que ${100 - c.top[x.k]}%` : `Top ${c.top[x.k]}%`, rot: x.antigo ? 'dos grupos' : x.t, txt: x.antigo ? `Mais antigo que ${100 - c.top[x.k]}% dos grupos` : `Top ${c.top[x.k]}% ${x.t}`, sub}))
-    .sort((a,b) => a.top - b.top).slice(0, 8);
+  const d = state.data, soma = k => d ? d.people.reduce((t,p) => t + (p[k] || 0), 0) : 0;
+  const dias = d ? Math.max(1, Math.round((d.end - d.start)/864e5) + 1) : 1, txs = Math.max(1, soma('text'));
+  const NUM = {total: () => `${fmt(d.total)} mensagens`, audios: () => `${fmt(soma('audio'))} áudios`, figurinhas: () => `${fmt(soma('sticker'))} figurinhas`,
+    risadas: () => `${fmt(soma('laugh'))} mensagens com risada`, palavrao: () => `${fmt(soma('palavrao'))} palavrões`,
+    por_dia: () => `${(d.total/dias).toLocaleString('pt-BR', {maximumFractionDigits: 1})} mensagens por dia`, madrugada: () => `${fmt(soma('night'))} mensagens de madrugada`,
+    furos: () => `${fmt(soma('furo'))} furos`, bomdia: () => `${fmt(soma('bomdia'))} bons dias`, parabens: () => `${fmt(soma('parabens'))} parabéns`,
+    fora: () => `${fmt(soma('after'))} mensagens fora do expediente`, textao: () => `${fmt(Math.round(soma('chars')/txs))} caracteres por mensagem`,
+    recorde: () => d.recorde ? `${fmt(d.recorde[1])} mensagens num dia só` : '', apagadas: () => `${fmt(soma('deleted'))} mensagens apagadas`, dias: () => `${fmt(dias)} dias de conversa`};
+  const BASICOS = ['total', 'audios', 'figurinhas'];
+  const lista = RANKING.filter(x => (!x.m || x.m.includes(state.modo)) && c.top[x.k] != null && c.top[x.k] <= 90)
+    .map(x => ({k:x.k, e:x.e, top:c.top[x.k], big: x.antigo ? `Mais antigo que ${100 - c.top[x.k]}%` : `Top ${c.top[x.k]}%`, rot: x.antigo ? 'dos grupos' : x.t,
+      txt: x.antigo ? `Mais antigo que ${100 - c.top[x.k]}% dos grupos` : `Top ${c.top[x.k]}% ${x.t}`, num: d && NUM[x.k] ? NUM[x.k]() : '', sub}));
+  // primeiro os básicos (mensagens, áudios, figurinhas), depois o que mais destaca
+  return [...BASICOS.map(k => lista.find(x => x.k === k)).filter(Boolean), ...lista.filter(x => !BASICOS.includes(x.k)).sort((a,b) => a.top - b.top)].slice(0, 8);
 }
 // imagem 2: nosso grupo no ranking
 function drawComparacao(d){
@@ -1632,7 +1640,7 @@ function drawComparacao(d){
     c.fillStyle = 'rgba(61,26,92,.88)'; c.beginPath(); c.roundRect(70, y, W-140, alt, 30); c.fill();
     c.textAlign = 'left'; c.font = `${Math.round(alt*.45)}px serif`; c.fillStyle = '#FFF4E0'; c.fillText(x.e, 105, y + alt*.64);
     c.fillStyle = '#FFC23C'; caber(c, x.big, 240, y + alt*.5, 740, 800, Math.round(alt*.38), BR);
-    c.fillStyle = '#FFF4E0'; caber(c, x.rot, 240, y + alt*.84, 740, 700, Math.round(alt*.22), DM);
+    c.fillStyle = '#FFF4E0'; caber(c, x.num ? `${x.rot} · ${x.num}` : x.rot, 240, y + alt*.84, 740, 700, Math.round(alt*.22), DM);
   });
   c.textAlign = 'center';
   if (state.comp?.exemplo){ c.fillStyle = '#B9A8CC'; c.font = `500 26px ${DM}`; c.fillText('simulação do grupo de exemplo', W/2, 1745); }
