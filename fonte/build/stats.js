@@ -18,7 +18,19 @@ const CAMPOS = {
   textao: [0, 1e4],                                                           // caracteres por mensagem
   amor: [0, 1e4], coracoes: [0, 1e4]                                          // casal: 'te amo' a cada mil textos, corações a cada 100 mensagens
 };
-let colunasOk = false;
+let colunasOk = false, semeado = false;
+const EST_ATE = 30; // enquanto houver menos de 30 envios reais do ano no escopo, usa também as estimativas
+// Uma vez: estima os números do ano a partir dos envios antigos (que tinham o histórico todo), para o ranking não começar vazio.
+// Volume = média por dia × dias do ano (limitado à idade do grupo); proporções (risadas, madrugada...) ficam iguais.
+async function semeia(env, cols, base){
+  if (semeado || base !== '2026') return; semeado = true;
+  if ((await env.DB.prepare('SELECT COUNT(*) AS n FROM grupos WHERE estimado = 1').first())?.n) return;
+  const d = Math.max(1, Math.floor((Date.now() - Date.UTC(2026, 0, 1)) / 864e5)), vol = `MIN(1.0, por_dia * MIN(dias, ${d}) / MAX(total, 1))`;
+  const expr = {total: `ROUND(por_dia * MIN(dias, ${d}))`, audios: `ROUND(audios * ${vol})`, figurinhas: `ROUND(figurinhas * ${vol})`, amor: 'COALESCE(amor, 0)', coracoes: 'COALESCE(coracoes, 0)'};
+  await env.DB.prepare(`INSERT OR IGNORE INTO grupos (id, modo, criado, base, estimado, ${cols.join(', ')})
+    SELECT id || '~e', modo, criado, '2026', 1, ${cols.map(k => expr[k] || k).join(', ')} FROM grupos
+    WHERE COALESCE(base, '') = '' AND COALESCE(estimado, 0) = 0 AND modo != 'casal' AND por_dia * MIN(dias, ${d}) >= 20`).run();
+}
 const COMPARA = Object.keys(CAMPOS).filter(k => k !== 'membros');
 
 const resposta = (obj, status = 200) => new Response(JSON.stringify(obj), {status, headers: {'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store'}});
@@ -37,19 +49,22 @@ export async function onRequestPost({request, env}){
   const cols = Object.keys(CAMPOS);
   await env.DB.prepare(`CREATE TABLE IF NOT EXISTS grupos (id TEXT PRIMARY KEY, modo TEXT NOT NULL, criado TEXT NOT NULL, ${cols.map(k => k + ' REAL').join(', ')})`).run();
   await env.DB.prepare(`CREATE INDEX IF NOT EXISTS grupos_modo ON grupos (modo)`).run();
-  if (!colunasOk){ for (const k of ['amor REAL', 'coracoes REAL', 'base TEXT']) try { await env.DB.prepare(`ALTER TABLE grupos ADD COLUMN ${k}`).run(); } catch {} colunasOk = true; }
+  if (!colunasOk){ for (const k of ['amor REAL', 'coracoes REAL', 'base TEXT', 'estimado INTEGER']) try { await env.DB.prepare(`ALTER TABLE grupos ADD COLUMN ${k}`).run(); } catch {} colunasOk = true; }
   const base = /^20\d\d$/.test(String(c.base || '')) ? String(c.base) : '';
   // o mesmo grupo enviado de novo só atualiza a linha (não conta duas vezes)
   await env.DB.prepare(`INSERT OR REPLACE INTO grupos (id, modo, criado, base, ${cols.join(', ')}) VALUES (?, ?, ?, ?, ${cols.map(() => '?').join(', ')})`)
     .bind(id, c.modo, new Date().toISOString().slice(0, 10), base, ...cols.map(k => v[k])).run();
-  // só compara com quem mandou números do mesmo período
-  const conta = (onde, ...extra) => env.DB.prepare(`SELECT COUNT(*) AS n, ${COMPARA.map(k => `SUM(${k} > ?) AS ${k}`).join(', ')} FROM grupos ${onde} AND COALESCE(base, '') = ?`)
-    .bind(...COMPARA.map(k => v[k]), ...extra, base).first();
-  let r = await conta('WHERE modo = ?', c.modo), escopo = 'tipo';
+  await env.DB.prepare('DELETE FROM grupos WHERE id = ?').bind(id + '~e').run(); // o grupo real substitui a estimativa dele
+  await semeia(env, cols, base);
+  // só compara com quem mandou números do mesmo período; estimativas só enquanto há poucos envios reais
+  const reais = async (onde, ...extra) => (await env.DB.prepare(`SELECT COUNT(*) AS n FROM grupos ${onde} AND COALESCE(base, '') = ? AND COALESCE(estimado, 0) = 0`).bind(...extra, base).first())?.n || 0;
+  const conta = (est, onde, ...extra) => env.DB.prepare(`SELECT COUNT(*) AS n, ${COMPARA.map(k => `SUM(${k} > ?) AS ${k}`).join(', ')} FROM grupos ${onde} AND COALESCE(base, '') = ? AND (COALESCE(estimado, 0) = 0 OR ? = 1)`)
+    .bind(...COMPARA.map(k => v[k]), ...extra, base, est ? 1 : 0).first();
+  let r = await conta(await reais('WHERE modo = ?', c.modo) < EST_ATE, 'WHERE modo = ?', c.modo), escopo = 'tipo';
   // casal compara só com casais; os grupos nunca se comparam com casais
-  if (c.modo !== 'casal' && (r?.n || 0) < MIN_TIPO){ r = await conta('WHERE modo != ?', 'casal'); escopo = 'todos'; }
-  // antiguidade: o histórico todo de todos os envios (antigos e novos), no mesmo escopo
-  const ant = await env.DB.prepare(`SELECT COUNT(*) AS n, SUM(dias > ?) AS d FROM grupos WHERE ${escopo === 'tipo' ? 'modo = ?' : 'modo != ?'}`).bind(v.dias, escopo === 'tipo' ? c.modo : 'casal').first();
+  if (c.modo !== 'casal' && (r?.n || 0) < MIN_TIPO){ r = await conta(await reais('WHERE modo != ?', 'casal') < EST_ATE, 'WHERE modo != ?', 'casal'); escopo = 'todos'; }
+  // antiguidade: o histórico todo de todos os envios reais (antigos e novos), no mesmo escopo
+  const ant = await env.DB.prepare(`SELECT COUNT(*) AS n, SUM(dias > ?) AS d FROM grupos WHERE ${escopo === 'tipo' ? 'modo = ?' : 'modo != ?'} AND COALESCE(estimado, 0) = 0`).bind(v.dias, escopo === 'tipo' ? c.modo : 'casal').first();
   const n = r?.n || 0;
   if (n < (c.modo === 'casal' ? MIN_CASAL : escopo === 'tipo' ? MIN_TIPO : MIN_TODOS)) return resposta({pronto: false, n});
   // "Top X%": X = % de grupos com valor maior + o próprio. Métrica zerada não vira destaque.
