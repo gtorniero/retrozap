@@ -281,6 +281,10 @@ body.has-cookies .acao{bottom:150px}
 .patro-box{background:var(--acai);border:1px solid var(--linha);border-radius:24px;padding:18px;width:min(100%,440px);display:flex;flex-direction:column;gap:10px;text-align:center;animation:pop .4s cubic-bezier(.2,1.4,.4,1)}
 .tiles>.tile:last-child:nth-child(odd){grid-column:1/-1}
 .pw{position:relative;text-align:center}
+.vota{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:6px}
+.vota .chip{cursor:pointer;border:1px solid var(--linha);font:inherit;font-size:14px}
+.vota .chip[aria-pressed="true"]{background:var(--manga);color:var(--noite);font-weight:700}
+html.casal .vota .chip[aria-pressed="true"]{color:#fff}
 .compartilhar{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;padding-top:8px}
 .compartilhar>h2{font-size:28px;margin:0}
 .compartilhar>p{margin:0}
@@ -1215,7 +1219,7 @@ async function run(text, sample){
     err.textContent = 'Esse arquivo não parece um export de grupo. Confira o passo a passo e tente de novo.'; return;
   }
   if (sample) state.grupo = state.modo === 'casal' ? 'Nosso Cantinho 💕' : 'Turma do Churras'; else if (!state.grupo) state.grupo = nomeDaConversa(text);
-  state.raw = msgs; state.alias = {}; state.hidden = new Set(); state.ctx = ''; state.intervaloVisto = false;
+  state.raw = msgs; state.alias = {}; state.hidden = new Set(); state.ctx = ''; state.intervaloVisto = false; state.livreUsadas = 0; state.palavra26 = null;
   state.left = new Set(msgs.sys.filter(e => e.type === 'saiu' || e.type === 'removido').map(e => e.who));
   state.changed = new Set(msgs.sys.filter(e => e.type === 'numero').map(e => e.who));
   const autores = new Set(msgs.map(m => m.a));
@@ -1605,6 +1609,10 @@ function suspense(){
 }
 // final: as imagens do grupo, as categorias extras (premium) e o agradecimento
 // categoria livre: a pessoa digita uma palavra e vê quem mais falou (tudo calculado aqui no aparelho)
+const LIVRE_MAX = 3;
+const livreRestam = () => Math.max(0, LIVRE_MAX - (state.livreUsadas || 0));
+// libera palavrões leves (porra, cacete, pqp, merda, droga...) e bloqueia o resto: ofensas, racismo, xenofobia, conteúdo sexual
+const palavraProibida = w => PALAVRAO_FORTE.test(norm(w).replace(/[^\p{L}\p{N}]/gu, ''));
 function contaPalavra(d, palavra){
   const w = norm(palavra).replace(/[^\p{L}\p{N}]/gu, ''), rx = new RegExp(`(^|[^\\p{L}\\p{N}])${w}(s|es)?(?=[^\\p{L}\\p{N}]|$)`, 'gu'), c = {};
   for (const m of d.msgs){ if (kind(m.b) !== 'text') continue; const n = (norm(m.b).match(rx) || []).length; if (n) c[m.a] = (c[m.a]||0) + n; }
@@ -1621,7 +1629,7 @@ function rodaFilaImg(){
   const passo = () => { const f = FILA_IMG.shift(); if (!f){ filaRodando = false; return; } document.fonts.ready.then(() => { try { f(); } catch {} setTimeout(passo, 80); }); };
   passo();
 }
-const item26 = x => `<div><span aria-hidden="true">${x.e}</span><div><span class="small">${esc(x.t)}</span><b>${esc(x.big)}</b><span class="num">${esc(x.sub)}</span></div></div>`;
+const item26 = x => `<div><span aria-hidden="true">${x.e}</span><div><span class="small">${esc(x.t)}</span><b>${esc(x.big)}</b><span class="num">${esc(x.sub)}</span>${x.vota ? `<span class="vota" role="group" aria-label="Vote na palavra de 2026">${x.vota.map(w => `<button type="button" class="chip" data-pal="${esc(w)}" aria-pressed="${state.palavra26 === w}">${esc(w)}</button>`).join('')}</span>` : ''}</div></div>`;
 function fimTela(semFesta){
   anchor(false);
   pilha(() => fimTela(true), 'fim');
@@ -1666,6 +1674,8 @@ function fimTela(semFesta){
     <div class="panel livre" style="width:100%">
       <h2 style="font-size:26px;margin:0">🔎 Categoria livre${premiumLocal() ? '' : ' <span class="tag-periodo">🔒 Premium</span>'}</h2>
       <p class="small" style="margin:0">Escolha uma palavra e descubra quem ${casal ? 'de vocês dois' : 'do grupo'} mais falou ela. <span class="tag-periodo">desde o início</span></p>
+      <div class="vota" aria-label="Sugestões">${(casal ? ['saudade', 'amor', 'pizza', 'cansado'] : ['cerveja', 'bora', 'trabalho', 'futebol']).map(w => `<button type="button" class="chip" data-sug="${w}">${w}</button>`).join('')}</div>
+      <p class="small" id="lvN" style="margin:0">${livreRestam()} de ${LIVRE_MAX} tentativas</p>
       <form id="lvF" class="livre-f"><label for="lvP" class="sr-only">Uma palavra</label><input id="lvP" maxlength="24" autocomplete="off" autocapitalize="none" placeholder="${casal ? 'ex.: saudade' : 'ex.: cerveja'}"><button type="submit" class="btn btn-main">Ver quem ganha</button></form>
       <p class="err" id="lvE" hidden></p>
       <div id="lvR" aria-live="polite"></div>
@@ -1736,16 +1746,20 @@ function fimTela(semFesta){
       if (dw){ try { await dw.save({filename: nome, data: vid.blob}); $('#vmsg').textContent = 'Vídeo salvo!'; return; } catch {} }
       const a = document.createElement('a'); a.href = URL.createObjectURL(vid.blob); a.download = nome; document.body.appendChild(a); a.click(); a.remove(); };
   }
+  view.querySelectorAll('[data-sug]').forEach(bt => bt.onclick = () => { $('#lvP').value = bt.dataset.sug; $('#lvF').requestSubmit(); });
   $('#lvF').onsubmit = e => {
     e.preventDefault(); const er = $('#lvE'), out = $('#lvR'), w = $('#lvP').value.trim();
     er.hidden = true; out.innerHTML = '';
     if (!w) return;
     if (/\s/.test(w)){ er.hidden = false; er.textContent = 'Só uma palavra 😉'; return; }
     if (norm(w).replace(/[^\p{L}\p{N}]/gu, '').length < 2){ er.hidden = false; er.textContent = 'Escreva uma palavra com pelo menos 2 letras.'; return; }
+    if (palavraProibida(w)){ er.hidden = false; er.textContent = 'Essa palavra não dá 😅 Escolha outra (não conta como tentativa).'; return; }
+    if (livreRestam() <= 0){ er.hidden = false; er.textContent = `Você já usou as ${LIVRE_MAX} tentativas desta retrospectiva.`; return; }
     if (!premiumLocal() && !state.livreOk) return premiumLiberado().then(ok => ok ? (state.livreOk = true, $('#lvF').requestSubmit()) : paywall(() => { fimTela(true); requestAnimationFrame(() => { const i = $('#lvP'); if (i){ i.value = w; $('#lvF').requestSubmit(); i.scrollIntoView({block:'center'}); } }); }, 'livre'));
     try { if (typeof evento === 'function') evento('categoria_livre'); } catch {}
     const r = contaPalavra(d, w), tot = r.reduce((x, y) => x + y[1], 0);
-    if (!tot){ out.innerHTML = `<p class="small">Ninguém falou "${esc(w)}". Tenta outra palavra!</p>`; return; }
+    if (!tot){ out.innerHTML = `<p class="small">Ninguém falou "${esc(w)}". Tenta outra palavra! (não conta como tentativa)</p>`; return; }
+    state.livreUsadas = (state.livreUsadas || 0) + 1; $('#lvN').textContent = `${livreRestam()} de ${LIVRE_MAX} tentativas`;
     const md = ['🥇','🥈','🥉'], mx = r[0][1], vez = n => `${fmt(n)} ${n === 1 ? 'vez' : 'vezes'}`;
     out.innerHTML = `<p class="lv-tit">Quem mais falou <b>"${esc(w)}"</b>: ${vez(tot)} no total</p>
       <ol class="lv-l">${r.slice(0, 5).map(([n, v], i) => `<li><span aria-hidden="true">${md[i] || '·'}</span><b>${esc(n)}</b><span class="lv-bar"><i style="width:${Math.max(4, v/mx*100)}%"></i></span><span class="num">${vez(v)}</span></li>`).join('')}</ol>
@@ -1753,6 +1767,7 @@ function fimTela(semFesta){
     $('#lvC').onclick = () => openCard(() => drawCard({emoji:'🔎', title:`Quem mais falou "${w}"`, winner: r[0][0], line: vez(r[0][1]),
       podio: r.length > 1 ? r.slice(1, 3).map(([n, v], i) => `${md[i+1]} ${n} · ${fmt(v)}`) : null}), convite('resumo'), `Categoria livre: quem mais falou "${w}" foi ${r[0][0]}, ${vez(r[0][1])}.`);
   };
+  view.querySelectorAll('[data-pal]').forEach(bt => bt.onclick = () => { state.palavra26 = bt.dataset.pal; delete d._d26; const y = scrollY; fimTela(true); scrollTo(0, y); });
   $('#dest26')?.addEventListener('click', () => paywall(() => fimTela(true), 'destaques'));
   if (trava26) premiumLiberado().then(ok => { if (ok && $('#dest26')) fimTela(true); });
   $('#concluir').onclick = () => obrigado();
@@ -2013,6 +2028,10 @@ function duracaoTxt(seg){
 }
 // o momento mais marcante de 2026: o dia em que o grupo "parou" (volume acima do normal, gente falando, risadas, fotos)
 const ANO_MOMENTO = 2026;
+// temas que podem lembrar um ano difícil (saúde, perdas, conflitos): nunca viram "palavra do ano"
+const SENSIVEL = /^(morte|morreu|morrer|falec|luto$|velori|enterro|sepult|hospital|internad|internac|cirurgi|cancer|quimio|tumor|doenc|doent|exame|medic|consulta|remedio|diagnost|tratament|terapi|psicolog|psiquiatr|depress|ansied|gravidez|aborto|uti$|covid|virus|dengue|demiss|demitid|desempreg|divorci|separac|brigamos|brigou|briguei|traic|policia|delegac|assalt|roubo$|roubad|acident|enfermeir|clinica|dor$|dores$|sangue|biopsia|ultrassom|fertil|embri)/;
+const PALAVRAO_FORTE = /^(caralh|buceta|xoxot|piroc|cuzao|cuzinh|arrombad|fdp$|filhadaput|puta$|putas$|puto$|vadia|vagabund|viad|bicha$|bichas$|boiola|sapatao|traveco|macac|crioul|neguinh|paraiba$|retardad|mongol|aleijad|estupr|nazi|hitler|tesao|gozar|gozei|foder|fodid|fudid|transar|piranh|corno|otari|imbecil|idiot|babac|pica$|rola$|pau$|cu$)/;
+const MOMENTOS_ATIVOS = false; // desligado: alto risco de errar o assunto ou destacar um dia difícil
 const TEMAS_MOMENTO = [
   ['luto', null, /faleceu|falecimento|morreu|velorio|sepultamento|luto|meus sentimentos|descanse em paz/],
   ['bebe', ['👶', 'chegada de um bebê'], /nasceu|bebe|gravida|gravidez|maternidade|parto|cha de bebe/],
@@ -2023,6 +2042,7 @@ const TEMAS_MOMENTO = [
   ['noticia', ['📰', 'notícia que agitou todo mundo'], /noticia|viu isso|urgente|saiu agora|ta sabendo|olha isso/]
 ];
 function momentoMarcante(d){
+  if (!MOMENTOS_ATIVOS) return (d._momentos = [], d._momento = null);
   if (d._momento !== undefined) return d._momento;
   const norm = x => x.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
   const dias = {};
@@ -2381,12 +2401,19 @@ function destaques2026(d){
   momentoMarcante(d); const mom = d._momentos || [];
   if (mom.length) itens.push({e:'🌟', t:`Top ${mom.length} momento${mom.length > 1 ? 's' : ''} de 2026`, big: mom.map(x => x.data).join(' · '), sub: mom.map(x => `${x.tema[0]} ${x.tema[1]}`).join(' · ')});
   // palavra de 2026: a que mais cresceu em relação aos anos anteriores
-  const conta = (lista) => { const o = {}; let t = 0; for (const m of lista){ if (kind(m.b) !== 'text' || RX.laugh.test(m.b)) continue;
-    const sl = m.b.toLowerCase().replace(/(?:https?:\/\/|www\.)\S+|\S+\.(?:com|br|net|org)\b\S*/g, ' ');
-    for (const w of sl.normalize('NFC').match(/\p{L}{4,}/gu) || []) if (!STOP.has(w)){ o[w] = (o[w]||0) + 1; t++; } } return [o, Math.max(1, t)]; };
-  const [w26, t26] = conta(m26), [wAnt, tAnt] = conta(d.msgs.filter(m => m.t.getFullYear() < A));
-  const pal = Object.entries(w26).filter(([, n]) => n >= 8).map(([w, n]) => [w, n, (n/t26) / (((wAnt[w]||0) + 1)/tAnt)]).sort((x,y) => y[2] - x[2])[0];
-  if (pal) itens.push({e:'🗣️', t:'Palavra de 2026', big: `“${pal[0]}”`, sub: `${fmt(pal[1])} vezes em 2026${tAnt > 500 ? `, ${Math.max(2, Math.round(pal[2]))}× mais que antes` : ''}`});
+  // nomes (escritos com maiúscula no meio da frase) e nomes das pessoas da conversa ficam de fora
+  const nomes = new Set(d.people.flatMap(p => norm(limpaTxt(p.name)).split(/[^\p{L}]+/u)).filter(w => w.length >= 3));
+  const conta = (lista) => { const o = {}, cap = {}, meio = {}; let t = 0; for (const m of lista){ if (kind(m.b) !== 'text' || RX.laugh.test(m.b)) continue;
+    const sl = m.b.replace(/(?:https?:\/\/|www\.)\S+|\S+\.(?:com|br|net|org)\b\S*/g, ' ').normalize('NFC');
+    for (const x of sl.matchAll(/\p{L}{4,}/gu)){ const w = x[0].toLowerCase(); if (STOP.has(w)) continue; o[w] = (o[w]||0) + 1; t++;
+      const antes = sl.slice(0, x.index).trimEnd(); if (antes && !/[.!?…]$/.test(antes)){ meio[w] = (meio[w]||0) + 1; if (x[0][0] !== w[0]) cap[w] = (cap[w]||0) + 1; } } }
+    return [o, Math.max(1, t), cap, meio]; };
+  const [w26, t26, cap26, meio26] = conta(m26), [wAnt, tAnt] = conta(d.msgs.filter(m => m.t.getFullYear() < A));
+  const ok = w => !nomes.has(norm(w)) && !SENSIVEL.test(norm(w)) && !PALAVRAO_FORTE.test(norm(w)) && !((meio26[w]||0) >= 2 && (cap26[w]||0) / meio26[w] > .5);
+  const cands = Object.entries(w26).filter(([w, n]) => n >= 6 && ok(w)).map(([w, n]) => [w, n, (n/t26) / (((wAnt[w]||0) + 1)/tAnt)]).sort((x,y) => y[2] - x[2]).slice(0, 3);
+  if (cands.length >= 2){ const esc26 = state.palavra26 && cands.find(c => c[0] === state.palavra26);
+    itens.push({e:'🗣️', t:'Palavra de 2026', vota: cands.map(c => c[0]), big: esc26 ? `“${esc26[0]}”` : cands.map(c => `“${c[0]}”`).join(' · '),
+      sub: esc26 ? `${fmt(esc26[1])} vezes em 2026 · escolhida por vocês` : `as ${cands.length} que mais cresceram em 2026. Vote na de vocês!`}); }
   const meses = Array(12).fill(0); for (const m of m26) meses[m.t.getMonth()]++;
   const mi = meses.indexOf(Math.max(...meses)); itens.push({e:'📈', t:'Mês mais agitado', big: MESES[mi], sub: `${fmt(meses[mi])} mensagens`});
   const ag = itens.pop(); itens.splice(Math.min(1, itens.length), 0, ag);
