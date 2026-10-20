@@ -462,10 +462,14 @@ async function precisaPagar(){
 }
 // ambiente de teste (prévia fora do site oficial): alterna Grátis/Premium e simula o Pix
 // AdSense: IDs dos blocos (AdSense > Anúncios > Por bloco de anúncios). Vazio = sem anúncio nesse lugar. Premium nunca vê anúncio.
-const ANUNCIOS = {inicio: '', fim: ''};
+const ANUNCIOS = {inicio: '', categorias: '', intervalo: '', fim: ''};
+// ?simular_anuncios=1 mostra caixas de exemplo no lugar dos anúncios (para ver o layout; nada é carregado do Google)
+const SIMULA_ANUNCIOS = /[?&]simular_anuncios=1/.test(location.search);
 function anuncio(onde){
   const slot = ANUNCIOS[onde];
-  if (!slot || premiumLocal() || AMBIENTE_TESTE) return '';
+  const semPremium = !lsGet('rz_acesso') && state.planoTeste !== 'premium'; // grupo de exemplo também vê anúncio
+  if (SIMULA_ANUNCIOS && semPremium) return `<div class="anuncio"><p class="small" style="margin:0">Publicidade</p><div class="ad-sim">Anúncio de exemplo<br><small>${onde} · responsivo</small></div></div>`;
+  if (!slot || !semPremium || AMBIENTE_TESTE) return '';
   return `<div class="anuncio" data-anuncio><p class="small" style="margin:0">Publicidade</p><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4039247360984618" data-ad-slot="${slot}" data-ad-format="auto" data-full-width-responsive="true"></ins></div>`;
 }
 function ativaAnuncios(){ view.querySelectorAll('[data-anuncio] ins:not([data-adsbygoogle-status])').forEach(() => { try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch {} }); }
@@ -509,6 +513,7 @@ function paywall(seguir, ctx){
       <ul class="pw-lista">
         <li><span aria-hidden="true">♾️</span><div><b>Quantos grupos quiser</b>Família, amigos, trabalho, condomínio, a pelada de quinta...</div></li>
         <li><span aria-hidden="true">🎭</span><div><b>Todos os personagens</b>Ninguém escapa: cada um com seu título, jeito de falar e manias.</div></li>
+        <li><span aria-hidden="true">🚫</span><div><b>Sem anúncios</b>Nada de intervalo comercial: só a cerimônia.</div></li>
         <li><span aria-hidden="true">🎬</span><div><b>Vídeo da retrospectiva</b>20 segundos com o ano em números e os destaques, pronto para os stories.</div></li>
         <li><span aria-hidden="true">🔎</span><div><b>Categoria livre</b>Você escolhe a palavra e descobre quem mais falou ela.</div></li>
         <li><span aria-hidden="true">🎁</span><div><b>Categorias extras</b>Mais troféus e mais gente sendo exposta com carinho.</div></li>
@@ -818,7 +823,7 @@ async function run(text, sample){
   }
   if (sample) state.grupo = state.modo === 'casal' ? 'Nosso Cantinho 💕' : 'Turma do Churras'; else if (!state.grupo) state.grupo = nomeDaConversa(text);
   evento('upload_ok', {mensagens: msgs.length, modo: state.modo, exemplo: !!sample});
-  state.raw = msgs; state.alias = {}; state.hidden = new Set(); state.ctx = ''; state.intervaloVisto = false; state.livreUsadas = 0; state.palavra26 = null;
+  state.raw = msgs; state.alias = {}; state.hidden = new Set(); state.ctx = ''; state.intervaloVisto = false; state.livreUsadas = 0; state.palavra26 = null; state.intervaloAd = false;
   state.left = new Set(msgs.sys.filter(e => e.type === 'saiu' || e.type === 'removido').map(e => e.who));
   state.changed = new Set(msgs.sys.filter(e => e.type === 'numero').map(e => e.who));
   const autores = new Set(msgs.map(m => m.a));
@@ -1099,9 +1104,10 @@ function lineup(){
     </div>
     <div class="cats">${ativos.map(a => linha(a)).join('')}</div>
     ${bonus.length ? `<details class="panel"><summary class="ask" style="cursor:pointer">🎁 Ver as ${bonus.length} extras</summary><div class="cats" style="margin-top:12px">${bonus.map(a => linha(a, true)).join('')}</div></details>` : ''}
+    ${anuncio('categorias')}
     <button class="btn btn-main" id="go">🥁 Começar a revelação</button>
   </section>`;
-  intervaloComercial();
+  intervaloComercial(); ativaAnuncios();
   $('#spoil').onclick = () => openCard(() => drawSpoiler(ativos), convite('spoiler', ativos.length), `Spoiler${state.grupo ? ' do grupo ' + state.grupo : ''}: os ${ativos.length} troféus em disputa são ${juntar(ativos.map(a => a.n))}. Quem leva cada um?`);
   $('#go').onclick = award;
   window.scrollTo(0,0);
@@ -1142,6 +1148,8 @@ function award(){
 }
 function next(){
   state.idx++;
+  const meio = Math.ceil(state.awards.filter(a => !a.honra).length / 2);
+  if (state.idx === meio && !state.intervaloAd && anuncio('intervalo')) return intervaloAnuncio();
   if (state.idx < state.awards.length) return award();
   if (state.noBonus) return fimTela(true);
   suspense();
@@ -2304,6 +2312,22 @@ function lembrete(seguir){
   m.addEventListener('click', e => { if (e.target === m) fecha(); });
   m.addEventListener('keydown', e => { if (e.key === 'Escape') fecha(); });
   m.querySelector('#lbOk').focus();
+}
+// intervalo na metade dos prêmios: um anúncio e "a cerimônia volta já" (Premium não vê)
+function intervaloAnuncio(){
+  state.intervaloAd = true; anchor(true); setSteps(2);
+  view.innerHTML = `<section class="screen" style="align-items:center;text-align:center">
+    <p class="eyebrow">Intervalo comercial</p>
+    <div class="em-g" aria-hidden="true">☕</div>
+    <h1 style="font-size:32px">A cerimônia volta já</h1>
+    <p class="lead">Faltam ${state.awards.filter(a => !a.honra).length - state.idx} troféus. Pega uma água.</p>
+    ${anuncio('intervalo')}
+    <p class="small" style="margin:0">Com o Premium não tem intervalo. 😉</p>
+    <button class="btn btn-main" id="go" style="width:100%">Voltar para a cerimônia →</button>
+  </section>`;
+  ativaAnuncios();
+  $('#go').onclick = award;
+  window.scrollTo(0,0);
 }
 function intervaloComercial(){
   if (!PATROCINIO_ATIVO) return;
