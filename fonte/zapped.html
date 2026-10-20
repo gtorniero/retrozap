@@ -1328,8 +1328,6 @@ function roster(){
     <h1 style="font-size:36px">${dentro} pessoas na cerimônia</h1>
     <div class="panel"><label class="ask" for="gn">${state.modo === 'casal' ? 'Nome do casal' : 'Nome do grupo'} <span class="small">(aparece nos cards)</span></label>
       <input id="gn" type="text" maxlength="44" value="${esc(state.grupo)}" placeholder="Ex.: Família Silva" autocomplete="off" style="width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid var(--linha);background:var(--noite);color:var(--areia);font:inherit;font-size:17px"></div>
-    <div class="panel"><p class="ask">${state.modo === 'casal' ? 'Vocês estão...' : 'De onde vem esse grupo?'} <span class="small">(opcional)</span></p>
-      <div class="chips">${CONTEXTOS[state.modo].map((c,i) => `<button type="button" class="chip ex" data-ctx="${i}" aria-pressed="${state.ctx === c}"${state.ctx === c ? ' style="border-color:var(--manga);background:rgba(255,194,60,.2)"' : ''}>${esc(c)}</button>`).join('')}</div></div>
     ${numeros.length ? `<h2 style="font-size:24px">📞 Números desconhecidos</h2>
     <p class="small">Costumam ser alguém que trocou de número. Comparamos quando cada um falou e o jeito de escrever para sugerir quem é.</p>
     <div class="mems">${numeros.map((x,i) => {
@@ -1379,7 +1377,6 @@ function roster(){
     <button class="btn btn-main" id="go">Tudo certo, começar →</button>
   </section>`;
   const redraw = () => { const y = scrollY; roster(); scrollTo(0, y); };
-  view.querySelectorAll('[data-ctx]').forEach(b => b.onclick = () => { const c = CONTEXTOS[state.modo][+b.dataset.ctx]; state.ctx = state.ctx === c ? '' : c; redraw(); });
   view.querySelectorAll('[data-open]').forEach(bt => bt.onclick = () => { const n = pessoas[+bt.dataset.open].n; state.aberto = state.aberto === n ? null : n; state.mgAlvo = null; redraw(); });
   view.querySelectorAll('[data-mg]').forEach(sl => sl.onchange = () => { if (!sl.value) return;
     const a = state.aberto, b = sl.value, tot = n => pessoas.filter(x => x.n === n || state.alias[x.n] === n).reduce((t, x) => t + x.c, 0);
