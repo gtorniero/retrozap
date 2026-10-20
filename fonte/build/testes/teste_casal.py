@@ -55,7 +55,7 @@ async def main():
       print(n, bool(src))
     await pg.screenshot(path=O+'/7b-fim.png',full_page=True)
     await pg.click('#planoTeste [data-plano=premium]'); await pg.wait_for_timeout(800)
-    await pg.click('#vger'); await pg.wait_for_timeout(21500)
+    await pg.click('#vger'); await pg.wait_for_timeout(34000)
     print('video', await pg.is_visible('#vsh'), await pg.text_content('#vmsg'))
     pal=await pg.query_selector_all('[data-pal]'); print('palavras', [await p.text_content() for p in pal])
     if pal:
