@@ -1,7 +1,7 @@
 // Cloudflare Pages Function: POST /api/stats
 // Recebe SÓ NÚMEROS de um grupo (nunca nomes ou mensagens), guarda no banco D1 e devolve
 // em que posição o grupo fica entre os grupos do mesmo tipo que já fizeram o Retrozap.
-// Desde out/2026 os números são só do ano (campo base = '2026'); só a antiguidade (dias) usa o histórico todo e compara com todos.
+// Desde out/2026 os números são só do ano (campo base = '2026'); a antiguidade (dias) e os totais desde o início (hist_total, hist_audios) usam o histórico todo.
 //
 // Configuração (uma vez, no painel da Cloudflare): Settings > Bindings > D1 database, nome da variável: DB.
 // A tabela é criada sozinha na primeira chamada. Sem o banco ligado, a função responde {pronto:false} e o site segue normal.
@@ -26,7 +26,7 @@ async function prepara(env, cols){
   if (prontoDB) return;
   await env.DB.prepare(`CREATE TABLE IF NOT EXISTS grupos (id TEXT PRIMARY KEY, modo TEXT NOT NULL, criado TEXT NOT NULL, ${cols.map(k => k + ' REAL').join(', ')})`).run();
   await env.DB.prepare(`CREATE INDEX IF NOT EXISTS grupos_modo ON grupos (modo)`).run();
-  for (const k of ['amor REAL', 'coracoes REAL', 'base TEXT', 'estimado INTEGER']) try { await env.DB.prepare(`ALTER TABLE grupos ADD COLUMN ${k}`).run(); } catch {}
+  for (const k of ['amor REAL', 'coracoes REAL', 'base TEXT', 'estimado INTEGER', 'hist_total REAL', 'hist_audios REAL']) try { await env.DB.prepare(`ALTER TABLE grupos ADD COLUMN ${k}`).run(); } catch {}
   await env.DB.prepare('CREATE TABLE IF NOT EXISTS resumos (chave TEXT PRIMARY KEY, criado INTEGER, dados TEXT)').run();
   prontoDB = true;
 }
@@ -60,11 +60,17 @@ async function resumo(env, base, escopo, modo){
   // antiguidade: o histórico todo de todos os envios reais (antigos e novos), no mesmo escopo
   const dd = ((await env.DB.prepare(`SELECT dias FROM grupos WHERE ${onde} AND COALESCE(estimado, 0) = 0`).bind(arg).all()).results || []).map(x => x.dias).filter(v => v != null).sort((a, b) => a - b);
   m.dias = {n: dd.length, q: cortes(dd)};
+  // desde o início: envios novos mandam hist_*; os antigos (sem base) já tinham o histórico todo em total/audios
+  for (const [k, antigo] of [['hist_total', 'total'], ['hist_audios', 'audios']]){
+    const hv = ((await env.DB.prepare(`SELECT COALESCE(${k}, CASE WHEN COALESCE(base, '') = '' THEN ${antigo} END) AS v FROM grupos WHERE ${onde} AND COALESCE(estimado, 0) = 0`).bind(arg).all()).results || []).map(x => x.v).filter(v => v != null).sort((a, b) => a - b);
+    m[k] = {n: hv.length, q: cortes(hv)};
+  }
   const dados = {n: conj.length, est, m};
   await env.DB.prepare('INSERT OR REPLACE INTO resumos (chave, criado, dados) VALUES (?, ?, ?)').bind(chave, Date.now(), JSON.stringify(dados)).run();
   return dados;
 }
 const COMPARA = Object.keys(CAMPOS).filter(k => k !== 'membros');
+const HIST = ['hist_total', 'hist_audios'];
 
 const resposta = (obj, status = 200) => new Response(JSON.stringify(obj), {status, headers: {'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store'}});
 
@@ -82,10 +88,12 @@ export async function onRequestPost({request, env}){
   }
   const cols = Object.keys(CAMPOS);
   await prepara(env, cols);
+  // totais desde o início (opcionais: versões antigas do site não mandam)
+  for (const k of HIST){ const n = Number(c[k]); v[k] = Number.isFinite(n) && n >= 0 && n <= 5e7 ? n : null; }
   const base = /^20\d\d$/.test(String(c.base || '')) ? String(c.base) : '';
   // o mesmo grupo enviado de novo só atualiza a linha (não conta duas vezes)
-  await env.DB.prepare(`INSERT OR REPLACE INTO grupos (id, modo, criado, base, ${cols.join(', ')}) VALUES (?, ?, ?, ?, ${cols.map(() => '?').join(', ')})`)
-    .bind(id, c.modo, new Date().toISOString().slice(0, 10), base, ...cols.map(k => v[k])).run();
+  await env.DB.prepare(`INSERT OR REPLACE INTO grupos (id, modo, criado, base, ${[...cols, ...HIST].join(', ')}) VALUES (?, ?, ?, ?, ${[...cols, ...HIST].map(() => '?').join(', ')})`)
+    .bind(id, c.modo, new Date().toISOString().slice(0, 10), base, ...cols.map(k => v[k]), ...HIST.map(k => v[k])).run();
   await env.DB.prepare('DELETE FROM grupos WHERE id = ?').bind(id + '~e').run(); // o grupo real substitui a estimativa dele
   await semeia(env, cols, base);
   // compara com o resumo pronto (refeito no máximo a cada 4 h): cada envio lê 1 linha, não a tabela inteira
@@ -96,7 +104,7 @@ export async function onRequestPost({request, env}){
   if (n < (c.modo === 'casal' ? MIN_CASAL : escopo === 'tipo' ? MIN_TIPO : MIN_TODOS)) return resposta({pronto: false, n});
   // "Top X%": X = % de grupos com valor maior + o próprio. Métrica zerada não vira destaque.
   const top = {}, media = {};
-  for (const k of COMPARA){ const mk = R.m[k]; if (!mk) continue; const nk = mk.n + 1;
+  for (const k of [...COMPARA, ...HIST]){ const mk = R.m[k]; if (!mk || v[k] == null) continue; const nk = mk.n + 1;
     top[k] = v[k] > 0 && nk >= MIN_TODOS ? Math.max(1, Math.ceil((acima(mk.q, mk.n, v[k]) + 1) / nk * 100)) : 100;
     if (k !== 'dias' && mk.n >= MIN_TODOS && mk.media != null) media[k] = Math.round(mk.media * 100) / 100; }
   return resposta({pronto: true, n, top, media, escopo, estimado: est});

@@ -38,7 +38,7 @@ async def main():
     while await pg.query_selector('#rl') and await pg.is_visible('#rl') and i<15: i+=1; await pg.click('#rl'); await pg.wait_for_timeout(1300)
     await pg.wait_for_selector('#concluir',timeout=8000); await pg.wait_for_timeout(1200)
     await pg.screenshot(path=O+'/7-fim-gratis.png',full_page=True)
-    print('d26 trancado?', await pg.query_selector('.d26b.trancado') is not None)
+    print('livre trancada?', await pg.query_selector('.livre.trancado') is not None, '| personagens trancados:', len(await pg.query_selector_all('.perso.trancado')))
     import base64
     print('ordem', await pg.eval_on_selector_all('section.screen > *','es=>es.map(e=>(e.className||e.tagName).toString().slice(0,20))'))
     await pg.click('#vger'); await pg.wait_for_timeout(600); print('video paywall', await pg.query_selector('.patro') is not None)
@@ -49,7 +49,7 @@ async def main():
     for y in range(0, 14000, 700):
       await pg.evaluate(f'scrollTo(0,{y})'); await pg.wait_for_timeout(250)
     await pg.wait_for_timeout(1500)
-    for sel,n in [('#rimg','resumo'),('#rimg5','nos'),('#rimg6','n2026'),('#rimg3','top10'),('#rimg2','rank')]:
+    for sel,n in [('#rimg1','resumo'),('#rimg5','nos'),('#rimg4','n2026'),('#rimg3','trofeus')]:
       src=(await pg.eval_on_selector(sel,'e=>e.src')) if await pg.query_selector(sel) else ''
       if src.startswith('data:'): open(O+f'/card-{n}.png','wb').write(base64.b64decode(src.split(',')[1]))
       print(n, bool(src))
