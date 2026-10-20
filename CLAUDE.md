@@ -19,6 +19,7 @@ Site **retrozap.com.br**: lê o export de um grupo de WhatsApp **no navegador** 
   - APIs: `stats.js` (ranking só com números de 2026, campo `base`; 10+ grupos compara com todos; 30+ do mesmo tipo compara por tipo; casal só com casais, 10+; antiguidade usa o histórico todo), `ideias.js` (sugestões e e-mails de novidades, tipo `novidades`), `pix.js` (cobrança).
   - `fonte/build/worker/`: `index.js` (roteador) e `wrangler.jsonc` (var `COBRANCA`: `ligada`/`teste`/`desligada`).
   - Testes: `fonte/build/teste.py` (cerimônia completa) e `fonte/a11y.py` (axe, acessibilidade).
+  - Teste do casal: `python3 build/testes/gera_casal.py` (gera conversa falsa Ana/Bruno) e `python3 build/testes/teste_casal.py retrozap-site/public` (fluxo casal completo, Premium, vídeo; tem que terminar com `ERROS []`). Local: `?plano_teste=1` liga a chave Grátis/Premium.
 
 ## Como montar e publicar
 ```sh
@@ -33,10 +34,10 @@ cd .. && git add -A && git commit && git push origin main         # Cloudflare p
 Workers Builds (Cloudflare) roda `npx wrangler deploy` a cada push na `main` do `gtorniero/retrozap`. Worker: **retrozap-v2** (domínio retrozap.com.br; www redireciona por Redirect Rule). D1: banco `retrozap` (tabelas `grupos`, `ideias`, `compras`, `envios`).
 
 ## Fluxo do site (telas e rotas)
-`/` início (cards Grupos/Casais + o que vai encontrar + "Vamos começar") → `/comecar` exportar e escolher arquivo (tutorial animado iPhone/Android, lembrete de privacidade) → `/turma` contatos (+ cobrança a partir do 2º grupo) → `/conhecendo` Ato I: classificação + 5 personagens → `/categorias` → `/premios/N` (10; trabalho tem 8) → `/resumo` fatos + ranking ("Top X%", básicos primeiro, some acima de 90%) → `/fim` categorias bloqueadas (premium), 3 imagens (resumo, ranking, top 10), "Concluir" → pop-up (e-mail de novidades + presente, fazer outro grupo).
+`/` início (cards Grupos/Casais + o que vai encontrar + "Vamos começar") → `/comecar` exportar e escolher arquivo (tutorial animado iPhone/Android, lembrete de privacidade) → `/turma` contatos (+ cobrança a partir do 2º grupo) → `/conhecendo` Ato I: classificação + 5 personagens → `/categorias` → `/premios/N` (10; trabalho tem 8) → `/resumo` fatos + ranking ("Top X%", básicos primeiro, some acima de 90%) → `/fim` seção Para compartilhar (vídeo, resumo, 2026 em números + ranking, top 10, Nós dois), categorias extras, categoria livre, Destaques 2026, "Concluir" → pop-up (e-mail de novidades + presente, fazer outro grupo).
 
 ## Retrozap Casais (modo `casal`)
-Início tem cards Grupos/Casais; `/comecar` passo 1 = grupo ou casal. Casal = tema claro rosa (`html.casal`), 15 categorias próprias, card "Nós dois" (um contra o outro), vídeo de 10s para stories (MediaRecorder, gerado no aparelho). Conversa de 2 pessoas no modo grupo pergunta "É um casal?". Ranking: casal só compara com casais (mín. 10); grupos nunca com casais.
+Início tem cards Grupos/Casais; `/comecar` passo 1 = grupo ou casal. Casal = tema claro rosa (`html.casal`), 15 categorias próprias, card "Nós dois" (um contra o outro), vídeo de 20s para stories, também para grupos (MediaRecorder, gerado no aparelho; prévia grátis, baixar é Premium). Conversa de 2 pessoas no modo grupo pergunta "É um casal?". Ranking: casal só compara com casais (mín. 10); grupos nunca com casais.
 **Premium:** 2 personagens grátis (resto embaçado), Destaques 2026 (2 grátis), categoria livre (1 palavra), categorias extras. Versão de teste: publicar `zapped.html` como Artifact; fora do site oficial aparece a chave 🧪 Grátis/Premium e o Pix é simulado (`?plano_teste=1` só vale em localhost).
 LGPD: aviso de cookies com Aceitar / Só o essencial (Consent Mode v2: anúncio personalizado só com Aceitar). Pendente: nome do controlador na política (Gui decide).
 
@@ -50,3 +51,6 @@ Consultas úteis no D1: `SELECT * FROM compras WHERE modo='ligada' ORDER BY cria
 - Parceiro Party Games (cupom RETROZAP, paga 7% das vendas): pop-up de patrocínio pronto mas desligado (`PATROCINIO_ATIVO = false`); presente do pop-up final foi retirado.
 - Cache: páginas `no-cache`; `/assets/*` 1 dia. Se mudar um arquivo de /assets, trocar o nome.
 - Gui prefere: mudanças aplicadas direto, sem explicar cada detalhe; testar antes de publicar; avisar o que ele precisa fazer no painel (Cloudflare/Mercado Pago) em passos curtos.
+
+## Histórico e estado
+Resumo de tudo que foi feito, decisões e pendências: doc `claude/estado-atual-retrozap.md` no Projeto Retrozap (claude.ai). Playbook de lançamento e escala: `claude/playbook-lancamento-escala.md`.
