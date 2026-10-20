@@ -23,6 +23,8 @@ for w in (400, 500, 700):
     shutil.copy(os.path.join(NM, f'@fontsource/dm-sans/files/dm-sans-latin-{w}-normal.woff2'), os.path.join(PUB, f'assets/dmsans-{w}.woff2'))
 shutil.copy(os.path.join(NM, 'jszip/dist/jszip.min.js'), os.path.join(PUB, 'assets/jszip.min.js'))
 shutil.copy(os.path.join(NM, 'qrcode-generator/qrcode.js'), os.path.join(PUB, 'assets/qrcode.js'))
+shutil.copy(os.path.join(NM, 'mp4-muxer/build/mp4-muxer.js'), os.path.join(PUB, 'assets/mp4-muxer-5.2.1.js'))
+s = s.replace("const MUX_URL = 'https://cdn.jsdelivr.net/npm/mp4-muxer@5.2.1/build/mp4-muxer.js';", "const MUX_URL = '/assets/mp4-muxer-5.2.1.js';")
 shutil.copy(os.path.join(SCR, 'partygames.jpg'), os.path.join(PUB, 'assets/partygames.jpg'))
 s = re.sub(r"const PATRO_IMG = '[^']*';", "const PATRO_IMG = '/assets/partygames.jpg';", s)
 FONTES = """@font-face{font-family:'Bricolage Grotesque';src:url(/assets/bricolage.woff2) format('woff2');font-weight:200 800;font-display:swap}
