@@ -18,20 +18,51 @@ const CAMPOS = {
   textao: [0, 1e4],                                                           // caracteres por mensagem
   amor: [0, 1e4], coracoes: [0, 1e4]                                          // casal: 'te amo' a cada mil textos, corações a cada 100 mensagens
 };
-let colunasOk = false, semeado = false;
+let prontoDB = false, semeado = false;
 const EST_ATE = 30; // enquanto houver menos de 30 envios reais do ano no escopo, usa também as estimativas
+const RESUMO_MS = 4 * 3600e3; // o resumo do ranking (distribuição de cada métrica) é refeito no máximo a cada 4 horas
+const QN = 200; // pontos de corte guardados por métrica (até 400 valores, guarda todos e o cálculo é exato)
+async function prepara(env, cols){
+  if (prontoDB) return;
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS grupos (id TEXT PRIMARY KEY, modo TEXT NOT NULL, criado TEXT NOT NULL, ${cols.map(k => k + ' REAL').join(', ')})`).run();
+  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS grupos_modo ON grupos (modo)`).run();
+  for (const k of ['amor REAL', 'coracoes REAL', 'base TEXT', 'estimado INTEGER']) try { await env.DB.prepare(`ALTER TABLE grupos ADD COLUMN ${k}`).run(); } catch {}
+  await env.DB.prepare('CREATE TABLE IF NOT EXISTS resumos (chave TEXT PRIMARY KEY, criado INTEGER, dados TEXT)').run();
+  prontoDB = true;
+}
 // Uma vez: estima os números do ano a partir dos envios antigos (que tinham o histórico todo), para o ranking não começar vazio.
 // Volume = média por dia × dias do ano (limitado à idade do grupo); proporções (risadas, madrugada...) ficam iguais.
 async function semeia(env, cols, base){
   if (semeado || base !== '2026') return; semeado = true;
+  if (await env.DB.prepare("SELECT 1 FROM resumos WHERE chave = 'semeado'").first()) return;
   const d = Math.max(1, Math.floor((Date.now() - Date.UTC(2026, 0, 1)) / 864e5)), vol = `MIN(1.0, por_dia * MIN(dias, ${d}) / MAX(total, 1))`;
   const expr = {total: `ROUND(por_dia * MIN(dias, ${d}))`, audios: `ROUND(audios * ${vol})`, figurinhas: `ROUND(figurinhas * ${vol})`, amor: 'NULL', coracoes: 'NULL'};
   const fonte = `FROM grupos WHERE COALESCE(base, '') = '' AND COALESCE(estimado, 0) = 0 AND modo != 'casal' AND por_dia * MIN(dias, ${d}) >= 20`;
-  if (!(await env.DB.prepare("SELECT COUNT(*) AS n FROM grupos WHERE estimado = 1 AND modo != 'casal'").first())?.n)
-    await env.DB.prepare(`INSERT OR IGNORE INTO grupos (id, modo, criado, base, estimado, ${cols.join(', ')}) SELECT id || '~e', modo, criado, '2026', 1, ${cols.map(k => expr[k] || k).join(', ')} ${fonte}`).run();
+  await env.DB.prepare(`INSERT OR IGNORE INTO grupos (id, modo, criado, base, estimado, ${cols.join(', ')}) SELECT id || '~e', modo, criado, '2026', 1, ${cols.map(k => expr[k] || k).join(', ')} ${fonte}`).run();
   // casais: ainda não há casais antigos; usa os grupos como estimativa de volume e proporções (membros = 2)
-  if (!(await env.DB.prepare("SELECT COUNT(*) AS n FROM grupos WHERE estimado = 1 AND modo = 'casal'").first())?.n)
-    await env.DB.prepare(`INSERT OR IGNORE INTO grupos (id, modo, criado, base, estimado, ${cols.join(', ')}) SELECT id || '~c', 'casal', criado, '2026', 1, ${cols.map(k => k === 'membros' ? '2' : expr[k] || k).join(', ')} ${fonte}`).run();
+  await env.DB.prepare(`INSERT OR IGNORE INTO grupos (id, modo, criado, base, estimado, ${cols.join(', ')}) SELECT id || '~c', 'casal', criado, '2026', 1, ${cols.map(k => k === 'membros' ? '2' : expr[k] || k).join(', ')} ${fonte}`).run();
+  await env.DB.prepare("INSERT OR REPLACE INTO resumos (chave, criado, dados) VALUES ('semeado', ?, '{}')").bind(Date.now()).run();
+}
+// distribuição compacta: todos os valores (até 2×QN) ou QN+1 pontos de corte
+const cortes = vals => vals.length <= 2 * QN ? vals : Array.from({length: QN + 1}, (_, i) => vals[Math.round(i * (vals.length - 1) / QN)]);
+// quantos valores são maiores que v (exato com a lista completa, aproximado com os cortes)
+function acima(q, n, v){ let lo = 0, hi = q.length; while (lo < hi){ const m = (lo + hi) >> 1; if (q[m] <= v) lo = m + 1; else hi = m; } return q.length === n ? n - lo : Math.round(n * (1 - lo / q.length)); }
+async function resumo(env, base, escopo, modo){
+  const chave = `${base}|${escopo}|${modo}`;
+  const r = await env.DB.prepare('SELECT criado, dados FROM resumos WHERE chave = ?').bind(chave).first();
+  if (r){ const dd = JSON.parse(r.dados); if (Date.now() - r.criado < (dd.n < 200 ? 10 * 60e3 : RESUMO_MS)) return dd; } // no começo (poucos grupos) refaz a cada 10 min
+  const onde = escopo === 'tipo' ? 'modo = ?' : 'modo != ?', arg = escopo === 'tipo' ? modo : 'casal';
+  const rows = (await env.DB.prepare(`SELECT ${COMPARA.join(', ')}, COALESCE(estimado, 0) AS est FROM grupos WHERE ${onde} AND COALESCE(base, '') = ?`).bind(arg, base).all()).results || [];
+  const reais = rows.filter(x => !x.est).length, est = reais < EST_ATE, conj = est ? rows : rows.filter(x => !x.est), m = {};
+  for (const k of COMPARA){ if (k === 'dias') continue;
+    const vals = conj.map(x => x[k]).filter(v => v != null).sort((a, b) => a - b);
+    m[k] = {n: vals.length, q: cortes(vals), media: vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null}; }
+  // antiguidade: o histórico todo de todos os envios reais (antigos e novos), no mesmo escopo
+  const dd = ((await env.DB.prepare(`SELECT dias FROM grupos WHERE ${onde} AND COALESCE(estimado, 0) = 0`).bind(arg).all()).results || []).map(x => x.dias).filter(v => v != null).sort((a, b) => a - b);
+  m.dias = {n: dd.length, q: cortes(dd)};
+  const dados = {n: conj.length, est, m};
+  await env.DB.prepare('INSERT OR REPLACE INTO resumos (chave, criado, dados) VALUES (?, ?, ?)').bind(chave, Date.now(), JSON.stringify(dados)).run();
+  return dados;
 }
 const COMPARA = Object.keys(CAMPOS).filter(k => k !== 'membros');
 
@@ -39,6 +70,7 @@ const resposta = (obj, status = 200) => new Response(JSON.stringify(obj), {statu
 
 export async function onRequestPost({request, env}){
   if (!env.DB) return resposta({pronto: false, motivo: 'sem_banco'});
+  if (env.RANKING === 'desligado') return resposta({pronto: false, motivo: 'desligado'}); // chave de emergência no painel (Variables)
   let c; try { c = await request.json(); } catch { return resposta({error: 'bad_request'}, 400); }
   const id = String(c?.id || '');
   if (!/^[a-f0-9]{32}$/.test(id) || !MODOS.includes(c?.modo)) return resposta({error: 'bad_request'}, 400);
@@ -49,30 +81,24 @@ export async function onRequestPost({request, env}){
     v[k] = n;
   }
   const cols = Object.keys(CAMPOS);
-  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS grupos (id TEXT PRIMARY KEY, modo TEXT NOT NULL, criado TEXT NOT NULL, ${cols.map(k => k + ' REAL').join(', ')})`).run();
-  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS grupos_modo ON grupos (modo)`).run();
-  if (!colunasOk){ for (const k of ['amor REAL', 'coracoes REAL', 'base TEXT', 'estimado INTEGER']) try { await env.DB.prepare(`ALTER TABLE grupos ADD COLUMN ${k}`).run(); } catch {} colunasOk = true; }
+  await prepara(env, cols);
   const base = /^20\d\d$/.test(String(c.base || '')) ? String(c.base) : '';
   // o mesmo grupo enviado de novo só atualiza a linha (não conta duas vezes)
   await env.DB.prepare(`INSERT OR REPLACE INTO grupos (id, modo, criado, base, ${cols.join(', ')}) VALUES (?, ?, ?, ?, ${cols.map(() => '?').join(', ')})`)
     .bind(id, c.modo, new Date().toISOString().slice(0, 10), base, ...cols.map(k => v[k])).run();
   await env.DB.prepare('DELETE FROM grupos WHERE id = ?').bind(id + '~e').run(); // o grupo real substitui a estimativa dele
   await semeia(env, cols, base);
-  // só compara com quem mandou números do mesmo período; estimativas só enquanto há poucos envios reais
-  const reais = async (onde, ...extra) => (await env.DB.prepare(`SELECT COUNT(*) AS n FROM grupos ${onde} AND COALESCE(base, '') = ? AND COALESCE(estimado, 0) = 0`).bind(...extra, base).first())?.n || 0;
-  const conta = (est, onde, ...extra) => env.DB.prepare(`SELECT COUNT(*) AS n, ${COMPARA.map(k => `SUM(${k} > ?) AS ${k}, SUM(${k} IS NOT NULL) AS n_${k}, AVG(${k}) AS m_${k}`).join(', ')} FROM grupos ${onde} AND COALESCE(base, '') = ? AND (COALESCE(estimado, 0) = 0 OR ? = 1)`)
-    .bind(...COMPARA.map(k => v[k]), ...extra, base, est ? 1 : 0).first();
-  let est = await reais('WHERE modo = ?', c.modo) < EST_ATE, r = await conta(est, 'WHERE modo = ?', c.modo), escopo = 'tipo';
+  // compara com o resumo pronto (refeito no máximo a cada 4 h): cada envio lê 1 linha, não a tabela inteira
+  let R = await resumo(env, base, 'tipo', c.modo), escopo = 'tipo';
   // casal compara só com casais; os grupos nunca se comparam com casais
-  if (c.modo !== 'casal' && (r?.n || 0) < MIN_TIPO){ est = await reais('WHERE modo != ?', 'casal') < EST_ATE; r = await conta(est, 'WHERE modo != ?', 'casal'); escopo = 'todos'; }
-  // antiguidade: o histórico todo de todos os envios reais (antigos e novos), no mesmo escopo
-  const ant = await env.DB.prepare(`SELECT COUNT(*) AS n, SUM(dias > ?) AS d FROM grupos WHERE ${escopo === 'tipo' ? 'modo = ?' : 'modo != ?'} AND COALESCE(estimado, 0) = 0`).bind(v.dias, escopo === 'tipo' ? c.modo : 'casal').first();
-  const n = r?.n || 0;
+  if (c.modo !== 'casal' && R.n + 1 < MIN_TIPO){ R = await resumo(env, base, 'todos', 'grupos'); escopo = 'todos'; }
+  const n = R.n + 1, est = R.est; // + o próprio grupo
   if (n < (c.modo === 'casal' ? MIN_CASAL : escopo === 'tipo' ? MIN_TIPO : MIN_TODOS)) return resposta({pronto: false, n});
   // "Top X%": X = % de grupos com valor maior + o próprio. Métrica zerada não vira destaque.
   const top = {}, media = {};
-  for (const k of COMPARA){ const nk = r['n_' + k] || 0; top[k] = v[k] > 0 && nk >= MIN_TODOS ? Math.max(1, Math.ceil(((r[k] || 0) + 1) / nk * 100)) : 100; if (nk >= MIN_TODOS && r['m_' + k] != null) media[k] = Math.round(r['m_' + k] * 100) / 100; }
-  if (ant?.n) top.dias = Math.max(1, Math.ceil(((ant.d || 0) + 1) / ant.n * 100));
+  for (const k of COMPARA){ const mk = R.m[k]; if (!mk) continue; const nk = mk.n + 1;
+    top[k] = v[k] > 0 && nk >= MIN_TODOS ? Math.max(1, Math.ceil((acima(mk.q, mk.n, v[k]) + 1) / nk * 100)) : 100;
+    if (k !== 'dias' && mk.n >= MIN_TODOS && mk.media != null) media[k] = Math.round(mk.media * 100) / 100; }
   return resposta({pronto: true, n, top, media, escopo, estimado: est});
 }
 

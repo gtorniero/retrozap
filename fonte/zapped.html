@@ -988,14 +988,19 @@ function paywall(seguir, ctx){
     caixa.querySelector('#pwCop').onclick = e => { navigator.clipboard?.writeText(j.qr).then(() => { e.target.textContent = 'Copiado ✓ Cole no app do banco'; }).catch(() => {}); };
     if (!j.qr64 && j.qr) carregaQR().then(q => { const g = q(0, 'M'); g.addData(j.qr); g.make(); const el = caixa.querySelector('#pwQr'); if (el) el.innerHTML = g.createSvgTag({cellSize: 4, margin: 2, scalable: true}); }).catch(() => {});
     const t0 = Date.now();
+    const volta = () => { if (!document.hidden && vivo){ clearTimeout(tm); confere(); } };
+    document.addEventListener('visibilitychange', volta);
     const confere = async () => {
       if (!vivo) return;
-      try {
+      // aba escondida (pessoa no app do banco): não consulta; confere assim que ela volta
+      if (!document.hidden) try {
         const r = await fetch('/api/pix/status', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({ref: j.ref})});
         const s = await r.json();
         if (s.pago && s.codigo) return libera(s.codigo);
       } catch {}
-      if (Date.now() - t0 < 30*60e3) tm = setTimeout(confere, 3000);
+      // consulta a cada 3 s no começo e vai espaçando (menos carga no servidor se viralizar)
+      const passou = Date.now() - t0;
+      if (passou < 30*60e3) tm = setTimeout(confere, passou < 2*60e3 ? 3000 : passou < 10*60e3 ? 8000 : 20000);
       else { const p = caixa.querySelector('.pw-esp'); if (p) p.textContent = 'O Pix expirou. Feche e gere outro.'; }
     };
     tm = setTimeout(confere, 3000);
