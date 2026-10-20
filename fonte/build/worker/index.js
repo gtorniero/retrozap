@@ -2,9 +2,9 @@
 import { onRequestPost as stats } from '../functions/api/stats.js';
 import { onRequestPost as ideias } from '../functions/api/ideias.js';
 import { config, criar, status, webhook, acesso, recuperar } from '../functions/api/pix.js';
-import { painel, dados } from './admin.js';
+import { painel, dados, salvar } from './admin.js';
 
-const POST = { '/api/stats': stats, '/api/ideias': ideias, '/api/pix': criar, '/api/pix/status': status, '/api/mp-webhook': webhook, '/api/acesso': acesso, '/api/recuperar': recuperar };
+const POST = { '/api/stats': stats, '/api/ideias': ideias, '/api/pix': criar, '/api/pix/status': status, '/api/mp-webhook': webhook, '/api/acesso': acesso, '/api/recuperar': recuperar, '/api/admin/negocio': salvar };
 const GET = { '/api/cobranca': config, '/api/admin/dados': dados, '/admin': painel };
 
 export default {
