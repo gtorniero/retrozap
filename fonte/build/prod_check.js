@@ -461,6 +461,14 @@ async function precisaPagar(){
   return true;
 }
 // ambiente de teste (prévia fora do site oficial): alterna Grátis/Premium e simula o Pix
+// AdSense: IDs dos blocos (AdSense > Anúncios > Por bloco de anúncios). Vazio = sem anúncio nesse lugar. Premium nunca vê anúncio.
+const ANUNCIOS = {inicio: '', fim: ''};
+function anuncio(onde){
+  const slot = ANUNCIOS[onde];
+  if (!slot || premiumLocal() || AMBIENTE_TESTE) return '';
+  return `<div class="anuncio" data-anuncio><p class="small" style="margin:0">Publicidade</p><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4039247360984618" data-ad-slot="${slot}" data-ad-format="auto" data-full-width-responsive="true"></ins></div>`;
+}
+function ativaAnuncios(){ view.querySelectorAll('[data-anuncio] ins:not([data-adsbygoogle-status])').forEach(() => { try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch {} }); }
 const AMBIENTE_TESTE = !/(^|\.)retrozap\.com\.br$|workers\.dev$|^localhost$|^127\./.test(location.hostname) || (/^localhost$|^127\./.test(location.hostname) && /[?&]plano_teste=1/.test(location.search)); // nunca no site oficial
 if (AMBIENTE_TESTE) state.planoTeste = 'gratis';
 const premiumLocal = () => state.planoTeste ? state.planoTeste === 'premium' : !!(state.sample || lsGet('rz_acesso'));
@@ -479,7 +487,7 @@ function paywall(seguir, ctx){
   m.className = 'patro'; m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true'); m.setAttribute('aria-labelledby','pwT');
   const fecha = () => { vivo = false; clearTimeout(tm); m.remove(); try { antes?.focus(); } catch {} };
   const libera = codigo => {
-    lsSet('rz_acesso', codigo);
+    lsSet('rz_acesso', codigo); document.documentElement.classList.add('premium'); // some com os anúncios na hora
     try { if (typeof evento === 'function') evento('compra_ilimitado'); } catch {}
     caixa.innerHTML = `<div class="lemb-ic" aria-hidden="true">🎉</div>
       <h2 id="pwT" style="font-size:26px;margin:0">Liberado!</h2>
@@ -640,9 +648,10 @@ function inicio(){
       <details><summary>Funciona com a conversa de um casal?</summary><p>Sim. No Retrozap Casais, a retrospectiva é de vocês dois: quem manda mais "te amo", quem demora para responder, o card "Nós dois" e um vídeo para os stories.</p></details>
       <details><summary>Quais prêmios o grupo pode ganhar?</summary><p>São 10 categorias escolhidas para o tipo de grupo, como O Tagarela, O Fantasma, Coruja da Madrugada e Tio do Bom Dia, além do ranking do grupo comparado a outros grupos do Brasil.</p></details>
     </section>
+    ${anuncio('inicio')}
     <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a></nav>
   </section>`;
-  $('#comecar').onclick = () => home();
+  $('#comecar').onclick = () => home(); ativaAnuncios();
   view.querySelectorAll('[data-esc]').forEach(b => b.onclick = () => { const k = b.dataset.esc; setModo(k === 'casal' ? 'casal' : (state.ultimoGrupo || 'amigos')); const y = scrollY; inicio(); scrollTo(0, y); view.querySelector(`[data-esc="${k}"]`)?.focus({preventScroll: true}); });
   window.scrollTo(0,0);
 }
@@ -1297,12 +1306,14 @@ function fimTela(semFesta){
       ${trava26 ? `<div class="d26b trancado"><button type="button" class="btn btn-main destrava" id="dest26">🔓 Ver mais ${d26.length - 2} destaques</button>
         <div class="dest rk" aria-hidden="true">${d26.slice(2).map(item26).join('')}</div></div>` : ''}
     </div>` : ''}
+    ${anuncio('fim')}
     <button class="btn btn-main" id="concluir" style="width:100%">Concluir 🎉</button>
   </section>`;
   // imagens desenhadas sob demanda, uma de cada vez, quando chegam perto da tela (deixa a página e os pop-ups leves)
   [['#rimg', () => drawResumo(d)], ['#rimg2', () => rk[0]()], ['#rimg3', () => drawTop10()], ['#rimg4', () => drawNosso2026(d)], ['#rimg5', () => drawCasal(d)], ['#rimg6', () => drawRanking2026()]]
     .forEach(([sel, fz]) => imgSobDemanda($(sel), fz));
   if ($('#vlive')) tocaPrevia($('#vlive'), d);
+  ativaAnuncios();
   const abre = (fz, txt, alt) => openCard(fz, txt, alt);
   $('#wa1').onclick = () => mandarWhats(paraBlob(drawResumo(d)), 'retrozap-resumo.png', convite('resumo'), null, () => abre(() => drawResumo(d), convite('resumo'), altResumo(d)));
   $('#sv1').onclick = () => abre(() => drawResumo(d), convite('resumo'), altResumo(d));
