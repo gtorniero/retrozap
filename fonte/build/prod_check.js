@@ -1007,7 +1007,16 @@ function graficoAnos(d){
     ${parcial ? `<p class="small" style="margin:0">${L.at(-1).y} vai até ${d.end.toLocaleDateString('pt-BR', {day:'numeric', month:'long'})}.</p>` : ''}`;
 }
 // posição no ranking (Top X%), quando o servidor responde; null = não mostra
-const topDe = k => { const t = state.comp?.top?.[k]; return t && (t <= 90 || k === 'hist_total' || k === 'total') ? t : null; };
+const topDe = k => { const t = state.comp?.top?.[k]; return t && t <= 50 ? t : null; };
+// como mostrar a posição: "Top X%" só quando é bom (até 50%); de 51% a 90% vira "mais X que Y% dos grupos"; pior que isso, ou sem base suficiente, não aparece
+const DOS = () => state.modo === 'casal' ? 'dos casais' : 'dos grupos';
+const UNID_RANK = {total:'mensagens', hist_total:'mensagens', audios:'áudios', hist_audios:'áudios', risadas:'risadas', figurinhas:'figurinhas', madrugada:'mensagens de madrugada', bomdia:'bons dias', amor:'declarações de amor', coracoes:'corações', palavrao:'palavrões', apagadas:'mensagens apagadas'};
+function rankTxt(k){
+  const t = state.comp?.top?.[k]; if (!t || t >= 100) return null;
+  if (k === 'dias'){ const y = 100 - t; return y >= 10 ? (state.modo === 'casal' ? `📅 Juntos há mais tempo que ${y}% dos casais` : `📅 Mais antigo que ${y}% dos grupos`) : null; }
+  if (t <= 50) return `🏅 Top ${t}% ${quemBrasil()}`;
+  const y = 100 - t; return y >= 10 && UNID_RANK[k] ? `📊 Mais ${UNID_RANK[k]} que ${y}% ${DOS()}` : null;
+}
 const quemBrasil = () => state.modo === 'casal' ? 'dos casais do Brasil' : 'do Brasil';
 function quemAudio(d){
   const tot = d.people.reduce((s, p) => s + p.audio, 0); if (!tot) return [];
@@ -1017,7 +1026,7 @@ function quemAudio(d){
 function resumoInicio(d){
   const lv = livro(d), au = audios(d), fr = frase(d), desde = d.start.toLocaleDateString('pt-BR', {month:'long', year:'numeric'});
   const dias = Math.max(1, Math.round((d.end - d.start)/864e5) + 1), md = d.total/dias, f = [];
-  f.push({e:'💬', big:`${fmt(d.total)} mensagens`, sub:`desde ${desde} · média de ${md >= 10 ? fmt(Math.round(md)) : md.toFixed(1).replace('.', ',')} por dia`, top:'hist_total'});
+  f.push({e:'💬', big:`${fmt(d.total)} mensagens`, sub:`desde ${desde} · média de ${md >= 10 ? fmt(Math.round(md)) : md.toFixed(1).replace('.', ',')} por dia`, top:'hist_total dias'});
   if (au){ const q = quemAudio(d); f.push({e:'🎧', big:`${fmt(d.audioN)} áudios`, sub:`${au.txt} · ${au.comp.replace(/^[\d.]+ áudios · /, '')}`, top:'hist_audios',
     quem: q.length ? `${state.modo === 'casal' ? 'Quem manda mais' : 'Quem mais manda'}: ${q.map(x => `${x.n} ${x.pct}%`).join(' · ')}` : ''}); }
   f.push({e:'📚', big:`${fmt(lv.pags)} ${lv.pags === 1 ? 'página' : 'páginas'} · ${tempoLeitura(d.palavras)}`, sub:`se ${state.modo === 'casal' ? 'a conversa' : 'o grupo'} virasse livro · ${tempoLeitura(d.palavras)} para ler tudo, sem parar · ${lv.comp}`});
@@ -1027,8 +1036,8 @@ function resumoInicio(d){
 }
 const itemRes = x => `<div class="res-i"><span aria-hidden="true">${x.e}</span><div><b>${esc(x.big)}</b><span class="small">${esc(x.sub)}</span>${x.quem ? `<span class="quem">🎙️ ${esc(x.quem)}</span>` : ''}${x.top ? `<span class="pills" data-top="${x.top}" hidden></span>` : ''}</div></div>`;
 function preencheTops(){
-  view.querySelectorAll('[data-top]').forEach(el => { const t = topDe(el.dataset.top);
-    if (t){ el.innerHTML = `<span class="pill pos">🏅 Top ${t}% ${quemBrasil()} · desde o início</span>`; el.hidden = false; } });
+  view.querySelectorAll('[data-top]').forEach(el => { const L = el.dataset.top.split(' ').map(rankTxt).filter(Boolean);
+    if (L.length){ el.innerHTML = L.map(t => `<span class="pill pos">${esc(t)}</span>`).join(''); el.hidden = false; } });
 }
 function story(){
   anchor(true);
@@ -1187,7 +1196,7 @@ function altResumo(d){
 // Ato III · Gran Finale: o nosso 2026 (mensagens, áudios, risadas, assunto, destaques) e o vídeo
 function fatosFinale(){
   const so26 = !!state.compD, D = state.data, casal = state.modo === 'casal', f = [];
-  const pills = x => [x.vs && {c: x.up === true ? 'sobe' : x.up === false ? 'desce' : 'igual', t: x.vs}, x.top && {c: 'pos', t: `🏅 Top ${x.top}% ${quemBrasil()}`}].filter(Boolean);
+  const pills = x => [x.vs && {c: x.up === true ? 'sobe' : x.up === false ? 'desce' : 'igual', t: x.vs}, x.rank && {c: 'pos', t: x.rank}].filter(Boolean);
   const PIADA = {
     figurinhas: () => 'Quando faltam palavras, sobra figurinha.', fotos: () => 'Tudo documentado. Nada fica sem prova.', palavrao: () => 'A mãe de alguém aqui está decepcionada.', apagadas: () => 'O que será que tinha ali?', madrugada: () => 'Alguém aqui dorme?', bomdia: () => 'O sol só nasce depois do bom dia do grupo.',
     amor: () => 'Declarações registradas em cartório.', coracoes: () => 'O teclado de vocês só tem coração.',
@@ -1819,8 +1828,8 @@ function drawResumo(d){
   let tam = 84; c.font = `800 ${tam}px ${BR}`;
   while (tam > 50 && linhasDe(c, nomeT, 960) > 2){ tam -= 4; c.font = `800 ${tam}px ${BR}`; }
   const nl = Math.min(2, wrap(c, nomeT, W/2, 285, 960, Math.round(tam * 1.1)));
-  const linhas = resumoInicio(d).map(x => { const t = x.top && topDe(x.top);
-    return [x.e, x.big, x.quem ? `${x.quem.replace(/^Quem mais manda: |^Quem manda mais: /, 'quem mais manda: ')}` : t ? `${x.sub} · Top ${t}% ${quemBrasil()}` : x.sub]; });
+  const linhas = resumoInicio(d).map(x => { const t = x.top ? x.top.split(' ').map(rankTxt).filter(Boolean).map(s => s.replace(/^\S+ /, '')).join(' · ') : '';
+    return [x.e, x.big, x.quem ? `${x.quem.replace(/^Quem mais manda: |^Quem manda mais: /, 'quem mais manda: ')}` : t ? `${x.sub.split(' · ')[0]} · ${t}` : x.sub]; });
   const topo = 285 + (nl - 1)*92 + 75, base = 1490, passo = Math.min(215, (base - topo)/linhas.length), alt = passo - 14;
   let y = topo;
   for (const [ic, num, rot] of linhas){
@@ -2017,7 +2026,7 @@ function nosso2026(){
   return {nums, txt, ds: destaques26('sumico')};
 }
 function altNosso2026(){ const {nums, txt, ds} = nosso2026();
-  return `Nosso ${ANO_MOMENTO}${state.grupo ? ', ' + state.grupo : ''}: ` + [...nums.map(x => `${fmt(x.n)} ${x.t}${x.vs ? ', ' + x.vs : ''}${x.top ? `, Top ${x.top}% ${quemBrasil()}` : ''}`),
+  return `Nosso ${ANO_MOMENTO}${state.grupo ? ', ' + state.grupo : ''}: ` + [...nums.map(x => `${fmt(x.n)} ${x.t}${x.vs ? ', ' + x.vs : ''}${x.rank ? ', ' + x.rank.replace(/^\S+ /, '') : ''}`),
     ...txt.map(x => `${x.sub.split(' · ')[0]}: ${x.big}`), ...ds.map(x => `${x.t}: ${x.n}`)].join('; ') + '.'; }
 function drawNosso2026(){
   const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
@@ -2039,7 +2048,7 @@ function drawNosso2026(){
     const selo = (t, fill, cor) => { let fs = 24; c.font = `800 ${fs}px ${DM}`; let w = c.measureText(t).width + 36; while (w > tw - 56 && fs > 16){ fs -= 2; c.font = `800 ${fs}px ${DM}`; w = c.measureText(t).width + 36; }
       c.fillStyle = fill; c.beginPath(); c.roundRect(tx + 28, py, w, 44, 22); c.fill(); c.fillStyle = cor; c.fillText(t, tx + 46, py + 30); py += 54; };
     if (x.vs) selo(x.vs, corTend(x), '#FFFFFF');
-    if (x.top) selo(`🏅 Top ${x.top}% ${quemBrasil()}`, K.txt, casal ? '#FFFFFF' : '#1A0B2E');
+    if (x.rank) selo(x.rank, K.txt, casal ? '#FFFFFF' : '#1A0B2E');
     c.textAlign = 'center';
   });
   let y = y0 + Math.ceil(nums.length/2)*(th + 16) + 4;
@@ -2129,7 +2138,7 @@ function numeros2026(){
     let vs = null, up = null, r = null;
     if (anos.length){ const f = CAMPO[k], ant = anos.reduce((t, a) => t + a.people.reduce((u, p) => u + (p[f] || 0), 0), 0) / anos.length;
       if (ant >= 5){ r = n/ant - 1; up = r >= .05 ? true : r <= -.05 ? false : null; vs = up === true ? `+${Math.round(r*100)}% vs ${rotAnos}` : up === false ? `−${Math.round(-r*100)}% vs ${rotAnos}` : `= ${rotAnos}`; } }
-    return {e, n, t, k, vs, up, r, top: top[k] && (top[k] <= 50 || k === 'total') ? top[k] : null};
+    return {e, n, t, k, vs, up, r, top: top[k] && top[k] <= 50 ? top[k] : null, rank: rankTxt(k)};
   });
 }
 const num26 = k => numeros2026().find(x => x.k === k) || null;
@@ -2234,7 +2243,7 @@ function frameVideo(c, t, cz){
   // 2. o ano em números: vs anos anteriores e ranking do Brasil
   cena(T.num, T.as, u => {
     c.fillStyle = K.txt; c.font = `800 80px ${BR}`; c.fillText(cz.so26 ? `${ANO_MOMENTO} EM NÚMEROS` : 'EM NÚMEROS', W/2, 270);
-    if (cz.num.some(x => x.vs || x.top)){ c.fillStyle = K.sub; caber(c, `vs anos anteriores e ${cz.casal ? 'os casais' : 'os grupos'} do Brasil`, W/2, 325, 900, 700, 32, DM); }
+    if (cz.num.some(x => x.vs || x.rank)){ c.fillStyle = K.sub; caber(c, `vs anos anteriores e ${cz.casal ? 'os casais' : 'os grupos'} do Brasil`, W/2, 325, 900, 700, 32, DM); }
     cz.num.forEach((x, i) => {
       const t0 = .3 + i*.7, e = ent(T.num + t0), y = 380 + i*290 + 60*(1 - e);
       c.save(); c.globalAlpha *= e; c.textAlign = 'left';
@@ -2242,7 +2251,7 @@ function frameVideo(c, t, cz){
       c.font = '84px serif'; c.fillText(x.e, 105, y + 120);
       c.fillStyle = K.ouro; c.font = `800 86px ${BR}`; c.fillText(fmt(Math.round(x.n * ease((u - t0)/1.4))), 235, y + 100);
       c.fillStyle = K.txt; c.font = `700 36px ${DM}`; c.fillText(x.t, 237, y + 150);
-      let px = 235; const sel = [x.vs && [x.vs, corTend(x), '#FFFFFF'], x.top && [`🏅 Top ${x.top}% ${quemBrasil()}`, K.A, txtPill]].filter(Boolean);
+      let px = 235; const sel = [x.vs && [x.vs, corTend(x), '#FFFFFF'], x.rank && [x.rank, K.A, txtPill]].filter(Boolean);
       for (const [txt, fill, cor] of sel){ let fs = 30; c.font = `800 ${fs}px ${DM}`; let tw = c.measureText(txt).width + 50;
         while (px + tw > W - 90 && fs > 18){ fs -= 2; c.font = `800 ${fs}px ${DM}`; tw = c.measureText(txt).width + 50; }
         c.fillStyle = fill; c.beginPath(); c.roundRect(px, y + 178, tw, 58, 29); c.fill(); c.fillStyle = cor; c.fillText(txt, px + 25, y + 218); px += tw + 12; }

@@ -57,8 +57,10 @@ async function resumo(env, base, escopo, modo){
   for (const k of COMPARA){ if (k === 'dias') continue;
     const vals = conj.map(x => x[k]).filter(v => v != null).sort((a, b) => a - b);
     m[k] = {n: vals.length, q: cortes(vals), media: vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null}; }
-  // antiguidade: o histórico todo de todos os envios reais (antigos e novos), no mesmo escopo
-  const dd = ((await env.DB.prepare(`SELECT dias FROM grupos WHERE ${onde} AND COALESCE(estimado, 0) = 0`).bind(arg).all()).results || []).map(x => x.dias).filter(v => v != null).sort((a, b) => a - b);
+  // antiguidade: o histórico todo dos envios reais (antigos e novos), no mesmo escopo; com menos de 10 reais (ex.: casais no começo), usa também as estimativas
+  let dd = ((await env.DB.prepare(`SELECT dias FROM grupos WHERE ${onde} AND COALESCE(estimado, 0) = 0`).bind(arg).all()).results || []).map(x => x.dias).filter(v => v != null);
+  if (dd.length < MIN_TODOS) dd = ((await env.DB.prepare(`SELECT dias FROM grupos WHERE ${onde}`).bind(arg).all()).results || []).map(x => x.dias).filter(v => v != null);
+  dd.sort((a, b) => a - b);
   m.dias = {n: dd.length, q: cortes(dd)};
   // desde o início: envios novos mandam hist_*; os antigos (sem base) já tinham o histórico todo em total/audios
   for (const [k, antigo] of [['hist_total', 'total'], ['hist_audios', 'audios']]){
@@ -105,7 +107,8 @@ export async function onRequestPost({request, env}){
   // "Top X%": X = % de grupos com valor maior + o próprio. Métrica zerada não vira destaque.
   const top = {}, media = {};
   for (const k of [...COMPARA, ...HIST]){ const mk = R.m[k]; if (!mk || v[k] == null) continue; const nk = mk.n + 1;
-    top[k] = v[k] > 0 && nk >= MIN_TODOS ? Math.max(1, Math.ceil((acima(mk.q, mk.n, v[k]) + 1) / nk * 100)) : 100;
+    // sem base suficiente (menos de 10 para comparar) a métrica fica de fora: nunca devolve um "Top 100%" falso
+    if (nk >= MIN_TODOS) top[k] = v[k] > 0 ? Math.max(1, Math.ceil((acima(mk.q, mk.n, v[k]) + 1) / nk * 100)) : 100;
     if (k !== 'dias' && mk.n >= MIN_TODOS && mk.media != null) media[k] = Math.round(mk.media * 100) / 100; }
   return resposta({pronto: true, n, top, media, escopo, estimado: est});
 }
