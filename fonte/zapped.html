@@ -2733,13 +2733,15 @@ function intervaloAnuncio(){
     <p class="eyebrow">Intervalo comercial</p>
     <div class="em-g" aria-hidden="true">☕</div>
     <h1 style="font-size:32px">A cerimônia volta já</h1>
-    <p class="lead">Faltam ${state.awards.filter(a => !a.honra).length - state.idx} troféus. Pega uma água.</p>
+    <p class="lead">Faltam ${state.awards.filter(a => !a.honra).length - state.idx} troféus.</p>
     ${anuncio('intervalo')}
     <p class="small" style="margin:0">Com o Premium não tem intervalo. 😉</p>
-    <button class="btn btn-main" id="go" style="width:100%">Voltar para a cerimônia →</button>
+    <button class="btn btn-main" id="go" style="width:100%" disabled>Voltando em 2…</button>
   </section>`;
   ativaAnuncios();
-  $('#go').onclick = award;
+  const bt = $('#go'); let n = 2;
+  const tic = setInterval(() => { if (!bt.isConnected) return clearInterval(tic); n--; if (n > 0) bt.textContent = `Voltando em ${n}…`; else { clearInterval(tic); bt.disabled = false; bt.textContent = 'Voltar para a cerimônia →'; bt.focus(); } }, 1000);
+  bt.onclick = award;
   window.scrollTo(0,0);
 }
 function intervaloComercial(){
