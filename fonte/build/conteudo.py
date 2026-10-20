@@ -243,3 +243,6 @@ ol,ul{padding-left:22px}li{margin:4px 0}
 .resumo-priv{background:var(--acai);border:1px solid var(--linha);border-radius:16px;padding:16px 18px;margin:16px 0}
 .resumo-priv ul{list-style:none;padding-left:0}.resumo-priv li{margin:10px 0}
 """
+
+# AdSense: IDs dos blocos de anúncio (AdSense > Anúncios > Por bloco de anúncios). Vazio = sem bloco nesse lugar.
+AD_SLOT_PAGINAS = ''

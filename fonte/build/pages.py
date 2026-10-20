@@ -32,7 +32,8 @@ CSS += conteudo.CSS_EXTRA
 
 def page(path, title, desc, body, ad=True):
     url = SITE + '/' + path.replace('index.html', '').replace('.html', '')
-    adhtml = ''
+    slot = getattr(conteudo, 'AD_SLOT_PAGINAS', '')
+    adhtml = f'<div class="anuncio"><p class="small" style="margin:0">Publicidade</p><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4039247360984618" data-ad-slot="{slot}" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(window.adsbygoogle=window.adsbygoogle||[]).push({{}});</script></div>' if (ad and slot) else ''
     html = f"""<!doctype html>
 <html lang="pt-BR"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -51,7 +52,9 @@ if(ad==='denied'){{(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersona
 <meta property="og:title" content="{title}"><meta property="og:description" content="{desc}"><meta property="og:image" content="{SITE}/og-retrozap.png">
 <link rel="icon" href="/favicon.png" type="image/png">
 <meta name="google-adsense-account" content="ca-pub-4039247360984618">
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4039247360984618" crossorigin="anonymous"></script>
+<!-- AdSense: não carrega para quem tem o Premium -->
+<script>(function(){{var p=null;try{{p=localStorage.getItem('rz_acesso')}}catch(e){{}}if(p){{document.documentElement.classList.add('premium');return}}var s=document.createElement('script');s.async=true;s.crossOrigin='anonymous';s.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4039247360984618';document.head.appendChild(s)}})();</script>
+<style>.premium ins.adsbygoogle,.premium .anuncio,.premium .google-auto-placed,.premium .adsbygoogle-noablate{{display:none!important}}</style>
 <style>{CSS}</style></head><body>
 <header><a class="logo" href="/">retrozap 🏆</a><a class="cta" href="/">Fazer o meu grupo</a></header>
 <main>{body.replace('<!--AD-->', adhtml)}</main>

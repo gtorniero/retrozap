@@ -66,7 +66,9 @@ if(ad==='denied'){(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersonal
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="preload" href="/assets/bricolage.woff2" as="font" type="font/woff2" crossorigin>
 <meta name="google-adsense-account" content="ca-pub-4039247360984618">
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4039247360984618" crossorigin="anonymous"></script>
+<!-- AdSense: não carrega para quem tem o Premium -->
+<script>(function(){var p=null;try{p=localStorage.getItem('rz_acesso')}catch(e){}if(p){document.documentElement.classList.add('premium');return}var s=document.createElement('script');s.async=true;s.crossOrigin='anonymous';s.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4039247360984618';document.head.appendChild(s)})();</script>
+<style>.premium ins.adsbygoogle,.premium .anuncio,.premium .google-auto-placed,.premium .adsbygoogle-noablate{display:none!important}</style>
 <!--LD-->
 """
 s = HEAD + s
@@ -136,7 +138,7 @@ _i = s.index("function inicio(){"); _a = s.index("view.innerHTML = `", _i) + len
 HERO = s[_a:_b]
 if '${' in HERO:  # a home tem a versão Grupos e Casais: pré-renderiza a de Grupos (a que abre primeiro)
     import subprocess
-    HERO = subprocess.run(['node', '-e', 'const cs = false; process.stdout.write(eval("`" + require("fs").readFileSync(0, "utf8") + "`"))'], input=HERO, capture_output=True, text=True, check=True).stdout
+    HERO = subprocess.run(['node', '-e', 'const cs = false, anuncio = () => ""; process.stdout.write(eval("`" + require("fs").readFileSync(0, "utf8") + "`"))'], input=HERO, capture_output=True, text=True, check=True).stdout
     if '${' in HERO: sys.exit('inicio() ainda tem interpolacao')
 rep('<main id="view"></main>', '<main id="view">' + HERO + '</main>')
 _faq = [(_html.unescape(re.sub('<[^>]+>', '', q)), _html.unescape(re.sub('<[^>]+>', '', a))) for q, a in re.findall(r'<details><summary>(.*?)</summary><p>(.*?)</p></details>', HERO)]
