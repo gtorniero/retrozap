@@ -1195,7 +1195,7 @@ function suspense(){
     if (L.length){ const ant = destaquesBrasil().find(y => y.k === 'dias');
       sl.innerHTML = `<div class="em-g" aria-hidden="true">${x.e}</div><h2 style="font-size:30px">${ANO_MOMENTO} em números</h2>
          <p class="small" style="margin:0">${esc(periodo26().toLowerCase().replace('só ', 'só '))} · comparado com os anos anteriores e com ${state.modo === 'casal' ? 'os casais' : 'os grupos'} do Brasil</p>
-         <div class="dest rk n26">${L.map(y => `<div><span aria-hidden="true">${y.e}</span><div><b>${fmt(y.n)} <i>${esc(y.t)}</i></b><span class="pills">${y.vs ? `<span class="pill ${y.up === true ? 'sobe' : y.up === false ? 'desce' : 'igual'}">${y.up === true ? '▲' : y.up === false ? '▼' : '='} ${esc(y.vs)}</span>` : ''}${y.top ? `<span class="pill pos">🏅 Top ${y.top}% do Brasil</span>` : ''}</span></div></div>`).join('')}</div>
+         <div class="dest rk n26">${L.map(y => `<div><span aria-hidden="true">${y.e}</span><div><b>${fmt(y.n)} <i>${esc(y.t)}</i></b><span class="pills">${y.vs ? `<span class="pill ${y.up === true ? 'sobe' : y.up === false ? 'desce' : 'igual'}">${esc(y.vs)}</span>` : ''}${y.top ? `<span class="pill pos">🏅 Top ${y.top}% do Brasil</span>` : ''}</span></div></div>`).join('')}</div>
          ${ant ? `<p class="small" style="margin:0">📅 ${esc(ant.txt)} do Retrozap</p>` : ''}
          <p class="piada">${esc(x.piada)}</p>`; return; }
     if (x.brasil){ sl.innerHTML = `<div class="em-g" aria-hidden="true">${x.e}</div><h2 style="font-size:30px">Comparado com outros grupos</h2><p class="small" style="margin:0">${esc(x.brasil[0].sub)}</p>
@@ -2113,7 +2113,7 @@ function numeros2026(){
   const d = state.compD; if (!d) return [];
   const s = k => d.people.reduce((t, p) => t + (p[k] || 0), 0), nums = numerosDoGrupo(d), md = state.comp?.media || {}, top = state.comp?.top || {};
   const anos = state.compAnos || [], CAMPO = {total:'count', amor:'teamo', coracoes:'coracao', risadas:'laugh', audios:'audio', figurinhas:'sticker', madrugada:'night', bomdia:'bomdia'};
-  const rotAnos = anos.length === 1 ? `${anos[0].ano}` : 'os anos anteriores';
+  const rotAnos = anos.length === 1 ? `${anos[0].ano}` : 'anos anteriores';
   return (state.modo === 'casal' ? [['💬', d.total, 'mensagens em 2026', 'total'], ['💘', s('teamo'), 'declarações de amor', 'amor'], ['❤️', s('coracao'), 'corações e beijinhos', 'coracoes'],
     ['😂', s('laugh'), 'risadas', 'risadas'], ['🎙️', s('audio'), 'áudios', 'audios'], ['🖼️', s('sticker'), 'figurinhas', 'figurinhas']]
     : [['💬', d.total, 'mensagens em 2026', 'total'], ['😂', s('laugh'), 'risadas', 'risadas'], ['🎙️', s('audio'), 'áudios', 'audios'], ['🖼️', s('sticker'), 'figurinhas', 'figurinhas'],
@@ -2122,11 +2122,13 @@ function numeros2026(){
       // comparação com os próprios anos anteriores (mesmo período), não com os outros grupos
       let vs = null, up = null, r = null;
       if (anos.length){ const f = CAMPO[k], ant = anos.reduce((t, a) => t + a.people.reduce((u, p) => u + (p[f] || 0), 0), 0) / anos.length;
-        if (ant >= 5){ r = n/ant - 1; up = r >= .05 ? true : r <= -.05 ? false : null; vs = up === true ? `+${Math.round(r*100)}% vs ${rotAnos}` : up === false ? `${Math.round(-r*100)}% menos que ${rotAnos}` : `igual ${anos.length === 1 ? 'a ' + rotAnos : 'aos anos anteriores'}`; } }
+        if (ant >= 5){ r = n/ant - 1; up = r >= .05 ? true : r <= -.05 ? false : null; vs = up === true ? `+${Math.round(r*100)}% vs ${rotAnos}` : up === false ? `−${Math.round(-r*100)}% vs ${rotAnos}` : `= ${rotAnos}`; } }
       return {e, n, t, k, vs, up, r, top: top[k] && top[k] <= 50 ? top[k] : null};
     });
 }
 // linhas da imagem: melhor resultado primeiro (Top X% bom, depois quem mais cresceu)
+const COR_SOBE = '#15803D', COR_DESCE = '#B91C1C', COR_IGUAL = '#6B5B7B';
+const corTend = x => x.up === true ? COR_SOBE : x.up === false ? COR_DESCE : COR_IGUAL;
 const ordem26 = () => numeros2026().slice().sort((x, y) => ((x.top ?? 101) - (y.top ?? 101)) || ((y.r ?? -9) - (x.r ?? -9)));
 function altRanking2026(){ return `${ANO_MOMENTO} em números${state.grupo ? ' de ' + state.grupo : ''}: ${ordem26().map(x => `${fmt(x.n)} ${x.t}${x.vs ? ', ' + x.vs : ''}${x.top ? `, Top ${x.top}% ${quemMedia()}` : ''}`).join('; ')}.`; }
 function drawRanking2026(){
@@ -2147,7 +2149,7 @@ function drawRanking2026(){
     c.fillStyle = K.txt; c.font = `700 ${Math.round(h*.14)}px ${DM}`; c.fillText(x.t, 212, y + h*.6);
     let px = 210; const py = y + h*.7, ph = h*.22;
     const selo = (txt, fill, cor) => { c.font = `800 ${Math.round(h*.12)}px ${DM}`; const tw = c.measureText(txt).width + 40; c.fillStyle = fill; c.beginPath(); c.roundRect(px, py, tw, ph, ph/2); c.fill(); c.fillStyle = cor; c.fillText(txt, px + 20, py + ph*.7); px += tw + 12; };
-    if (x.vs) selo(`${x.up === true ? '▲' : x.up === false ? '▼' : '='} ${x.vs}`, x.up === true ? K.A : K.sub, txtPill);
+    if (x.vs) selo(x.vs, corTend(x), '#FFFFFF');
     if (x.top) selo(`🏅 Top ${x.top}% do Brasil`, K.txt, casal ? '#FFFFFF' : '#1A0B2E');
     c.textAlign = 'center';
   });
@@ -2206,8 +2208,8 @@ function frameVideo(c, t, cz){
       c.fillStyle = K.txt; c.font = `700 36px ${DM}`; c.fillText(x.t, 237, y + 150);
       const pill = x.vs || (x.top ? `Top ${x.top}% do Brasil` : '');
       if (pill){ c.font = `800 30px ${DM}`; const tw = Math.min(740, c.measureText(pill).width + 70);
-        c.fillStyle = x.vs && x.up !== true ? K.sub : K.A; c.beginPath(); c.roundRect(235, y + 178, tw, 58, 29); c.fill();
-        c.fillStyle = txtPill; c.fillText(`${x.up === true || !x.vs ? '▲' : x.up === false ? '▼' : '='} ${pill}`, 260, y + 218, tw - 40); }
+        c.fillStyle = x.vs ? corTend(x) : K.A; c.beginPath(); c.roundRect(235, y + 178, tw, 58, 29); c.fill();
+        c.fillStyle = x.vs ? '#FFFFFF' : txtPill; c.fillText(x.vs ? pill : `🏅 ${pill}`, 260, y + 218, tw - 40); }
       c.restore(); c.textAlign = 'center';
     });
   });
