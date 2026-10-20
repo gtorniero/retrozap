@@ -889,15 +889,17 @@ function roster(){
       const total = r.c + juntos.reduce((s,x) => s + x.c, 0) + nums.reduce((s,x) => s + x.c, 0);
       const aberto = state.aberto === r.n;
       const pal = n => norm(n).split(/[^\p{L}]+/u).filter(w => w.length >= 3), meu = pal(r.n);
-      const opcoes = pessoas.filter(x => x.n !== r.n && !state.alias[x.n]).sort((x, y) => (pal(y.n).some(w => meu.includes(w)) - pal(x.n).some(w => meu.includes(w))) || x.n.localeCompare(y.n));
+      const depois = x => x.first > r.last ? 1 : 0;
+      const opcoes = pessoas.filter(x => x.n !== r.n && !state.alias[x.n]).sort((x, y) => (pal(y.n).some(w => meu.includes(w)) - pal(x.n).some(w => meu.includes(w))) || (depois(y) - depois(x)) || x.n.localeCompare(y.n));
       return `<div class="mem${off ? ' off' : ''}${sumido && !off ? ' alerta' : ''}">
         <div class="mem-line">
           <input type="checkbox" id="in-${i}" data-in="${i}" ${off ? '' : 'checked'} aria-label="Incluir ${esc(r.n)} na cerimônia">
           <div class="mem-name">
             <b>${esc(r.n)}</b><span class="small">${fmt(total)} mensagens${nums.length ? ' + número antigo' : ''} · última em ${mmaa(r.last)}</span>
             ${b.length ? `<span class="chips">${b.map(x => `<span class="chip warn">${x}</span>`).join('')}</span>` : ''}
-            ${sumido ? `<span class="sumido">⚠️ <b>Sem falar há ${meses(r)} meses.</b> ${off ? 'Fora da cerimônia.' : 'Ainda está no grupo?'} ${off ? '' : `<button type="button" class="lnk" data-tira="${i}">Tirar da cerimônia</button>`}</span>` : ''}
-            <button type="button" class="lnk dup" data-open="${i}" aria-expanded="${aberto}">${aberto ? 'Cancelar' : 'Contato duplicado?'}</button>
+            ${sumido ? `<span class="sumido">⚠️ <b>Sem falar há ${meses(r)} meses.</b> ${off ? 'Fora da cerimônia.' : 'Trocou de número ou saiu do grupo?'}
+              ${off ? '' : `<span class="sumido-bts"><button type="button" class="btn btn-main mini" data-open="${i}" aria-expanded="${aberto}">${aberto ? 'Cancelar' : '🔗 Trocou de número (duplicado)'}</button><button type="button" class="btn btn-ghost mini" data-tira="${i}">🚪 Saiu: tirar da cerimônia</button></span>`}</span>` : ''}
+            ${sumido && !off ? '' : `<button type="button" class="lnk dup" data-open="${i}" aria-expanded="${aberto}">${aberto ? 'Cancelar' : 'Contato duplicado?'}</button>`}
           </div>
         </div>
         ${juntos.length ? `<p class="small">🔗 Inclui ${juntos.map(j => esc(j.n)).join(', ')} · <button type="button" class="lnk" data-sep="${i}">Separar</button></p>` : ''}
