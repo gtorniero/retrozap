@@ -46,6 +46,7 @@ Consultas úteis no D1: `SELECT * FROM compras WHERE modo='ligada' ORDER BY cria
 
 ## Outros
 - Analytics GA4 `G-R8R1EN0KQN` (tag no `<head>` de todas as páginas). AdSense `ca-pub-4039247360984618` + `ads.txt`.
+- **Anúncios:** AdSense não carrega para Premium (`rz_acesso`). Blocos prontos e desligados até ter os IDs: `ANUNCIOS = {inicio, categorias, intervalo, fim}` em `zapped.html` e `AD_SLOT_PAGINAS` em `conteudo.py`. Intervalo comercial na metade dos prêmios (contagem de 2s). `?simular_anuncios=1` mostra caixas de exemplo. Pendente: Gui mandar os 5 `data-ad-slot`; depois avaliar Ad Manager (anúncio premiado para baixar o vídeo).
 - Parceiro Party Games (cupom RETROZAP, paga 7% das vendas): pop-up de patrocínio pronto mas desligado (`PATROCINIO_ATIVO = false`); presente do pop-up final foi retirado.
 - Cache: páginas `no-cache`; `/assets/*` 1 dia. Se mudar um arquivo de /assets, trocar o nome.
 - Gui prefere: mudanças aplicadas direto, sem explicar cada detalhe; testar antes de publicar; avisar o que ele precisa fazer no painel (Cloudflare/Mercado Pago) em passos curtos.
