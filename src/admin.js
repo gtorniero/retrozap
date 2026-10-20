@@ -3,7 +3,7 @@
 // Segredos (Cloudflare > Worker > Settings > Variables and Secrets):
 //   ADMIN_SENHA  senha do painel (obrigatória; sem ela o painel fica desligado)
 //   GOOGLE_SA    JSON da conta de serviço do Google (opcional: liga Analytics e Search Console)
-// Variáveis: GA4_PROPERTY (número da propriedade do GA4) e GSC_SITE (padrão sc-domain:retrozap.com.br)
+// Variáveis: GA4_PROPERTY (número da propriedade do GA4, em wrangler.jsonc) e GSC_SITE (padrão sc-domain:retrozap.com.br)
 import { HISTORIA } from './historia.js';
 const json = (obj, status = 200) => new Response(JSON.stringify(obj), {status, headers: {'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-robots-tag': 'noindex'}});
 const sha = async t => new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(t))));
