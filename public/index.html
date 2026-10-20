@@ -317,6 +317,12 @@ body.has-cookies .acao{bottom:150px}
 .patro-box{background:var(--acai);border:1px solid var(--linha);border-radius:24px;padding:18px;width:min(100%,440px);display:flex;flex-direction:column;gap:10px;text-align:center;animation:pop .4s cubic-bezier(.2,1.4,.4,1)}
 .tiles>.tile:last-child:nth-child(odd){grid-column:1/-1}
 .pw{position:relative;text-align:center}
+.n26 .pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.pill{display:inline-block;font-size:13px;font-weight:700;padding:3px 10px;border-radius:999px;line-height:1.4}
+.pill.sobe{background:var(--manga);color:var(--noite)}
+.pill.desce,.pill.igual{background:var(--acai-2);color:var(--areia)}
+.pill.pos{background:var(--areia);color:var(--noite)}
+html.casal .pill.sobe{color:#fff}
 .sumido{display:block;margin:6px 0 2px;padding:8px 10px;border-radius:12px;background:rgba(255,122,89,.16);border:1px solid #FF7A59;color:var(--areia);font-size:14px;line-height:1.4}
 .mem.alerta{box-shadow:inset 0 0 0 2px #FF7A59}
 .sumido-bts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
@@ -1693,7 +1699,7 @@ function fatosResumo(d){
     piada: d.giria[0] === 'bora' ? 'E quantas vezes foram mesmo?' : 'O dicionário do grupo agradece.'});
   if (au) f.push({e:'🎧', big:au.txt, sub:au.comp, piada:'E ninguém ouviu em 2x. Mentira.'});
   const br = destaquesBrasil();
-  if (br.length) f.push({e:'🏅', brasil:br.slice(0, 6), piada: br[0].top <= 5 ? 'Grupo de elite. Ou de gente sem nada para fazer.' : 'Esse grupo não brinca em serviço.'});
+  if (br.length || state.compD) f.push({e:'📊', brasil:br.slice(0, 6), n26:true, piada: br.length && br[0].top <= 5 ? (state.modo === 'casal' ? 'Casal de elite. Ou sem nada para fazer.' : 'Grupo de elite. Ou de gente sem nada para fazer.') : state.modo === 'casal' ? 'Vocês não brincam em serviço.' : 'Esse grupo não brinca em serviço.'});
   f.push({e:'🏅', destaques:ds, piada:'Ninguém foi poupado.'});
   return f;
 }
@@ -1723,6 +1729,14 @@ function suspense(){
     requestAnimationFrame(passo);
   };
   const mostra = x => {
+    // 2026 em números: número, tendência vs anos anteriores e ranking do Brasil (calculado na hora, o ranking chega em segundo plano)
+    const L = x.n26 ? ordem26() : [];
+    if (L.length){ const ant = destaquesBrasil().find(y => y.k === 'dias');
+      sl.innerHTML = `<div class="em-g" aria-hidden="true">${x.e}</div><h2 style="font-size:30px">${ANO_MOMENTO} em números</h2>
+         <p class="small" style="margin:0">${esc(periodo26().toLowerCase().replace('só ', 'só '))} · comparado com os anos anteriores e com ${state.modo === 'casal' ? 'os casais' : 'os grupos'} do Brasil</p>
+         <div class="dest rk n26">${L.map(y => `<div><span aria-hidden="true">${y.e}</span><div><b>${fmt(y.n)} <i>${esc(y.t)}</i></b><span class="pills">${y.vs ? `<span class="pill ${y.up === true ? 'sobe' : y.up === false ? 'desce' : 'igual'}">${y.up === true ? '▲' : y.up === false ? '▼' : '='} ${esc(y.vs)}</span>` : ''}${y.top ? `<span class="pill pos">🏅 Top ${y.top}% do Brasil</span>` : ''}</span></div></div>`).join('')}</div>
+         ${ant ? `<p class="small" style="margin:0">📅 ${esc(ant.txt)} do Retrozap</p>` : ''}
+         <p class="piada">${esc(x.piada)}</p>`; return; }
     if (x.brasil){ sl.innerHTML = `<div class="em-g" aria-hidden="true">${x.e}</div><h2 style="font-size:30px">Comparado com outros grupos</h2><p class="small" style="margin:0">${esc(x.brasil[0].sub)}</p>
          <div class="dest rk">${x.brasil.map(y => `<div><span aria-hidden="true">${y.e}</span><div><b>${esc(y.big)} <i>${esc(y.rot)}</i></b>${y.num ? `<span class="num">${esc(y.num)}</span>` : ''}</div></div>`).join('')}</div>
          <p class="piada">${esc(x.piada)}</p>`; return; }
@@ -1770,7 +1784,8 @@ function fimTela(semFesta){
   ir('/fim'); if (!semFesta) evento('final_visto', {modo: state.modo});
   pilha(() => fimTela(true), 'fim');
   setSteps(3);
-  const d = state.data, b = state.bonus || [], temBonus = b.length && !state.bonusShown, temRank = destaquesBrasil().length, d26 = destaques2026(d), trava26 = !premiumLocal() && d26.length > 2, casal = state.modo === 'casal' && d.people.length === 2;
+  const d = state.data, b = state.bonus || [], temBonus = b.length && !state.bonusShown, temRank = destaquesBrasil().length, d26 = destaques2026(d), trava26 = !premiumLocal() && d26.length > 2, casal = state.modo === 'casal' && d.people.length === 2, num26 = numeros2026().length > 0;
+  const rk = num26 ? [() => drawRanking2026(), altRanking2026] : [() => drawComparacao(d), altComparacao];
   view.innerHTML = `<section class="screen wr" style="align-items:center;text-align:center">
     ${state.sample ? `<span class="sample">${state.modo === 'casal' ? 'Casal de exemplo' : 'Grupo de exemplo'}</span>` : ''}
     <p class="eyebrow">Ato III · ${casal ? 'O resumo de vocês' : 'O resumo do grupo'}</p>
@@ -1789,9 +1804,7 @@ function fimTela(semFesta){
         <div class="btn-row"><button type="button" class="btn btn-wa" id="wa1">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv1">⬇️ Salvar</button></div></figure>
       ${casal ? `<figure class="card-fim"><figcaption>💞 Nós dois: um contra o outro <span class="small">· desde o início</span></figcaption><img id="rimg5" class="rimg" alt="${esc(altCasal(d))}">
         <div class="btn-row"><button type="button" class="btn btn-wa" id="wa5">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv5">⬇️ Salvar</button></div></figure>` : ''}
-      ${casal && numeros2026().length ? `<figure class="card-fim"><figcaption>📊 ${ANO_MOMENTO} em números <span class="small">· vs outros casais</span></figcaption><img id="rimg6" class="rimg" alt="${esc(altCasal2026())}">
-        <div class="btn-row"><button type="button" class="btn btn-wa" id="wa6">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv6">⬇️ Salvar</button></div></figure>` : ''}
-      ${temRank ? `<figure class="card-fim"><figcaption>🏅 Ranking ${casal ? 'do casal' : 'do grupo'} <span class="small">· só 2026</span></figcaption><img id="rimg2" class="rimg" alt="${esc(altComparacao())}">
+      ${num26 || temRank ? `<figure class="card-fim"><figcaption>🏅 ${num26 ? `${ANO_MOMENTO} em números e ranking` : `Ranking ${casal ? 'do casal' : 'do grupo'}`} <span class="small">· só ${ANO_MOMENTO}</span></figcaption><img id="rimg2" class="rimg" alt="${esc(num26 ? altRanking2026() : altComparacao())}">
         <div class="btn-row"><button type="button" class="btn btn-wa" id="wa2">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv2">⬇️ Salvar</button></div></figure>` : ''}
       ${trava26 || !d26.length ? '' : `<figure class="card-fim"><figcaption>🗓️ Nosso 2026 <span class="small">· só 2026</span></figcaption><img id="rimg4" class="rimg" alt="${esc(altNosso2026(d))}">
         <div class="btn-row"><button type="button" class="btn btn-wa" id="wa4">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv4">⬇️ Salvar</button></div></figure>`}
@@ -1826,15 +1839,15 @@ function fimTela(semFesta){
     <button class="btn btn-main" id="concluir" style="width:100%">Concluir 🎉</button>
   </section>`;
   // imagens desenhadas sob demanda, uma de cada vez, quando chegam perto da tela (deixa a página e os pop-ups leves)
-  [['#rimg', () => drawResumo(d)], ['#rimg2', () => drawComparacao(d)], ['#rimg3', () => drawTop10()], ['#rimg4', () => drawNosso2026(d)], ['#rimg5', () => drawCasal(d)], ['#rimg6', () => drawCasal2026()]]
+  [['#rimg', () => drawResumo(d)], ['#rimg2', () => rk[0]()], ['#rimg3', () => drawTop10()], ['#rimg4', () => drawNosso2026(d)], ['#rimg5', () => drawCasal(d)], ['#rimg6', () => drawRanking2026()]]
     .forEach(([sel, fz]) => imgSobDemanda($(sel), fz));
   if ($('#vlive')) tocaPrevia($('#vlive'), d);
   const abre = (fz, txt, alt) => openCard(fz, txt, alt);
   $('#wa1').onclick = () => mandarWhats(paraBlob(drawResumo(d)), 'retrozap-resumo.png', convite('resumo'), null, () => abre(() => drawResumo(d), convite('resumo'), altResumo(d)));
   $('#sv1').onclick = () => abre(() => drawResumo(d), convite('resumo'), altResumo(d));
   if ($('#wa2')){
-    $('#wa2').onclick = () => mandarWhats(paraBlob(drawComparacao(d)), 'retrozap-ranking.png', convite('ranking'), null, () => abre(() => drawComparacao(d), convite('ranking'), altComparacao()));
-    $('#sv2').onclick = () => abre(() => drawComparacao(d), convite('ranking'), altComparacao());
+    $('#wa2').onclick = () => mandarWhats(paraBlob(rk[0]()), 'retrozap-ranking.png', convite('ranking'), null, () => abre(rk[0], convite('ranking'), rk[1]()));
+    $('#sv2').onclick = () => abre(rk[0], convite('ranking'), rk[1]());
   }
   $('#wa3').onclick = () => mandarWhats(paraBlob(drawTop10()), 'retrozap-top10.png', convite('resumo'), null, () => abre(() => drawTop10(), convite('resumo'), altTop10()));
   $('#sv3').onclick = () => abre(() => drawTop10(), convite('resumo'), altTop10());
@@ -1853,8 +1866,8 @@ function fimTela(semFesta){
     $('#sv4').onclick = () => abre(() => drawNosso2026(d), convite('resumo'), altNosso2026(d));
   }
   if ($('#wa6')){
-    $('#wa6').onclick = () => mandarWhats(paraBlob(drawCasal2026()), 'retrozap-2026-em-numeros.png', convite('resumo'), null, () => abre(() => drawCasal2026(), convite('resumo'), altCasal2026()));
-    $('#sv6').onclick = () => abre(() => drawCasal2026(), convite('resumo'), altCasal2026());
+    $('#wa6').onclick = () => mandarWhats(paraBlob(drawRanking2026()), 'retrozap-2026-em-numeros.png', convite('resumo'), null, () => abre(() => drawRanking2026(), convite('resumo'), altRanking2026()));
+    $('#sv6').onclick = () => abre(() => drawRanking2026(), convite('resumo'), altRanking2026());
   }
   if ($('#wa5')){
     $('#wa5').onclick = () => mandarWhats(paraBlob(drawCasal(d)), 'retrozap-nos-dois.png', convite('resumo'), null, () => abre(() => drawCasal(d), convite('resumo'), altCasal(d)));
@@ -2414,6 +2427,11 @@ async function comparar(d){
   // a comparação usa só as mensagens de 2026 (grupo de 10 anos não leva vantagem); a antiguidade usa o histórico todo
   const m26 = d.msgs.filter(m => m.t.getFullYear() === ANO_MOMENTO);
   if (m26.length >= 20) try { state.compD = await analyze(m26); } catch {}
+  state.compAnos = [];
+  if (state.compD){ const ult = m26.reduce((a, m) => m.t > a ? m.t : a, m26[0].t);
+    for (let y = ANO_MOMENTO - 1; y >= ANO_MOMENTO - 3; y--){
+      const lim = new Date(y, ult.getMonth(), ult.getDate(), 23, 59, 59), my = d.msgs.filter(m => m.t.getFullYear() === y && m.t <= lim);
+      if (my.length >= 50) try { const a = await analyze(my); a.ano = y; state.compAnos.push(a); } catch {} } }
   // grupo de exemplo e prévia: média simulada a partir dos próprios números (só para ver o layout)
   const simula = top => { const nums = state.compD ? numerosDoGrupo(state.compD) : {}; const f = [.72, 1.25, .9, 1.4, .8, 1.1];
     return {pronto:true, n:1000, exemplo:true, escopo:'tipo', top, media: Object.fromEntries(Object.entries(nums).map(([k, v], i) => [k, Math.round(v * f[i % f.length] * 100)/100]))}; };
@@ -2633,39 +2651,47 @@ function quemMedia(){ if (state.modo === 'casal') return 'dos casais'; const t =
 function numeros2026(){
   const d = state.compD; if (!d) return [];
   const s = k => d.people.reduce((t, p) => t + (p[k] || 0), 0), nums = numerosDoGrupo(d), md = state.comp?.media || {}, top = state.comp?.top || {};
-  const q = quemMedia();
+  const anos = state.compAnos || [], CAMPO = {total:'count', amor:'teamo', coracoes:'coracao', risadas:'laugh', audios:'audio', figurinhas:'sticker', madrugada:'night', bomdia:'bomdia'};
+  const rotAnos = anos.length === 1 ? `${anos[0].ano}` : 'os anos anteriores';
   return (state.modo === 'casal' ? [['💬', d.total, 'mensagens em 2026', 'total'], ['💘', s('teamo'), 'declarações de amor', 'amor'], ['❤️', s('coracao'), 'corações e beijinhos', 'coracoes'],
     ['😂', s('laugh'), 'risadas', 'risadas'], ['🎙️', s('audio'), 'áudios', 'audios'], ['🖼️', s('sticker'), 'figurinhas', 'figurinhas']]
     : [['💬', d.total, 'mensagens em 2026', 'total'], ['😂', s('laugh'), 'risadas', 'risadas'], ['🎙️', s('audio'), 'áudios', 'audios'], ['🖼️', s('sticker'), 'figurinhas', 'figurinhas'],
     ['🦉', s('night'), 'mensagens de madrugada', 'madrugada'], ['☀️', s('bomdia'), 'bons dias', 'bomdia']])
     .filter(x => x[1] > 0).map(([e, n, t, k]) => {
-      const m = md[k], v = nums[k]; let vs = null, up = null;
-      if (m > 0 && v != null){ const r = v/m - 1; up = r >= 0; vs = r >= .05 ? `+${Math.round(r*100)}% que a média ${q}` : r <= -.05 ? `${Math.round(-r*100)}% abaixo da média ${q}` : `na média ${q}`; }
-      return {e, n, t, k, vs, up, top: top[k] && top[k] <= 90 ? top[k] : null};
+      // comparação com os próprios anos anteriores (mesmo período), não com os outros grupos
+      let vs = null, up = null, r = null;
+      if (anos.length){ const f = CAMPO[k], ant = anos.reduce((t, a) => t + a.people.reduce((u, p) => u + (p[f] || 0), 0), 0) / anos.length;
+        if (ant >= 5){ r = n/ant - 1; up = r >= .05 ? true : r <= -.05 ? false : null; vs = up === true ? `+${Math.round(r*100)}% vs ${rotAnos}` : up === false ? `${Math.round(-r*100)}% menos que ${rotAnos}` : `igual ${anos.length === 1 ? 'a ' + rotAnos : 'aos anos anteriores'}`; } }
+      return {e, n, t, k, vs, up, r, top: top[k] && top[k] <= 50 ? top[k] : null};
     });
 }
-function altCasal2026(){ return `Nosso 2026 em números: ${numeros2026().map(x => `${fmt(x.n)} ${x.t}${x.vs ? ' (' + x.vs + ')' : ''}`).join('; ')}.`; }
-function drawCasal2026(){
+// linhas da imagem: melhor resultado primeiro (Top X% bom, depois quem mais cresceu)
+const ordem26 = () => numeros2026().slice().sort((x, y) => ((x.top ?? 101) - (y.top ?? 101)) || ((y.r ?? -9) - (x.r ?? -9)));
+function altRanking2026(){ return `${ANO_MOMENTO} em números${state.grupo ? ' de ' + state.grupo : ''}: ${ordem26().map(x => `${fmt(x.n)} ${x.t}${x.vs ? ', ' + x.vs : ''}${x.top ? `, Top ${x.top}% ${quemMedia()}` : ''}`).join('; ')}.`; }
+function drawRanking2026(){
   const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
-  const BR = '"Bricolage Grotesque", sans-serif', DM = '"DM Sans", sans-serif', K = CV(), lista = numeros2026();
+  const BR = '"Bricolage Grotesque", sans-serif', DM = '"DM Sans", sans-serif', K = CV(), casal = state.modo === 'casal';
+  const lista = ordem26(), txtPill = casal ? '#FFFFFF' : '#1A0B2E', ant = destaquesBrasil().find(x => x.k === 'dias');
   fundo(c, W, H, 1000); c.textAlign = 'center';
-  c.fillStyle = K.ouro; c.font = `800 46px ${BR}`; c.fillText('retrozap 💕', W/2, 96);
-  c.fillStyle = K.txt; c.font = `800 96px ${BR}`; c.fillText(`${ANO_MOMENTO}`, W/2, 230); c.font = `800 64px ${BR}`; c.fillText('EM NÚMEROS', W/2, 300);
-  c.fillStyle = K.sub; c.font = `700 26px ${DM}`; c.fillText(`${periodo26()} · VS A MÉDIA DOS CASAIS DO RETROZAP`, W/2, 350, 980);
-  const passo = Math.min(240, 1420 / Math.max(1, lista.length)), h = passo - 22;
+  c.fillStyle = K.ouro; c.font = `800 46px ${BR}`; c.fillText(casal ? 'retrozap 💕' : 'retrozap 🏆', W/2, 96);
+  c.fillStyle = K.txt; caber(c, limpaTxt(state.grupo || nomePadrao()), W/2, 175, 960, 800, 56, BR);
+  c.fillStyle = K.ouro; c.font = `800 92px ${BR}`; c.fillText(`${ANO_MOMENTO} EM NÚMEROS`, W/2, 300, 980);
+  c.fillStyle = K.sub; caber(c, `${periodo26()} · VS ANOS ANTERIORES E ${casal ? 'OS CASAIS' : 'OS GRUPOS'} DO RETROZAP`, W/2, 352, 980, 700, 26, DM);
+  const fim = ant ? 1700 : 1810, passo = Math.min(230, (fim - 400) / Math.max(1, lista.length)), h = passo - 20;
   lista.forEach((x, i) => {
     const y = 400 + i*passo;
-    c.fillStyle = K.caixa; c.beginPath(); c.roundRect(60, y, W - 120, h, 32); c.fill();
-    c.textAlign = 'left'; c.font = `${Math.round(h*.42)}px serif`; c.fillText(x.e, 95, y + h*.6);
-    c.fillStyle = K.ouro; c.font = `800 ${Math.round(h*.34)}px ${BR}`; c.fillText(fmt(x.n), 240, y + h*.42);
-    c.fillStyle = K.txt; c.font = `700 ${Math.round(h*.15)}px ${DM}`; c.fillText(x.t, 242, y + h*.62);
-    const pill = x.vs || (x.top ? `Top ${x.top}% dos casais` : '');
-    if (pill){ c.font = `800 ${Math.round(h*.13)}px ${DM}`; const tw = Math.min(700, c.measureText(pill).width + 60);
-      c.fillStyle = x.up === false ? K.sub : K.A; c.beginPath(); c.roundRect(240, y + h*.71, tw, h*.21, h*.1); c.fill();
-      c.fillStyle = '#FFFFFF'; c.fillText(`${x.up === false ? '▼' : '▲'} ${pill}`, 262, y + h*.86, tw - 40); }
+    c.fillStyle = K.caixa; c.beginPath(); c.roundRect(50, y, W - 100, h, 32); c.fill();
+    c.textAlign = 'left'; c.font = `${Math.round(h*.38)}px serif`; c.fillText(x.e, 80, y + h*.55);
+    c.fillStyle = K.ouro; c.font = `800 ${Math.round(h*.32)}px ${BR}`; c.fillText(fmt(x.n), 210, y + h*.4);
+    c.fillStyle = K.txt; c.font = `700 ${Math.round(h*.14)}px ${DM}`; c.fillText(x.t, 212, y + h*.6);
+    let px = 210; const py = y + h*.7, ph = h*.22;
+    const selo = (txt, fill, cor) => { c.font = `800 ${Math.round(h*.12)}px ${DM}`; const tw = c.measureText(txt).width + 40; c.fillStyle = fill; c.beginPath(); c.roundRect(px, py, tw, ph, ph/2); c.fill(); c.fillStyle = cor; c.fillText(txt, px + 20, py + ph*.7); px += tw + 12; };
+    if (x.vs) selo(`${x.up === true ? '▲' : x.up === false ? '▼' : '='} ${x.vs}`, x.up === true ? K.A : K.sub, txtPill);
+    if (x.top) selo(`🏅 Top ${x.top}% do Brasil`, K.txt, casal ? '#FFFFFF' : '#1A0B2E');
     c.textAlign = 'center';
   });
-  c.fillStyle = K.txt; c.font = `700 34px ${DM}`; c.fillText(TAGLINE(), W/2, 1880);
+  if (ant){ c.fillStyle = K.caixa; c.beginPath(); c.roundRect(50, 1720, W - 100, 100, 32); c.fill(); c.fillStyle = K.txt; caber(c, `📅 ${ant.txt} do Retrozap · ${ant.num}`, W/2, 1785, 940, 700, 32, DM); }
+  c.fillStyle = K.txt; c.font = `700 30px ${DM}`; c.fillText(TAGLINE(), W/2, 1880);
   return cv.toDataURL('image/png');
 }
 
@@ -2709,7 +2735,7 @@ function frameVideo(c, t, cz){
   // 2. 2026 em números vs média dos casais (2,6–9,4 s)
   cena(2.6, 9.4, u => {
     c.fillStyle = K.txt; c.font = `800 80px ${BR}`; c.fillText(cz.so26 ? `${ANO_MOMENTO} EM NÚMEROS` : 'EM NÚMEROS', W/2, 270);
-    if (cz.num.some(x => x.vs)){ c.fillStyle = K.sub; caber(c, `vs a média ${cz.q} do Retrozap`, W/2, 325, 900, 700, 32, DM); }
+    if (cz.num.some(x => x.vs)){ c.fillStyle = K.sub; caber(c, 'comparado com os anos anteriores (mesmo período)', W/2, 325, 900, 700, 32, DM); }
     cz.num.forEach((x, i) => {
       const t0 = .3 + i*.7, e = ent(2.6 + t0), y = 380 + i*290 + 60*(1 - e);
       c.save(); c.globalAlpha *= e; c.textAlign = 'left';
@@ -2717,10 +2743,10 @@ function frameVideo(c, t, cz){
       c.font = '84px serif'; c.fillText(x.e, 105, y + 120);
       c.fillStyle = K.ouro; c.font = `800 86px ${BR}`; c.fillText(fmt(Math.round(x.n * ease((u - t0)/1.4))), 235, y + 100);
       c.fillStyle = K.txt; c.font = `700 36px ${DM}`; c.fillText(x.t, 237, y + 150);
-      const pill = x.vs || (x.top ? `Top ${x.top}% ${cz.q}` : '');
+      const pill = x.vs || (x.top ? `Top ${x.top}% do Brasil` : '');
       if (pill){ c.font = `800 30px ${DM}`; const tw = Math.min(740, c.measureText(pill).width + 70);
-        c.fillStyle = x.up === false ? K.sub : K.A; c.beginPath(); c.roundRect(235, y + 178, tw, 58, 29); c.fill();
-        c.fillStyle = txtPill; c.fillText(`${x.up === false ? '▼' : '▲'} ${pill}`, 260, y + 218, tw - 40); }
+        c.fillStyle = x.vs && x.up !== true ? K.sub : K.A; c.beginPath(); c.roundRect(235, y + 178, tw, 58, 29); c.fill();
+        c.fillStyle = txtPill; c.fillText(`${x.up === true || !x.vs ? '▲' : x.up === false ? '▼' : '='} ${pill}`, 260, y + 218, tw - 40); }
       c.restore(); c.textAlign = 'center';
     });
   });
