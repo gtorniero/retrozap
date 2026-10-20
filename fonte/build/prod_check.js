@@ -697,7 +697,7 @@ function home(){
         <li>Toque em <b>Mais</b> e depois em <b>Exportar conversa</b>.</li>
         <li>Escolha <b>Sem mídia</b>.</li>
         <li>Salve em <b>Downloads</b> ou no Drive.</li></ol>`}
-      <a class="btn btn-wa" href="${linkAbreWhats()}" style="text-decoration:none">🟢 Abrir o WhatsApp para exportar</a>
+      <a class="btn btn-wa" href="${linkAbreWhats()}" style="text-decoration:none"><i class="ic-wa" aria-hidden="true"></i>Abrir o WhatsApp para exportar</a>
     </div>
     <label class="drop${state.arquivo ? ' ok' : ''}" for="file">
       <span class="big" aria-hidden="true">${state.arquivo ? '✅' : '📲'}</span>
@@ -1192,13 +1192,15 @@ function fatosFinale(){
   const so26 = !!state.compD, D = state.data, casal = state.modo === 'casal', f = [];
   const pills = x => [x.vs && {c: x.up === true ? 'sobe' : x.up === false ? 'desce' : 'igual', t: x.vs}, x.top && {c: 'pos', t: `🏅 Top ${x.top}% ${quemBrasil()}`}].filter(Boolean);
   const PIADA = {
+    figurinhas: () => 'Quando faltam palavras, sobra figurinha.', fotos: () => 'Tudo documentado. Nada fica sem prova.', palavrao: () => 'A mãe de alguém aqui está decepcionada.', apagadas: () => 'O que será que tinha ali?', madrugada: () => 'Alguém aqui dorme?', bomdia: () => 'O sol só nasce depois do bom dia do grupo.',
+    amor: () => 'Declarações registradas em cartório.', coracoes: () => 'O teclado de vocês só tem coração.',
     total: x => x.up === true ? (casal ? 'Vocês estão mais grudados do que nunca.' : 'O grupo está mais falante do que nunca.') : x.up === false ? 'Menos papo, mais vida real? Duvido.' : casal ? 'Quem ama fala. Muito.' : 'Nem um dia de paz.',
     audios: () => 'E ninguém ouviu em 2x. Mentira.',
     risadas: () => casal ? 'O amor é uma piada interna.' : 'Rir é o idioma oficial do grupo.'};
-  if (so26) for (const k of ['total', 'audios', 'risadas']){ const x = num26(k); if (!x) continue;
-    f.push({e: x.e, big: fmt(x.n), num: x.n, sub: `${k === 'total' ? 'mensagens' : x.t} em ${ANO_MOMENTO} · ${ate26()}`, pills: pills(x), piada: PIADA[k](x)}); }
+  if (so26) for (const x of nums26(4))
+    f.push({e: x.e, big: fmt(x.n), num: x.n, sub: `${x.k === 'total' ? 'mensagens' : x.t} em ${ANO_MOMENTO} · ${ate26()}`, pills: pills(x), piada: (PIADA[x.k] || PIADA.audios)(x)});
   else { const s = k => D.people.reduce((t, p) => t + (p[k] || 0), 0);
-    for (const [e, n, t, k] of [['💬', D.total, 'mensagens', 'total'], ['🎧', s('audio'), 'áudios', 'audios'], ['😂', s('laugh'), 'risadas', 'risadas']]) if (n > 0) f.push({e, big: fmt(n), num: n, sub: `${t} desde o início`, pills: [], piada: PIADA[k]({})}); }
+    for (const [e, n, t, k] of [['💬', D.total, 'mensagens', 'total'], ['🎧', s('audio'), 'áudios', 'audios'], ['😂', s('laugh'), 'risadas', 'risadas'], ['🖼️', s('sticker'), 'figurinhas', 'figurinhas']].filter(x => x[1] >= 3).slice(0, 4)) f.push({e, big: fmt(n), num: n, sub: `${t} desde o início`, pills: [], piada: PIADA[k]({})}); }
   const as = assunto26();
   if (as) f.push({e: as.e, big: as.txt, sub: `o assunto mais falado ${so26 ? 'de ' + ANO_MOMENTO : 'desde o início'} · ${fmt(as.n)} mensagens`, piada: casal ? 'Já sabem o programa do fim de semana.' : 'Os assuntos que nunca morrem.'});
   const ds = destaques26('fantasma');
@@ -1261,7 +1263,7 @@ function videoHTML(casal){
   return `<figure class="card-fim video-fim"><figcaption>🎬 Vídeo ${casal ? 'do casal' : 'do grupo'} <span class="small">· ${state.data ? Math.round(cenasVideo(state.data).T.fim + 2.6) : 30} segundos · ${state.compD ? 'foco em ' + ANO_MOMENTO : 'desde o início'}</span></figcaption>
     <canvas id="vlive" class="rimg" width="540" height="960" role="img" aria-label="Prévia do vídeo ${casal ? 'do casal' : 'do grupo'}: ${ANO_MOMENTO} em números${casal ? ' e um contra o outro' : ' e os destaques'}"></canvas>
     <p class="small" id="vmsg" role="status" style="margin:0">${premiumLocal() ? 'Toque em Baixar para gerar o vídeo (leva uns 30 segundos).' : 'A prévia é grátis. Para baixar e postar o vídeo, é Premium.'}</p>
-    <div class="btn-row"><button type="button" class="btn btn-main" id="vger">${premiumLocal() ? '⬇️ Baixar o vídeo' : '🔒 Baixar o vídeo'}</button><button type="button" class="btn btn-wa" id="vsh" hidden>🟢 Compartilhar</button><button type="button" class="btn btn-ghost" id="vsv" hidden>⬇️ Salvar</button></div></figure>`;
+    <div class="btn-row"><button type="button" class="btn btn-main" id="vger">${premiumLocal() ? '⬇️ Baixar o vídeo' : '🔒 Baixar o vídeo'}</button><button type="button" class="btn btn-wa" id="vsh" hidden>📤 Compartilhar</button><button type="button" class="btn btn-ghost" id="vsv" hidden>⬇️ Salvar</button></div></figure>`;
 }
 function ligaVideo(d, casal, refaz){
   if ($('#vlive')) tocaPrevia($('#vlive'), d);
@@ -1317,7 +1319,7 @@ function fimTela(semFesta){
   setSteps(3);
   const d = state.data, casal = state.modo === 'casal' && d.people.length === 2, so26 = !!state.compD, livre = liberado();
   const fig = (id, cap, per, alt) => `<figure class="card-fim"><figcaption>${cap} <span class="small">· ${per}</span></figcaption><img id="rimg${id}" class="rimg" alt="${esc(alt)}">
-    <div class="btn-row"><button type="button" class="btn btn-wa" id="wa${id}">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv${id}">⬇️ Salvar</button></div></figure>`;
+    <div class="btn-row"><button type="button" class="btn btn-wa" id="wa${id}"><i class="ic-wa" aria-hidden="true"></i>WhatsApp</button><button type="button" class="btn btn-ghost" id="sv${id}">⬇️ Salvar</button></div></figure>`;
   const persos = personagens(d, campeao().by);
   view.innerHTML = `<section class="screen wr" style="align-items:center;text-align:center">
     ${state.sample ? `<span class="sample">${state.modo === 'casal' ? 'Casal de exemplo' : 'Grupo de exemplo'}</span>` : ''}
@@ -2009,7 +2011,7 @@ const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','ag
 // card "Nosso 2026": o ano em números (vs anos anteriores e Top X% do Brasil), frase e gíria do ano e, nos grupos, o top 3 destaques
 function nosso2026(){
   const d = state.compD; if (!d) return {nums: [], txt: [], ds: []};
-  const nums = numeros2026().slice(0, 4), txt = [], as = assunto26();
+  const nums = nums26(4), txt = [], as = assunto26();
   if (as) txt.push({e: as.e, big: as.txt, sub: `o assunto mais falado · ${fmt(as.n)} mensagens`});
   const ms = Array(12).fill(0); for (const m of d.msgs) ms[m.t.getMonth()]++;
   const mi = ms.indexOf(Math.max(...ms)); if (ms[mi] > 0) txt.push({e:'📈', big: MESES[mi], sub: `o mês mais agitado · ${fmt(ms[mi])} mensagens`});
@@ -2118,12 +2120,13 @@ function quemMedia(){ if (state.modo === 'casal') return 'dos casais'; const t =
 function numeros2026(){
   const d = state.compD; if (!d) return [];
   const s = k => d.people.reduce((t, p) => t + (p[k] || 0), 0), top = state.comp?.top || {};
-  const anos = state.compAnos || [], CAMPO = {total:'count', amor:'teamo', coracoes:'coracao', risadas:'laugh', audios:'audio', figurinhas:'sticker', madrugada:'night', bomdia:'bomdia'};
+  const anos = state.compAnos || [], CAMPO = {total:'count', amor:'teamo', coracoes:'coracao', risadas:'laugh', audios:'audio', figurinhas:'sticker', madrugada:'night', bomdia:'bomdia', fotos:'photo', palavrao:'palavrao', apagadas:'deleted'};
   const rotAnos = anos.length === 1 ? `${anos[0].ano}` : 'anos anteriores';
   const L = {total:['💬', d.total, 'mensagens em 2026'], audios:['🎧', s('audio'), 'áudios'], risadas:['😂', s('laugh'), 'risadas'], amor:['💘', s('teamo'), 'declarações de amor'],
-    coracoes:['❤️', s('coracao'), 'corações e beijinhos'], figurinhas:['🖼️', s('sticker'), 'figurinhas'], madrugada:['🦉', s('night'), 'mensagens de madrugada'], bomdia:['☀️', s('bomdia'), 'bons dias']};
+    coracoes:['❤️', s('coracao'), 'corações e beijinhos'], figurinhas:['🖼️', s('sticker'), 'figurinhas'], madrugada:['🦉', s('night'), 'mensagens de madrugada'], bomdia:['☀️', s('bomdia'), 'bons dias'],
+    fotos:['📸', s('photo'), 'fotos e vídeos'], palavrao:['🤬', s('palavrao'), 'palavrões'], apagadas:['🗑️', s('deleted'), 'mensagens apagadas']};
   // sempre começa por mensagens
-  const ordem = state.modo === 'casal' ? ['total', 'audios', 'risadas', 'amor', 'coracoes', 'figurinhas'] : ['total', 'audios', 'risadas', 'figurinhas', 'madrugada', 'bomdia'];
+  const ordem = state.modo === 'casal' ? ['total', 'audios', 'risadas', 'amor', 'coracoes', 'figurinhas', 'fotos', 'apagadas'] : ['total', 'audios', 'risadas', 'figurinhas', 'fotos', 'palavrao', 'madrugada', 'bomdia', 'apagadas'];
   return ordem.map(k => [k, ...L[k]]).filter(x => x[2] > 0).map(([k, e, n, t]) => {
     // comparação com os próprios anos anteriores (mesmo período), não com os outros grupos
     let vs = null, up = null, r = null;
@@ -2133,6 +2136,8 @@ function numeros2026(){
   });
 }
 const num26 = k => numeros2026().find(x => x.k === k) || null;
+// os números de destaque do ano: mensagens sempre primeiro, depois o que tiver volume (áudios, risadas, figurinhas...)
+const nums26 = (max = 4) => numeros2026().filter(x => x.k === 'total' || x.n >= 3).slice(0, max);
 // assunto mais falado em 2026 (temas do dia a dia; nada sensível)
 const EMO_TEMA = {comida:'🍔', futebol:'⚽', 'rolê e festa':'🎉', 'cerveja e drinks':'🍻', trabalho:'💼', viagem:'✈️', 'séries e filmes':'🎬', bichos:'🐶', 'filhos e família':'👨‍👩‍👧', 'treino e saúde':'🏋️', dinheiro:'💸', 'política':'🗳️'};
 function assunto26(){
@@ -2193,7 +2198,7 @@ function drawRanking2026(){
 let VID_DUR = 30; // recalculado por cenasVideo (cerca de 30 s)
 function cenasVideo(d){
   const casal = state.modo === 'casal' && d.people.length === 2, [a, b] = d.people, soma = k => d.people.reduce((t, p) => t + (p[k] || 0), 0);
-  let num = numeros2026().slice(0, 4);
+  let num = nums26(4);
   if (!num.length) num = (casal ? [['💬', soma('count'), 'mensagens trocadas'], ['🎧', soma('audio'), 'áudios'], ['😂', soma('laugh'), 'risadas'], ['💘', soma('teamo'), 'declarações de amor']]
     : [['💬', soma('count'), 'mensagens'], ['🎧', soma('audio'), 'áudios'], ['😂', soma('laugh'), 'risadas'], ['🖼️', soma('sticker'), 'figurinhas']])
     .filter(x => x[1] > 0).map(([e, n, t]) => ({e, n, t}));
@@ -2627,7 +2632,7 @@ async function openCard(fazer, texto = convite('resumo'), alt = 'Card para compa
   const antes = document.activeElement;
   m.innerHTML = `<img src="${url}" alt="${esc(alt)}">
     <div class="btn-row" style="width:min(86vw,420px)">
-      <button class="btn btn-main btn-wa" id="sh">🟢 Mandar no WhatsApp</button>
+      <button class="btn btn-main btn-wa" id="sh"><i class="ic-wa" aria-hidden="true"></i>Mandar no WhatsApp</button>
       <button class="btn btn-ghost" id="dl">⬇️ Salvar imagem</button>
       <button class="btn btn-ghost" id="cp">📋 Copiar imagem</button>
       <button class="btn btn-ghost" id="cl">Fechar</button>

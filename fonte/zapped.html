@@ -255,6 +255,8 @@ body.has-anchor{padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 .dest.rk b{color:var(--manga)}.dest.rk b i{font-style:normal;color:var(--areia);font-size:.75em}.dest.rk .num{display:block;color:var(--areia);font-size:15px}.dest>div{display:flex;gap:14px;align-items:center;background:var(--acai);border-radius:16px;padding:12px 16px;text-align:left}.dest>div>span{font-size:40px}.dest b{display:block;font-family:var(--titulo);font-size:24px;color:var(--manga)}
 .rimg{width:min(100%,360px);border-radius:18px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
 .btn-wa{background:#25D366;color:#0B2E13}
+.ic-wa{display:inline-block;width:1.15em;height:1.15em;vertical-align:-.2em;margin-right:.35em;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M17.472%2014.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94%201.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198%200-.52.074-.792.372-.272.297-1.04%201.016-1.04%202.479%200%201.462%201.065%202.875%201.213%203.074.149.198%202.096%203.2%205.077%204.487.709.306%201.262.489%201.694.625.712.227%201.36.195%201.871.118.571-.085%201.758-.719%202.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421%207.403h-.004a9.87%209.87%200%2001-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86%209.86%200%2001-1.51-5.26c.001-5.45%204.436-9.884%209.888-9.884%202.64%200%205.122%201.03%206.988%202.898a9.825%209.825%200%20012.893%206.994c-.003%205.45-4.437%209.884-9.885%209.884m8.413-18.297A11.815%2011.815%200%200012.05%200C5.495%200%20.16%205.335.157%2011.892c0%202.096.547%204.142%201.588%205.945L.057%2024l6.305-1.654a11.882%2011.882%200%20005.683%201.448h.005c6.554%200%2011.89-5.335%2011.893-11.893a11.821%2011.821%200%2000-3.48-8.413Z%22/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M17.472%2014.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94%201.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198%200-.52.074-.792.372-.272.297-1.04%201.016-1.04%202.479%200%201.462%201.065%202.875%201.213%203.074.149.198%202.096%203.2%205.077%204.487.709.306%201.262.489%201.694.625.712.227%201.36.195%201.871.118.571-.085%201.758-.719%202.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421%207.403h-.004a9.87%209.87%200%2001-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86%209.86%200%2001-1.51-5.26c.001-5.45%204.436-9.884%209.888-9.884%202.64%200%205.122%201.03%206.988%202.898a9.825%209.825%200%20012.893%206.994c-.003%205.45-4.437%209.884-9.885%209.884m8.413-18.297A11.815%2011.815%200%200012.05%200C5.495%200%20.16%205.335.157%2011.892c0%202.096.547%204.142%201.588%205.945L.057%2024l6.305-1.654a11.882%2011.882%200%20005.683%201.448h.005c6.554%200%2011.89-5.335%2011.893-11.893a11.821%2011.821%200%2000-3.48-8.413Z%22/%3E%3C/svg%3E") center/contain no-repeat}
+
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .drop.ok{border-style:solid;background:rgba(255,194,60,.14)}
 .btn:disabled{opacity:.45;cursor:not-allowed}
@@ -1146,7 +1148,7 @@ function home(){
         <li>Toque em <b>Mais</b> e depois em <b>Exportar conversa</b>.</li>
         <li>Escolha <b>Sem mídia</b>.</li>
         <li>Salve em <b>Downloads</b> ou no Drive.</li></ol>`}
-      <a class="btn btn-wa" href="${linkAbreWhats()}" style="text-decoration:none">🟢 Abrir o WhatsApp para exportar</a>
+      <a class="btn btn-wa" href="${linkAbreWhats()}" style="text-decoration:none"><i class="ic-wa" aria-hidden="true"></i>Abrir o WhatsApp para exportar</a>
     </div>
     <label class="drop${state.arquivo ? ' ok' : ''}" for="file">
       <span class="big" aria-hidden="true">${state.arquivo ? '✅' : '📲'}</span>
@@ -1635,13 +1637,15 @@ function fatosFinale(){
   const so26 = !!state.compD, D = state.data, casal = state.modo === 'casal', f = [];
   const pills = x => [x.vs && {c: x.up === true ? 'sobe' : x.up === false ? 'desce' : 'igual', t: x.vs}, x.top && {c: 'pos', t: `🏅 Top ${x.top}% ${quemBrasil()}`}].filter(Boolean);
   const PIADA = {
+    figurinhas: () => 'Quando faltam palavras, sobra figurinha.', fotos: () => 'Tudo documentado. Nada fica sem prova.', palavrao: () => 'A mãe de alguém aqui está decepcionada.', apagadas: () => 'O que será que tinha ali?', madrugada: () => 'Alguém aqui dorme?', bomdia: () => 'O sol só nasce depois do bom dia do grupo.',
+    amor: () => 'Declarações registradas em cartório.', coracoes: () => 'O teclado de vocês só tem coração.',
     total: x => x.up === true ? (casal ? 'Vocês estão mais grudados do que nunca.' : 'O grupo está mais falante do que nunca.') : x.up === false ? 'Menos papo, mais vida real? Duvido.' : casal ? 'Quem ama fala. Muito.' : 'Nem um dia de paz.',
     audios: () => 'E ninguém ouviu em 2x. Mentira.',
     risadas: () => casal ? 'O amor é uma piada interna.' : 'Rir é o idioma oficial do grupo.'};
-  if (so26) for (const k of ['total', 'audios', 'risadas']){ const x = num26(k); if (!x) continue;
-    f.push({e: x.e, big: fmt(x.n), num: x.n, sub: `${k === 'total' ? 'mensagens' : x.t} em ${ANO_MOMENTO} · ${ate26()}`, pills: pills(x), piada: PIADA[k](x)}); }
+  if (so26) for (const x of nums26(4))
+    f.push({e: x.e, big: fmt(x.n), num: x.n, sub: `${x.k === 'total' ? 'mensagens' : x.t} em ${ANO_MOMENTO} · ${ate26()}`, pills: pills(x), piada: (PIADA[x.k] || PIADA.audios)(x)});
   else { const s = k => D.people.reduce((t, p) => t + (p[k] || 0), 0);
-    for (const [e, n, t, k] of [['💬', D.total, 'mensagens', 'total'], ['🎧', s('audio'), 'áudios', 'audios'], ['😂', s('laugh'), 'risadas', 'risadas']]) if (n > 0) f.push({e, big: fmt(n), num: n, sub: `${t} desde o início`, pills: [], piada: PIADA[k]({})}); }
+    for (const [e, n, t, k] of [['💬', D.total, 'mensagens', 'total'], ['🎧', s('audio'), 'áudios', 'audios'], ['😂', s('laugh'), 'risadas', 'risadas'], ['🖼️', s('sticker'), 'figurinhas', 'figurinhas']].filter(x => x[1] >= 3).slice(0, 4)) f.push({e, big: fmt(n), num: n, sub: `${t} desde o início`, pills: [], piada: PIADA[k]({})}); }
   const as = assunto26();
   if (as) f.push({e: as.e, big: as.txt, sub: `o assunto mais falado ${so26 ? 'de ' + ANO_MOMENTO : 'desde o início'} · ${fmt(as.n)} mensagens`, piada: casal ? 'Já sabem o programa do fim de semana.' : 'Os assuntos que nunca morrem.'});
   const ds = destaques26('fantasma');
@@ -1703,7 +1707,7 @@ function videoHTML(casal){
   return `<figure class="card-fim video-fim"><figcaption>🎬 Vídeo ${casal ? 'do casal' : 'do grupo'} <span class="small">· ${state.data ? Math.round(cenasVideo(state.data).T.fim + 2.6) : 30} segundos · ${state.compD ? 'foco em ' + ANO_MOMENTO : 'desde o início'}</span></figcaption>
     <canvas id="vlive" class="rimg" width="540" height="960" role="img" aria-label="Prévia do vídeo ${casal ? 'do casal' : 'do grupo'}: ${ANO_MOMENTO} em números${casal ? ' e um contra o outro' : ' e os destaques'}"></canvas>
     <p class="small" id="vmsg" role="status" style="margin:0">${premiumLocal() ? 'Toque em Baixar para gerar o vídeo (leva uns 30 segundos).' : 'A prévia é grátis. Para baixar e postar o vídeo, é Premium.'}</p>
-    <div class="btn-row"><button type="button" class="btn btn-main" id="vger">${premiumLocal() ? '⬇️ Baixar o vídeo' : '🔒 Baixar o vídeo'}</button><button type="button" class="btn btn-wa" id="vsh" hidden>🟢 Compartilhar</button><button type="button" class="btn btn-ghost" id="vsv" hidden>⬇️ Salvar</button></div></figure>`;
+    <div class="btn-row"><button type="button" class="btn btn-main" id="vger">${premiumLocal() ? '⬇️ Baixar o vídeo' : '🔒 Baixar o vídeo'}</button><button type="button" class="btn btn-wa" id="vsh" hidden>📤 Compartilhar</button><button type="button" class="btn btn-ghost" id="vsv" hidden>⬇️ Salvar</button></div></figure>`;
 }
 function ligaVideo(d, casal, refaz){
   if ($('#vlive')) tocaPrevia($('#vlive'), d);
@@ -1758,7 +1762,7 @@ function fimTela(semFesta){
   setSteps(3);
   const d = state.data, casal = state.modo === 'casal' && d.people.length === 2, so26 = !!state.compD, livre = liberado();
   const fig = (id, cap, per, alt) => `<figure class="card-fim"><figcaption>${cap} <span class="small">· ${per}</span></figcaption><img id="rimg${id}" class="rimg" alt="${esc(alt)}">
-    <div class="btn-row"><button type="button" class="btn btn-wa" id="wa${id}">🟢 WhatsApp</button><button type="button" class="btn btn-ghost" id="sv${id}">⬇️ Salvar</button></div></figure>`;
+    <div class="btn-row"><button type="button" class="btn btn-wa" id="wa${id}"><i class="ic-wa" aria-hidden="true"></i>WhatsApp</button><button type="button" class="btn btn-ghost" id="sv${id}">⬇️ Salvar</button></div></figure>`;
   const persos = personagens(d, campeao().by);
   view.innerHTML = `<section class="screen wr" style="align-items:center;text-align:center">
     ${state.sample ? `<span class="sample">${state.modo === 'casal' ? 'Casal de exemplo' : 'Grupo de exemplo'}</span>` : ''}
@@ -2446,7 +2450,7 @@ const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','ag
 // card "Nosso 2026": o ano em números (vs anos anteriores e Top X% do Brasil), frase e gíria do ano e, nos grupos, o top 3 destaques
 function nosso2026(){
   const d = state.compD; if (!d) return {nums: [], txt: [], ds: []};
-  const nums = numeros2026().slice(0, 4), txt = [], as = assunto26();
+  const nums = nums26(4), txt = [], as = assunto26();
   if (as) txt.push({e: as.e, big: as.txt, sub: `o assunto mais falado · ${fmt(as.n)} mensagens`});
   const ms = Array(12).fill(0); for (const m of d.msgs) ms[m.t.getMonth()]++;
   const mi = ms.indexOf(Math.max(...ms)); if (ms[mi] > 0) txt.push({e:'📈', big: MESES[mi], sub: `o mês mais agitado · ${fmt(ms[mi])} mensagens`});
@@ -2555,12 +2559,13 @@ function quemMedia(){ if (state.modo === 'casal') return 'dos casais'; const t =
 function numeros2026(){
   const d = state.compD; if (!d) return [];
   const s = k => d.people.reduce((t, p) => t + (p[k] || 0), 0), top = state.comp?.top || {};
-  const anos = state.compAnos || [], CAMPO = {total:'count', amor:'teamo', coracoes:'coracao', risadas:'laugh', audios:'audio', figurinhas:'sticker', madrugada:'night', bomdia:'bomdia'};
+  const anos = state.compAnos || [], CAMPO = {total:'count', amor:'teamo', coracoes:'coracao', risadas:'laugh', audios:'audio', figurinhas:'sticker', madrugada:'night', bomdia:'bomdia', fotos:'photo', palavrao:'palavrao', apagadas:'deleted'};
   const rotAnos = anos.length === 1 ? `${anos[0].ano}` : 'anos anteriores';
   const L = {total:['💬', d.total, 'mensagens em 2026'], audios:['🎧', s('audio'), 'áudios'], risadas:['😂', s('laugh'), 'risadas'], amor:['💘', s('teamo'), 'declarações de amor'],
-    coracoes:['❤️', s('coracao'), 'corações e beijinhos'], figurinhas:['🖼️', s('sticker'), 'figurinhas'], madrugada:['🦉', s('night'), 'mensagens de madrugada'], bomdia:['☀️', s('bomdia'), 'bons dias']};
+    coracoes:['❤️', s('coracao'), 'corações e beijinhos'], figurinhas:['🖼️', s('sticker'), 'figurinhas'], madrugada:['🦉', s('night'), 'mensagens de madrugada'], bomdia:['☀️', s('bomdia'), 'bons dias'],
+    fotos:['📸', s('photo'), 'fotos e vídeos'], palavrao:['🤬', s('palavrao'), 'palavrões'], apagadas:['🗑️', s('deleted'), 'mensagens apagadas']};
   // sempre começa por mensagens
-  const ordem = state.modo === 'casal' ? ['total', 'audios', 'risadas', 'amor', 'coracoes', 'figurinhas'] : ['total', 'audios', 'risadas', 'figurinhas', 'madrugada', 'bomdia'];
+  const ordem = state.modo === 'casal' ? ['total', 'audios', 'risadas', 'amor', 'coracoes', 'figurinhas', 'fotos', 'apagadas'] : ['total', 'audios', 'risadas', 'figurinhas', 'fotos', 'palavrao', 'madrugada', 'bomdia', 'apagadas'];
   return ordem.map(k => [k, ...L[k]]).filter(x => x[2] > 0).map(([k, e, n, t]) => {
     // comparação com os próprios anos anteriores (mesmo período), não com os outros grupos
     let vs = null, up = null, r = null;
@@ -2570,6 +2575,8 @@ function numeros2026(){
   });
 }
 const num26 = k => numeros2026().find(x => x.k === k) || null;
+// os números de destaque do ano: mensagens sempre primeiro, depois o que tiver volume (áudios, risadas, figurinhas...)
+const nums26 = (max = 4) => numeros2026().filter(x => x.k === 'total' || x.n >= 3).slice(0, max);
 // assunto mais falado em 2026 (temas do dia a dia; nada sensível)
 const EMO_TEMA = {comida:'🍔', futebol:'⚽', 'rolê e festa':'🎉', 'cerveja e drinks':'🍻', trabalho:'💼', viagem:'✈️', 'séries e filmes':'🎬', bichos:'🐶', 'filhos e família':'👨‍👩‍👧', 'treino e saúde':'🏋️', dinheiro:'💸', 'política':'🗳️'};
 function assunto26(){
@@ -2630,7 +2637,7 @@ function drawRanking2026(){
 let VID_DUR = 30; // recalculado por cenasVideo (cerca de 30 s)
 function cenasVideo(d){
   const casal = state.modo === 'casal' && d.people.length === 2, [a, b] = d.people, soma = k => d.people.reduce((t, p) => t + (p[k] || 0), 0);
-  let num = numeros2026().slice(0, 4);
+  let num = nums26(4);
   if (!num.length) num = (casal ? [['💬', soma('count'), 'mensagens trocadas'], ['🎧', soma('audio'), 'áudios'], ['😂', soma('laugh'), 'risadas'], ['💘', soma('teamo'), 'declarações de amor']]
     : [['💬', soma('count'), 'mensagens'], ['🎧', soma('audio'), 'áudios'], ['😂', soma('laugh'), 'risadas'], ['🖼️', soma('sticker'), 'figurinhas']])
     .filter(x => x[1] > 0).map(([e, n, t]) => ({e, n, t}));
@@ -3063,7 +3070,7 @@ async function openCard(fazer, texto = convite('resumo'), alt = 'Card para compa
   const antes = document.activeElement;
   m.innerHTML = `<img src="${url}" alt="${esc(alt)}">
     <div class="btn-row" style="width:min(86vw,420px)">
-      <button class="btn btn-main btn-wa" id="sh">🟢 Mandar no WhatsApp</button>
+      <button class="btn btn-main btn-wa" id="sh"><i class="ic-wa" aria-hidden="true"></i>Mandar no WhatsApp</button>
       <button class="btn btn-ghost" id="dl">⬇️ Salvar imagem</button>
       <button class="btn btn-ghost" id="cp">📋 Copiar imagem</button>
       <button class="btn btn-ghost" id="cl">Fechar</button>
