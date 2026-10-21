@@ -73,6 +73,7 @@ async function resumo(env, base, escopo, modo){
 }
 const COMPARA = Object.keys(CAMPOS).filter(k => k !== 'membros');
 const HIST = ['hist_total', 'hist_audios'];
+const SEM_TIPO = ['audios', 'figurinhas'];
 
 const resposta = (obj, status = 200) => new Response(JSON.stringify(obj), {status, headers: {'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store'}});
 
@@ -84,6 +85,7 @@ export async function onRequestPost({request, env}){
   if (!/^[a-f0-9]{32}$/.test(id) || !MODOS.includes(c?.modo)) return resposta({error: 'bad_request'}, 400);
   const v = {};
   for (const [k, [min, max]] of Object.entries(CAMPOS)){
+    if (c[k] === null && SEM_TIPO.includes(k)){ v[k] = null; continue; } // Android sem mídia: não sabe o que é áudio/figurinha, fica fora da comparação
     const n = Number(c[k] ?? 0);
     if (!Number.isFinite(n) || n < min || n > max) return resposta({error: 'bad_request', campo: k}, 400);
     v[k] = n;

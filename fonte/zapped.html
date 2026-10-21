@@ -605,7 +605,7 @@ function kind(b){
   if (/áudio omitido|audio omitted|áudio ocultado/.test(t)) return 'audio';
   if (/imagem ocultada|imagem omitida|image omitted|vídeo omitido|video omitted|gif omitido|gif omitted/.test(t)) return 'photo';
   if (/<mídia oculta>|<media omitted>|<arquivo de mídia oculto>|<anexado:|documento omitido|document omitted|figurinha omitida|contato omitido|localização:/.test(t)) return 'media';
-  if (/mensagem foi apagada|mensagem apagada|apagou esta mensagem|message was deleted/.test(t)) return 'deleted';
+  if (/mensagem foi apagada|mensagem apagada|apagou esta mensagem|message was deleted|you deleted this message/.test(t)) return 'deleted';
   return 'text';
 }
 const RX = {
@@ -711,14 +711,18 @@ async function analyze(msgs, prog){
     if (prev && m.t - prev.t >= 3*3600e3){ p.revive++; get(prev.a).kill++; }
     prev = m;
   }
+  for (const p of Object.values(P)) p.naoTexto = p.audio + p.sticker + p.photo; // áudio + figurinha + foto/vídeo/mídia
   const people = Object.values(P).sort((a,b)=>b.count-a.count);
+  // export do Android "sem mídia": o WhatsApp escreve "<Mídia oculta>" para tudo, então não dá para separar áudio, foto e figurinha
+  const midiaGen = msgs.reduce((t, m) => t + (/<m[íi]dia oculta>|<media omitted>|<arquivo de m[íi]dia oculto>/i.test(m.b) ? 1 : 0), 0), totAud = people.reduce((t, p) => t + p.audio + p.sticker, 0);
+  const semTipo = midiaGen >= 5 && midiaGen > totAud * 3;
   const top = o => Object.entries(o).sort((a,b)=>b[1]-a[1])[0];
   return { msgs, people, hours, days, total:msgs.length,
     start:new Date(msgs.reduce((a,m) => Math.min(a, +m.t), Infinity)), end:new Date(msgs.reduce((a,m) => Math.max(a, +m.t), -Infinity)),
     emoji:top(emo), word:top(words), lema:top(full),
     temas: Object.entries(words).sort((a,b) => b[1]-a[1]).slice(0, 3).map(e => e[0]),
     palavras, recorde: top(porDia), silencio, silIni, giria: top(giria), pico: picoSemana(days, minSem),
-    audioN, audioMedidos, audioSeg: audioMedidos ? audioSeg + (audioN - audioMedidos)*(audioSeg/audioMedidos) : audioN*AUDIO_MEDIO };
+    semTipo, midiaGen, audioN, audioMedidos, audioSeg: audioMedidos ? audioSeg + (audioN - audioMedidos)*(audioSeg/audioMedidos) : audioN*AUDIO_MEDIO };
 }
 function picoSemana(days, minSem){
   const wd = days.indexOf(Math.max(...days)); let melhorH = 0, mh = -1;
@@ -765,6 +769,7 @@ const AW = [
  {m:['trabalho'],e:'📅',n:'Mestre das Reuniões',crit:'"Call", "reunião", "alinhar"',k:'reuniao',u:'convocações',mech:'chute',p:'{w} falou de reunião {v} vezes. Isso podia ter sido um e-mail.'},
  {m:['trabalho'],e:'🛟',n:'Salva-Vidas',crit:'"Resolvido", "pode deixar", "tá feito"',k:'salva',u:'resgates',mech:'podio',p:'{v} problemas resolvidos. {w} carrega o time nas costas.'},
  {m:['trabalho'],e:'🎙️',n:'Locutor Corporativo',crit:'Mais áudios no grupo do trabalho',k:'audio',u:'áudios',mech:'raspadinha',p:'{v} áudios no grupo do trabalho. Corajoso, {w}.'},
+ {m:['amigos','familia','trabalho','comunidade','casal'],e:'📎',n:'Inimigo do Texto',crit:'Mais áudios, figurinhas, fotos e vídeos (tudo que não é texto)',k:'naoTexto',u:'mídias',fatia:true,mech:'podio',p:'{v} mídias, {s} de tudo que não é texto. {w} não digita, {w} se expressa.'},
  {m:['casal'],e:'🗣️',n:'Tagarela do Casal',crit:'Mais mensagens enviadas',k:'count',u:'mensagens',mech:'palpite',p:'{w} mandou {v} mensagens. Quem ama fala. Muito.'},
  {m:['casal'],e:'💘',n:'Mais Romântico',crit:'"Te amo", "te adoro", "meu amor"',k:'teamo',u:'declarações',mech:'raspadinha',p:'{v} declarações de amor. {w} é poesia ambulante.'},
  {m:['casal'],e:'🥰',n:'Coração Ambulante',crit:'Mais emojis de coração ❤️😍🥰',k:'coracao',u:'corações',mech:'chute',p:'{v} corações enviados. O teclado de {w} só tem emoji apaixonado.'},
@@ -800,7 +805,9 @@ function buildAwards(d){
     list.push({...a, ranked, winner:ranked[0], total});
   }
   // cerimônia = só as categorias escolhidas para o modo, na ordem da lista (sem categorias extras)
-  const escolhidas = PRINCIPAIS[state.modo].map(gtit);
+  // Android sem mídia: categorias de áudio e figurinha viram o Inimigo do Texto (o WhatsApp não diz o que é cada mídia)
+  const deMidia = n => AW.some(a => a.n === n && (a.k === 'audio' || a.k === 'sticker'));
+  const escolhidas = [...new Set(PRINCIPAIS[state.modo].map(gtit).map(n => d.semTipo && deMidia(n) ? gtit('Inimigo do Texto') : n))];
   const shown = list.filter(a => escolhidas.includes(a.n)).sort((x, y) => escolhidas.indexOf(x.n) - escolhidas.indexOf(y.n));
   state.bonus = []; state.bonusShown = true; state.noBonus = false;
   return comHonra(shown, d);
@@ -1494,6 +1501,8 @@ function graficoAnos(d){
 // posição no ranking (Top X%), quando o servidor responde; null = não mostra
 const topDe = k => { const t = state.comp?.top?.[k]; return t && t <= 50 ? t : null; };
 // como mostrar a posição: "Top X%" só quando é bom (até 50%); de 51% a 90% vira "mais X que Y% dos grupos"; pior que isso, ou sem base suficiente, não aparece
+const semTipo = () => !!state.data?.semTipo;
+const nomeCat = n => semTipo() && /Podcaster|Locutor/.test(n) ? 'Inimigo do Texto' : n;
 const DOS = () => state.modo === 'casal' ? 'dos casais' : 'dos grupos';
 const UNID_RANK = {total:'mensagens', hist_total:'mensagens', audios:'áudios', hist_audios:'áudios', risadas:'risadas', figurinhas:'figurinhas', madrugada:'mensagens de madrugada', bomdia:'bons dias', amor:'declarações de amor', coracoes:'corações', palavrao:'palavrões', apagadas:'mensagens apagadas'};
 function rankTxt(k){
@@ -1512,7 +1521,9 @@ function resumoInicio(d){
   const lv = livro(d), au = audios(d), fr = frase(d), desde = d.start.toLocaleDateString('pt-BR', {month:'long', year:'numeric'});
   const dias = Math.max(1, Math.round((d.end - d.start)/864e5) + 1), md = d.total/dias, f = [];
   f.push({e:'💬', big:`${fmt(d.total)} mensagens`, sub:`desde ${desde} · média de ${md >= 10 ? fmt(Math.round(md)) : md.toFixed(1).replace('.', ',')} por dia`, top:'hist_total dias'});
-  if (au){ const q = quemAudio(d); f.push({e:'🎧', big:`${fmt(d.audioN)} áudios`, sub:`${au.txt} · ${au.comp.replace(/^[\d.]+ áudios · /, '')}`, top:'hist_audios',
+  if (d.semTipo) f.push({e:'📎', big:`${fmt(d.midiaGen)} mídias`, sub:'fotos, vídeos, áudios e figurinhas juntos', curto:'fotos, vídeos, áudios e figurinhas',
+    quem: '', nota: true});
+  else if (au){ const q = quemAudio(d); f.push({e:'🎧', big:`${fmt(d.audioN)} áudios`, sub:`${au.txt} · ${au.comp.replace(/^[\d.]+ áudios · /, '')}`, top:'hist_audios',
     quem: q.length ? `${state.modo === 'casal' ? 'Quem manda mais' : 'Quem mais manda'}: ${q.map(x => `${x.n} ${x.pct}%`).join(' · ')}` : ''}); }
   f.push({e:'📚', big:`${fmt(lv.pags)} ${lv.pags === 1 ? 'página' : 'páginas'} · ${tempoLeitura(d.palavras)}`, sub:`se ${state.modo === 'casal' ? 'a conversa' : 'o grupo'} virasse livro · ${tempoLeitura(d.palavras)} para ler tudo, sem parar · ${lv.comp}`, curto: lv.comp});
   // frase mais dita: só no casal e com 10+ repetições (em grupo errava mais do que acertava)
@@ -1544,6 +1555,7 @@ function story(){
     <div class="persona"><span class="em" aria-hidden="true">${em}</span><div><span class="small">A classificação ${m === 'casal' ? 'do casal' : 'do grupo'} é</span><h1>${nome}</h1><span class="small">${porque}</span></div></div>
     <div class="tale">${ps.map((p,i) => `<p style="animation-delay:${i*.35}s">${p}</p>`).join('')}</div>
     <div class="badge"><span aria-hidden="true">📅</span><span>A primeira mensagem foi em <b>${dataLonga(d.start)}</b>. A última, em <b>${dataLonga(d.end)}</b>.${d.perdidas ? ` ${fmt(d.perdidas)} linhas não puderam ser lidas.` : ''}</span></div>
+    ${d.semTipo ? `<div class="badge"><span aria-hidden="true">📱</span><span><b>Export do Android sem mídia.</b> Nesse formato o WhatsApp escreve só "mídia oculta", sem dizer se era áudio, foto ou figurinha. Por isso juntamos tudo em <b>mídias</b> e o Podcaster vira o <b>Inimigo do Texto</b>.</span></div>` : ''}
     <div class="panel"><h2 style="font-size:22px;margin:0">📈 Mensagens ano a ano</h2>${graficoAnos(d)}</div>
     <h2 style="font-size:26px;margin:4px 0 0">${m === 'casal' ? 'O resumo de vocês' : 'O resumo do grupo'} <span class="tag-periodo">desde o início</span></h2>
     <div class="res-l">${resumoInicio(d).map(itemRes).join('')}</div>
@@ -2500,7 +2512,7 @@ async function comparar(d){
   try {
     const base = `${+d.start}|${d.total}|${d.people.length}|${state.modo}`;
     const h = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(base)))].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
-    const r = await fetch('/api/stats', {method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({id: h, modo: state.modo, base: String(ANO_MOMENTO), ...numerosDoGrupo(state.compD), dias: Math.max(1, Math.round((d.end - d.start)/864e5) + 1), hist_total: d.total, hist_audios: d.people.reduce((t, p) => t + p.audio, 0)})});
+    const r = await fetch('/api/stats', {method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({id: h, modo: state.modo, base: String(ANO_MOMENTO), ...numerosDoGrupo(state.compD), dias: Math.max(1, Math.round((d.end - d.start)/864e5) + 1), hist_total: d.total, hist_audios: d.semTipo ? null : d.people.reduce((t, p) => t + p.audio, 0), ...(d.semTipo ? {audios: null, figurinhas: null} : {})})});
     const j = await r.json(); if (j && j.pronto) state.comp = j;
   } catch {}
   // prévia (sem servidor): ranking simulado só para ver o layout
@@ -2649,7 +2661,7 @@ function drawNosso2026(){
 function categoriasCasal(d){
   const src = state.compD && state.compD.people.length ? state.compD : d, achar = n => src.people.find(p => p.name === n) || {};
   const a = achar(d.people[0].name), b = achar(d.people[1].name);
-  const L = [['💬','Mensagens','count'],['🎙️','Áudios','audio'],['💘','Declarações de amor','teamo'],['🌅','Puxou o papo do dia','first']]
+  const L = [['💬','Mensagens','count'], semTipo() ? ['📎','Mídias','naoTexto'] : ['🎙️','Áudios','audio'], ['💘','Declarações de amor','teamo'],['🌅','Puxou o papo do dia','first']]
     .map(([e, t, k]) => ({e, t, a: a[k]||0, b: b[k]||0}));
   return {msg: L[0], cats: L};
 }
@@ -2687,7 +2699,7 @@ function drawCasal(d){
   c.fillStyle = K.txt; c.font = `800 52px ${BR}`;
   c.fillText(ga === gb ? `Empate: ${ga} a ${gb} 💞` : `Placar: ${limpaTxt(ga > gb ? a.name : b.name).split(' ')[0]} ${Math.max(ga, gb)} a ${Math.min(ga, gb)}`, W/2, y + 50, 980);
   // os troféus de vocês: mais romântico, podcaster e tagarela (desde o início)
-  const tr = ['Mais Romântico', 'Podcaster do Casal', 'Tagarela do Casal'].map(n => (state.awards || []).find(x => x.n === gtit(n) && x.winner)).filter(Boolean);
+  const tr = ['Mais Romântico', nomeCat('Podcaster do Casal'), 'Tagarela do Casal'].map(n => (state.awards || []).find(x => x.n === gtit(n) && x.winner)).filter(Boolean);
   if (tr.length){
     const ty = y + 100, bw = (W - 100 - (tr.length - 1)*16)/tr.length;
     c.fillStyle = K.sub; c.font = `700 28px ${DM}`; c.fillText('OS TROFÉUS DE VOCÊS · DESDE O INÍCIO', W/2, ty + 20);
@@ -2709,14 +2721,15 @@ function quemMedia(){ if (state.modo === 'casal') return 'dos casais'; const t =
 function numeros2026(){
   const d = state.compD; if (!d) return [];
   const s = k => d.people.reduce((t, p) => t + (p[k] || 0), 0), top = state.comp?.top || {};
-  const anos = state.compAnos || [], CAMPO = {total:'count', amor:'teamo', coracoes:'coracao', risadas:'laugh', audios:'audio', figurinhas:'sticker', madrugada:'night', bomdia:'bomdia', fotos:'photo', palavrao:'palavrao', apagadas:'deleted'};
+  const anos = state.compAnos || [], CAMPO = {total:'count', amor:'teamo', coracoes:'coracao', risadas:'laugh', audios:'audio', figurinhas:'sticker', madrugada:'night', bomdia:'bomdia', fotos: semTipo() ? 'naoTexto' : 'photo', palavrao:'palavrao', apagadas:'deleted'};
   const rotAnos = anos.length === 1 ? `${anos[0].ano}` : 'anos anteriores';
   const L = {total:['💬', d.total, 'mensagens em 2026'], audios:['🎧', s('audio'), 'áudios'], risadas:['😂', s('laugh'), 'risadas'], amor:['💘', s('teamo'), 'declarações de amor'],
     coracoes:['❤️', s('coracao'), 'corações e beijinhos'], figurinhas:['🖼️', s('sticker'), 'figurinhas'], madrugada:['🦉', s('night'), 'mensagens de madrugada'], bomdia:['☀️', s('bomdia'), 'bons dias'],
     fotos:['📸', s('photo'), 'fotos e vídeos'], palavrao:['🤬', s('palavrao'), 'palavrões'], apagadas:['🗑️', s('deleted'), 'mensagens apagadas']};
   // sempre começa por mensagens
   const ordem = state.modo === 'casal' ? ['total', 'audios', 'risadas', 'amor', 'coracoes', 'figurinhas', 'fotos', 'apagadas'] : ['total', 'audios', 'risadas', 'figurinhas', 'fotos', 'palavrao', 'madrugada', 'bomdia', 'apagadas'];
-  return ordem.map(k => [k, ...L[k]]).filter(x => x[2] > 0).map(([k, e, n, t]) => {
+  if (semTipo()){ L.fotos = ['📎', s('naoTexto'), 'mídias']; delete L.audios; delete L.figurinhas; }
+  return ordem.filter(k => L[k]).map(k => [k, ...L[k]]).filter(x => x[2] > 0).map(([k, e, n, t]) => {
     // comparação com os próprios anos anteriores (mesmo período), não com os outros grupos
     let vs = null, up = null, r = null;
     if (anos.length){ const f = CAMPO[k], ant = anos.reduce((t, a) => t + a.people.reduce((u, p) => u + (p[f] || 0), 0), 0) / anos.length;
@@ -2793,8 +2806,8 @@ function cenasVideo(d){
     : [['💬', soma('count'), 'mensagens'], ['🎧', soma('audio'), 'áudios'], ['😂', soma('laugh'), 'risadas'], ['🖼️', soma('sticker'), 'figurinhas']])
     .filter(x => x[1] > 0).map(([e, n, t]) => ({e, n, t}));
   const hl = casal ? [] : destaques26('fantasma').map(x => ({e: x.e, t: x.t, nome: x.n, linha: x.v}));
-  const cats = (casal ? ['Tagarela do Casal', 'Mais Romântico', 'Podcaster do Casal'].map(n => principais().find(x => x.n === gtit(n))).filter(Boolean) : principais().slice(0, 6)).filter(x => x.winner).map(x => ({e: x.e, t: gtit(x.n, x.winner.name), nome: x.winner.name, linha: vunid(x, x.winner.v)}));
-  const duelo = casal ? categoriasCasal(d).cats.filter(x => x.t !== 'Áudios') : [];
+  const cats = (casal ? ['Tagarela do Casal', 'Mais Romântico', nomeCat('Podcaster do Casal')].map(n => principais().find(x => x.n === gtit(n))).filter(Boolean) : principais().slice(0, 6)).filter(x => x.winner).map(x => ({e: x.e, t: gtit(x.n, x.winner.name), nome: x.winner.name, linha: vunid(x, x.winner.v)}));
+  const duelo = casal ? categoriasCasal(d).cats.filter(x => x.t !== 'Áudios' && x.t !== 'Mídias') : [];
   const as = casal ? null : assunto26();
   // linha do tempo (~30 s): abertura, números, assunto, troféus (top 6), destaques (grupo) ou um contra o outro (casal), fim
   const T = {msg: 2.6}; T.num = T.msg + 2.8; T.as = T.num + (num.length > 1 ? 1.4 + (num.length - 1)*1.2 : 0); T.cat = T.as + (as ? 2 : 0); T.hl = T.cat + cats.length*1.6; T.fim = T.hl + (casal ? 4.8 : hl.length*2);
