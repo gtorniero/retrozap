@@ -23,7 +23,7 @@ async def main():
     await pg.screenshot(path=O+'/3-conhecendo-gratis.png',full_page=True)
     print('persos', await pg.eval_on_selector_all('.perso',"es=>es.map(e=>e.className+':'+e.querySelector('h3').textContent)"))
     print('classif', await pg.eval_on_selector('.persona','e=>e.textContent.slice(0,80)'))
-    await pg.click('#go'); await pg.wait_for_timeout(300); await pg.screenshot(path=O+'/4-categorias.png',full_page=True)
+    await pg.click('#go'); await pg.wait_for_selector('#spNao'); await pg.click('#spNao'); await pg.wait_for_timeout(300); await pg.screenshot(path=O+'/4-categorias.png',full_page=True)
     await pg.click('#go'); await pg.wait_for_timeout(300); n=0; tit=[]
     while '/premios/' in pg.url and n<20:
       n+=1

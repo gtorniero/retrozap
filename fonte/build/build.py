@@ -140,7 +140,7 @@ _i = s.index("function inicio(){"); _a = s.index("view.innerHTML = `", _i) + len
 HERO = s[_a:_b]
 if '${' in HERO:  # a home tem a versão Grupos e Casais: pré-renderiza a de Grupos (a que abre primeiro)
     import subprocess
-    HERO = subprocess.run(['node', '-e', 'const cs = false, anuncio = () => ""; process.stdout.write(eval("`" + require("fs").readFileSync(0, "utf8") + "`"))'], input=HERO, capture_output=True, text=True, check=True).stdout
+    HERO = subprocess.run(['node', '-e', 'const cs = false, ORIGEM = null, anuncio = () => ""; process.stdout.write(eval("`" + require("fs").readFileSync(0, "utf8") + "`"))'], input=HERO, capture_output=True, text=True, check=True).stdout
     if '${' in HERO: sys.exit('inicio() ainda tem interpolacao')
 rep('<main id="view"></main>', '<main id="view">' + HERO + '</main>')
 _faq = [(_html.unescape(re.sub('<[^>]+>', '', q)), _html.unescape(re.sub('<[^>]+>', '', a))) for q, a in re.findall(r'<details><summary>(.*?)</summary><p>(.*?)</p></details>', HERO)]

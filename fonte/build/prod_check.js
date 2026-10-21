@@ -621,16 +621,20 @@ function linkAbreWhats(){
   return 'whatsapp://send';
 }
 // página inicial: o que a pessoa vai encontrar + Vamos começar
+const ORIGEM = (() => { try { const q = new URLSearchParams(location.search), de = q.get('de'); return de && /^[a-z]{3,12}$/.test(de) ? {de, casal: q.get('m') === 'casal'} : null; } catch { return null; } })();
+let ORIGEM_VISTA = false;
 function inicio(){
   anchor(true);
   ir('/');
+  if (ORIGEM && !ORIGEM_VISTA){ ORIGEM_VISTA = true; if (ORIGEM.casal) setModo('casal'); try { if (typeof evento === 'function') evento('chegou_de_compartilhamento', {origem: ORIGEM.de}); } catch {} }
   PILHA.length = 0; const vb = document.getElementById('voltar'); if (vb) vb.hidden = true;
   setSteps(0); state.data = null; const cs = state.modo === 'casal';
   view.innerHTML = `
   <section class="screen hero">
+    ${ORIGEM ? `<div class="chegou" role="note"><span aria-hidden="true">👋</span><span>${cs ? 'Um casal te mandou a retrospectiva deles? <b>Agora é a vez de vocês.</b>' : 'Te mandaram a retrospectiva de um grupo? <b>Agora é a vez do seu.</b> Descubra quem é o tagarela, o fantasma e o boca-suja.'}</span></div>` : ''}
     ${cs ? `<p class="eyebrow">A retrospectiva dos casais do Brasil</p>
     <h1>Toda história de amor tem números. <em>Descubra os de vocês.</em></h1>
-    <p class="lead">Quem manda mais "te amo", quem demora para responder, quem pede desculpas: cada um leva o seu troféu. 💘</p>` : `<p class="eyebrow">A retrospectiva oficial dos grupos do Brasil</p>
+    <p class="lead">Quem manda mais "te amo", quem puxa o papo do dia, quem pede desculpas: cada um leva o seu troféu. 💘</p>` : `<p class="eyebrow">A retrospectiva oficial dos grupos do Brasil</p>
     <h1>Todo grupo tem uma história. <em>Descubra a do seu.</em></h1>
     <p class="lead">Quem fala demais, quem some, quem manda figurinha às 3 da manhã: cada um leva o seu troféu. 🏆</p>`}
     <div class="badge"><span aria-hidden="true">🔒</span><span><b>Suas mensagens não saem do seu celular.</b> Tudo é analisado aqui no navegador. A gente não recebe, não lê e não guarda nenhuma mensagem. <a href="/privacidade" style="color:var(--areia)">Entenda</a></span></div>
@@ -641,13 +645,13 @@ function inicio(){
     <div class="panel oque">
       <p class="ask">O que você vai encontrar</p>
       ${cs ? `<ol class="oque-l">
-        <li><span class="em" aria-hidden="true">🎭</span><div><b>Os personagens do casal</b><span>Quem é quem na relação e o jeito de cada um falar.</span></div></li>
-        <li><span class="em" aria-hidden="true">🏆</span><div><b>10 categorias com troféus</b><span>Do Mais Romântico ao Visualiza e Demora, com card para mandar um para o outro.</span></div></li>
-        <li><span class="em" aria-hidden="true">🎬</span><div><b>Os números de vocês e um vídeo para os stories</b><span>Quem manda mais o quê, e como vocês se comparam aos casais do Brasil.</span></div></li>
+        <li><span class="em" aria-hidden="true">📈</span><div><b>A história de vocês em números</b><span>Mensagens ano a ano, áudios, a frase mais dita e há quanto tempo vocês conversam.</span></div></li>
+        <li><span class="em" aria-hidden="true">🏆</span><div><b>7 categorias com troféus</b><span>Do Tagarela ao Mais Romântico, com card para mandar um para o outro.</span></div></li>
+        <li><span class="em" aria-hidden="true">🎬</span><div><b>O nosso 2026 e um vídeo para os stories</b><span>Um contra o outro, e como vocês se comparam aos casais do Brasil.</span></div></li>
       </ol>` : `<ol class="oque-l">
-        <li><span class="em" aria-hidden="true">🎭</span><div><b>Os personagens do grupo</b><span>Conhecendo o grupo: quem é quem e o jeito de cada um falar.</span></div></li>
-        <li><span class="em" aria-hidden="true">🏆</span><div><b>10 categorias com troféus</b><span>Do Tagarela ao Fantasma, com pódio e card para mandar no grupo.</span></div></li>
-        <li><span class="em" aria-hidden="true">📊</span><div><b>Os números do grupo e o ranking</b><span>Mensagens, áudios, figurinhas e como o grupo se compara aos grupos do Brasil.</span></div></li>
+        <li><span class="em" aria-hidden="true">📈</span><div><b>O grupo em números</b><span>Mensagens ano a ano, áudios, gíria oficial e como o grupo se compara aos grupos do Brasil.</span></div></li>
+        <li><span class="em" aria-hidden="true">🏆</span><div><b>As categorias com troféus</b><span>Do Tagarela ao Fantasma, com pódio e card para mandar no grupo.</span></div></li>
+        <li><span class="em" aria-hidden="true">🎬</span><div><b>O nosso 2026 e um vídeo</b><span>O ano comparado com 2025, os destaques e um vídeo pronto para os stories.</span></div></li>
       </ol>`}
     </div>
     <button class="btn btn-main" id="comecar">${cs ? 'Começar a retrospectiva do casal →' : 'Vamos começar →'}</button>
@@ -663,8 +667,8 @@ function inicio(){
       <details><summary>O Retrozap é grátis?</summary><p>A primeira retrospectiva é grátis. Para fazer quantos grupos quiser, o acesso ilimitado custa R$ 4,99, pago uma única vez no Pix.</p></details>
       <details><summary>Minhas mensagens são enviadas para algum servidor?</summary><p>Não. A leitura do arquivo acontece no seu navegador. As mensagens, os nomes e os telefones não saem do seu celular ou computador.</p></details>
       <details><summary>Funciona no iPhone e no Android?</summary><p>Sim. O site aceita o .zip ou o .txt que o WhatsApp gera nos dois sistemas, e também funciona no computador.</p></details>
-      <details><summary>Funciona com a conversa de um casal?</summary><p>Sim. No Retrozap Casais, a retrospectiva é de vocês dois: quem manda mais "te amo", quem demora para responder, o card "Nós dois" e um vídeo para os stories.</p></details>
-      <details><summary>Quais prêmios o grupo pode ganhar?</summary><p>São 10 categorias escolhidas para o tipo de grupo, como O Tagarela, O Fantasma, Coruja da Madrugada e Tio do Bom Dia, além do ranking do grupo comparado a outros grupos do Brasil.</p></details>
+      <details><summary>Funciona com a conversa de um casal?</summary><p>Sim. No Retrozap Casais, a retrospectiva é de vocês dois: quem manda mais "te amo", quem puxa o papo do der, o card "Nós dois" e um vídeo para os stories.</p></details>
+      <details><summary>Quais prêmios o grupo pode ganhar?</summary><p>São de 7 a 10 categorias, escolhidas para o tipo de grupo, como O Tagarela, O Fantasma, Boca-Suja e Tio do Bom Dia, além do ranking do grupo comparado a outros grupos do Brasil.</p></details>
     </section>
     ${anuncio('inicio')}
     <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a></nav>
@@ -836,7 +840,7 @@ async function run(text, sample){
   }
   if (sample) state.grupo = state.modo === 'casal' ? 'Nosso Cantinho 💕' : 'Turma do Churras'; else if (!state.grupo) state.grupo = nomeDaConversa(text);
   evento('upload_ok', {mensagens: msgs.length, modo: state.modo, exemplo: !!sample});
-  state.raw = msgs; state.alias = {}; state.hidden = new Set(); state.ctx = ''; state.intervaloVisto = false; state.livreUsadas = 0; state.palavra26 = null; state.intervaloAd = false;
+  state.raw = msgs; state.alias = {}; state.hidden = new Set(); state.ctx = ''; state.intervaloVisto = false; state.spoilerVisto = false; state.livreUsadas = 0; state.palavra26 = null; state.intervaloAd = false;
   state.left = new Set(msgs.sys.filter(e => e.type === 'saiu' || e.type === 'removido').map(e => e.who));
   state.changed = new Set(msgs.sys.filter(e => e.type === 'numero').map(e => e.who));
   const autores = new Set(msgs.map(m => m.a));
@@ -1151,12 +1155,43 @@ function lineup(){
     ${anuncio('categorias')}
     <button class="btn btn-main" id="go">🥁 Começar a revelação</button>
   </section>`;
-  intervaloComercial(); ativaAnuncios();
+  intervaloComercial(); ativaAnuncios(); popSpoiler(ativos);
   $('#spoil').onclick = () => openCard(() => drawSpoiler(ativos), convite('spoiler', ativos.length), `Spoiler${state.grupo ? ' do grupo ' + state.grupo : ''}: os ${ativos.length} troféus em disputa são ${juntar(ativos.map(a => a.n))}. Quem leva cada um?`);
   $('#go').onclick = award;
   window.scrollTo(0,0);
 }
 
+// "Agora é a hora": antes da revelação, convida a mandar o spoiler no grupo (uma vez por retrospectiva)
+function popSpoiler(ativos){
+  if (state.spoilerVisto || !ativos.length) return; state.spoilerVisto = true;
+  const casal = state.modo === 'casal', n = ativos.length, url = drawSpoiler(ativos), antes = document.activeElement, m = document.createElement('div');
+  const alt = `Spoiler: os ${n} troféus em disputa são ${juntar(ativos.map(a => a.n))}.`;
+  m.className = 'patro'; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true'); m.setAttribute('aria-labelledby', 'spT'); m.setAttribute('aria-describedby', 'spD');
+  m.innerHTML = `<div class="patro-box lemb">
+    <button type="button" class="pw-x" id="spX" aria-label="Fechar">✕</button>
+    <p class="eyebrow" style="margin:0">Antes da revelação</p>
+    <h2 id="spT" style="font-size:28px;margin:0">👀 Agora é a hora!</h2>
+    <p class="lemb-tx" id="spD">${casal ? `São ${n} troféus em disputa. Mande o spoiler para o seu amor e apostem: quem leva cada um?` : `São ${n} troféus em disputa. Mande o spoiler no grupo, deixe a galera palpitar quem leva cada um e depois volte com os resultados.`}</p>
+    <img src="${url}" alt="${esc(alt)}" class="sp-img">
+    <button type="button" class="btn btn-main" id="spOk">📤 ${casal ? 'Mandar o spoiler' : 'Mandar o spoiler no grupo'}</button>
+    <button type="button" class="btn btn-ghost" id="spNao">Agora não, quero ver primeiro</button>
+  </div>`;
+  document.body.appendChild(m);
+  const fecha = () => { m.remove(); try { antes?.focus(); } catch {} };
+  const ev = n2 => { try { if (typeof evento === 'function') evento(n2); } catch {} };
+  ev('spoiler_popup');
+  m.querySelector('#spX').onclick = fecha; m.querySelector('#spNao').onclick = fecha;
+  m.querySelector('#spOk').onclick = async () => {
+    ev('spoiler_popup_clique');
+    const blob = paraBlob(url), nome = 'retrozap-spoiler.png', f = new File([blob], nome, {type: 'image/png'});
+    let pode = false; try { pode = !!navigator.canShare?.({files: [f]}); } catch {}
+    fecha();
+    if (pode) await compartilhaArquivo(blob, nome, convite('spoiler', n)); else openCard(() => url, convite('spoiler', n), alt);
+  };
+  m.addEventListener('keydown', e => { if (e.key === 'Escape') fecha(); });
+  m.addEventListener('click', e => { if (e.target === m) fecha(); });
+  m.querySelector('#spOk').focus();
+}
 function award(){
   anchor(true);
   ir('/premios/' + (state.idx + 1));
@@ -1282,11 +1317,12 @@ function videoHTML(casal){
     <button type="button" class="btn btn-main" id="vger" style="width:100%">${premiumLocal() ? '📤 Salvar ou compartilhar' : '🔒 Salvar ou compartilhar'}</button></figure>`;
 }
 // um botão só: abre a folha de compartilhar do celular (salvar na galeria, WhatsApp, Instagram...); no computador, baixa o arquivo
-async function compartilhaArquivo(blob, nome){
+async function compartilhaArquivo(blob, nome, texto){
   const f = new File([blob], nome, {type: blob.type});
   let pode = false; try { pode = !!navigator.canShare?.({files: [f]}); } catch {}
   if (pode){
-    try { await navigator.share({files: [f]}); try { if (typeof evento === 'function') evento('compartilhou', {tipo: blob.type.split('/')[0]}); } catch {} return 'ok'; }
+    try { if (texto){ try { await navigator.share({files: [f], text: texto}); try { if (typeof evento === 'function') evento('compartilhou', {tipo: blob.type.split('/')[0]}); } catch {} return 'ok'; } catch (e){ if (e?.name === 'AbortError' || e?.name === 'NotAllowedError') throw e; } }
+      await navigator.share({files: [f]}); try { if (typeof evento === 'function') evento('compartilhou', {tipo: blob.type.split('/')[0]}); } catch {} return 'ok'; }
     catch (e){ if (e?.name === 'AbortError') return 'cancelado'; if (e?.name === 'NotAllowedError') return 'sem-gesto'; }
   }
   const dw = (typeof DOWN !== 'undefined' && DOWN) || await window.claude?.use?.('downloads').catch(() => null);
@@ -1301,7 +1337,7 @@ function ligaVideo(d, casal, refaz){
   let vid = null;
   const nome = () => `retrozap-${casal ? 'casal' : 'grupo'}.${vid.ext}`;
   const manda = async () => {
-    const bt = $('#vger'), msg = $('#vmsg'), r = await compartilhaArquivo(vid.blob, nome());
+    const bt = $('#vger'), msg = $('#vmsg'), r = await compartilhaArquivo(vid.blob, nome(), convite('video'));
     // o celular só abre o compartilhar logo depois de um toque: se o vídeo demorou, pede mais um toque
     if (r === 'sem-gesto'){ bt.textContent = '📤 Vídeo pronto! Toque para salvar ou compartilhar'; msg.textContent = 'Seu vídeo está pronto.'; return; }
     bt.textContent = '📤 Salvar ou compartilhar de novo';
@@ -1421,7 +1457,7 @@ function fimTela(semFesta){
   const liga = (id, fz, nome, alt) => { if (!$('#sv' + id)) return;
     $('#sv' + id).onclick = async () => { const blob = paraBlob(fz()), f = new File([blob], nome, {type: 'image/png'});
       let pode = false; try { pode = !!navigator.canShare?.({files: [f]}); } catch {}
-      if (pode) return compartilhaArquivo(blob, nome);
+      if (pode) return compartilhaArquivo(blob, nome, convite('resumo'));
       openCard(fz, convite('resumo'), alt); }; };
   liga(1, () => drawResumo(d), 'retrozap-resumo.png', altResumo(d));
   liga(3, () => drawTop10(), 'retrozap-trofeus.png', altTop10());
@@ -1473,8 +1509,8 @@ function obrigado(){
       <h2 id="obT" style="font-size:26px;margin:0">Valeu por usar o Retrozap!</h2>
       <p class="lemb-tx">Esperamos que o grupo tenha se divertido (e se ofendido só um pouquinho).</p>
       <form id="obForm" class="ob-form">
-        <label class="pw-lb" for="obEm">📬 Deixe seu e-mail para receber as próximas novidades e ganhe um presente 🎁 para se divertir com o grupo 👀</label>
-        <div class="ob-linha"><input id="obEm" class="pw-in" type="email" inputmode="email" autocomplete="email" placeholder="seu@email.com"><button type="submit" class="btn btn-main" id="obOk">Quero 🎁</button></div>
+        <label class="pw-lb" for="obEm">📬 Quer saber quando sair a retrospectiva de fim de ano e as novidades? Deixe seu e-mail.</label>
+        <div class="ob-linha"><input id="obEm" class="pw-in" type="email" inputmode="email" autocomplete="email" placeholder="seu@email.com"><button type="submit" class="btn btn-main" id="obOk">Quero receber</button></div>
         <p class="small" id="obMsg" style="margin:0"></p>
       </form>
       <button type="button" class="btn btn-main ob-denovo" id="obNovo">🔁 Fazer a retrospectiva de outro grupo</button>`;
@@ -1486,9 +1522,9 @@ function obrigado(){
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){ msg.textContent = 'Confira o e-mail.'; return; }
       caixa.querySelector('#obOk').disabled = true;
       try {
-        const r = await fetch('/api/ideias', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({tipo: 'novidades', texto: 'Quero receber as novidades e o presente do Retrozap', contato: email})});
+        const r = await fetch('/api/ideias', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({tipo: 'novidades', texto: 'Quero receber as novidades do Retrozap', contato: email})});
         if (!r.ok) throw 0;
-        msg.textContent = 'Pronto! Seu presente vai chegar no seu e-mail. 🎁'; ev('novidades_email');
+        msg.textContent = 'Pronto! Você vai receber as novidades por e-mail. 📬'; ev('novidades_email');
       } catch { msg.textContent = 'Não consegui salvar agora. Tente de novo.'; caixa.querySelector('#obOk').disabled = false; }
     };
     caixa.querySelector('#obNovo').focus();
@@ -2738,15 +2774,16 @@ function paraBlob(url){
 let nCard = 0;
 /* ---------- WhatsApp: imagem + convite ---------- */
 const LINK = 'https://retrozap.com.br';
+// link com origem: mostra de onde veio cada visita (GA4) e personaliza a chegada de quem recebeu
+const linkDe = de => `retrozap.com.br/?de=${de}${state.modo === 'casal' ? '&m=casal' : ''}`;
 function convite(tipo, x){
-  if (tipo === 'premio') return `Saiu o resultado no nosso grupo: ${x.winner.name} levou "${x.n}" 🏆😂 Descubra quem leva cada prêmio no SEU grupo, de graça e sem as mensagens saírem do celular: ${LINK}`;
-  if (tipo === 'destaque') return `${x} é o destaque do nosso grupo 👑 Descubra quem é o destaque do SEU grupo no Retrozap: ${LINK}`;
-  if (tipo === 'ranking'){ const b = destaquesBrasil()[0], ti = {casal:'de casais', amigos:'de amigos', familia:'de família', trabalho:'de trabalho', comunidade:'de comunidade'}[state.modo];
-    const frase = !b ? 'tem posição no ranking' : b.k === 'dias' ? `é ${b.txt.toLowerCase()} ${ti}` : `está no ${b.txt} entre os grupos ${ti}`;
-    return `Nosso grupo ${frase} do Retrozap 😂🏆 Descubra a posição do SEU grupo. É grátis: retrozap.com.br`; }
-  if (tipo === 'spoiler') return `👀 SPOILER! Fiz a retrospectiva do nosso grupo no Retrozap e esses são os ${x} troféus em disputa. Quem leva cada um? Mandem os palpites! Todo grupo tem uma história, descubra a do seu em www.retrozap.com.br`;
-  if (tipo === 'amigos') return 'Fiz a retrospectiva do meu grupo no Retrozap! Faz a do seu: quem é o tagarela, quem é o fantasma, qual é a vibe do grupo. É grátis e rápido: https://retrozap.com.br';
-  return 'Esse é o resumo do nosso grupo 😂🏆 Descubra a vibe, as histórias e as curiosidades do SEU grupo no Retrozap. É grátis: retrozap.com.br';
+  const c = state.modo === 'casal';
+  if (tipo === 'premio') return c ? `${x.winner.name} levou "${x.n}" na nossa retrospectiva 💘😂 Façam a de vocês, de graça e sem as mensagens saírem do celular: ${linkDe('trofeu')}`
+    : `Saiu o resultado no nosso grupo: ${x.winner.name} levou "${x.n}" 🏆😂 Descubra quem leva cada prêmio no SEU grupo, de graça e sem as mensagens saírem do celular: ${linkDe('trofeu')}`;
+  if (tipo === 'spoiler') return `👀 SPOILER! Fiz a retrospectiva do nosso grupo e esses são os ${x} troféus em disputa. Quem leva cada um? Mandem os palpites que daqui a pouco eu revelo! Faça a do seu grupo: ${linkDe('spoiler')}`;
+  if (tipo === 'video') return c ? `A nossa retrospectiva 💘 Façam a de vocês: ${linkDe('video')}` : `A retrospectiva do nosso grupo 🏆 Faça a do seu: ${linkDe('video')}`;
+  if (tipo === 'amigos') return `Fiz a retrospectiva do meu grupo no Retrozap! Faz a do seu: quem é o tagarela, quem é o fantasma, qual é a vibe do grupo. É grátis e rápido: ${linkDe('convite')}`;
+  return c ? `A nossa retrospectiva em números 💘 Façam a de vocês, é grátis: ${linkDe('resumo')}` : `Esse é o resumo do nosso grupo 😂🏆 Descubra a história do SEU grupo no Retrozap. É grátis: ${linkDe('resumo')}`;
 }
 // Celular: abre a lista de apps com a imagem + o convite (escolhe WhatsApp, Instagram...).
 // Computador: copia a imagem e abre o WhatsApp com o convite escrito; é só escolher a conversa e colar.
@@ -2791,7 +2828,7 @@ async function openCard(fazer, texto = convite('resumo'), alt = 'Card para compa
   });
   (m.querySelector('#sh') || m.querySelector('#dl')).focus();
   m.querySelector('#sh')?.addEventListener('click', async () => {
-    const r = await compartilhaArquivo(blob, nome);
+    const r = await compartilhaArquivo(blob, nome, texto);
     if (r === 'ok') msg.textContent = 'Pronto! 🏆';
   });
   if (m.querySelector('#dl')) m.querySelector('#dl').onclick = () => {
