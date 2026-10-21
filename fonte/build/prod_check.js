@@ -316,7 +316,7 @@ function buildAwards(d){
   const list = [];
   for (const a of AW.filter(a => a.m.includes(state.modo))){
     if (a.low && d.people.length < 3 && state.modo !== 'casal') continue;
-    const ranked = d.people.map(p => ({name:p.name, v:val(a,p), p})).filter(r => r.v !== null)
+    const ranked = d.people.filter(p => !(a.low && isFone(p.name))).map(p => ({name:p.name, v:val(a,p), p})).filter(r => r.v !== null) // número desconhecido nunca é o Fantasma
       .sort((x,y) => a.low ? x.v - y.v : y.v - x.v);
     if (!ranked.length || (!a.low && ranked[0].v <= 0) || (a.min && ranked[0].v < a.min)) continue;
     const total = d.people.reduce((s,p) => s + (a.rate || a.pct || a.k==='avg' ? 0 : p[a.k]), 0);
@@ -1217,13 +1217,37 @@ function award(){
       <div id="game" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:12px"></div>
       <div id="res" class="reveal" aria-live="polite" hidden></div>
     </div>
+    ${state.idx >= Math.ceil(n/2) && state.idx < n - 1 ? `<button type="button" class="lnk todas" id="todas">⏩ Revelar as ${n - state.idx} que faltam de uma vez</button>` : ''}
     <div class="acao"><button class="btn btn-main" id="rvl"></button><button class="btn btn-ghost" id="next" style="flex:0 0 auto">${state.idx === n-1 ? 'Pular para o final' : 'Pular →'}</button></div>
   </section>`;
   view.querySelector('section').classList.add('com-acao');
   $('#next').onclick = next;
+  $('#todas')?.addEventListener('click', () => revelarTodas(state.idx));
   const jogo = ({podio, palpite, raspadinha, chute})[a.mech](a, $('#game'));
   $('#rvl').textContent = jogo.txt; $('#rvl').onclick = () => { $('#rvl').disabled = true; jogo.fn(); };
   window.scrollTo(0,0);
+}
+// "Revelar todas": a partir da metade, mostra de uma vez os vencedores que faltam (com o card de cada um)
+function revelarTodas(de){
+  anchor(true);
+  pilha(() => revelarTodas(de), 'todas');
+  setSteps(2);
+  try { if (typeof evento === 'function') evento('revelou_todas', {faltavam: state.awards.length - de}); } catch {}
+  const L = state.awards.slice(de).filter(a => !a.honra && a.winner);
+  view.innerHTML = `<section class="screen">
+    ${state.sample ? `<span class="sample">${state.modo === 'casal' ? 'Casal de exemplo' : 'Grupo de exemplo'}</span>` : ''}
+    <p class="eyebrow">Ato II · Os últimos troféus</p>
+    <h1 style="font-size:32px">E os vencedores são...</h1>
+    <div class="todas-l">${L.map((a, i) => `<div class="todas-i">
+      <span class="em" aria-hidden="true">${a.e}</span>
+      <div><span class="small">${esc(a.n)}</span><b>${esc(a.winner.name)}</b><span class="small">${esc(vunid(a, a.winner.v))}${a.ranked[1] ? ` · 2º ${esc(a.ranked[1].name)}` : ''}</span></div>
+      <button type="button" class="btn btn-ghost mini" data-card="${i}" aria-label="Gerar card de ${esc(a.n)}">📲 Card</button>
+    </div>`).join('')}</div>
+    <button class="btn btn-main" id="go">Ir para o Gran Finale 🥁</button>
+  </section>`;
+  view.querySelectorAll('[data-card]').forEach(b => b.onclick = () => { const a = L[+b.dataset.card]; openCard(() => cardAward(a), convite('premio', a), `Card do prêmio ${a.n}: ${a.winner.name}, com ${vunid(a, a.winner.v)}`); });
+  $('#go').onclick = () => { state.idx = state.awards.length; suspense(); };
+  confetti(); window.scrollTo(0,0);
 }
 function next(){
   state.idx++;
