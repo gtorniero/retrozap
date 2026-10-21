@@ -95,16 +95,16 @@ export async function onRequestPost({request, env}){
   // totais desde o início (opcionais: versões antigas do site não mandam)
   for (const k of HIST){ const n = Number(c[k]); v[k] = Number.isFinite(n) && n >= 0 && n <= 5e7 ? n : null; }
   const base = /^20\d\d$/.test(String(c.base || '')) ? String(c.base) : '';
-  // o mesmo grupo enviado de novo só atualiza a linha (não conta duas vezes)
-  await env.DB.prepare(`INSERT OR REPLACE INTO grupos (id, modo, criado, base, ${[...cols, ...HIST].join(', ')}) VALUES (?, ?, ?, ?, ${[...cols, ...HIST].map(() => '?').join(', ')})`)
-    .bind(id, c.modo, new Date().toISOString().slice(0, 10), base, ...cols.map(k => v[k]), ...HIST.map(k => v[k])).run();
-  await env.DB.prepare('DELETE FROM grupos WHERE id = ?').bind(id + '~e').run(); // o grupo real substitui a estimativa dele
-  await semeia(env, cols, base);
   // compara com o resumo pronto (refeito no máximo a cada 4 h): cada envio lê 1 linha, não a tabela inteira
   let R = await resumo(env, base, 'tipo', c.modo), escopo = 'tipo';
   // casal compara só com casais; os grupos nunca se comparam com casais
   if (c.modo !== 'casal' && R.n + 1 < MIN_TIPO){ R = await resumo(env, base, 'todos', 'grupos'); escopo = 'todos'; }
   const n = R.n + 1, est = R.est; // + o próprio grupo
+  // o mesmo grupo enviado de novo só atualiza a linha (não conta duas vezes)
+  await env.DB.prepare(`INSERT OR REPLACE INTO grupos (id, modo, criado, base, ${[...cols, ...HIST].join(', ')}) VALUES (?, ?, ?, ?, ${[...cols, ...HIST].map(() => '?').join(', ')})`)
+    .bind(id, c.modo, new Date().toISOString().slice(0, 10), base, ...cols.map(k => v[k]), ...HIST.map(k => v[k])).run();
+  await env.DB.prepare('DELETE FROM grupos WHERE id = ?').bind(id + '~e').run(); // o grupo real substitui a estimativa dele
+  await semeia(env, cols, base);
   if (n < (c.modo === 'casal' ? MIN_CASAL : escopo === 'tipo' ? MIN_TIPO : MIN_TODOS)) return resposta({pronto: false, n});
   // "Top X%": X = % de grupos com valor maior + o próprio. Métrica zerada não vira destaque.
   const top = {}, media = {};

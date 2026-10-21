@@ -689,10 +689,11 @@ async function parseChat(text, prog){
       // Só a linha do aviso sai da contagem; a pessoa continua no grupo.
       const body = rest.slice(i+2), invisivel = /:\s\u200e/.test(raw);
       if (invisivel && kind(body) === 'text'){ const ev = sysEvent(body); if (ev) sys.push({...ev, t}); cur = null; continue; }
-      cur = { t, a:rest.slice(0,i).replace(/^~\s*/,'').trim(), b:body };
+      if (/^(?:missed (?:voice|video|group voice|group video) call|chamada de (?:voz|v[ií]deo) perdida|liga[cç][aã]o (?:de voz |de v[ií]deo )?perdida)/i.test(body.trim())){ cur = null; continue; } // chamada não é mensagem
+      cur = { t, a:rest.slice(0,i).replace(/^~\s*/,'').trim(), b:body.replace(/\s*<(?:this message was edited|mensagem editada|esta mensagem foi editada)>\s*$/i, '') };
       msgs.push(cur);
     } else if (/^\[?\d{1,2}[\/.]\d{1,2}[\/.]\d{2,4}/.test(l)) perdidas++;
-    else if (cur){ cur.b += '\n' + l; }
+    else if (cur){ cur.b += '\n' + l.replace(/\s*<(?:this message was edited|mensagem editada|esta mensagem foi editada)>\s*$/i, ''); }
   }
   prog && prog(1, msgs.length);
   // fora da cerimônia: o nome do grupo (avisos do iPhone) e assistentes de IA
@@ -701,7 +702,11 @@ async function parseChat(text, prog){
   return out;
 }
 const SYSRX = [
-  [/^(.{1,60}?) saiu\.?$/i, 'saiu'],
+  [/^(.{1,60}?) (?:saiu|left)\.?$/i, 'saiu'],
+  [/^(.{1,60}?) removed (.{1,80})$/i, 'removido'],
+  [/^(.{1,60}?) (?:changed their phone number|changed to \+|changed (?:their|his|her) number)/i, 'numero'],
+  [/^(.{1,60}?) (?:added|joined using|created group|created this group|changed the (?:subject|group description|group name|group icon|settings))/i, 'outro'],
+  [/messages and calls are end-to-end encrypted|is now an admin|disappearing messages|changed this group's|you joined|security code|pinned a message|deleted this group's icon/i, 'outro'],
   [/^(.{1,60}?) removeu (.{1,80})$/i, 'removido'],
   [/^(.{1,60}?) (?:mudou para um novo número|mudou (?:o|de) número)/i, 'numero'],
   [/^(.{1,60}?) (?:adicionou|entrou usando|criou (?:o )?grupo|mudou (?:o nome|a imagem|a descrição|o assunto|as configura))/i, 'outro'],
@@ -721,6 +726,8 @@ function kind(b){
     return 'media';
   }
   if (/figurinha omitida|sticker omitted/.test(t)) return 'sticker';
+  if (/^(?:video note omitted|nota de v[ií]deo omitida|v[ií]deo de visualiza[cç][aã]o [uú]nica|null)$/.test(t.trim())) return 'photo';
+  if (/^(?:contact card omitted|cart[aã]o de contato omitido|poll:|enquete:|location:|localiza[cç][aã]o:)/.test(t.trim())) return 'media';
   if (/áudio omitido|audio omitted|áudio ocultado/.test(t)) return 'audio';
   if (/imagem ocultada|imagem omitida|image omitted|vídeo omitido|video omitted|gif omitido|gif omitted/.test(t)) return 'photo';
   if (/<mídia oculta>|<media omitted>|<arquivo de mídia oculto>|<anexado:|documento omitido|document omitted|figurinha omitida|contato omitido|localização:/.test(t)) return 'media';
@@ -728,7 +735,7 @@ function kind(b){
   return 'text';
 }
 const RX = {
-  laugh:/k{3,}|(?:ha){2,}|(?:rs){2,}|(?:he){3,}|hue(?:hue)+/i,
+  laugh:/k{3,}|(?:ha){2,}|(?:rs){2,}|(?:he){3,}|(?:hi){2,}|hue(?:hue)+|h[au]{2,}h[au]+|😂|🤣|😆|😹/iu,
   bomdia:/\bbom dia\b|\bbdia\b/i,
   parabens:/parab[ée]ns|feliz anivers/i,
   // carinho no grupo (sem "beijos" de tchau); limites com \p{L} porque \b falha em letra com acento
@@ -856,7 +863,7 @@ function picoSemana(days, minSem){
 // títulos com (a) são aplicados logo abaixo da lista: for (const a of AW) a.n = gtit(a.n)
 const AW = [
  {m:['amigos','familia','trabalho','comunidade'],e:'🗣️',n:'O Tagarela',crit:'Mais mensagens enviadas',k:'count',u:'mensagens',mech:'podio',p:'{w} mandou {v} mensagens. Respira, {w}.'},
- {m:['amigos'],e:'🖼️',n:'Figurinha de Ouro',crit:'Mais figurinhas enviadas',k:'sticker',u:'figurinhas',mech:'chute',p:'{v} figurinhas. {w} se comunica por hieróglifos modernos.'},
+ {m:['amigos'],e:'🖼️',n:'Figurinha de Ouro',crit:'Mais figurinhas enviadas',k:'sticker',u:'figurinhas',mech:'palpite',p:'{v} figurinhas. {w} se comunica por hieróglifos modernos.'},
  {m:['amigos'],e:'😂',n:'Rei do Kkkk',crit:'Quem mais ri: % das mensagens com kkk, haha ou rs (quem tem 100+ mensagens)',k:'laugh',pct:true,u:'das mensagens com risada',det:p => `${fmt(p.laugh)} risadas`,mech:'palpite',p:'{v} das mensagens de {w} têm risada. Plateia profissional.'},
  {m:['amigos'],e:'🤬',n:'Boca-Suja',crit:'Palavrões a cada 100 mensagens (quem tem 100+ mensagens)',k:'palavrao',rate:true,u:'a cada 100 mensagens',det:p => `${fmt(p.palavrao)} palavrões no total`,mech:'raspadinha',p:'{v} palavrões a cada 100 mensagens. A mãe de {w} está decepcionada.'},
  {m:['amigos','familia'],e:'🦉',n:'Coruja da Madrugada',crit:'Mais mensagens entre 0h e 5h',k:'night',u:'mensagens de madrugada',mech:'palpite',p:'{v} mensagens entre 0h e 5h. {w}, vai dormir.'},
@@ -866,10 +873,10 @@ const AW = [
  {m:['amigos'],e:'🪦',n:'Mata-Conversa',crit:'Mensagem seguida de 3h+ de silêncio',k:'kill',u:'conversas encerradas',mech:'raspadinha',p:'{v} conversas morreram depois de uma mensagem de {w}. Sem ressentimentos. Ou com.'},
  {m:['amigos'],e:'👻',n:'O Fantasma',crit:'Menos mensagens no grupo',k:'count',low:true,u:'mensagens',mech:'raspadinha',p:'Só {v} mensagens. {w} lê tudo e não fala nada. Respeitamos o mistério.'},
  {m:['amigos'],e:'💌',n:'Coração Mole',crit:'Mensagens de carinho: "amo vocês", "saudade de vocês", "vocês são demais", ❤️ 🥰',k:'mole',min:5,u:'mensagens de carinho',mech:'palpite',p:'{v} mensagens de carinho. Por trás da zoeira, {w} é puro sentimento.'},
- {m:['amigos'],e:'🗑️',n:'O Arrependido',crit:'Mais mensagens apagadas',k:'deleted',u:'mensagens apagadas',mech:'raspadinha',p:'{w} apagou {v} mensagens. O que será que tinha ali?'},
+ {m:['amigos'],e:'🗑️',n:'Apaga Mensagens',crit:'Mais mensagens apagadas (inclui as de quem exportou)',k:'deleted',u:'mensagens apagadas',mech:'raspadinha',p:'{w} apagou {v} mensagens. O que será que tinha ali?'},
  {m:['amigos','familia'],e:'🎙️',n:'Podcaster do Grupo',crit:'Mais áudios enviados (e a fatia de cada um)',k:'audio',u:'áudios',fatia:true,mech:'podio',p:'{v} áudios, {s} de todos os áudios do grupo. {w} tem episódio novo toda semana.'},
  {m:['amigos','trabalho'],e:'📜',n:'Escritor de Textão',crit:'Maior média de caracteres por mensagem',k:'avg',u:'caracteres por mensagem',mech:'palpite',p:'Média de {v} caracteres por mensagem. {w} escreve como quem manda e-mail.'},
- {m:['familia'],e:'☀️',n:'Tio do Bom Dia',crit:'Mais "bom dia" enviados',k:'bomdia',u:'bons dias',mech:'chute',p:'{v} bons dias. O sol só nasce depois da mensagem de {w}.'},
+ {m:['familia'],e:'☀️',n:'Tio do Bom Dia',crit:'Mais "bom dia" enviados',k:'bomdia',u:'bons dias',mech:'palpite',p:'{v} bons dias. O sol só nasce depois da mensagem de {w}.'},
  {m:['familia'],e:'🙏',n:'Mãe Coruja',crit:'"Chegou bem?", "cuidado", "juízo"',k:'mae',u:'preocupações',mech:'raspadinha',p:'{v} vezes cuidando de todo mundo. {w} é o GPS da família.'},
  {m:['familia'],e:'🎂',n:'Rei do Parabéns',crit:'Mais "parabéns" e "feliz aniversário"',k:'parabens',u:'parabéns',mech:'podio',p:'{w} nunca esquece um aniversário. {v} parabéns enviados.'},
  {m:['comunidade'],e:'📋',n:'Síndico de Plantão',crit:'Mais avisos, comunicados e lembretes',k:'aviso',u:'avisos',mech:'podio',p:'{v} avisos. {w} é o mural de recados oficial.'},
@@ -877,7 +884,7 @@ const AW = [
  {m:['comunidade'],e:'🤝',n:'Rei da Indicação',crit:'"Alguém indica?", "recomendo", "contato de"',k:'indica',u:'indicações',mech:'podio',p:'{v} indicações. {w} tem o contato de todo mundo.'},
  {m:['comunidade'],e:'🏷️',n:'Classificados do Grupo',crit:'"Vendo", "desapego", "doação"',k:'vende',u:'anúncios',mech:'raspadinha',p:'{v} anúncios. {w} transformou o grupo numa feirinha.'},
  {m:['comunidade'],e:'🔊',n:'Fiscal do Barulho',crit:'"Barulho", "obra", "som alto"',k:'barulho',u:'reclamações de barulho',mech:'palpite',p:'{w} reclamou de barulho {v} vezes. O silêncio agradece.'},
- {m:['comunidade'],e:'👋',n:'Comitê de Boas-Vindas',crit:'Mais "bem-vindo" aos novos membros',k:'boasvindas',u:'boas-vindas',mech:'chute',p:'{v} boas-vindas. Ninguém entra no grupo sem um abraço de {w}.'},
+ {m:['comunidade'],e:'👋',n:'Comitê de Boas-Vindas',crit:'Mais "bem-vindo" aos novos membros',k:'boasvindas',u:'boas-vindas',mech:'palpite',p:'{v} boas-vindas. Ninguém entra no grupo sem um abraço de {w}.'},
  {m:['comunidade'],e:'🙏',n:'Mais Agradecido',crit:'"Obrigado", "valeu", "gratidão"',k:'agradece',u:'agradecimentos',mech:'raspadinha',p:'{v} agradecimentos. {w} é a educação em pessoa.'},
  {m:['comunidade'],e:'📰',n:'Repórter da Comunidade',crit:'Mais links e notícias compartilhados',k:'link',u:'links',mech:'palpite',p:'{v} links. {w} é a rádio local da comunidade.'},
  {m:['familia'],e:'📰',n:'Repórter da Família',crit:'Mais links compartilhados',k:'link',u:'links',mech:'palpite',p:'{v} links. {w} é a agência de notícias da família.'},
@@ -886,25 +893,25 @@ const AW = [
  {m:['familia'],e:'💞',n:'Quem Mais Ama',crit:'"Te amo", "amo vcs", "beijos"',k:'amo',u:'declarações',mech:'podio',p:'{v} declarações. {w} é o abraço do grupo.'},
  {m:['trabalho'],e:'👍',n:'Rei do "Ok"',crit:'Respostas curtas: "ok", "blz", 👍',k:'ok',u:'respostas curtas',mech:'palpite',p:'{v} vezes "ok". {w} é eficiência pura.'},
  {m:['trabalho','familia','comunidade'],e:'☕',n:'Madrugador',crit:'Primeira mensagem do dia mais vezes',k:'first',u:'dias abrindo o grupo',mech:'podio',p:'{w} abriu o grupo em {v} dias. Antes do café, já tinha mandado mensagem.'},
- {m:['trabalho'],e:'🌙',n:'Fora do Expediente',crit:'Mensagens depois das 19h e nos fins de semana',k:'after',u:'mensagens fora do horário',mech:'chute',p:'{v} mensagens fora do expediente. {w}, desliga o celular.'},
- {m:['trabalho'],e:'📅',n:'Mestre das Reuniões',crit:'"Call", "reunião", "alinhar"',k:'reuniao',u:'convocações',mech:'chute',p:'{w} falou de reunião {v} vezes. Isso podia ter sido um e-mail.'},
+ {m:['trabalho'],e:'🌙',n:'Fora do Expediente',crit:'Mensagens depois das 19h e nos fins de semana',k:'after',u:'mensagens fora do horário',mech:'palpite',p:'{v} mensagens fora do expediente. {w}, desliga o celular.'},
+ {m:['trabalho'],e:'📅',n:'Mestre das Reuniões',crit:'"Call", "reunião", "alinhar"',k:'reuniao',u:'convocações',mech:'palpite',p:'{w} falou de reunião {v} vezes. Isso podia ter sido um e-mail.'},
  {m:['trabalho'],e:'🛟',n:'Salva-Vidas',crit:'"Resolvido", "pode deixar", "tá feito"',k:'salva',u:'resgates',mech:'podio',p:'{v} problemas resolvidos. {w} carrega o time nas costas.'},
  {m:['trabalho'],e:'🎙️',n:'Locutor Corporativo',crit:'Mais áudios no grupo do trabalho',k:'audio',u:'áudios',mech:'raspadinha',p:'{v} áudios no grupo do trabalho. Corajoso, {w}.'},
  {m:['amigos','familia','trabalho','comunidade','casal'],e:'📎',n:'Inimigo do Texto',crit:'Mais áudios, figurinhas, fotos e vídeos (tudo que não é texto)',k:'naoTexto',u:'mídias',fatia:true,mech:'podio',p:'{v} mídias, {s} de tudo que não é texto. {w} não digita, {w} se expressa.'},
  {m:['casal'],e:'🗣️',n:'Tagarela do Casal',crit:'Mais mensagens enviadas',k:'count',u:'mensagens',mech:'palpite',p:'{w} mandou {v} mensagens. Quem ama fala. Muito.'},
  {m:['casal'],e:'💘',n:'Mais Romântico',crit:'"Te amo", "te adoro", "meu amor"',k:'teamo',u:'declarações',mech:'raspadinha',p:'{v} declarações de amor. {w} é poesia ambulante.'},
- {m:['casal'],e:'🥰',n:'Coração Ambulante',crit:'Mais emojis de coração ❤️😍🥰',k:'coracao',u:'corações',mech:'chute',p:'{v} corações enviados. O teclado de {w} só tem emoji apaixonado.'},
+ {m:['casal'],e:'🥰',n:'Coração Ambulante',crit:'Mais emojis de coração ❤️😍🥰',k:'coracao',u:'corações',mech:'palpite',p:'{v} corações enviados. O teclado de {w} só tem emoji apaixonado.'},
  {m:['casal'],e:'☀️',n:'Despertador do Amor',crit:'Quem manda a primeira mensagem do dia',k:'first',u:'dias puxando o papo',mech:'palpite',p:'{w} abriu a conversa em {v} dias. Bom dia com amor é com {w}.'},
  {m:['casal'],e:'⚡',n:'Resposta Relâmpago',crit:'Quem responde mais rápido',k:'resp',low:true,u:'min em média para responder',mech:'raspadinha',p:'{w} responde em {v} min, em média. Celular na mão 24 horas.'},
  {m:['casal'],e:'🐢',n:'Visualiza e Demora',crit:'Quem demora mais para responder',k:'resp',u:'min em média para responder',mech:'palpite',p:'Média de {v} min para responder. {w}, a gente vê o "online".'},
- {m:['casal'],e:'😂',n:'Risada Fácil',crit:'Mais mensagens com risada',k:'laugh',u:'risadas',mech:'chute',p:'{v} risadas. {w} ri até de piada ruim (principalmente das suas).'},
+ {m:['casal'],e:'😂',n:'Risada Fácil',crit:'Mais mensagens com risada',k:'laugh',u:'risadas',mech:'palpite',p:'{v} risadas. {w} ri até de piada ruim (principalmente das suas).'},
  {m:['casal'],e:'🍕',n:'Fominha',crit:'Mais papo de comida',k:'fome',u:'mensagens sobre comida',mech:'raspadinha',p:'{v} mensagens sobre comida. Com {w}, todo programa termina em comida.'},
  {m:['casal'],e:'🙏',n:'Pede Desculpas',crit:'"Desculpa", "perdão", "foi mal"',k:'desculpa',u:'pedidos de desculpa',mech:'palpite',p:'{w} pediu desculpas {v} vezes. Quem ama, se desculpa (às vezes).'},
  {m:['casal'],e:'🎙️',n:'Podcaster do Casal',crit:'Mais áudios enviados (e a fatia de cada um)',k:'audio',u:'áudios',fatia:true,mech:'podio',p:'{v} áudios. {w} acha que mensagem de texto é coisa do passado.'},
  {m:['casal'],e:'🦉',n:'Coruja do Casal',crit:'Mais mensagens entre 0h e 5h',k:'night',u:'mensagens de madrugada',mech:'palpite',p:'{v} mensagens de madrugada. {w}, vai dormir (e deixa o outro dormir).'},
  {m:['casal'],e:'💬',n:'Apelido Fofo',crit:'"Amor", "bb", "vida", "neném"...',k:'apelido',u:'apelidos carinhosos',mech:'raspadinha',p:'{v} apelidos carinhosos. {w} esqueceu o nome verdadeiro do outro.'},
  {m:['casal'],e:'🥺',n:'Saudade Mode',crit:'Mais "saudade"',k:'saudade',u:'saudades',mech:'palpite',p:'{v} vezes "saudade". {w} sente falta até indo ao mercado.'},
- {m:['casal'],e:'🖼️',n:'Rei da Figurinha',crit:'Mais figurinhas enviadas',k:'sticker',u:'figurinhas',mech:'chute',p:'{v} figurinhas. A conversa de vocês é um álbum da Copa.'},
+ {m:['casal'],e:'🖼️',n:'Rei da Figurinha',crit:'Mais figurinhas enviadas',k:'sticker',u:'figurinhas',mech:'palpite',p:'{v} figurinhas. A conversa de vocês é um álbum da Copa.'},
  {m:['casal'],e:'📸',n:'Fotógrafo do Casal',crit:'Mais fotos e vídeos',k:'photo',u:'fotos e vídeos',mech:'palpite',p:'{v} fotos e vídeos. {w} registra cada momento.'}
 ];
 for (const a of AW) a.n = gtit(a.n);
@@ -966,7 +973,7 @@ function comHonra(lista, d){
 }
 const PRINCIPAIS = {
   casal:['Tagarela do Casal','Mais Romântico','Coração Ambulante','Despertador do Amor','Fominha','Pede Desculpas','Podcaster do Casal'],
-  amigos:['O Tagarela','Podcaster do Grupo','Boca-Suja','Rei do Kkkk','Puxa-Assunto','O Fantasma','Coração Mole','O Arrependido'],
+  amigos:['O Tagarela','Podcaster do Grupo','Boca-Suja','Rei do Kkkk','Puxa-Assunto','O Fantasma','Coração Mole','Apaga Mensagens'],
   familia:['O Tagarela','Tio do Bom Dia','Rei do Parabéns','Repórter da Família','Fotógrafo Oficial','Visualiza e Não Responde','Quem Mais Ama','Puxa-Assunto','Podcaster do Grupo'],
   trabalho:['O Tagarela','Rei do "Ok"','Fora do Expediente','Mestre das Reuniões','Salva-Vidas','Locutor Corporativo','Madrugador'],
   comunidade:['O Tagarela','Rei da Indicação','Fiscal do Barulho','Comitê de Boas-Vindas','Mais Agradecido','Repórter da Comunidade','Visualiza e Não Responde','Madrugador']
@@ -1567,7 +1574,7 @@ function roster(){
           <select id="mg-${i}" data-mg="${i}"><option value="">Escolher pessoa</option>${opcoes.map(x => `<option>${esc(x.n)}</option>`).join('')}</select>
         </div>` : ''}
       </div>`; }).join('')}</div>
-    <label class="optin"><input type="checkbox" id="cmp"${state.comparar === false ? '' : ' checked'}><span>📊 ${state.modo === 'casal' ? 'Comparar com outros casais do Retrozap' : 'Comparar meu grupo com outros grupos do Retrozap'}<span class="small">Só números anônimos, como o total de mensagens. Nenhuma mensagem e nenhum nome saem do celular.</span></span></label>
+    <label class="optin"><input type="checkbox" id="cmp"${state.comparar === false ? '' : ' checked'}><span>📊 ${state.modo === 'casal' ? 'Comparar com outros casais do Retrozap' : 'Comparar meu grupo com outros grupos do Retrozap'}<span class="small">Vem marcado e você pode desmarcar. Só sobem números do ${state.modo === 'casal' ? 'casal' : 'grupo inteiro'}, como o total de mensagens. Nenhuma mensagem, nome ou telefone sai do celular.</span></span></label>
     <p class="err" id="rerr" hidden></p>
     <button class="btn btn-main" id="go">Tudo certo, começar →</button>
   </section>`;
@@ -1767,7 +1774,7 @@ function classificar(d, m){
   if (laugh > .2) return 'Fábrica de Risada';
   if (stick > .08) return 'Museu da Figurinha';
   if (audio > .05) return 'Rádio do Grupo';
-  if (util > fds*1.8) return 'Escritório Paralelo';
+  if (util > fds*3){ let exp = 0; for (const x of d.msgs){ const w = x.t.getDay(), h = x.t.getHours(); if (w > 0 && w < 6 && h >= 9 && h < 18) exp++; } if (exp/tot >= .6) return 'Escritório Paralelo'; }
   return m === 'familia' ? 'Família Unida e Barulhenta' : 'Resenha Raiz';
 }
 
@@ -2674,7 +2681,7 @@ async function comparar(d){
   if (state.sample){ state.comp = {...simula({}), top:{risadas:3, palavrao:2, furos:4, por_dia:6, madrugada:7, recorde:9, audios:12, total:4, figurinhas:38, textao:60, apagadas:41, dias:30, bomdia:70, parabens:55, fora:80, amor:3, coracoes:5, hist_total:7, hist_audios:11}}; return; }
   if (!state.compD){ if (AMBIENTE_TESTE) state.comp = {pronto:true, n:120, exemplo:true, escopo:'tipo', top:{dias:45}}; return; }
   try {
-    const base = `${+d.start}|${d.total}|${d.people.length}|${state.modo}`;
+    const pri = (state.raw || d.msgs).reduce((a, m) => +m.t < a ? +m.t : a, Infinity), base = `${pri}|${state.modo}`;
     const h = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(base)))].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
     const r = await fetch('/api/stats', {method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({id: h, modo: state.modo, base: String(ANO_MOMENTO), ...numerosDoGrupo(state.compD), dias: Math.max(1, Math.round((d.end - d.start)/864e5) + 1), hist_total: d.total, hist_audios: d.semTipo ? null : d.people.reduce((t, p) => t + p.audio, 0), ...(d.semTipo ? {audios: null, figurinhas: null} : {})})});
     const j = await r.json(); if (j && j.pronto) state.comp = j;
