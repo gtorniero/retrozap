@@ -97,7 +97,10 @@ ol.how b{color:var(--manga)}
 .ad{border:1.5px dashed var(--linha);border-radius:14px;min-height:90px;display:flex;align-items:center;justify-content:center;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--neblina);text-align:center;padding:12px}
 .award{background:var(--acai);border-radius:24px;padding:22px 20px;display:flex;flex-direction:column;gap:14px;align-items:center;text-align:center;position:relative;overflow:hidden}
 .award::before{content:"";position:absolute;inset:0 0 auto;height:6px;background:var(--modo)}
-.award .em{font-size:96px;line-height:1;filter:drop-shadow(0 8px 18px rgba(0,0,0,.35))}
+.award .em{font-size:96px;line-height:1;filter:drop-shadow(0 8px 18px rgba(0,0,0,.35));transition:font-size .3s}
+.award.revelado .em{font-size:56px}
+.award.revelado{gap:10px;padding-top:16px}
+@media (max-height:760px){.award .em{font-size:72px}.award.revelado .em{font-size:44px}.podium{min-height:170px}}
 .award h2,.h-award{font-size:34px}
 .award .crit{color:var(--neblina);font-size:15px;max-width:34ch}
 .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
@@ -324,6 +327,18 @@ html.casal .vota .chip[aria-pressed="true"]{color:#fff}
 .livre.trancado{position:relative}
 .livre.trancado .lv-corpo{filter:blur(6px);user-select:none;pointer-events:none}
 .livre.trancado .destrava{top:62%}
+.carr{display:flex;align-items:flex-start;overflow-x:auto;scroll-snap-type:x mandatory;width:100%;gap:0;scrollbar-width:none;-webkit-overflow-scrolling:touch;outline-offset:4px}
+.carr::-webkit-scrollbar{display:none}
+.carr-i{flex:0 0 100%;scroll-snap-align:center;display:flex;justify-content:center;padding:0 4px;box-sizing:border-box}
+.carr-i>figure{width:100%;max-width:400px}
+.card-fim>.btn{flex:none;width:100%}
+.carr-nav{display:flex;align-items:center;justify-content:center;gap:12px;width:100%}
+.carr-dots{display:flex;gap:8px}
+.carr-dots button{width:24px;height:24px;border:0;padding:0;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.carr-dots button::before{content:"";width:10px;height:10px;border-radius:5px;background:var(--linha);transition:width .2s}
+.carr-dots button[aria-current]::before{background:var(--manga);width:24px}
+.carr-seta{width:40px;height:40px;border-radius:50%;border:1.5px solid var(--linha);background:var(--acai);color:var(--areia);font-size:24px;line-height:1;cursor:pointer}
+.carr-n{font-size:13px;color:var(--neblina);font-variant-numeric:tabular-nums;min-width:30px}
 .compartilhar{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;padding-top:8px}
 .compartilhar>h2{font-size:28px;margin:0}
 .compartilhar>p{margin:0}
@@ -588,7 +603,8 @@ const RX = {
   laugh:/k{3,}|(?:ha){2,}|(?:rs){2,}|(?:he){3,}|hue(?:hue)+/i,
   bomdia:/\bbom dia\b|\bbdia\b/i,
   parabens:/parab[ée]ns|feliz anivers/i,
-  amo:/\bamo (?:vcs|voc[eê]s|vc|voc[eê]|todos|muito)\b|\bte amo\b|\bbeijos\b/i,
+  // carinho no grupo (sem "beijos" de tchau); limites com \p{L} porque \b falha em letra com acento
+  amo:/(?<!\p{L})(?:amo (?:muito |demais )?(?:vcs|voc[eê]s|vc|voc[eê]|todos|todas|esse grupo|essa galera|essa turma)|te amo|saudades? de (?:vcs|voc[eê]s|todos)|orgulho de (?:vcs|voc[eê]s|voc[eê]|vc)|voc[eê]s s[aã]o (?:demais|incr[ií]veis|os melhores|as melhores|tudo|foda)|amo esse grupo)(?!\p{L})/iu,
   palavrao:/\b(?:porra|caralho|carai|pqp|merda|foda|fdp|cacete|puta)\w*/gi,
   link:/https?:\/\//i,
   furo:/n[aã]o vou conseguir|n[aã]o vou poder|foi mal|fica pra pr[oó]xima|n[aã]o vai dar|vou furar/i,
@@ -605,10 +621,10 @@ const RX = {
   boasvindas:/bem[- ]vind/i,
   agradece:/obrigad|gratid[aã]o|valeu|agrade[cç]/i,
   fofoca:/n[aã]o v[aã]o acreditar|fiquei sabendo|ficaram sabendo|babado|fofoca|sabiam que|adivinha quem|contar uma coisa/i,
-  teamo:/\bte amo\b|\bte adoro\b|\bamo voc[eê]\b|\bamo vc\b|\bte quero\b|\bmeu amor\b/i,
-  apelido:/\b(?:amor|mor|mozão|mozao|bb|beb[eê]|vida|gato|gata|lindo|linda|princesa|nen[eé]m|chuchu|xuxu|vidinha|benzinho)\b/i,
+  teamo:/(?<!\p{L})(?:te amo|te adoro|amo (?:muito |demais )?(?:voc[eê]|vc)|amo demais|te amo demais)(?!\p{L})/iu,
+  apelido:/(?<!\p{L})(?:amor|mor|mozão|mozao|bb|beb[eê]|vida|gato|gata|lindo|linda|princesa|nen[eé]m|chuchu|xuxu|vidinha|benzinho)(?!\p{L})/iu,
   desculpa:/desculpa|perd[aã]o|me perdoa|foi mal|sinto muito/i,
-  fome:/\b(?:fome|jantar|janta|almo[cç]o|pizza|ifood|comer|lanche|hamb[uú]rguer|sushi|a[cç]a[ií]|sobremesa|chocolate)\b/i,
+  fome:/(?<!\p{L})(?:fome|jantar|janta|almo[cç]o|pizza|ifood|comer|lanche|hamb[uú]rguer|sushi|a[cç]a[ií]|sobremesa|chocolate)(?!\p{L})/iu,
   saudade:/saudade/i
 };
 const CORACOES = /❤️|❤|💕|💖|💗|💘|💞|💓|😍|🥰|😘|💋|🫶/gu;
@@ -619,17 +635,17 @@ const AUDIO_MEDIO = 35; // estimativa por áudio quando o export vem "sem mídia
 const DIAS_LONGO = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
 // assuntos leves para descrever cada personagem
 const TEMAS = [
-  ['comida', /\b(comida|comer|almoco|jantar|pizza|churras\w*|hamburguer|sushi|fome|receita|restaurante|lanche)\b/],
-  ['futebol', /\b(futebol|jogo|gol|time|timao|mengao|palmeiras|corinthians|flamengo|sao paulo|santos|gremio|inter|vasco|cruzeiro|campeonato|brasileirao)\b/],
-  ['rolê e festa', /\b(role|festa|balada|bar|show|sextou|aniver\w*|churras\w*)\b/],
-  ['cerveja e drinks', /\b(cerveja|breja|vinho|drink\w*|gin|cachaca|chopp|bebe\w*)\b/],
-  ['trabalho', /\b(trabalho|trampo|reuniao|chefe|cliente|projeto|escritorio|home office|deadline|entrega)\b/],
-  ['viagem', /\b(viagem|viajar|praia|ferias|voo|aeroporto|hotel|passagem|airbnb)\b/],
-  ['séries e filmes', /\b(serie|filme|netflix|episodio|temporada|novela|cinema|bbb)\b/],
-  ['bichos', /\b(cachorro|gato|pet|dog|gatinho|cachorrinho|veterinario)\b/],
-  ['filhos e família', /\b(filho|filha|filhos|bebe|escola|mae|pai|vo|vovo|sogra)\b/],
-  ['treino e saúde', /\b(treino|academia|corrida|correr|dieta|crossfit|pilates|medico|exame)\b/],
-  ['dinheiro', /\b(dinheiro|pix|conta|boleto|preco|caro|barato|salario|grana)\b/],
+  ['comida', /\b(comida|comer|almocar|almoco|jantar|janta|pizza|churrasco|churras|hamburguer|sushi|fome|receita|restaurante|lanche|ifood)\b/],
+  ['futebol', /\b(futebol|gol|golaco|timao|mengao|palmeiras|corinthians|flamengo|gremio|vasco|cruzeiro|brasileirao|libertadores|copa do mundo)\b/],
+  ['rolê e festa', /\b(role|roles|festa|festinha|balada|show|sextou|aniversario|niver)\b/],
+  ['cerveja e drinks', /\b(cerveja|cervejinha|breja|vinho|vinhos|drink|drinks|drinque|cachaca|chopp|chope|caipirinha|bebida|bebidas|beber|bebendo)\b/],
+  ['trabalho', /\b(trabalho|trampo|reuniao|chefe|cliente|projeto|escritorio|home office|deadline)\b/],
+  ['viagem', /\b(viagem|viajar|praia|ferias|voo|aeroporto|hotel|passagem|passagens|airbnb)\b/],
+  ['séries e filmes', /\b(serie|series|filme|filmes|netflix|episodio|temporada|novela|cinema|bbb)\b/],
+  ['bichos', /\b(cachorro|cachorra|cachorrinho|gatinho|gatinha|pet|veterinario)\b/],
+  ['filhos e família', /\b(filho|filha|filhos|escola|sogra|sogro|vovo|cunhado|cunhada)\b/],
+  ['treino', /\b(treino|treinar|academia|corrida|correr|crossfit|pilates|musculacao)\b/],
+  ['dinheiro', /\b(dinheiro|boleto|salario|grana|fatura|investimento)\b/],
   ['política', /\b(politica|eleicao|governo|presidente|deputado|lula|bolsonaro|stf)\b/]
 ];
 const STOP = new Set('alguem alguém algum alguma nada coisa coisas quero queria acho achei fazer falar falou mesmo sempre nunca porque pouco assim outra outro outros pessoal galera tava tinha ficar dizer disse sabe olha verdade beleza obrigado obrigada valeu vamo vamos aqui lá depois antes agora ainda hoje amanhã ontem semana todos todas tudo cada dele dela vocês voces nosso nossa minha meu seus suas você voce também tambem então entao sobre entre desde mais menos muito muita bem bom boa dia noite para pela pelo como mais mas que isso esse essa este esta aqui ali tem ter tava estou está esta vou vai vamos com uma umas uns por sim não nao tudo todo toda quando onde quem porque pq muito muita bem também tambem então entao ainda depois agora hoje gente cara mano fazer foi ser sou era você voce vocês voces meu minha seu sua dele dela nos nós eles elas acho sabe aí ai pra pro tá ta já ja kkk mensagem omitida oculta figurinha áudio imagem'.split(' '));
@@ -638,7 +654,7 @@ async function analyze(msgs, prog){
   const P = {}, hours = Array(24).fill(0), days = Array(7).fill(0), words = {}, full = {}, emo = {}, porDia = {};
   let palavras = 0, risadas = 0, silencio = 0, silIni = null, audioN = 0, audioSeg = 0, audioMedidos = 0;
   const giria = {}, minSem = new Int32Array(7*1440);
-  const get = a => P[a] || (P[a] = {name:a,count:0,text:0,chars:0,sticker:0,audio:0,photo:0,media:0,deleted:0,laugh:0,bomdia:0,parabens:0,amo:0,palavrao:0,link:0,furo:0,org:0,mae:0,ok:0,reuniao:0,salva:0,aviso:0,perdido:0,indica:0,vende:0,barulho:0,boasvindas:0,agradece:0,fofoca:0,audioMax:0,night:0,after:0,first:0,revive:0,kill:0,teamo:0,apelido:0,desculpa:0,fome:0,saudade:0,coracao:0,respT:0,respN:0,h:Array(24).fill(0),emo:{},words:{},y:{},wd:Array(7).fill(0),rep:{},ini:null,fim:null,giria:{},tema:{}});
+  const get = a => P[a] || (P[a] = {name:a,count:0,text:0,chars:0,sticker:0,audio:0,photo:0,media:0,deleted:0,laugh:0,bomdia:0,parabens:0,amo:0,palavrao:0,link:0,furo:0,org:0,mae:0,ok:0,reuniao:0,salva:0,aviso:0,perdido:0,indica:0,vende:0,barulho:0,boasvindas:0,agradece:0,fofoca:0,audioMax:0,night:0,after:0,first:0,revive:0,kill:0,teamo:0,apelido:0,desculpa:0,fome:0,saudade:0,coracao:0,mole:0,respT:0,respN:0,h:Array(24).fill(0),emo:{},words:{},y:{},wd:Array(7).fill(0),rep:{},ini:null,fim:null,giria:{},tema:{},emoD:{},wD:{},wCap:{},_dia:''});
   let prev = null, lastDay = '';
   for (let q = 0; q < msgs.length; q++){
     if (q % 5000 === 0 && q){ prog && prog(q/msgs.length); await sleep(0); }
@@ -659,13 +675,21 @@ async function analyze(msgs, prog){
       if (RX.laugh.test(b)) p.laugh++;
       for (const key of ['bomdia','parabens','amo','link','furo','org','mae','reuniao','salva','aviso','perdido','indica','vende','barulho','boasvindas','agradece','fofoca','teamo','apelido','desculpa','fome','saudade']) if (RX[key].test(b)) p[key]++;
       p.coracao += (b.match(CORACOES) || []).length;
+      if (RX.amo.test(b) || /❤️|❤|💕|💖|💗|💞|🥰|😍|🫶/u.test(b)) p.mole++;
       if (RX.ok.test(b)) p.ok++;
       const pw = b.match(RX.palavrao); if (pw) p.palavrao += pw.length;
       for (const g of semLink.match(GIRIA) || []){ const n = GIRIA_NORM[g] || g; giria[n] = (giria[n]||0) + 1; p.giria[n] = (p.giria[n]||0) + 1; }
       if (b.length > 3){ const bn = b.toLowerCase().normalize('NFD').replace(/\p{M}/gu,''); for (const [k, rx] of TEMAS) if (rx.test(bn)) p.tema[k] = (p.tema[k]||0) + 1; }
-      for (const e of b.match(/\p{Extended_Pictographic}/gu) || []){ emo[e] = (emo[e]||0)+1; p.emo[e] = (p.emo[e]||0)+1; }
+      // emoji e palavra contam 1 vez por mensagem e guardam em quantos dias diferentes apareceram (uma lista ✅✅✅ ou um evento não vira hábito)
+      const dia0 = m.t.toDateString();
+      for (const e of new Set(b.match(/\p{Extended_Pictographic}/gu) || [])){ emo[e] = (emo[e]||0)+1; p.emo[e] = (p.emo[e]||0)+1; const dd = p.emoD[e] || (p.emoD[e] = [0, '']); if (dd[1] !== dia0){ dd[0]++; dd[1] = dia0; } }
       if (!RX.laugh.test(b)){
-        for (const w of semLink.normalize('NFC').match(/\p{L}{4,}/gu) || []) if (!STOP.has(w) && !/^(?:https?|www|http)$/.test(w)){ words[w] = (words[w]||0)+1; p.words[w] = (p.words[w]||0)+1; }
+        const orig = b.replace(/(?:https?:\/\/|www\.)\S+|\S+\.(?:com|br|net|org|ly|me|app|gl)\b\S*/gi, ' ').normalize('NFC'), vistos = new Set();
+        for (const x of orig.matchAll(/\p{L}{4,}/gu)){ const w = x[0].toLowerCase(); if (STOP.has(w) || /^(?:https?|www|http)$/.test(w) || vistos.has(w)) continue; vistos.add(w);
+          words[w] = (words[w]||0)+1; p.words[w] = (p.words[w]||0)+1;
+          const dd = p.wD[w] || (p.wD[w] = [0, '']); if (dd[1] !== dia0){ dd[0]++; dd[1] = dia0; }
+          // maiúscula no meio da frase = nome próprio (pessoa, lugar, apelido)
+          const antes = orig.slice(0, x.index).trimEnd(); if (antes && !/[.!?…:]$/.test(antes) && x[0][0] !== w[0]) p.wCap[w] = (p.wCap[w]||0)+1; }
         const n = b.toLowerCase().replace(/[!?.]+$/,'');
         if (n.split(/\s+/).length >= 2 && n.length <= 40 && !RX.link.test(n)) full[n] = (full[n]||0)+1;
       }
@@ -707,7 +731,7 @@ const AW = [
  {m:['amigos','familia'],e:'🔥',n:'Puxa-Assunto',crit:'Reabriu o grupo depois de 3h+ de silêncio',k:'revive',u:'ressurreições',mech:'palpite',p:'{w} ressuscitou o grupo {v} vezes. Desfibrilador humano.'},
  {m:['amigos'],e:'🪦',n:'Mata-Conversa',crit:'Mensagem seguida de 3h+ de silêncio',k:'kill',u:'conversas encerradas',mech:'raspadinha',p:'{v} conversas morreram depois de uma mensagem de {w}. Sem ressentimentos. Ou com.'},
  {m:['amigos'],e:'👻',n:'O Fantasma',crit:'Menos mensagens no grupo',k:'count',low:true,u:'mensagens',mech:'raspadinha',p:'Só {v} mensagens. {w} lê tudo e não fala nada. Respeitamos o mistério.'},
- {m:['amigos'],e:'💌',n:'Coração Mole',crit:'Mais "amo vcs" e declarações',k:'amo',u:'declarações',mech:'palpite',p:'{v} declarações de amor. Por trás da zoeira, {w} é puro sentimento.'},
+ {m:['amigos'],e:'💌',n:'Coração Mole',crit:'Mensagens de carinho: "amo vocês", "saudade de vocês", "vocês são demais", ❤️ 🥰',k:'mole',min:5,u:'mensagens de carinho',mech:'palpite',p:'{v} mensagens de carinho. Por trás da zoeira, {w} é puro sentimento.'},
  {m:['amigos'],e:'🗑️',n:'O Arrependido',crit:'Mais mensagens apagadas',k:'deleted',u:'mensagens apagadas',mech:'raspadinha',p:'{w} apagou {v} mensagens. O que será que tinha ali?'},
  {m:['amigos','familia'],e:'🎙️',n:'Podcaster do Grupo',crit:'Mais áudios enviados (e a fatia de cada um)',k:'audio',u:'áudios',fatia:true,mech:'podio',p:'{v} áudios, {s} de todos os áudios do grupo. {w} tem episódio novo toda semana.'},
  {m:['amigos','trabalho'],e:'📜',n:'Escritor de Textão',crit:'Maior média de caracteres por mensagem',k:'avg',u:'caracteres por mensagem',mech:'palpite',p:'Média de {v} caracteres por mensagem. {w} escreve como quem manda e-mail.'},
@@ -762,7 +786,7 @@ function buildAwards(d){
     if (a.low && d.people.length < 3 && state.modo !== 'casal') continue;
     const ranked = d.people.map(p => ({name:p.name, v:val(a,p), p})).filter(r => r.v !== null)
       .sort((x,y) => a.low ? x.v - y.v : y.v - x.v);
-    if (!ranked.length || (!a.low && ranked[0].v <= 0)) continue;
+    if (!ranked.length || (!a.low && ranked[0].v <= 0) || (a.min && ranked[0].v < a.min)) continue;
     const total = d.people.reduce((s,p) => s + (a.rate || a.pct || a.k==='avg' ? 0 : p[a.k]), 0);
     list.push({...a, ranked, winner:ranked[0], total});
   }
@@ -1461,7 +1485,7 @@ const DOS = () => state.modo === 'casal' ? 'dos casais' : 'dos grupos';
 const UNID_RANK = {total:'mensagens', hist_total:'mensagens', audios:'áudios', hist_audios:'áudios', risadas:'risadas', figurinhas:'figurinhas', madrugada:'mensagens de madrugada', bomdia:'bons dias', amor:'declarações de amor', coracoes:'corações', palavrao:'palavrões', apagadas:'mensagens apagadas'};
 function rankTxt(k){
   const t = state.comp?.top?.[k]; if (!t || t >= 100) return null;
-  if (k === 'dias'){ const y = 100 - t; return y >= 10 ? (state.modo === 'casal' ? `📅 Juntos há mais tempo que ${y}% dos casais` : `📅 Mais antigo que ${y}% dos grupos`) : null; }
+  if (k === 'dias'){ const y = 100 - t; return y >= 10 ? (state.modo === 'casal' ? `📅 Conversa mais antiga que a de ${y}% dos casais` : `📅 Grupo mais antigo que ${y}% dos grupos`) : null; }
   if (t <= 50) return `🏅 Top ${t}% ${quemBrasil()}`;
   const y = 100 - t; return y >= 10 && UNID_RANK[k] ? `📊 Mais ${UNID_RANK[k]} que ${y}% ${DOS()}` : null;
 }
@@ -1477,8 +1501,9 @@ function resumoInicio(d){
   f.push({e:'💬', big:`${fmt(d.total)} mensagens`, sub:`desde ${desde} · média de ${md >= 10 ? fmt(Math.round(md)) : md.toFixed(1).replace('.', ',')} por dia`, top:'hist_total dias'});
   if (au){ const q = quemAudio(d); f.push({e:'🎧', big:`${fmt(d.audioN)} áudios`, sub:`${au.txt} · ${au.comp.replace(/^[\d.]+ áudios · /, '')}`, top:'hist_audios',
     quem: q.length ? `${state.modo === 'casal' ? 'Quem manda mais' : 'Quem mais manda'}: ${q.map(x => `${x.n} ${x.pct}%`).join(' · ')}` : ''}); }
-  f.push({e:'📚', big:`${fmt(lv.pags)} ${lv.pags === 1 ? 'página' : 'páginas'} · ${tempoLeitura(d.palavras)}`, sub:`se ${state.modo === 'casal' ? 'a conversa' : 'o grupo'} virasse livro · ${tempoLeitura(d.palavras)} para ler tudo, sem parar · ${lv.comp}`});
-  if (fr) f.push({e:'🗣️', big:fr.txt, sub:fr.sub});
+  f.push({e:'📚', big:`${fmt(lv.pags)} ${lv.pags === 1 ? 'página' : 'páginas'} · ${tempoLeitura(d.palavras)}`, sub:`se ${state.modo === 'casal' ? 'a conversa' : 'o grupo'} virasse livro · ${tempoLeitura(d.palavras)} para ler tudo, sem parar · ${lv.comp}`, curto: lv.comp});
+  // frase mais dita: só no casal e com 10+ repetições (em grupo errava mais do que acertava)
+  if (state.modo === 'casal' && fr && d.lema && d.lema[1] >= 10) f.push({e:'🗣️', big:fr.txt, sub:fr.sub});
   if (d.giria && d.giria[1] >= 3) f.push({e:'🤙', big:`“${d.giria[0]}”`, sub:`a gíria oficial · ${fmt(d.giria[1])} vezes`});
   return f;
 }
@@ -1712,33 +1737,48 @@ function videoHTML(casal){
   if (!videoSuportado()) return '';
   return `<figure class="card-fim video-fim"><figcaption>🎬 Vídeo ${casal ? 'do casal' : 'do grupo'} <span class="small">· ${state.data ? Math.round(cenasVideo(state.data).T.fim + 2.6) : 30} segundos · ${state.compD ? 'foco em ' + ANO_MOMENTO : 'desde o início'}</span></figcaption>
     <canvas id="vlive" class="rimg" width="540" height="960" role="img" aria-label="Prévia do vídeo ${casal ? 'do casal' : 'do grupo'}: ${ANO_MOMENTO} em números${casal ? ' e um contra o outro' : ' e os destaques'}"></canvas>
-    <p class="small" id="vmsg" role="status" style="margin:0">${premiumLocal() ? 'Toque em Baixar para gerar o vídeo (leva só alguns segundos).' : 'A prévia é grátis. Para baixar e postar o vídeo, é Premium.'}</p>
-    <div class="btn-row"><button type="button" class="btn btn-main" id="vger">${premiumLocal() ? '⬇️ Baixar o vídeo' : '🔒 Baixar o vídeo'}</button><button type="button" class="btn btn-wa" id="vsh" hidden><i class="ic-wa" aria-hidden="true"></i>WhatsApp</button><button type="button" class="btn btn-ghost" id="vsv" hidden>⬇️ Salvar</button></div></figure>`;
+    <p class="small" id="vmsg" role="status" style="margin:0">${premiumLocal() ? 'Um toque: o vídeo fica pronto em segundos e abre as opções do celular (salvar na galeria, WhatsApp, Instagram).' : 'A prévia é grátis. Para salvar e compartilhar o vídeo, é Premium.'}</p>
+    <button type="button" class="btn btn-main" id="vger" style="width:100%">${premiumLocal() ? '📤 Salvar ou compartilhar' : '🔒 Salvar ou compartilhar'}</button></figure>`;
+}
+// um botão só: abre a folha de compartilhar do celular (salvar na galeria, WhatsApp, Instagram...); no computador, baixa o arquivo
+async function compartilhaArquivo(blob, nome){
+  const f = new File([blob], nome, {type: blob.type});
+  let pode = false; try { pode = !!navigator.canShare?.({files: [f]}); } catch {}
+  if (pode){
+    try { await navigator.share({files: [f]}); try { if (typeof evento === 'function') evento('compartilhou', {tipo: blob.type.split('/')[0]}); } catch {} return 'ok'; }
+    catch (e){ if (e?.name === 'AbortError') return 'cancelado'; if (e?.name === 'NotAllowedError') return 'sem-gesto'; }
+  }
+  const dw = (typeof DOWN !== 'undefined' && DOWN) || await window.claude?.use?.('downloads').catch(() => null);
+  if (dw){ try { await dw.save({filename: nome, data: blob}); return 'baixou'; } catch {} }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nome; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  return 'baixou';
 }
 function ligaVideo(d, casal, refaz){
   if ($('#vlive')) tocaPrevia($('#vlive'), d);
   if (!$('#vger')) return;
   let vid = null;
+  const nome = () => `retrozap-${casal ? 'casal' : 'grupo'}.${vid.ext}`;
+  const manda = async () => {
+    const bt = $('#vger'), msg = $('#vmsg'), r = await compartilhaArquivo(vid.blob, nome());
+    // o celular só abre o compartilhar logo depois de um toque: se o vídeo demorou, pede mais um toque
+    if (r === 'sem-gesto'){ bt.textContent = '📤 Vídeo pronto! Toque para salvar ou compartilhar'; msg.textContent = 'Seu vídeo está pronto.'; return; }
+    bt.textContent = '📤 Salvar ou compartilhar de novo';
+    msg.textContent = r === 'baixou' ? 'Vídeo baixado! Procure na pasta de downloads.' : r === 'ok' ? 'Pronto! 🎉' : 'Seu vídeo está pronto. Toque de novo quando quiser.';
+  };
   $('#vger').onclick = async () => {
     const bt = $('#vger'), msg = $('#vmsg');
+    if (vid) return manda();
     if (!premiumLocal() && !state.videoOk){ bt.disabled = true; const ok = await premiumLiberado(); bt.disabled = false;
       if (ok) state.videoOk = true; else return paywall(refaz, 'video'); }
     bt.disabled = true;
     try {
       try { vid = await gravarVideoRapido(d, f => { bt.textContent = `🎬 Preparando o vídeo... ${Math.round(f*100)}%`; }); }
       catch { vid = await gravarVideo(d, t => { bt.textContent = `🎬 Preparando o vídeo... ${Math.max(0, Math.ceil(VID_DUR - t))}s`; }); }
-      bt.textContent = '🔁 Gerar de novo'; $('#vsh').hidden = false; $('#vsv').hidden = false;
-      msg.textContent = vid.ext === 'mp4' ? 'Pronto! Mande no WhatsApp ou poste nos stories.' : 'Pronto! Se o Instagram não aceitar, mande pelo WhatsApp.';
-    } catch { msg.textContent = 'Não deu para gravar o vídeo neste navegador. Use as imagens.'; bt.textContent = '🎬 Gerar o vídeo'; }
-    bt.disabled = false;
+      bt.disabled = false; msg.textContent = 'Pronto!';
+      await manda();
+    } catch { msg.textContent = 'Não deu para gerar o vídeo neste navegador. Use as imagens.'; bt.textContent = '🎬 Tentar de novo'; bt.disabled = false; }
   };
-  $('#vsh').onclick = async () => { if (!vid) return; const f = new File([vid.blob], `retrozap-${casal ? 'casal' : 'grupo'}.${vid.ext}`, {type: vid.blob.type});
-    try { if (navigator.canShare?.({files:[f]})){ await navigator.share({files:[f], text: convite('resumo')}); return; } } catch (e){ if (e?.name === 'AbortError') return; }
-    $('#vmsg').textContent = 'Seu navegador não compartilha vídeo direto. Toque em Salvar e mande pelo app.'; };
-  $('#vsv').onclick = async () => { if (!vid) return; const nome = `retrozap-${casal ? 'casal' : 'grupo'}.${vid.ext}`;
-    const dw = (typeof DOWN !== 'undefined' && DOWN) || await window.claude?.use?.('downloads').catch(() => null);
-    if (dw){ try { await dw.save({filename: nome, data: vid.blob}); $('#vmsg').textContent = 'Vídeo salvo!'; return; } catch {} }
-    const a = document.createElement('a'); a.href = URL.createObjectURL(vid.blob); a.download = nome; document.body.appendChild(a); a.click(); a.remove(); };
 }
 // final: para compartilhar (vídeo e imagens) e extras (categoria livre e personagens)
 // categoria livre: a pessoa digita uma palavra e vê quem mais falou (tudo calculado aqui no aparelho)
@@ -1769,7 +1809,7 @@ function fimTela(semFesta){
   setSteps(3);
   const d = state.data, casal = state.modo === 'casal' && d.people.length === 2, so26 = !!state.compD, livre = liberado();
   const fig = (id, cap, per, alt) => `<figure class="card-fim"><figcaption>${cap} <span class="small">· ${per}</span></figcaption><img id="rimg${id}" class="rimg" alt="${esc(alt)}">
-    <div class="btn-row"><button type="button" class="btn btn-wa" id="wa${id}"><i class="ic-wa" aria-hidden="true"></i>WhatsApp</button><button type="button" class="btn btn-ghost" id="sv${id}">⬇️ Salvar</button></div></figure>`;
+    <button type="button" class="btn btn-main" id="sv${id}" style="width:100%">📤 Salvar ou compartilhar</button></figure>`;
   const persos = personagens(d, campeao().by);
   view.innerHTML = `<section class="screen wr" style="align-items:center;text-align:center">
     ${state.sample ? `<span class="sample">${state.modo === 'casal' ? 'Casal de exemplo' : 'Grupo de exemplo'}</span>` : ''}
@@ -1783,13 +1823,10 @@ function fimTela(semFesta){
     <section class="compartilhar" aria-labelledby="cmpT">
       <h2 id="cmpT">📲 Para compartilhar</h2>
       <p class="small">${casal ? 'Vídeo e imagens prontos para mandar um para o outro e postar nos stories.' : 'Vídeo e imagens prontos para mandar no grupo e postar nos stories.'} Tudo é feito aqui no seu celular.</p>
-      ${videoHTML(casal)}
-      <div class="duas">
-        ${fig(3, `🏆 Troféus ${casal ? 'do casal' : 'do grupo'}`, 'desde o início', altTop10())}
-        ${fig(1, `📸 Resumo ${casal ? 'do casal' : 'do grupo'}`, 'desde o início', altResumo(d))}
-        ${casal ? fig(5, '💞 Nós dois: um contra o outro', so26 ? 'só ' + ANO_MOMENTO : 'desde o início', altCasal(d)) : ''}
-        ${so26 ? fig(4, `🗓️ Nosso ${ANO_MOMENTO}`, 'só ' + ANO_MOMENTO, altNosso2026()) : ''}
-      </div>
+      ${(() => { const itens = [videoHTML(casal), fig(3, `🏆 Troféus ${casal ? 'do casal' : 'do grupo'}`, 'desde o início', altTop10()), fig(1, `📸 Resumo ${casal ? 'do casal' : 'do grupo'}`, 'desde o início', altResumo(d)),
+          casal ? fig(5, '💞 Nós dois: um contra o outro', so26 ? 'só ' + ANO_MOMENTO : 'desde o início', altCasal(d)) : '', so26 ? fig(4, `🗓️ Nosso ${ANO_MOMENTO}`, 'só ' + ANO_MOMENTO, altNosso2026()) : ''].filter(Boolean);
+        return `<div class="carr" id="carr" role="region" aria-roledescription="carrossel" aria-label="Vídeo e imagens para compartilhar" tabindex="0">${itens.map((x, i) => `<div class="carr-i" role="group" aria-roledescription="item" aria-label="${i + 1} de ${itens.length}">${x}</div>`).join('')}</div>
+        <div class="carr-nav"><button type="button" class="carr-seta" data-carr="-1" aria-label="Anterior">‹</button><div class="carr-dots">${itens.map((_, i) => `<button type="button" data-dot="${i}" aria-label="Ver item ${i + 1} de ${itens.length}"${i ? '' : ' aria-current="true"'}></button>`).join('')}</div><span class="carr-n" aria-hidden="true">1/${itens.length}</span><button type="button" class="carr-seta" data-carr="1" aria-label="Próximo">›</button></div>`; })()}
     </section>
     <section class="extras" aria-labelledby="exT">
       <h2 id="exT">✨ Extra</h2>
@@ -1823,9 +1860,27 @@ function fimTela(semFesta){
   [['#rimg1', () => drawResumo(d)], ['#rimg3', () => drawTop10()], ['#rimg4', () => drawNosso2026()], ['#rimg5', () => drawCasal(d)]].forEach(([sel, fz]) => imgSobDemanda($(sel), fz));
   ligaVideo(d, casal, () => fimTela(true));
   ativaAnuncios();
-  const liga = (id, fz, nome, alt) => { if (!$('#wa' + id)) return;
-    $('#wa' + id).onclick = () => mandarWhats(paraBlob(fz()), nome, convite('resumo'), null, () => openCard(fz, convite('resumo'), alt));
-    $('#sv' + id).onclick = () => openCard(fz, convite('resumo'), alt); };
+  // carrossel: arrastar para o lado, bolinhas e setas mostram onde está
+  const car = $('#carr');
+  if (car){ const its = [...car.children], dots = [...view.querySelectorAll('[data-dot]')], num = view.querySelector('.carr-n');
+    const atual = () => Math.round(car.scrollLeft / Math.max(1, car.clientWidth));
+    const vai = i => { i = Math.max(0, Math.min(its.length - 1, i)); car.scrollTo({left: i * car.clientWidth, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); };
+    const marca = () => { const i = atual(); dots.forEach((b, k) => b.toggleAttribute('aria-current', k === i)); if (num) num.textContent = `${i + 1}/${its.length}`;
+};
+    car.addEventListener('scroll', () => { clearTimeout(car._t); car._t = setTimeout(marca, 80); }, {passive: true});
+    dots.forEach(b => b.onclick = () => vai(+b.dataset.dot));
+    view.querySelectorAll('[data-carr]').forEach(b => b.onclick = () => vai(atual() + +b.dataset.carr));
+    car.addEventListener('keydown', e => { if (e.key === 'ArrowRight'){ e.preventDefault(); vai(atual() + 1); } if (e.key === 'ArrowLeft'){ e.preventDefault(); vai(atual() - 1); } });
+    marca();
+    // as imagens do carrossel já são desenhadas, uma de cada vez, sem esperar a pessoa arrastar
+    [['#rimg3', () => drawTop10()], ['#rimg1', () => drawResumo(d)], ['#rimg5', () => drawCasal(d)], ['#rimg4', () => drawNosso2026()]].forEach(([s, fz]) => { const el = $(s); if (el && !el.src){ FILA_IMG.push(() => { if (el.isConnected && !el.src) el.src = fz(); }); } });
+    rodaFilaImg(); }
+  // celular: abre direto as opções (galeria, WhatsApp...); computador: abre a imagem grande com baixar e copiar
+  const liga = (id, fz, nome, alt) => { if (!$('#sv' + id)) return;
+    $('#sv' + id).onclick = async () => { const blob = paraBlob(fz()), f = new File([blob], nome, {type: 'image/png'});
+      let pode = false; try { pode = !!navigator.canShare?.({files: [f]}); } catch {}
+      if (pode) return compartilhaArquivo(blob, nome);
+      openCard(fz, convite('resumo'), alt); }; };
   liga(1, () => drawResumo(d), 'retrozap-resumo.png', altResumo(d));
   liga(3, () => drawTop10(), 'retrozap-trofeus.png', altTop10());
   liga(4, () => drawNosso2026(), `retrozap-${ANO_MOMENTO}.png`, so26 ? altNosso2026() : '');
@@ -2005,14 +2060,18 @@ function detalhe(a, r){ return a.det && r.p ? a.det(r.p) : a.fatia && a.total ? 
 function phrase(a){ return a.p.replaceAll('{w}', a.winner.name).replaceAll('{v}', vfmt(a, a.winner.v)).replaceAll('{s}', fatia(a, a.winner.v)); }
 function showResult(a, extra=''){
   const res = $('#res'); res.hidden = false;
+  res.closest('.award')?.classList.add('revelado');
   res.innerHTML = `${extra}<div class="selo">${esc(a.winner.name)}</div>
     <p class="frase">${esc(phrase(a))}</p>
-    <div class="top3">${a.ranked.slice(0,3).map((r,i)=>`<div><span>${['🥇','🥈','🥉'][i]} ${esc(r.name)}</span><span>${vunid(a, r.v)}${detalhe(a, r) ? `<small> · ${esc(detalhe(a, r))}</small>` : ''}</span></div>`).join('')}</div>
+    <div class="top3"${a.mech === 'podio' ? ' hidden' : ''}>${a.ranked.slice(0,3).map((r,i)=>`<div><span>${['🥇','🥈','🥉'][i]} ${esc(r.name)}</span><span>${vunid(a, r.v)}${detalhe(a, r) ? `<small> · ${esc(detalhe(a, r))}</small>` : ''}</span></div>`).join('')}</div>
     <button class="btn btn-main" id="card" style="width:100%">📲 Gerar card para o grupo</button>`;
   $('#card').onclick = () => openCard(() => cardAward(a), convite('premio', a), `Card do prêmio ${a.n}: ${a.winner.name}, com ${vunid(a, a.winner.v)}`);
   const nx = $('#next'), rv = $('#rvl'); if (rv) rv.remove();
   if (nx){ nx.classList.replace('btn-ghost','btn-main'); nx.style.flex = '1'; nx.textContent = state.idx < state.awards.length-1 ? 'Próximo prêmio →' : 'Ir para o Gran Finale 🥁'; }
   confetti();
+  // o resultado e o botão do card ficam sempre à vista, sem a pessoa precisar rolar
+  requestAnimationFrame(() => { const c = $('#card'); if (!c) return; const r = c.getBoundingClientRect(), barra = ($('.acao')?.getBoundingClientRect().height || 0) + 12;
+    if (r.bottom > innerHeight - barra || r.top < 70) scrollBy({top: r.bottom - (innerHeight - barra), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); });
 }
 /* mecânicas */
 function principais(){ const b = state.bonus || []; return state.awards.filter(a => !a.honra && !b.includes(a)).slice(0, 10); }
@@ -2268,15 +2327,16 @@ function drawResumo(d){
   let tam = 84; c.font = `800 ${tam}px ${BR}`;
   while (tam > 50 && linhasDe(c, nomeT, 960) > 2){ tam -= 4; c.font = `800 ${tam}px ${BR}`; }
   const nl = Math.min(2, wrap(c, nomeT, W/2, 285, 960, Math.round(tam * 1.1)));
-  const linhas = resumoInicio(d).map(x => { const t = x.top ? x.top.split(' ').map(rankTxt).filter(Boolean).map(s => s.replace(/^\S+ /, '')).join(' · ') : '';
-    return [x.e, x.big, x.quem ? `${x.quem.replace(/^Quem mais manda: |^Quem manda mais: /, 'quem mais manda: ')}` : t ? `${x.sub.split(' · ')[0]} · ${t}` : x.sub]; });
+  // no card, a linha de baixo é curta (texto longo encolhe até ficar ilegível)
+  const linhas = resumoInicio(d).map(x => { const t = x.top ? x.top.split(' ').map(rankTxt).filter(Boolean).map(s => s.replace(/^\S+ /, ''))[0] : '';
+    return [x.e, x.big, x.quem ? x.quem.replace(/^Quem mais manda: |^Quem manda mais: /, 'quem mais manda: ') : t || x.curto || x.sub]; });
   const topo = 285 + (nl - 1)*92 + 75, base = 1490, passo = Math.min(215, (base - topo)/linhas.length), alt = passo - 14;
   let y = topo;
   for (const [ic, num, rot] of linhas){
     c.fillStyle = CV().caixa; c.beginPath(); c.roundRect(70, y, W-140, alt, 28); c.fill();
     c.textAlign = 'left'; c.font = `${Math.round(alt*.48)}px serif`; c.fillStyle = CV().txt; c.fillText(ic, 105, y + alt*.66);
-    c.fillStyle = CV().ouro; caber(c, num, 225, y + alt*.52, 760, 800, Math.round(alt*.38), BR);
-    c.fillStyle = CV().sub; caber(c, rot, 225, y + alt*.84, 760, 500, Math.round(alt*.22), DM);
+    c.fillStyle = CV().ouro; caber(c, num, 225, y + alt*.48, 760, 800, Math.round(alt*.36), BR);
+    c.fillStyle = CV().txt; caber(c, rot, 225, y + alt*.82, 760, 600, Math.min(40, Math.round(alt*.24)), DM);
     y += passo;
   }
   // mensagens ano a ano
@@ -2310,7 +2370,7 @@ function drawResumoQ(d){
   tiles.forEach(([ic, num, rot], i) => {
     const x = 70 + (i % 2)*480, y = 280 + Math.floor(i/2)*345, w = 460, h = 325, cx = x + w/2;
     c.fillStyle = CV().caixa; c.beginPath(); c.roundRect(x, y, w, h, 30); c.fill();
-    c.fillStyle = CV().txt; c.font = '68px serif'; c.fillText(ic, cx, y + 95);
+    c.fillStyle = CV().txt; emojiC(c, ic, cx, y + 72, 68);
     c.fillStyle = CV().ouro; caber(c, num, cx, y + 190, w - 40, 800, 56, BR);
     c.fillStyle = CV().sub; c.font = `500 27px ${DM}`; wrap(c, rot, cx, y + 245, w - 50, 34);
   });
@@ -2332,7 +2392,7 @@ function drawSpoiler(lista){
   c.textAlign = 'center';
   c.fillStyle = CV().ouro; c.font = `800 46px ${BR}`; c.fillText(state.modo === 'casal' ? 'retrozap 💕' : 'retrozap 🏆', W/2, 92);
   if (state.grupo){ c.fillStyle = CV().txt; caber(c, state.grupo, W/2, 152, 940, 700, 40, DM); }
-  c.font = '120px serif'; c.fillText('👀', W/2, 300);
+  emojiC(c, '👀', W/2, 258, 120);
   c.fillStyle = CV().ouro; c.font = `800 110px ${BR}`; c.fillText('SPOILER!', W/2, 418);
   c.fillStyle = CV().sub; c.font = `700 30px ${DM}`; c.fillText(`OS ${lista.length} TROFÉUS EM DISPUTA`, W/2, 476);
   const linhas = Math.ceil(lista.length/2), alt = Math.min(118, 620/linhas), y0 = 510;
@@ -2435,7 +2495,7 @@ function drawComparacao(d){
   c.textAlign = 'center';
   c.fillStyle = CV().ouro; c.font = `800 48px ${BR}`; c.fillText(state.modo === 'casal' ? 'retrozap 💕' : 'retrozap 🏆', W/2, 100);
   if (state.grupo){ c.fillStyle = CV().txt; caber(c, state.grupo, W/2, 178, 960, 800, 62, BR); }
-  c.font = '120px serif'; c.fillText('🏅', W/2, 340);
+  emojiC(c, '🏅', W/2, 298, 120);
   c.fillStyle = CV().ouro; c.font = `800 78px ${BR}`; c.fillText(state.modo === 'casal' ? 'NÓS DOIS' : 'NOSSO GRUPO', W/2, 450); c.fillText('NO RANKING', W/2, 535);
   c.fillStyle = CV().sub; c.font = `700 30px ${DM}`; c.fillText(`${state.modo === 'casal' ? 'ENTRE OS CASAIS DO RETROZAP' : state.comp?.escopo === 'todos' ? 'ENTRE OS GRUPOS DO RETROZAP' : `ENTRE OS GRUPOS ${tipo} DO RETROZAP`} · ${periodo26()}`, W/2, 595, 980);
   const y0 = 650, passo = Math.min(190, 1040/Math.max(1, lista.length)), alt = passo - 18;
@@ -2461,9 +2521,9 @@ function nosso2026(){
   if (as) txt.push({e: as.e, big: as.txt, sub: `o assunto mais falado · ${fmt(as.n)} mensagens`});
   const ms = Array(12).fill(0); for (const m of d.msgs) ms[m.t.getMonth()]++;
   const mi = ms.indexOf(Math.max(...ms)); if (ms[mi] > 0) txt.push({e:'📈', big: MESES[mi], sub: `o mês mais agitado · ${fmt(ms[mi])} mensagens`});
-  if (d.lema && d.lema[1] >= 3) txt.push({e:'🗣️', big:`“${d.lema[0]}”`, sub:`a frase mais dita · ${fmt(d.lema[1])} vezes`});
+  if (state.modo === 'casal' && d.lema && d.lema[1] >= 10) txt.push({e:'🗣️', big:`“${d.lema[0]}”`, sub:`a frase mais dita · ${fmt(d.lema[1])} vezes`});
   if (d.giria && d.giria[1] >= 3) txt.push({e:'🤙', big:`“${d.giria[0]}”`, sub:`a gíria oficial · ${fmt(d.giria[1])} vezes`});
-  return {nums, txt, ds: destaques26('sumico')};
+  return {nums, txt, ds: destaques26('fantasma')};
 }
 function altNosso2026(){ const {nums, txt, ds} = nosso2026();
   return `Nosso ${ANO_MOMENTO}${state.grupo ? ', ' + state.grupo : ''}: ` + [...nums.map(x => `${fmt(x.n)} ${x.t}${x.vs ? ', ' + x.vs : ''}${x.rank ? ', ' + x.rank.replace(/^\S+ /, '') : ''}`),
@@ -2506,7 +2566,7 @@ function drawNosso2026(){
     ds.forEach((x, i) => {
       const bx = 50 + i*(bw + 16), cx = bx + bw/2;
       c.fillStyle = K.brilho(.14); c.beginPath(); c.roundRect(bx, 1630, bw, 196, 26); c.fill();
-      c.fillStyle = K.txt; c.font = '50px serif'; c.fillText(x.e, cx, 1690);
+      c.fillStyle = K.txt; emojiC(c, x.e, cx, 1672, 50);
       c.fillStyle = K.sub; caber(c, x.t.replace(` de ${ANO_MOMENTO}`, '').toUpperCase(), cx, 1726, bw - 24, 700, 22, DM);
       c.fillStyle = K.ouro; caber(c, x.n, cx, 1768, bw - 24, 800, 36, BR);
       c.fillStyle = K.txt; caber(c, x.v, cx, 1802, bw - 24, 500, 20, DM);
@@ -2520,7 +2580,7 @@ function drawNosso2026(){
 function categoriasCasal(d){
   const src = state.compD && state.compD.people.length ? state.compD : d, achar = n => src.people.find(p => p.name === n) || {};
   const a = achar(d.people[0].name), b = achar(d.people[1].name);
-  const L = [['💬','Mensagens','count'],['🎙️','Áudios','audio'],['💘','Declarações de amor','teamo'],['🌅','Puxou o papo do dia','first'],['🗑️','Apagou mensagem','deleted']]
+  const L = [['💬','Mensagens','count'],['🎙️','Áudios','audio'],['💘','Declarações de amor','teamo'],['🌅','Puxou o papo do dia','first']]
     .map(([e, t, k]) => ({e, t, a: a[k]||0, b: b[k]||0}));
   return {msg: L[0], cats: L};
 }
@@ -2538,7 +2598,7 @@ function drawCasal(d){
   c.fillStyle = '#FFFFFF'; caber(c, a.name, 265, 300, 380, 800, 64, BR); caber(c, b.name, W - 265, 300, 380, 800, 64, BR);
   c.fillStyle = K.ouro; coracao(c, W/2, 222, 52); c.fillStyle = '#FFFFFF'; c.font = `800 30px ${BR}`; c.fillText('VS', W/2, 268);
   let ga = 0, gb = 0, y = 410;
-  const passo = Math.min(250, 1330 / cats.length);
+  const passo = Math.min(230, 1000 / cats.length);
   for (const x of cats){
     const ta = x.menor ? x.a < x.b : x.a > x.b, tb = x.menor ? x.b < x.a : x.b > x.a; if (ta) ga++; if (tb) gb++;
     const f = x.fmt || fmt, h = passo - 20;
@@ -2556,7 +2616,21 @@ function drawCasal(d){
   }
   // placar
   c.fillStyle = K.txt; c.font = `800 52px ${BR}`;
-  c.fillText(ga === gb ? `Empate: ${ga} a ${gb} 💞` : `Placar: ${limpaTxt(ga > gb ? a.name : b.name).split(' ')[0]} ${Math.max(ga, gb)} a ${Math.min(ga, gb)}`, W/2, y + 60, 980);
+  c.fillText(ga === gb ? `Empate: ${ga} a ${gb} 💞` : `Placar: ${limpaTxt(ga > gb ? a.name : b.name).split(' ')[0]} ${Math.max(ga, gb)} a ${Math.min(ga, gb)}`, W/2, y + 50, 980);
+  // os troféus de vocês: mais romântico, podcaster e tagarela (desde o início)
+  const tr = ['Mais Romântico', 'Podcaster do Casal', 'Tagarela do Casal'].map(n => (state.awards || []).find(x => x.n === gtit(n) && x.winner)).filter(Boolean);
+  if (tr.length){
+    const ty = y + 100, bw = (W - 100 - (tr.length - 1)*16)/tr.length;
+    c.fillStyle = K.sub; c.font = `700 28px ${DM}`; c.fillText('OS TROFÉUS DE VOCÊS · DESDE O INÍCIO', W/2, ty + 20);
+    tr.forEach((x, i) => {
+      const bx = 50 + i*(bw + 16), cx = bx + bw/2, cor = x.winner.name === a.name ? K.A : K.B;
+      c.fillStyle = K.caixa; c.beginPath(); c.roundRect(bx, ty + 44, bw, 240, 28); c.fill();
+      c.fillStyle = K.txt; emojiC(c, x.e, cx, ty + 102, 64);
+      c.fillStyle = K.sub; caber(c, gtit(x.n, x.winner.name).replace(/ do Casal$/, '').toUpperCase(), cx, ty + 170, bw - 24, 700, 24, DM);
+      c.fillStyle = cor; caber(c, limpaTxt(x.winner.name).split(' ')[0], cx, ty + 220, bw - 24, 800, 44, BR);
+      c.fillStyle = K.txt; caber(c, vunid(x, x.winner.v), cx, ty + 260, bw - 24, 500, 22, DM);
+    });
+  }
   c.fillStyle = K.txt; c.font = `700 34px ${DM}`; c.fillText(TAGLINE(), W/2, 1880);
   return cv.toDataURL('image/png');
 }
@@ -2585,12 +2659,12 @@ const num26 = k => numeros2026().find(x => x.k === k) || null;
 // os números de destaque do ano: mensagens sempre primeiro, depois o que tiver volume (áudios, risadas, figurinhas...)
 const nums26 = (max = 4) => numeros2026().filter(x => x.k === 'total' || x.n >= 3).slice(0, max);
 // assunto mais falado em 2026 (temas do dia a dia; nada sensível)
-const EMO_TEMA = {comida:'🍔', futebol:'⚽', 'rolê e festa':'🎉', 'cerveja e drinks':'🍻', trabalho:'💼', viagem:'✈️', 'séries e filmes':'🎬', bichos:'🐶', 'filhos e família':'👨‍👩‍👧', 'treino e saúde':'🏋️', dinheiro:'💸', 'política':'🗳️'};
+const EMO_TEMA = {comida:'🍔', futebol:'⚽', 'rolê e festa':'🎉', 'cerveja e drinks':'🍻', trabalho:'💼', viagem:'✈️', 'séries e filmes':'🎬', bichos:'🐶', 'filhos e família':'👨‍👩‍👧', 'treino':'🏋️', dinheiro:'💸', 'política':'🗳️'};
 function assunto26(){
   const d = state.compD || state.data; if (!d) return null; const t = {};
   for (const p of d.people) for (const [k, n] of Object.entries(p.tema || {})) t[k] = (t[k]||0) + n;
   const x = Object.entries(t).sort((a, b) => b[1] - a[1])[0];
-  return x && x[1] >= 5 ? {txt: x[0], n: x[1], e: EMO_TEMA[x[0]] || '💭'} : null;
+  return x && x[1] >= Math.max(5, d.total*.01) ? {txt: x[0], n: x[1], e: EMO_TEMA[x[0]] || '💭'} : null; // pelo menos 1% das mensagens
 }
 // Top 3 destaques de 2026: tagarela, revelação (quem mais cresceu vs 2025, fora o tagarela) e fantasma/sumiço
 function destaques26(ultimo){
@@ -2644,20 +2718,35 @@ function drawRanking2026(){
 let VID_DUR = 30; // recalculado por cenasVideo (cerca de 30 s)
 function cenasVideo(d){
   const casal = state.modo === 'casal' && d.people.length === 2, [a, b] = d.people, soma = k => d.people.reduce((t, p) => t + (p[k] || 0), 0);
-  let num = nums26(4);
+  // casal: vídeo curto, só o mais legal (mensagens + ranking, declarações, áudios; 3 troféus; um contra o outro em 3 linhas)
+  let num = casal ? ['total', 'amor', 'audios'].map(num26).filter(x => x && (x.k === 'total' || x.n >= 3)) : nums26(4);
   if (!num.length) num = (casal ? [['💬', soma('count'), 'mensagens trocadas'], ['🎧', soma('audio'), 'áudios'], ['😂', soma('laugh'), 'risadas'], ['💘', soma('teamo'), 'declarações de amor']]
     : [['💬', soma('count'), 'mensagens'], ['🎧', soma('audio'), 'áudios'], ['😂', soma('laugh'), 'risadas'], ['🖼️', soma('sticker'), 'figurinhas']])
     .filter(x => x[1] > 0).map(([e, n, t]) => ({e, n, t}));
   const hl = casal ? [] : destaques26('fantasma').map(x => ({e: x.e, t: x.t, nome: x.n, linha: x.v}));
-  const cats = principais().filter(x => x.winner).slice(0, 6).map(x => ({e: x.e, t: gtit(x.n, x.winner.name), nome: x.winner.name, linha: vunid(x, x.winner.v)}));
-  const duelo = casal ? categoriasCasal(d).cats : [];
-  const as = assunto26();
+  const cats = (casal ? ['Tagarela do Casal', 'Mais Romântico', 'Podcaster do Casal'].map(n => principais().find(x => x.n === gtit(n))).filter(Boolean) : principais().slice(0, 6)).filter(x => x.winner).map(x => ({e: x.e, t: gtit(x.n, x.winner.name), nome: x.winner.name, linha: vunid(x, x.winner.v)}));
+  const duelo = casal ? categoriasCasal(d).cats.filter(x => x.t !== 'Áudios') : [];
+  const as = casal ? null : assunto26();
   // linha do tempo (~30 s): abertura, números, assunto, troféus (top 6), destaques (grupo) ou um contra o outro (casal), fim
-  const T = {msg: 2.6}; T.num = T.msg + 2.8; T.as = T.num + (num.length > 1 ? 1.4 + (num.length - 1)*1.2 : 0); T.cat = T.as + (as ? 2 : 0); T.hl = T.cat + cats.length*1.6; T.fim = T.hl + (casal ? 7 : hl.length*2);
+  const T = {msg: 2.6}; T.num = T.msg + 2.8; T.as = T.num + (num.length > 1 ? 1.4 + (num.length - 1)*1.2 : 0); T.cat = T.as + (as ? 2 : 0); T.hl = T.cat + cats.length*1.6; T.fim = T.hl + (casal ? 4.8 : hl.length*2);
   VID_DUR = Math.round((T.fim + 2.6)*10)/10;
   return {casal, a, b, num, hl, cats, duelo, as, T, so26: !!state.compD, grupo: limpaTxt(state.grupo || nomePadrao()), q: quemMedia()};
 }
 const d_pessoas = cz => state.data ? state.data.people.length : 0;
+// emoji centralizado de verdade: mede os pixels do desenho (o centro do texto erra com emoji em alguns celulares)
+const EMO_CACHE = new Map();
+function emojiC(c, e, cx, cy, size){
+  const k = e + '|' + size; let it = EMO_CACHE.get(k);
+  if (it === undefined){
+    const s = Math.ceil(size*1.7), cv = document.createElement('canvas'); cv.width = cv.height = s; const x = cv.getContext('2d', {willReadFrequently: true});
+    x.font = `${size}px serif`; x.textBaseline = 'middle'; x.textAlign = 'left'; x.fillText(e, size*.25, s/2);
+    const px = x.getImageData(0, 0, s, s).data; let x0 = s, y0 = s, x1 = -1, y1 = -1;
+    for (let yy = 0; yy < s; yy++) for (let xx = 0; xx < s; xx++) if (px[(yy*s + xx)*4 + 3] > 10){ if (xx < x0) x0 = xx; if (xx > x1) x1 = xx; if (yy < y0) y0 = yy; if (yy > y1) y1 = yy; }
+    it = x1 < 0 ? null : {cv, x0, y0, w: x1 - x0 + 1, h: y1 - y0 + 1}; EMO_CACHE.set(k, it);
+  }
+  if (!it){ c.save(); c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = `${size}px serif`; c.fillText(e, cx, cy); c.restore(); return; }
+  c.drawImage(it.cv, it.x0, it.y0, it.w, it.h, cx - it.w/2, cy - it.h/2, it.w, it.h);
+}
 // fundo do vídeo desenhado uma vez só (o vídeo reaproveita em todos os quadros)
 let FUNDO_V = null;
 function fundoVideo(){ if (!FUNDO_V || FUNDO_V.modo !== state.modo){ const cv = document.createElement('canvas'); cv.width = 1080; cv.height = 1920; fundo(cv.getContext('2d'), 1080, 1920, 1000); FUNDO_V = {modo: state.modo, cv}; } return FUNDO_V.cv; }
@@ -2670,7 +2759,7 @@ function frameVideo(c, t, cz){
   const cena = (t0, t1, f) => { if (t < t0 || t >= t1) return; const fade = Math.min(cl((t - t0)/.35), cl((t1 - t)/.3)); c.save(); c.globalAlpha = fade; f(t - t0); c.restore(); };
   // 1. abertura
   if (!cz.casal) cena(0, T.msg, () => {
-    const p = (1 + .05*Math.sin(t*5)) * ent(0, .8); c.save(); c.translate(W/2, 660); c.scale(p, p); c.font = '320px serif'; c.fillText(MODOS[state.modo]?.e || '🏆', 0, 110); c.restore();
+    const p = (1 + .05*Math.sin(t*5)) * ent(0, .8); c.save(); c.translate(W/2, 660); c.scale(p, p); emojiC(c, MODOS[state.modo]?.e || '🏆', 0, 0, 320); c.restore();
     c.fillStyle = K.txt; caber(c, cz.grupo, W/2, 1080 + 60*(1 - ent(.4, .8)), 940, 800, 100, BR);
     c.save(); c.globalAlpha *= ent(1); c.fillStyle = K.ouro; caber(c, cz.so26 ? `O NOSSO ${ANO_MOMENTO}` : 'A RETROSPECTIVA DO GRUPO', W/2, 1190, 900, 800, 52, BR);
     c.fillStyle = K.sub; caber(c, `${d_pessoas(cz)} pessoas · ${MODOS[state.modo]?.n || 'grupo'}`, W/2, 1260, 900, 700, 34, DM); c.restore();
@@ -2692,7 +2781,7 @@ function frameVideo(c, t, cz){
   const m0 = cz.num[0];
   if (m0) cena(T.msg, T.num, u => {
     c.fillStyle = K.sub; c.font = `700 36px ${DM}`; c.fillText(cz.so26 ? `${ANO_MOMENTO} EM NÚMEROS` : 'EM NÚMEROS', W/2, 330);
-    c.save(); c.translate(W/2, 560); const sc = .6 + .4*ent(T.msg); c.scale(sc, sc); c.font = '200px serif'; c.fillText(m0.e, 0, 70); c.restore();
+    c.save(); c.translate(W/2, 560); const sc = .6 + .4*ent(T.msg); c.scale(sc, sc); emojiC(c, m0.e, 0, 0, 200); c.restore();
     c.fillStyle = K.ouro; c.font = `800 190px ${BR}`; c.fillText(fmt(Math.round(m0.n * ease(u/1.4))), W/2, 900, 980);
     c.fillStyle = K.txt; caber(c, m0.t.toUpperCase(), W/2, 990, 940, 800, 56, BR);
     c.save(); c.globalAlpha *= ent(T.msg + .8); const L = [m0.vs && [m0.vs, corTend(m0), '#FFFFFF'], m0.rank && [m0.rank, K.A, txtPill]].filter(Boolean); let py = 1060;
@@ -2718,7 +2807,7 @@ function frameVideo(c, t, cz){
   // 3. assunto mais falado
   if (cz.as) cena(T.as, T.cat, () => {
     c.fillStyle = K.sub; c.font = `700 34px ${DM}`; c.fillText(`O ASSUNTO MAIS FALADO${cz.so26 ? ' DE ' + ANO_MOMENTO : ''}`, W/2, 330);
-    c.save(); c.translate(W/2, 640); const sc = .6 + .4*ent(T.as); c.scale(sc, sc); c.font = '260px serif'; c.fillText(cz.as.e, 0, 90); c.restore();
+    c.save(); c.translate(W/2, 640); const sc = .6 + .4*ent(T.as); c.scale(sc, sc); emojiC(c, cz.as.e, 0, 0, 260); c.restore();
     c.fillStyle = K.ouro; caber(c, cz.as.txt.toUpperCase(), W/2, 960, 940, 800, 110, BR);
     c.fillStyle = K.txt; caber(c, `${fmt(cz.as.n)} mensagens sobre isso`, W/2, 1050, 900, 700, 40, DM);
   });
@@ -2727,7 +2816,7 @@ function frameVideo(c, t, cz){
     const t0 = T.cat + i*1.6, cor = !cz.casal ? K.ouro : x.nome === cz.a.name ? K.A : K.B;
     cena(t0, t0 + 1.6, () => {
       c.fillStyle = K.sub; c.font = `700 34px ${DM}`; c.fillText(`TROFÉU ${i + 1} DE ${cz.cats.length}`, W/2, 330);
-      c.save(); c.translate(W/2, 640); const sc = .6 + .4*ent(t0, .4); c.scale(sc, sc); c.font = '260px serif'; c.fillText(x.e, 0, 90); c.restore();
+      c.save(); c.translate(W/2, 640); const sc = .6 + .4*ent(t0, .4); c.scale(sc, sc); emojiC(c, x.e, 0, 0, 260); c.restore();
       c.fillStyle = K.txt; caber(c, x.t.toUpperCase(), W/2, 900, 940, 800, 74, BR);
       c.save(); c.globalAlpha *= ent(t0 + .25, .4);
       c.fillStyle = cor; c.beginPath(); c.roundRect(170, 980, W - 340, 190, 48); c.fill();
@@ -2740,7 +2829,7 @@ function frameVideo(c, t, cz){
     const t0 = T.hl + i*2;
     cena(t0, t0 + 2, u => {
       c.fillStyle = K.sub; c.font = `700 34px ${DM}`; c.fillText(`DESTAQUE ${i + 1} DE ${cz.hl.length} · ${ANO_MOMENTO}`, W/2, 330);
-      c.save(); c.translate(W/2, 640); const sc = .6 + .4*ent(t0); c.scale(sc, sc); c.font = '260px serif'; c.fillText(x.e, 0, 90); c.restore();
+      c.save(); c.translate(W/2, 640); const sc = .6 + .4*ent(t0); c.scale(sc, sc); emojiC(c, x.e, 0, 0, 260); c.restore();
       c.fillStyle = K.txt; caber(c, x.t.toUpperCase(), W/2, 900, 940, 800, 74, BR);
       c.save(); c.globalAlpha *= ent(t0 + .35);
       c.fillStyle = K.ouro; c.beginPath(); c.roundRect(170, 980, W - 340, 190, 48); c.fill();
@@ -2755,7 +2844,7 @@ function frameVideo(c, t, cz){
     c.fillStyle = K.A; c.beginPath(); c.roundRect(70, 350, 450, 110, 30); c.fill(); c.fillStyle = K.B; c.beginPath(); c.roundRect(W - 520, 350, 450, 110, 30); c.fill();
     c.fillStyle = '#FFFFFF'; caber(c, nomeA, 295, 425, 400, 800, 54, BR); caber(c, nomeB, W - 295, 425, 400, 800, 54, BR);
     cz.duelo.forEach((x, i) => {
-      const t0 = .5 + i*1.1, e = ent(T.hl + t0), y = 500 + i*258, ta = x.a > x.b, tb = x.b > x.a;
+      const t0 = .4 + i*.9, e = ent(T.hl + t0), y = 520 + i*300, ta = x.a > x.b, tb = x.b > x.a;
       if (e <= 0) return;
       c.save(); c.globalAlpha *= e;
       c.fillStyle = K.caixa; c.beginPath(); c.roundRect(70, y, W - 140, 236, 36); c.fill();
@@ -2770,7 +2859,7 @@ function frameVideo(c, t, cz){
   // 5. fim
   cena(T.fim, VID_DUR + .01, () => {
     const p = 1 + .06*Math.sin(t*6); c.save(); c.translate(W/2, 760); c.scale(p, p);
-    if (cz.casal){ c.fillStyle = K.A; coracao(c, 0, -120, 120); } else { c.font = '220px serif'; c.fillText('🏆', 0, 70); } c.restore();
+    if (cz.casal){ c.fillStyle = K.A; coracao(c, 0, -120, 120); } else { emojiC(c, '🏆', 0, 0, 220); } c.restore();
     c.fillStyle = K.txt; c.font = `800 70px ${BR}`; c.fillText(cz.casal ? 'E vocês?' : 'E o seu grupo?', W/2, 1060);
     c.fillStyle = K.sub; caber(c, cz.casal ? 'Façam a retrospectiva do casal' : 'Faça a retrospectiva do seu grupo', W/2, 1130, 900, 700, 40, DM);
     c.fillStyle = K.ouro; c.font = `800 64px ${BR}`; c.fillText('retrozap.com.br', W/2, 1260);
@@ -2926,10 +3015,12 @@ function personagens(d, by){
   const usados = new Set(), top = o => Object.entries(o).sort((a,b) => b[1]-a[1]);
   const mesAno = t => t.toLocaleDateString('pt-BR', {month:'long', year:'numeric'});
   const gRiso = grupo.laugh / Math.max(1, grupo.text), gTam = grupo.chars / Math.max(1, grupo.text);
+  const NOMES = new Set([...P.map(q => q.name), state.grupo || ''].flatMap(q => norm(limpaTxt(q)).split(/[^\p{L}]+/u)).filter(w => w.length >= 3));
+  const palGrupo = {}; for (const q of P) for (const [w, n] of Object.entries(q.words)) palGrupo[w] = (palGrupo[w]||0) + n;
   return P.slice(0,5).map(p => {
     const opcoes = TRACOS.filter(t => !(t[0] === 'palavrao' && (state.modo === 'familia' || state.modo === 'trabalho')))
-      .map(t => { const g = t[3](grupo); const ok = t[0] === 'chars' ? p.text >= 20 : p[t[0]] >= 5; return {t, score: ok && g > 0 ? t[3](p)/g : 0}; })
-      .filter(o => o.score > 1.15).sort((a,b) => b.score - a.score);
+      .map(t => { const g = t[3](grupo); const ok = t[0] === 'chars' ? p.text >= 50 : p[t[0]] >= 10; return {t, score: ok && g > 0 ? t[3](p)/g : 0}; })
+      .filter(o => o.score > 1.3).sort((a,b) => b.score - a.score); // traço só vale com 10+ ocorrências e 30% acima da média
     const esc1 = opcoes.find(o => !usados.has(o.t[0])), esc2 = opcoes.find(o => o !== esc1 && o.t[0] !== esc1?.t[0]);
     let titulo = 'O Pilar do Grupo', e = '🧱', resumo = `${p.name} está sempre presente e segura a conversa.`;
     if (esc1){ usados.add(esc1.t[0]); [, titulo, e] = esc1.t; resumo = `${p.name} ${esc1.t[5]}.`; }
@@ -2939,9 +3030,10 @@ function personagens(d, by){
     const parceiros = top(p.rep).filter(([n]) => n !== p.name).slice(0, 2).map(([n]) => n);
     const midia = [['sticker','figurinhas'],['audio','áudios'],['photo','fotos e vídeos']].sort((a,b) => p[b[0]] - p[a[0]])[0];
     // jeito de falar: gírias, palavra e emojis de estimação
-    const girias = top(p.giria).filter(([, n]) => n >= 3).slice(0, 2).map(([g]) => `“${g}”`);
-    const fw = top(p.words).find(([w, n]) => n >= 3 && !girias.includes(`“${w}”`));
-    const emojis = top(p.emo).filter(([, n]) => n >= 2).slice(0, 3).map(([x]) => x);
+    // jeito de falar: só o que a pessoa usa de verdade (5+ mensagens em 3+ dias diferentes), sem nomes próprios nem nomes do grupo
+    const girias = top(p.giria).filter(([, n]) => n >= 5).slice(0, 2).map(([g]) => `“${g}”`);
+    const fw = top(p.words).find(([w, n]) => n >= 5 && (p.wD[w]?.[0] || 0) >= 3 && !NOMES.has(norm(w)) && (p.wCap[w] || 0) / n < .3 && n / Math.max(1, palGrupo[w]) >= .4 && !SENSIVEL.test(norm(w)) && !PALAVRAO_FORTE.test(norm(w)) && !girias.includes(`“${w}”`));
+    const emojis = top(p.emo).filter(([e, n]) => n >= 3 && (p.emoD[e]?.[0] || 0) >= 2).slice(0, 3).map(([x]) => x);
     const fala = [...girias, ...(fw ? [`“${fw[0]}”`] : [])].slice(0, 3);
     // mood: até dois traços, do mais marcante
     const mood = [];
@@ -3069,17 +3161,23 @@ function drawCard({emoji, title, winner, line, small, podio}){
   c.fillStyle = modo; c.fillRect(0,0,1080,16);
   c.textAlign = 'center'; c.fillStyle = CV().ouro; c.font = '800 52px "Bricolage Grotesque", sans-serif'; c.fillText(state.modo === 'casal' ? 'retrozap 💕' : 'retrozap 🏆', 540, 100);
   if (state.grupo){ c.fillStyle = CV().txt; caber(c, state.grupo, 540, 158, 900, 700, 38, '"DM Sans", sans-serif'); c.fillStyle = CV().ouro; }
-  c.font = '230px serif'; c.fillText(emoji, 540, 400);
-  c.fillStyle = CV().txt; c.font = '800 66px "Bricolage Grotesque", sans-serif'; wrap(c, title.toUpperCase(), 540, 510, 900, 72);
-  c.save(); c.translate(540, 680); c.rotate(-0.07);
-  c.font = `800 ${small?64:96}px "Bricolage Grotesque", sans-serif`;
-  const w = Math.min(960, c.measureText(winner).width + 80);
-  c.fillStyle = modo; c.fillRect(-w/2+14, -86+14, w, 140);
-  c.fillStyle = CV().ouro; c.fillRect(-w/2, -86, w, 140);
-  c.fillStyle = corFundo(); c.fillText(winner, 0, small?10:22, 900);
-  c.restore();
-  c.fillStyle = CV().sub; c.font = '500 44px "DM Sans", sans-serif'; c.fillText(line, 540, podio?.length ? 820 : 850, 980);
-  if (podio?.length){ c.fillStyle = CV().txt; c.font = '700 40px "DM Sans", sans-serif'; c.fillText(podio.join('     '), 540, 905, 980); }
+  // título em até 2 linhas: com 2, o emoji encolhe e sobe para nada encostar no nome
+  const TT = limpaTxt(title.toUpperCase()); let tf = 66; c.font = `800 ${tf}px "Bricolage Grotesque", sans-serif`;
+  while (linhasDe(c, TT, 900) > 2 && tf > 44){ tf -= 4; c.font = `800 ${tf}px "Bricolage Grotesque", sans-serif`; }
+  const duas = linhasDe(c, TT, 900) > 1;
+  emojiC(c, emoji, 540, duas ? 275 : 320, duas ? 180 : 230);
+  c.fillStyle = CV().txt; c.font = `800 ${tf}px "Bricolage Grotesque", sans-serif`; wrap(c, TT, 540, duas ? 445 : 510, 900, tf + 6);
+  // nome do vencedor: cabe na faixa e fica centralizado (posição calculada à mão, o centro automático falha no Safari)
+  const W0 = limpaTxt(winner); let wf = small ? 64 : 96; c.font = `800 ${wf}px "Bricolage Grotesque", sans-serif`;
+  while (c.measureText(W0).width > 820 && wf > 40){ wf -= 4; c.font = `800 ${wf}px "Bricolage Grotesque", sans-serif`; }
+  const w = Math.min(960, c.measureText(W0).width + 100), yb = duas ? 690 : 680;
+  c.save(); c.translate(540, yb); c.rotate(-0.07);
+  c.fillStyle = modo; c.fillRect(-w/2+14, -70+14, w, 140);
+  c.fillStyle = CV().ouro; c.fillRect(-w/2, -70, w, 140);
+  c.fillStyle = corFundo(); c.textAlign = 'center'; caber(c, W0, 0, wf*.36, 820, 800, wf, '"Bricolage Grotesque", sans-serif');
+  c.restore(); c.textAlign = 'center';
+  c.fillStyle = CV().sub; caber(c, line, 540, podio?.length ? 830 : 850, 960, 500, 44, '"DM Sans", sans-serif');
+  if (podio?.length){ c.fillStyle = CV().txt; caber(c, podio.join('   ·   '), 540, 900, 960, 700, 40, '"DM Sans", sans-serif'); }
   if (periodo()){ c.fillStyle = CV().sub; c.font = '700 26px "DM Sans", sans-serif'; c.fillText(periodo(), 540, 962, 980); }
   c.fillStyle = CV().txt; c.font = '700 34px "DM Sans", sans-serif'; c.fillText(TAGLINE(), 540, 1010);
   return cv.toDataURL('image/png');
@@ -3129,12 +3227,10 @@ async function openCard(fazer, texto = convite('resumo'), alt = 'Card para compa
   const antes = document.activeElement;
   m.innerHTML = `<img src="${url}" alt="${esc(alt)}">
     <div class="btn-row" style="width:min(86vw,420px)">
-      <button class="btn btn-main btn-wa" id="sh"><i class="ic-wa" aria-hidden="true"></i>Mandar no WhatsApp</button>
-      <button class="btn btn-ghost" id="dl">⬇️ Salvar imagem</button>
-      <button class="btn btn-ghost" id="cp">📋 Copiar imagem</button>
+      ${celular ? '<button class="btn btn-main" id="sh">📤 Salvar ou compartilhar</button>' : '<button class="btn btn-main" id="dl">⬇️ Baixar imagem</button><button class="btn btn-ghost" id="cp">📋 Copiar imagem</button>'}
       <button class="btn btn-ghost" id="cl">Fechar</button>
     </div>
-    <p id="msg">${celular ? 'A imagem vai junto com um convite para a galera fazer o grupo deles. Também dá para escolher o Instagram.' : 'Abre o WhatsApp com o convite escrito; a imagem já vai copiada, é só colar.'}</p>`;
+    <p id="msg">${celular ? 'Salve na galeria ou mande direto no WhatsApp, Instagram...' : 'Baixe a imagem ou copie e cole no WhatsApp Web (Ctrl+V ou Cmd+V).'}</p>`;
   document.body.appendChild(m);
   const msg = m.querySelector('#msg');
   const fecha = () => { m.remove(); try { antes?.focus(); } catch {} };
@@ -3146,13 +3242,13 @@ async function openCard(fazer, texto = convite('resumo'), alt = 'Card para compa
     if (e.shiftKey && i <= 0){ e.preventDefault(); bs[bs.length-1].focus(); }
     else if (!e.shiftKey && i === bs.length - 1){ e.preventDefault(); bs[0].focus(); }
   });
-  m.querySelector('#sh').focus();
-  m.querySelector('#sh').addEventListener('click', async () => {
-    const r = await mandarWhats(blob, nome, texto, msg);
-    if (r === 'ok') msg.textContent = 'Mandado! 🏆';
+  (m.querySelector('#sh') || m.querySelector('#dl')).focus();
+  m.querySelector('#sh')?.addEventListener('click', async () => {
+    const r = await compartilhaArquivo(blob, nome);
+    if (r === 'ok') msg.textContent = 'Pronto! 🏆';
   });
-  m.querySelector('#dl').onclick = async () => {
-    const d = DOWN || await window.claude?.use?.('downloads').catch(() => null);
+  if (m.querySelector('#dl')) m.querySelector('#dl').onclick = async () => {
+    const d = (typeof DOWN !== 'undefined' && DOWN) || await window.claude?.use?.('downloads').catch(() => null);
     if (d){
       try { await d.save({filename: nome, data: blob}); msg.textContent = 'Imagem salva! Agora é só mandar no grupo. 🏆'; return; }
       catch (e){ if (e?.code === 'declined'){ msg.textContent = 'Tudo bem, a imagem continua aqui.'; return; } msg.textContent = `Não deu para salvar (${e?.code || 'erro'}). Use Copiar imagem.`; return; }
@@ -3160,7 +3256,7 @@ async function openCard(fazer, texto = convite('resumo'), alt = 'Card para compa
     try { const a = document.createElement('a'); a.href = url; a.download = nome; document.body.appendChild(a); a.click(); a.remove(); msg.textContent = 'Se o download não começou, use Copiar imagem.'; }
     catch { msg.textContent = 'Não deu para salvar daqui. Use Copiar imagem.'; }
   };
-  m.querySelector('#cp').onclick = async () => {
+  if (m.querySelector('#cp')) m.querySelector('#cp').onclick = async () => {
     try { await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]); msg.textContent = 'Imagem copiada! Cole no WhatsApp com Ctrl+V (ou Cmd+V).'; }
     catch { msg.textContent = 'Seu navegador não deixou copiar a imagem. Clique com o botão direito nela e escolha "Copiar imagem".'; }
   };

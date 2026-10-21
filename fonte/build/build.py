@@ -115,9 +115,9 @@ rep("    $('#next').onclick = () => custom();\n    $('#back2').onclick = final;"
 
 # janela do card sem dependências do Claude
 rep("let DOWN = null;\nwindow.claude?.use?.('downloads').then(d => { DOWN = d; }).catch(() => {});\n", "")
-i = s.index("  m.querySelector('#dl').onclick = async () => {")
-j = s.index("  m.querySelector('#cp').onclick", i)
-s = s[:i] + """  m.querySelector('#dl').onclick = () => {
+i = s.index("  if (m.querySelector('#dl')) m.querySelector('#dl').onclick = async () => {")
+j = s.index("  if (m.querySelector('#cp')) m.querySelector('#cp').onclick", i)
+s = s[:i] + """  if (m.querySelector('#dl')) m.querySelector('#dl').onclick = () => {
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nome; document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
     evento('card_salvo'); msg.textContent = 'Imagem salva! Agora é só mandar no grupo. 🏆';

@@ -59,7 +59,7 @@ async function resumo(env, base, escopo, modo){
     m[k] = {n: vals.length, q: cortes(vals), media: vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null}; }
   // antiguidade: o histórico todo dos envios reais (antigos e novos), no mesmo escopo; com menos de 10 reais (ex.: casais no começo), usa também as estimativas
   let dd = ((await env.DB.prepare(`SELECT dias FROM grupos WHERE ${onde} AND COALESCE(estimado, 0) = 0`).bind(arg).all()).results || []).map(x => x.dias).filter(v => v != null);
-  if (dd.length < MIN_TODOS) dd = ((await env.DB.prepare(`SELECT dias FROM grupos WHERE ${onde}`).bind(arg).all()).results || []).map(x => x.dias).filter(v => v != null);
+  if (dd.length < MIN_TODOS && modo !== 'casal') dd = ((await env.DB.prepare(`SELECT dias FROM grupos WHERE ${onde}`).bind(arg).all()).results || []).map(x => x.dias).filter(v => v != null);
   dd.sort((a, b) => a - b);
   m.dias = {n: dd.length, q: cortes(dd)};
   // desde o início: envios novos mandam hist_*; os antigos (sem base) já tinham o histórico todo em total/audios
