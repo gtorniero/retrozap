@@ -1328,7 +1328,6 @@ function fatosFinale(){
   if (as) f.push({e: as.e, big: as.txt, sub: `o assunto mais falado ${so26 ? 'de ' + ANO_MOMENTO : 'desde o início'} · ${fmt(as.n)} mensagens`, piada: casal ? 'Já sabem o programa do fim de semana.' : 'Os assuntos que nunca morrem.'});
   const ds = destaques26('fantasma');
   if (ds.length) f.push({e: '🏅', destaques: ds, piada: 'Ninguém foi poupado.'});
-  if (videoSuportado()) f.push({video: true});
   return f;
 }
 function suspense(){
@@ -1357,12 +1356,6 @@ function suspense(){
     requestAnimationFrame(passo);
   };
   const mostra = x => {
-    if (x.video){
-      sl.innerHTML = `<h2 style="font-size:30px;margin:0">🎬 O vídeo ${casal ? 'de vocês' : 'do grupo'}</h2><p class="small" style="margin:0">Tudo isso e os troféus em ${Math.round(cenasVideo(d).T.fim + 2.6)} segundos, pronto para os stories.</p>${videoHTML(casal)}
-        <div class="ainda"><b>⏭️ Ainda não acabou!</b><span>Na próxima tela: todas as imagens para compartilhar, a categoria livre (você cria a sua) e ${casal ? 'quem é quem no casal' : 'os personagens do grupo'}.</span></div>`;
-      ligaVideo(d, casal, () => { if (sl.isConnected) mostra(x); });
-      return;
-    }
     sl.innerHTML = x.destaques
       ? `<div class="em-g" aria-hidden="true">${x.e}</div><h2 style="font-size:30px">Top 3 destaques de ${ANO_MOMENTO}</h2>
          <div class="dest">${x.destaques.map(y => `<div><span aria-hidden="true">${y.e}</span><div><span class="small">${esc(y.t)}</span><b>${esc(y.n)}</b><span class="small">${esc(y.v)}</span></div></div>`).join('')}</div>
@@ -1464,24 +1457,22 @@ function fimTela(semFesta){
   view.innerHTML = `<section class="screen wr" style="align-items:center;text-align:center">
     ${state.sample ? `<span class="sample">${state.modo === 'casal' ? 'Casal de exemplo' : 'Grupo de exemplo'}</span>` : ''}
     <p class="eyebrow">${esc(state.grupo || nomePadrao())}</p>
-    <h1 style="font-size:clamp(30px,9vw,40px);margin:0">Ainda não acabou! 👀</h1>
-    <div class="passos">
-      <button type="button" class="passo" data-ir="cmpT"><span aria-hidden="true">📲</span><b>Baixe as mídias</b><small>vídeo e imagens para mandar ${casal ? 'um para o outro' : 'no grupo'}</small></button>
-      <button type="button" class="passo" data-ir="lvT"><span aria-hidden="true">🔎</span><b>Crie novas categorias</b><small>escolha a palavra e veja quem mais falou</small></button>
-      <button type="button" class="passo" data-ir="psT"><span aria-hidden="true">🎭</span><b>Descubra os personagens</b><small>${casal ? 'quem é quem nessa relação' : 'quem é quem no grupo'}</small></button>
-    </div>
     <section class="compartilhar" aria-labelledby="cmpT">
-      <h2 id="cmpT">📲 Para compartilhar</h2>
-      <p class="small">${casal ? 'Vídeo e imagens prontos para mandar um para o outro e postar nos stories.' : 'Vídeo e imagens prontos para mandar no grupo e postar nos stories.'} Tudo é feito aqui no seu celular.</p>
+      <h1 id="cmpT" style="font-size:clamp(30px,9vw,40px);margin:0">📲 Mídias ${casal ? 'de vocês' : 'do grupo'}</h1>
+      <p class="small">Para compartilhar onde quiser: ${casal ? 'um com o outro' : 'no grupo'}, nos stories, no status. Tudo é feito aqui no seu celular.</p>
       ${(() => { const itens = [videoHTML(casal), fig(3, `🏆 Troféus ${casal ? 'do casal' : 'do grupo'}`, 'desde o início', altTop10()), fig(1, `📸 Resumo ${casal ? 'do casal' : 'do grupo'}`, 'desde o início', altResumo(d)),
           casal ? fig(5, '💞 Nós dois: um contra o outro', so26 ? 'só ' + ANO_MOMENTO : 'desde o início', altCasal(d)) : '', so26 ? fig(4, `🗓️ Nosso ${ANO_MOMENTO}`, 'só ' + ANO_MOMENTO, altNosso2026()) : ''].filter(Boolean);
-        return `<div class="carr" id="carr" role="region" aria-roledescription="carrossel" aria-label="Vídeo e imagens para compartilhar" tabindex="0">${itens.map((x, i) => `<div class="carr-i" role="group" aria-roledescription="item" aria-label="${i + 1} de ${itens.length}">${x}</div>`).join('')}</div>
-        <div class="carr-nav"><button type="button" class="carr-seta" data-carr="-1" aria-label="Anterior">‹</button><div class="carr-dots">${itens.map((_, i) => `<button type="button" data-dot="${i}" aria-label="Ver item ${i + 1} de ${itens.length}"${i ? '' : ' aria-current="true"'}></button>`).join('')}</div><span class="carr-n" aria-hidden="true">1/${itens.length}</span><button type="button" class="carr-seta" data-carr="1" aria-label="Próximo">›</button></div>`; })()}
+        return `<p class="carr-dica" aria-hidden="true">👉 Arraste para o lado: são ${itens.length} mídias</p><div class="carr-box"><button type="button" class="carr-lado esq" data-carr="-1" aria-label="Mídia anterior">‹</button><div class="carr" id="carr" role="region" aria-roledescription="carrossel" aria-label="Vídeo e imagens para compartilhar" tabindex="0">${itens.map((x, i) => `<div class="carr-i" role="group" aria-roledescription="item" aria-label="${i + 1} de ${itens.length}">${x}</div>`).join('')}</div><button type="button" class="carr-lado dir" data-carr="1" aria-label="Próxima mídia">›</button></div>
+        <div class="carr-nav"><button type="button" class="carr-seta" data-carr="-1" aria-label="Anterior">‹ Anterior</button><div class="carr-dots">${itens.map((_, i) => `<button type="button" data-dot="${i}" aria-label="Ver item ${i + 1} de ${itens.length}"${i ? '' : ' aria-current="true"'}></button>`).join('')}</div><button type="button" class="carr-seta prox" data-carr="1" aria-label="Próximo">Próximo ›</button></div><p class="carr-n small" aria-hidden="true">1 de ${itens.length}</p>`; })()}
     </section>
     <section class="extras" aria-labelledby="exT">
-      <h2 id="exT">✨ Extra</h2>
+      <h2 id="exT">Ainda não acabou! 👀</h2>
+      <div class="passos">
+        <button type="button" class="passo" data-ir="lvT"><span aria-hidden="true">🔎</span><b>Crie categorias extras</b><small>escolha a palavra e veja quem mais falou</small></button>
+        <button type="button" class="passo" data-ir="psT"><span aria-hidden="true">🎭</span><b>Descubra os personagens</b><small>${casal ? 'quem é quem nessa relação' : 'quem é quem no grupo'}</small></button>
+      </div>
       <div class="panel livre${livre ? '' : ' trancado'}" style="width:100%">
-        <h3 id="lvT" style="font-size:24px;margin:0">🔎 Categoria livre${premiumLocal() ? '' : ' <span class="tag-periodo">🔒 Premium</span>'}</h3>
+        <h3 id="lvT" style="font-size:24px;margin:0">🔎 Categorias extras${premiumLocal() ? '' : ' <span class="tag-periodo">🔒 Premium</span>'}</h3>
         <p class="small" style="margin:0">Crie sua própria categoria: escolha uma palavra e descubra quem ${casal ? 'de vocês dois' : 'do grupo'} mais falou ela. <span class="tag-periodo">desde o início</span></p>
         ${livre ? '' : '<button type="button" class="btn btn-main destrava" id="livreLock">🔓 Liberar a categoria livre</button>'}
         <div class="lv-corpo"${livre ? '' : ' aria-hidden="true" inert'}>
@@ -1513,9 +1504,10 @@ function fimTela(semFesta){
   // carrossel: arrastar para o lado, bolinhas e setas mostram onde está
   const car = $('#carr');
   if (car){ const its = [...car.children], dots = [...view.querySelectorAll('[data-dot]')], num = view.querySelector('.carr-n');
-    const atual = () => Math.round(car.scrollLeft / Math.max(1, car.clientWidth));
-    const vai = i => { i = Math.max(0, Math.min(its.length - 1, i)); car.scrollTo({left: i * car.clientWidth, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); };
-    const marca = () => { const i = atual(); dots.forEach((b, k) => b.toggleAttribute('aria-current', k === i)); if (num) num.textContent = `${i + 1}/${its.length}`;
+    const meio = el => el.offsetLeft + el.offsetWidth/2 - car.clientWidth/2;
+    const atual = () => { let m = 0, dm = 1e9; its.forEach((el, k) => { const dd = Math.abs(meio(el) - car.scrollLeft); if (dd < dm){ dm = dd; m = k; } }); return m; };
+    const vai = i => { i = Math.max(0, Math.min(its.length - 1, i)); car.scrollTo({left: Math.max(0, meio(its[i])), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); };
+    const marca = () => { const i = atual(); dots.forEach((b, k) => b.toggleAttribute('aria-current', k === i)); if (num) num.textContent = `${i + 1} de ${its.length}`; view.querySelectorAll('[data-carr="-1"]').forEach(b => b.disabled = i === 0); view.querySelectorAll('[data-carr="1"]').forEach(b => b.disabled = i === its.length - 1);
 };
     car.addEventListener('scroll', () => { clearTimeout(car._t); car._t = setTimeout(marca, 80); }, {passive: true});
     dots.forEach(b => b.onclick = () => vai(+b.dataset.dot));
