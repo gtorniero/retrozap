@@ -855,8 +855,8 @@ function picoSemana(days, minSem){
 const AW = [
  {m:['amigos','familia','trabalho','comunidade'],e:'🗣️',n:'O Tagarela',crit:'Mais mensagens enviadas',k:'count',u:'mensagens',mech:'podio',p:'{w} mandou {v} mensagens. Respira, {w}.'},
  {m:['amigos'],e:'🖼️',n:'Figurinha de Ouro',crit:'Mais figurinhas enviadas',k:'sticker',u:'figurinhas',mech:'chute',p:'{v} figurinhas. {w} se comunica por hieróglifos modernos.'},
- {m:['amigos'],e:'😂',n:'Rei do Kkkk',crit:'Quem mais ri: % das mensagens com kkk, haha ou rs',k:'laugh',pct:true,u:'das mensagens com risada',det:p => `${fmt(p.laugh)} risadas`,mech:'palpite',p:'{v} das mensagens de {w} têm risada. Plateia profissional.'},
- {m:['amigos'],e:'🤬',n:'Boca-Suja',crit:'Palavrões a cada 1.000 mensagens',k:'palavrao',rate:true,u:'por 1.000 msgs',mech:'raspadinha',p:'{v} palavrões a cada mil mensagens. A mãe de {w} está decepcionada.'},
+ {m:['amigos'],e:'😂',n:'Rei do Kkkk',crit:'Quem mais ri: % das mensagens com kkk, haha ou rs (quem tem 100+ mensagens)',k:'laugh',pct:true,u:'das mensagens com risada',det:p => `${fmt(p.laugh)} risadas`,mech:'palpite',p:'{v} das mensagens de {w} têm risada. Plateia profissional.'},
+ {m:['amigos'],e:'🤬',n:'Boca-Suja',crit:'Palavrões a cada 100 mensagens (quem tem 100+ mensagens)',k:'palavrao',rate:true,u:'a cada 100 mensagens',det:p => `${fmt(p.palavrao)} palavrões no total`,mech:'raspadinha',p:'{v} palavrões a cada 100 mensagens. A mãe de {w} está decepcionada.'},
  {m:['amigos','familia'],e:'🦉',n:'Coruja da Madrugada',crit:'Mais mensagens entre 0h e 5h',k:'night',u:'mensagens de madrugada',mech:'palpite',p:'{v} mensagens entre 0h e 5h. {w}, vai dormir.'},
  {m:['amigos'],e:'🙅',n:'Rei do Furo',crit:'"Não vou conseguir", "foi mal", "fica pra próxima"',k:'furo',u:'desculpas',mech:'palpite',p:'{v} furos registrados em cartório. Nunca foi o trânsito, {w}.'},
  {m:['amigos'],e:'🍻',n:'Organizador do Rolê',crit:'"Bora", "quem vai", "vamos marcar"',k:'org',u:'convocações',mech:'podio',p:'{w} convocou o grupo {v} vezes. Sem essa pessoa, ninguém saía de casa.'},
@@ -906,18 +906,23 @@ const AW = [
  {m:['casal'],e:'📸',n:'Fotógrafo do Casal',crit:'Mais fotos e vídeos',k:'photo',u:'fotos e vídeos',mech:'palpite',p:'{v} fotos e vídeos. {w} registra cada momento.'}
 ];
 for (const a of AW) a.n = gtit(a.n);
+// taxas: só concorre quem tem volume (100+ mensagens de texto ou 5% do grupo) e pelo menos 3 ocorrências
+let VOL_MIN = 100;
 function val(a, p){
-  if (a.pct) return p.text >= 50 ? Math.round(p[a.k]/p.text*100) : null;
-  if (a.rate) return p.text >= 30 ? Math.round(p[a.k]/p.text*10000)/10 : null;
+  const vol = p.text >= VOL_MIN && p[a.k] >= 3;
+  if (a.pct) return vol ? Math.round(p[a.k]/p.text*100) : null;
+  if (a.rate) return vol ? Math.round(p[a.k]/p.text*1000)/10 : null;
   if (a.k === 'avg') return p.text >= 20 ? Math.round(p.chars/p.text) : null;
   if (a.k === 'resp') return p.respN >= 10 ? Math.max(1, Math.round(p.respT/p.respN/60000)) : null;
   return p[a.k];
 }
 function buildAwards(d){
   const list = [];
+  VOL_MIN = Math.min(100, Math.max(30, Math.round(d.total*.05))); // 5% do grupo, entre 30 e 100 mensagens
+  const corte = +d.end - 182*864e5; // Fantasma: só quem está no grupo há 6+ meses
   for (const a of AW.filter(a => a.m.includes(state.modo))){
     if (a.low && d.people.length < 3 && state.modo !== 'casal') continue;
-    const ranked = d.people.filter(p => !(a.low && isFone(p.name))).map(p => ({name:p.name, v:val(a,p), p})).filter(r => r.v !== null) // número desconhecido nunca é o Fantasma
+    const ranked = d.people.filter(p => !(a.low && (isFone(p.name) || !p.ini || +p.ini > corte))).map(p => ({name:p.name, v:val(a,p), p})).filter(r => r.v !== null) // número desconhecido nunca é o Fantasma
       .sort((x,y) => a.low ? x.v - y.v : y.v - x.v);
     if (!ranked.length || (!a.low && ranked[0].v <= 0) || (a.min && ranked[0].v < a.min)) continue;
     const total = d.people.reduce((s,p) => s + (a.rate || a.pct || a.k==='avg' ? 0 : p[a.k]), 0);
@@ -1657,6 +1662,8 @@ function resumoInicio(d){
 }
 const itemRes = x => `<div class="res-i"><span aria-hidden="true">${x.e}</span><div><b>${esc(x.big)}</b><span class="small">${esc(x.sub)}</span>${x.quem ? `<span class="quem">🎙️ ${esc(x.quem)}</span>` : ''}${x.top ? `<span class="pills" data-top="${x.top}" hidden></span>` : ''}</div></div>`;
 function preencheTops(){
+  if (state.modo === 'casal' && state.compFeito && !state.comp && state.comparar !== false){ const el = view.querySelector('[data-top]');
+    if (el && !el.dataset.formacao){ el.dataset.formacao = '1'; el.innerHTML = '<span class="pill igual">🏗️ Ranking dos casais em formação</span>'; el.hidden = false; } return; }
   view.querySelectorAll('[data-top]').forEach(el => { const L = el.dataset.top.split(' ').map(rankTxt).filter(Boolean);
     if (L.length){ el.innerHTML = L.map(t => `<span class="pill pos">${esc(t)}</span>`).join(''); el.hidden = false; } });
 }
@@ -2626,15 +2633,17 @@ function drawSpoiler(lista){
 
 /* ---------- comparação com outros grupos (só números anônimos; no site com servidor) ---------- */
 async function comparar(d){
-  state.comp = null; state.compD = null;
+  state.comp = null; state.compD = null; state.compFeito = false;
   // a comparação usa só as mensagens de 2026 (grupo de 10 anos não leva vantagem); a antiguidade usa o histórico todo
   const m26 = d.msgs.filter(m => m.t.getFullYear() === ANO_MOMENTO);
   if (m26.length >= 20) try { state.compD = await analyze(m26); } catch {}
   state.compAnos = [];
   if (state.compD){ const ult = m26.reduce((a, m) => m.t > a ? m.t : a, m26[0].t);
-    for (let y = ANO_MOMENTO - 1; y >= ANO_MOMENTO - 3; y--){
+    // só contra 2025, no mesmo período, e só se o grupo já existia em 1º de janeiro de 2025 (sem descartar ano fraco)
+    const y = ANO_MOMENTO - 1;
+    if (d.start <= new Date(y, 0, 1, 23, 59)){
       const lim = new Date(y, ult.getMonth(), ult.getDate(), 23, 59, 59), my = d.msgs.filter(m => m.t.getFullYear() === y && m.t <= lim);
-      if (my.length >= 50) try { const a = await analyze(my); a.ano = y; state.compAnos.push(a); } catch {} } }
+      if (my.length >= 10) try { const a = await analyze(my); a.ano = y; state.compAnos.push(a); } catch {} } }
   // grupo de exemplo e prévia: média simulada a partir dos próprios números (só para ver o layout)
   const simula = top => { const nums = state.compD ? numerosDoGrupo(state.compD) : {}; const f = [.72, 1.25, .9, 1.4, .8, 1.1];
     return {pronto:true, n:1000, exemplo:true, escopo:'tipo', top, media: Object.fromEntries(Object.entries(nums).map(([k, v], i) => [k, Math.round(v * f[i % f.length] * 100)/100]))}; };
@@ -2648,6 +2657,7 @@ async function comparar(d){
     const r = await fetch('/api/stats', {method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({id: h, modo: state.modo, base: String(ANO_MOMENTO), ...numerosDoGrupo(state.compD), dias: Math.max(1, Math.round((d.end - d.start)/864e5) + 1), hist_total: d.total, hist_audios: d.semTipo ? null : d.people.reduce((t, p) => t + p.audio, 0), ...(d.semTipo ? {audios: null, figurinhas: null} : {})})});
     const j = await r.json(); if (j && j.pronto) state.comp = j;
   } catch {}
+  state.compFeito = true;
   // prévia (sem servidor): ranking simulado só para ver o layout
   if (!state.comp && AMBIENTE_TESTE) state.comp = simula({total:8, audios:22, figurinhas:15, risadas:31, por_dia:6, madrugada:40, amor:3, coracoes:5, recorde:12, dias:45, hist_total:9, hist_audios:14});
 }
@@ -2892,8 +2902,10 @@ function destaques26(ultimo){
     if (rev && rev.a - rev.b > .01) out.push({e:'🚀', t:'Revelação de 2026', n: rev.n, v: `de ${pct(rev.b)} para ${pct(rev.a)} das mensagens`}); }
   if (ultimo === 'sumico' && m25 >= 100){ const sum = s.filter(x => x.n !== tag.name && x.b >= .03 && !out.some(o => o.n === x.n)).sort((x, y) => (x.a - x.b) - (y.a - y.b))[0];
     if (sum && sum.b - sum.a > .01){ out.push({e:'🫥', t:'Sumiço de 2026', n: sum.n, v: `de ${pct(sum.b)} para ${pct(sum.a)} das mensagens`}); return out; } }
-  const fant = [...d.people].reverse().find(p => p.name !== tag.name && !out.some(o => o.n === p.name));
-  if (fant) out.push({e:'👻', t: ultimo === 'sumico' ? 'Sumiço de 2026' : 'Fantasma de 2026', n: fant.name, v: `só ${fmt(fant.count)} ${fant.count === 1 ? 'mensagem' : 'mensagens'} em 2026`});
+  // Fantasma de 2026: entre quem já estava no grupo antes de 2026 (inclui quem não mandou nada no ano), menos mensagens em 2026
+  const fant = D.people.filter(p => p.name !== tag.name && !out.some(o => o.n === p.name) && !isFone(p.name) && p.ini && p.ini < new Date(A, 0, 1))
+    .map(p => ({n: p.name, c: p.y[A] || 0})).sort((x, y) => x.c - y.c)[0];
+  if (fant) out.push({e:'👻', t: ultimo === 'sumico' ? 'Sumiço de 2026' : 'Fantasma de 2026', n: fant.n, v: fant.c ? `só ${fmt(fant.c)} ${fant.c === 1 ? 'mensagem' : 'mensagens'} em 2026` : 'nenhuma mensagem em 2026'});
   return out;
 }
 const ate26 = () => { const d = state.compD; return d ? `até ${d.end.getDate()} de ${MESES[d.end.getMonth()]}` : ''; };

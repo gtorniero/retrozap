@@ -8,7 +8,7 @@
 
 const MIN_TIPO = 30;  // com 30+ grupos do mesmo tipo, compara só com eles
 const MIN_TODOS = 10; // antes disso, compara com todos os grupos (amigos, família...) a partir de 10
-const MIN_CASAL = 10; // casal só compara com casais, a partir de 10
+const MIN_CASAL = 30; // casal só compara com casais REAIS (sem estimativa), a partir de 30
 const MODOS = ['amigos', 'familia', 'trabalho', 'comunidade', 'casal'];
 // campo: [mínimo, máximo] aceitos
 const CAMPOS = {
@@ -53,7 +53,7 @@ async function resumo(env, base, escopo, modo){
   if (r){ const dd = JSON.parse(r.dados); if (Date.now() - r.criado < (dd.n < 200 ? 10 * 60e3 : RESUMO_MS)) return dd; } // no começo (poucos grupos) refaz a cada 10 min
   const onde = escopo === 'tipo' ? 'modo = ?' : 'modo != ?', arg = escopo === 'tipo' ? modo : 'casal';
   const rows = (await env.DB.prepare(`SELECT ${COMPARA.join(', ')}, COALESCE(estimado, 0) AS est FROM grupos WHERE ${onde} AND COALESCE(base, '') = ?`).bind(arg, base).all()).results || [];
-  const reais = rows.filter(x => !x.est).length, est = reais < EST_ATE, conj = est ? rows : rows.filter(x => !x.est), m = {};
+  const reais = rows.filter(x => !x.est).length, est = modo !== 'casal' && reais < EST_ATE, conj = est ? rows : rows.filter(x => !x.est), m = {};
   for (const k of COMPARA){ if (k === 'dias') continue;
     const vals = conj.map(x => x[k]).filter(v => v != null).sort((a, b) => a - b);
     m[k] = {n: vals.length, q: cortes(vals), media: vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null}; }

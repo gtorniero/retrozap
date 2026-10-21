@@ -1,2 +1,2 @@
 // gerado por fonte/build/historia.py (não editar)
-export const HISTORIA = {"commits": 11, "dias": 2, "horas": 1.2, "sessoes": 5, "primeiro": "2026-10-20", "ultimo": "2026-10-21"};
+export const HISTORIA = {"commits": 12, "dias": 2, "horas": 1.2, "sessoes": 6, "primeiro": "2026-10-20", "ultimo": "2026-10-21"};
