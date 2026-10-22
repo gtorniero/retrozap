@@ -1674,14 +1674,10 @@ function lineup(){
     <p class="eyebrow">Ato II · As categorias</p>
     <h1 style="font-size:36px">${ativos.length} troféus em disputa. Quem leva?</h1>
     <p class="lead">As categorias do modo ${MODOS[state.modo].n}. Uma por vez: dê seu palpite, raspe ou revele.</p>
-    <div class="spoiler">
-      <b class="sp-t">👀 Mas antes, que tal um spoiler no grupo?</b>
-      <span>Mande a imagem com as categorias no seu grupo e que comecem os palpites.</span>
-      <button class="btn" id="spoil" type="button">📲 Mandar o spoiler no grupo</button>
-    </div>
     <div class="cats">${ativos.map(a => linha(a)).join('')}</div>
     ${anuncio('categorias')}
-    <button class="btn btn-main" id="go">🥁 Começar a revelação</button>
+    <button class="btn btn-ghost" id="spoil" type="button" style="width:100%">📲 Última chance: ${state.modo === 'casal' ? 'mandar o spoiler' : 'mandar o spoiler no grupo'}</button>
+    <button class="btn btn-main" id="go">🥁 Revelar as categorias</button>
   </section>`;
   intervaloComercial(); ativaAnuncios(); popSpoiler(ativos);
   $('#spoil').onclick = () => openCard(() => drawSpoiler(ativos), convite('spoiler', ativos.length), `Spoiler${state.grupo ? ' do grupo ' + state.grupo : ''}: os ${ativos.length} troféus em disputa são ${juntar(ativos.map(a => a.n))}. Quem leva cada um?`);
