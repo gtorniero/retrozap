@@ -744,6 +744,7 @@ function kind(b){
 const RX = {
   laugh:/k{3,}|(?:ha){2,}|(?:rs){2,}|(?:he){3,}|(?:hi){2,}|hue(?:hue)+|h[au]{2,}h[au]+|😂|🤣|😆|😹/iu,
   bomdia:/\bbom dia\b|\bbdia\b/i,
+  boanoite:/\bboa noite\b|\bboa noitinha\b|\bbnoite\b/i,
   parabens:/parab[ée]ns|feliz anivers/i,
   // carinho no grupo (sem "beijos" de tchau); limites com \p{L} porque \b falha em letra com acento
   amo:/(?<!\p{L})(?:amo (?:muito |demais )?(?:vcs|voc[eê]s|vc|voc[eê]|todos|todas|esse grupo|essa galera|essa turma)|te amo|saudades? de (?:vcs|voc[eê]s|todos)|orgulho de (?:vcs|voc[eê]s|voc[eê]|vc)|voc[eê]s s[aã]o (?:demais|incr[ií]veis|os melhores|as melhores|tudo|foda)|amo esse grupo)(?!\p{L})/iu,
@@ -796,7 +797,7 @@ async function analyze(msgs, prog){
   const P = {}, hours = Array(24).fill(0), days = Array(7).fill(0), words = {}, full = {}, emo = {}, porDia = {};
   let palavras = 0, risadas = 0, silencio = 0, silIni = null, audioN = 0, audioSeg = 0, audioMedidos = 0;
   const giria = {}, minSem = new Int32Array(7*1440);
-  const get = a => P[a] || (P[a] = {name:a,count:0,text:0,chars:0,sticker:0,audio:0,photo:0,media:0,deleted:0,laugh:0,bomdia:0,parabens:0,amo:0,palavrao:0,link:0,furo:0,org:0,mae:0,ok:0,reuniao:0,salva:0,aviso:0,perdido:0,indica:0,vende:0,barulho:0,boasvindas:0,agradece:0,fofoca:0,audioMax:0,night:0,after:0,first:0,revive:0,kill:0,teamo:0,apelido:0,desculpa:0,fome:0,saudade:0,coracao:0,mole:0,respT:0,respN:0,h:Array(24).fill(0),emo:{},words:{},y:{},wd:Array(7).fill(0),rep:{},ini:null,fim:null,giria:{},tema:{},emoD:{},wD:{},wCap:{},_dia:''});
+  const get = a => P[a] || (P[a] = {name:a,count:0,text:0,chars:0,sticker:0,audio:0,photo:0,media:0,deleted:0,laugh:0,bomdia:0,boanoite:0,parabens:0,amo:0,palavrao:0,link:0,furo:0,org:0,mae:0,ok:0,reuniao:0,salva:0,aviso:0,perdido:0,indica:0,vende:0,barulho:0,boasvindas:0,agradece:0,fofoca:0,audioMax:0,night:0,after:0,first:0,revive:0,kill:0,teamo:0,apelido:0,desculpa:0,fome:0,saudade:0,coracao:0,mole:0,respT:0,respN:0,h:Array(24).fill(0),emo:{},words:{},y:{},wd:Array(7).fill(0),rep:{},ini:null,fim:null,giria:{},tema:{},emoD:{},wD:{},wCap:{},_dia:''});
   let prev = null, lastDay = '';
   for (let q = 0; q < msgs.length; q++){
     if (q % 5000 === 0 && q){ prog && prog(q/msgs.length); await sleep(0); }
@@ -815,7 +816,7 @@ async function analyze(msgs, prog){
       const b = m.b.trim(); p.text++; p.chars += b.length; palavras += b.split(/\s+/).length;
       const semLink = b.toLowerCase().replace(/(?:https?:\/\/|www\.)\S+|\S+\.(?:com|br|net|org|ly|me|app|gl)\b\S*/g, ' '); // links não viram "jeito de falar"
       if (RX.laugh.test(b)) p.laugh++;
-      for (const key of ['bomdia','parabens','amo','link','furo','org','mae','reuniao','salva','aviso','perdido','indica','vende','barulho','boasvindas','agradece','fofoca','teamo','apelido','desculpa','fome','saudade']) if (RX[key].test(b)) p[key]++;
+      for (const key of ['bomdia','boanoite','parabens','amo','link','furo','org','mae','reuniao','salva','aviso','perdido','indica','vende','barulho','boasvindas','agradece','fofoca','teamo','apelido','desculpa','fome','saudade']) if (RX[key].test(b)) p[key]++;
       p.coracao += (b.match(CORACOES) || []).length;
       if (RX.amo.test(b) || /❤️|❤|💕|💖|💗|💞|🥰|😍|🫶/u.test(b)) p.mole++;
       if (RX.ok.test(b)) p.ok++;
@@ -2926,7 +2927,7 @@ function destaques26(ultimo){
   out.push({e:'🗣️', t:'Tagarela de 2026', n: tag.name, v: `${fmt(tag.count)} mensagens · ${pct(tag.count/Math.max(1, d.total))} do grupo`});
   const m26 = d.total, m25 = D.msgs.filter(m => m.t.getFullYear() === B).length;
   const s = D.people.map(p => ({n: p.name, a: (p.y[A]||0)/Math.max(1, m26), b: (p.y[B]||0)/Math.max(1, m25), c: p.y[A]||0}));
-  if (m25 >= 100){ const rev = s.filter(x => x.n !== tag.name && x.c >= 20).sort((x, y) => (y.a - y.b) - (x.a - x.b))[0];
+  if (m25 >= 100 && D.people.length > 5){ const rev = s.filter(x => x.n !== tag.name && x.c >= 20).sort((x, y) => (y.a - y.b) - (x.a - x.b))[0];
     if (rev && rev.a - rev.b > .01) out.push({e:'🚀', t:'Revelação de 2026', n: rev.n, v: `de ${pct(rev.b)} para ${pct(rev.a)} das mensagens`}); }
   if (ultimo === 'sumico' && m25 >= 100){ const sum = s.filter(x => x.n !== tag.name && x.b >= .03 && !out.some(o => o.n === x.n)).sort((x, y) => (x.a - x.b) - (y.a - y.b))[0];
     if (sum && sum.b - sum.a > .01){ out.push({e:'🫥', t:'Sumiço de 2026', n: sum.n, v: `de ${pct(sum.b)} para ${pct(sum.a)} das mensagens`}); return out; } }
@@ -2973,21 +2974,31 @@ function drawRanking2026(){
 let VID_DUR = 30; // recalculado por cenasVideo (cerca de 30 s)
 function cenasVideo(d){
   const casal = state.modo === 'casal' && d.people.length === 2, [a, b] = d.people, soma = k => d.people.reduce((t, p) => t + (p[k] || 0), 0);
-  // casal: vídeo curto, só o mais legal (mensagens + ranking, declarações, áudios; 3 troféus; um contra o outro em 3 linhas)
-  let num = casal ? ['total', 'amor', 'audios'].map(num26).filter(x => x && (x.k === 'total' || x.n >= 3)) : nums26(4);
-  if (!num.length) num = (casal ? [['💬', soma('count'), 'mensagens trocadas'], ['🎧', soma('audio'), 'áudios'], ['😂', soma('laugh'), 'risadas'], ['💘', soma('teamo'), 'declarações de amor']]
-    : [['💬', soma('count'), 'mensagens'], ['🎧', soma('audio'), 'áudios'], ['😂', soma('laugh'), 'risadas'], ['🖼️', soma('sticker'), 'figurinhas']])
-    .filter(x => x[1] > 0).map(([e, n, t]) => ({e, n, t}));
-  const hl = casal ? [] : destaques26('fantasma').map(x => ({e: x.e, t: x.t, nome: x.n, linha: x.v}));
+  // 1. mensagens do ano + posição no ranking + gráfico ano a ano
+  const m0 = num26('total') || {e:'💬', n: soma('count'), t: 'mensagens', k: 'total', vs: null, rank: rankTxt('total')};
+  const anos = porAno(state.data || d);
   // troféus do vídeo: calculados só com as mensagens de 2026 (o vídeo é "o nosso 2026")
-  const aw26 = state.compD ? buildAwards(state.compD, true) : principais();
-  const cats = (casal ? ['Tagarela do Casal', 'Mais Romântico', nomeCat('Podcaster do Casal')].map(n => aw26.find(x => x.n === gtit(n))).filter(Boolean) : aw26.slice(0, 6)).filter(x => x.winner).map(x => ({e: x.e, t: gtit(x.n, x.winner.name), nome: x.winner.name, linha: vunid(x, x.winner.v)}));
-  const duelo = casal ? categoriasCasal(d).cats.filter(x => x.t !== 'Áudios' && x.t !== 'Mídias') : [];
+  const aw26 = state.compD ? buildAwards(state.compD, true) : principais(), achaCat = n => aw26.find(x => x.n === gtit(nomeCat(n)) && x.winner);
+  const fmtCat = x => ({e: x.e, t: gtit(x.n, x.winner.name), nome: x.winner.name, linha: vunid(x, x.winner.v)});
+  let cats;
+  if (casal) cats = ['Tagarela do Casal', 'Mais Romântico', 'Podcaster do Casal'].map(achaCat).filter(Boolean).map(fmtCat);
+  else { cats = ['O Tagarela', 'Boca-Suja', 'Puxa-Assunto', 'O Fantasma', 'Coração Mole'].map(achaCat).filter(Boolean);
+    if (cats.length < 3) cats = aw26.filter(x => x.winner).slice(0, 5); cats = cats.map(fmtCat); }
+  // grupo: as outras métricas do ano, o assunto e a revelação (só com mais de 5 pessoas)
+  const resto = casal ? [] : nums26(4).slice(1);
   const as = casal ? null : assunto26();
-  // linha do tempo (~30 s): abertura, números, assunto, troféus (top 6), destaques (grupo) ou um contra o outro (casal), fim
-  const T = {msg: 2.6}; T.num = T.msg + 2.8; T.as = T.num + (num.length > 1 ? 1.4 + (num.length - 1)*1.2 : 0); T.cat = T.as + (as ? 2 : 0); T.hl = T.cat + cats.length*1.6; T.fim = T.hl + (casal ? 4.8 : hl.length*2);
+  const rev = casal || (state.data || d).people.length <= 5 ? null : destaques26().find(x => /^Revelação/.test(x.t)) || null;
+  // casal: um contra o outro, só 2026
+  const src = state.compD && state.compD.people.length ? state.compD : d, achar = n => src.people.find(p => p.name === n) || {};
+  const pa = achar(a.name), pb = casal ? achar(b.name) : {};
+  const duelo = casal ? [['🗣️', 'Tagarela', 'count'], ['💘', 'Mais romântico', 'teamo'], ['🌅', 'Despertou a conversa', 'first'], ['🌙', 'Mais boa noite', 'boanoite']]
+    .map(([e, t, k]) => ({e, t, a: pa[k] || 0, b: pb[k] || 0})).filter(x => x.a + x.b > 0) : [];
+  // linha do tempo
+  const T = {msg: casal ? 0 : 2.6}; T.cat = T.msg + 5;
+  if (casal){ T.duelo = T.cat + cats.length*3.2; T.fim = T.duelo + (duelo.length ? .6 + duelo.length*1.6 + 3.4 : 0); }
+  else { T.res = T.cat + (cats.length ? .6 + cats.length*1.1 + 3 : 0); T.as = T.res + (resto.length ? 1.6 + resto.length*1.3 : 0); T.rev = T.as + (as ? 2.6 : 0); T.fim = T.rev + (rev ? 2.8 : 0); }
   VID_DUR = Math.round((T.fim + 2.6)*10)/10;
-  return {casal, a, b, num, hl, cats, duelo, as, T, so26: !!state.compD, grupo: limpaTxt(state.grupo || nomePadrao()), q: quemMedia()};
+  return {casal, a, b, m0, anos, resto, rev, cats, duelo, as, T, num: [m0, ...resto], so26: !!state.compD, grupo: limpaTxt(state.grupo || nomePadrao()), q: quemMedia()};
 }
 const d_pessoas = cz => state.data ? state.data.people.length : 0;
 // emoji centralizado de verdade: mede os pixels do desenho (o centro do texto erra com emoji em alguns celulares)
@@ -3034,24 +3045,52 @@ function frameVideo(c, t, cz){
     let fs = fs0; c.font = `800 ${fs}px ${DM}`; let tw = c.measureText(txt).width + 56;
     while (px + tw > maxX && fs > 22){ fs -= 2; c.font = `800 ${fs}px ${DM}`; tw = c.measureText(txt).width + 56; }
     const ph = fs*1.9; c.fillStyle = fill; c.beginPath(); c.roundRect(px, py, tw, ph, ph/2); c.fill(); c.fillStyle = cor; c.textAlign = 'left'; c.fillText(txt, px + 28, py + ph*.68); py += ph + 16; } return py; };
-  // 2. destaque: mensagens do ano, com o ranking do Brasil
-  const m0 = cz.num[0];
-  if (m0) cena(T.msg, T.num, u => {
-    c.fillStyle = K.sub; c.font = `700 36px ${DM}`; c.fillText(cz.so26 ? `${ANO_MOMENTO} EM NÚMEROS` : 'EM NÚMEROS', W/2, 330);
-    c.save(); c.translate(W/2, 560); const sc = .6 + .4*ent(T.msg); c.scale(sc, sc); emojiC(c, m0.e, 0, 0, 200); c.restore();
-    c.fillStyle = K.ouro; c.font = `800 190px ${BR}`; c.fillText(fmt(Math.round(m0.n * ease(u/1.4))), W/2, 900, 980);
-    c.fillStyle = K.txt; caber(c, m0.t.toUpperCase(), W/2, 990, 940, 800, 56, BR);
-    c.save(); c.globalAlpha *= ent(T.msg + .8); const L = [m0.vs && [m0.vs, corTend(m0), '#FFFFFF'], m0.rank && [m0.rank, K.A, txtPill]].filter(Boolean); let py = 1060;
-    for (const [txt, fill, cor] of L){ let fs = 46; c.font = `800 ${fs}px ${DM}`; let tw = c.measureText(txt).width + 80; while (tw > 960 && fs > 26){ fs -= 2; c.font = `800 ${fs}px ${DM}`; tw = c.measureText(txt).width + 80; }
-      const ph = fs*1.9; c.fillStyle = fill; c.beginPath(); c.roundRect(W/2 - tw/2, py, tw, ph, ph/2); c.fill(); c.fillStyle = cor; c.textAlign = 'center'; c.fillText(txt, W/2, py + ph*.68); py += ph + 20; }
-    c.restore(); c.textAlign = 'center';
+  // 2. mensagens do ano: número, posição no ranking e o gráfico ano a ano embaixo
+  const m0 = cz.m0;
+  if (m0) cena(T.msg, T.cat, u => {
+    c.fillStyle = K.sub; c.font = `700 36px ${DM}`; c.fillText(cz.so26 ? `${cz.casal ? 'O NOSSO' : ''} ${ANO_MOMENTO} EM NÚMEROS`.trim() : 'EM NÚMEROS', W/2, 300);
+    if (cz.casal){ c.fillStyle = K.txt; caber(c, `${nomeA} & ${nomeB}`, W/2, 370, 940, 800, 50, BR); }
+    c.save(); c.translate(W/2, 500); const sc = .6 + .4*ent(T.msg); c.scale(sc, sc); emojiC(c, m0.e, 0, 0, 150); c.restore();
+    c.fillStyle = K.ouro; c.font = `800 170px ${BR}`; c.fillText(fmt(Math.round(m0.n * ease(u/1.4))), W/2, 760, 980);
+    c.fillStyle = K.txt; caber(c, (cz.so26 ? `mensagens em ${ANO_MOMENTO}` : m0.t).toUpperCase(), W/2, 840, 940, 800, 52, BR);
+    let py = 890;
+    if (m0.vs){ c.save(); c.globalAlpha *= ent(T.msg + .6); c.font = `800 36px ${DM}`; const tw = c.measureText(m0.vs).width + 60, ph = 66; c.fillStyle = corTend(m0); c.beginPath(); c.roundRect(W/2 - tw/2, py, tw, ph, ph/2); c.fill(); c.fillStyle = '#FFFFFF'; c.fillText(m0.vs, W/2, py + 46); c.restore(); py += 86; }
+    const rk = m0.rank || (cz.casal ? '🏅 Ranking dos casais em formação' : '');
+    if (rk){ c.save(); c.globalAlpha *= ent(T.msg + 1); const bx = 90, bw = W - 180, bh = 190;
+      c.fillStyle = K.A; c.beginPath(); c.roundRect(bx, py, bw, bh, 40); c.fill();
+      c.fillStyle = txtPill; c.font = `700 30px ${DM}`; c.fillText(cz.casal ? 'NO RANKING DOS CASAIS DO RETROZAP' : 'NO RANKING DOS GRUPOS DO RETROZAP', W/2, py + 58);
+      caber(c, rk, W/2, py + 140, bw - 60, 800, 60, BR); c.restore(); py += bh + 30; }
+    // gráfico ano a ano
+    const L = cz.anos, gy0 = Math.max(py + 40, 1250), gy1 = 1760, gh = gy1 - gy0 - 90, mx = Math.max(1, ...L.map(x => x.n));
+    if (L.length > 1){ c.save(); c.globalAlpha *= ent(T.msg + 1.4);
+      c.fillStyle = K.sub; c.font = `700 28px ${DM}`; c.fillText('MENSAGENS POR ANO', W/2, gy0);
+      const n = L.length, gap = 18, bw = Math.min(140, (W - 160 - gap*(n - 1))/n), x0 = W/2 - (n*bw + (n - 1)*gap)/2, base = gy1 - 40;
+      L.forEach((x, i) => { const cres = ease((u - 1.4 - i*.12)/.8), h = Math.max(6, gh*x.n/mx*cres), bx = x0 + i*(bw + gap), at = x.y === ANO_MOMENTO;
+        c.fillStyle = at ? K.ouro : K.caixa; c.beginPath(); c.roundRect(bx, base - h, bw, h, 12); c.fill();
+        c.fillStyle = at ? K.ouro : K.sub; c.font = `800 ${Math.round(Math.min(30, bw*.32))}px ${DM}`; c.fillText(curto(x.n), bx + bw/2, base - h - 12);
+        c.fillStyle = at ? K.txt : K.sub; c.font = `700 ${Math.round(Math.min(28, bw*.3))}px ${DM}`; c.fillText(String(x.y), bx + bw/2, base + 34); });
+      c.restore(); }
   });
-  // 3. as outras métricas do ano
-  const resto = cz.num.slice(1);
-  if (resto.length) cena(T.num, T.as, u => {
+  // 3. grupo: os troféus em lista, um aparecendo depois do outro
+  if (!cz.casal && cz.cats.length) cena(T.cat, T.res, u => {
+    c.fillStyle = K.txt; c.font = `800 76px ${BR}`; c.fillText(cz.so26 ? `TROFÉUS DE ${ANO_MOMENTO}` : 'OS TROFÉUS', W/2, 270);
+    c.fillStyle = K.sub; c.font = `700 32px ${DM}`; c.fillText('QUEM LEVOU CADA CATEGORIA', W/2, 325);
+    const n = cz.cats.length, rh = Math.min(250, (1360 - 20*(n - 1))/n);
+    cz.cats.forEach((x, i) => { const t0 = .6 + i*1.1, e = ease((u - t0)/.5); if (e <= 0) return; const y = 380 + i*(rh + 20);
+      c.save(); c.globalAlpha *= e; c.translate(120*(1 - e), 0); c.textAlign = 'left';
+      c.fillStyle = K.caixa; c.beginPath(); c.roundRect(60, y, W - 120, rh, 36); c.fill();
+      emojiC(c, x.e, 160, y + rh/2, Math.round(rh*.42));
+      c.fillStyle = K.sub; c.font = `700 ${Math.round(rh*.13)}px ${DM}`; c.fillText(x.t.toUpperCase(), 260, y + rh*.3, W - 340);
+      c.fillStyle = K.ouro; c.font = `800 ${Math.round(rh*.26)}px ${BR}`; c.fillText(limpaTxt(x.nome), 260, y + rh*.62, W - 340);
+      c.fillStyle = K.txt; c.font = `700 ${Math.round(rh*.13)}px ${DM}`; c.fillText(x.linha, 260, y + rh*.84, W - 340);
+      c.restore(); c.textAlign = 'center'; });
+  });
+  // 4. grupo: as outras métricas do ano
+  const resto = cz.resto;
+  if (resto.length) cena(T.res, T.as, u => {
     c.fillStyle = K.txt; c.font = `800 76px ${BR}`; c.fillText(cz.so26 ? `MAIS DE ${ANO_MOMENTO}` : 'E MAIS', W/2, 270);
     resto.forEach((x, i) => {
-      const t0 = .3 + i*.6, e = ent(T.num + t0), y = 340 + i*400 + 60*(1 - e);
+      const t0 = .3 + i*.6, e = ent(T.res + t0), y = 340 + i*400 + 60*(1 - e);
       c.save(); c.globalAlpha *= e; c.textAlign = 'left';
       c.fillStyle = K.caixa; c.beginPath(); c.roundRect(70, y, W - 140, 370, 40); c.fill();
       c.font = '96px serif'; c.fillText(x.e, 110, y + 130);
@@ -3062,53 +3101,51 @@ function frameVideo(c, t, cz){
     });
   });
   // 3. assunto mais falado
-  if (cz.as) cena(T.as, T.cat, () => {
+  if (cz.as) cena(T.as, T.rev, () => {
     c.fillStyle = K.sub; c.font = `700 34px ${DM}`; c.fillText(`O ASSUNTO MAIS FALADO${cz.so26 ? ' DE ' + ANO_MOMENTO : ''}`, W/2, 330);
     c.save(); c.translate(W/2, 640); const sc = .6 + .4*ent(T.as); c.scale(sc, sc); emojiC(c, cz.as.e, 0, 0, 260); c.restore();
     c.fillStyle = K.ouro; caber(c, cz.as.txt.toUpperCase(), W/2, 960, 940, 800, 110, BR);
     c.fillStyle = K.txt; caber(c, `${fmt(cz.as.n)} mensagens sobre isso`, W/2, 1050, 900, 700, 40, DM);
   });
   // 4. troféus: top 6 categorias (1,8 s cada)
-  cz.cats.forEach((x, i) => {
-    const t0 = T.cat + i*1.6, cor = !cz.casal ? K.ouro : x.nome === cz.a.name ? K.A : K.B;
-    cena(t0, t0 + 1.6, () => {
+  if (cz.casal) cz.cats.forEach((x, i) => {
+    const t0 = T.cat + i*3.2, cor = x.nome === cz.a.name ? K.A : K.B;
+    cena(t0, t0 + 3.2, () => {
       c.fillStyle = K.sub; c.font = `700 34px ${DM}`; c.fillText(`TROFÉU ${i + 1} DE ${cz.cats.length}${cz.so26 ? ' · ' + ANO_MOMENTO : ''}`, W/2, 330);
-      c.save(); c.translate(W/2, 640); const sc = .6 + .4*ent(t0, .4); c.scale(sc, sc); emojiC(c, x.e, 0, 0, 260); c.restore();
+      c.save(); c.translate(W/2, 640); const sc = .6 + .4*ent(t0, .5); c.scale(sc, sc); emojiC(c, x.e, 0, 0, 260); c.restore();
       c.fillStyle = K.txt; caber(c, x.t.toUpperCase(), W/2, 900, 940, 800, 74, BR);
-      c.save(); c.globalAlpha *= ent(t0 + .25, .4);
+      c.save(); c.globalAlpha *= ent(t0 + .5, .5);
       c.fillStyle = cor; c.beginPath(); c.roundRect(170, 980, W - 340, 190, 48); c.fill();
       c.fillStyle = txtPill; caber(c, limpaTxt(x.nome), W/2, 1110, 680, 800, 96, BR);
       c.fillStyle = K.txt; caber(c, x.linha, W/2, 1260, 900, 700, 40, DM); c.restore();
     });
   });
-  // 5a. grupo: top 3 destaques de 2026 (2 s cada)
-  cz.hl.forEach((x, i) => {
-    const t0 = T.hl + i*2;
-    cena(t0, t0 + 2, u => {
-      c.fillStyle = K.sub; c.font = `700 34px ${DM}`; c.fillText(`DESTAQUE ${i + 1} DE ${cz.hl.length} · ${ANO_MOMENTO}`, W/2, 330);
+  // 5a. grupo: a revelação de 2026 (só com mais de 5 pessoas)
+  if (cz.rev){ const x = cz.rev, t0 = T.rev;
+    cena(t0, T.fim, () => {
+      c.fillStyle = K.sub; c.font = `700 34px ${DM}`; c.fillText(`A REVELAÇÃO DE ${ANO_MOMENTO}`, W/2, 330);
       c.save(); c.translate(W/2, 640); const sc = .6 + .4*ent(t0); c.scale(sc, sc); emojiC(c, x.e, 0, 0, 260); c.restore();
-      c.fillStyle = K.txt; caber(c, x.t.toUpperCase(), W/2, 900, 940, 800, 74, BR);
-      c.save(); c.globalAlpha *= ent(t0 + .35);
+      c.fillStyle = K.txt; caber(c, 'QUEM MAIS CRESCEU NO GRUPO', W/2, 900, 940, 800, 64, BR);
+      c.save(); c.globalAlpha *= ent(t0 + .4);
       c.fillStyle = K.ouro; c.beginPath(); c.roundRect(170, 980, W - 340, 190, 48); c.fill();
-      c.fillStyle = txtPill; caber(c, limpaTxt(x.nome), W/2, 1110, 680, 800, 96, BR);
-      c.fillStyle = K.txt; caber(c, x.linha, W/2, 1260, 900, 700, 40, DM); c.restore();
-    });
-  });
+      c.fillStyle = txtPill; caber(c, limpaTxt(x.n), W/2, 1110, 680, 800, 96, BR);
+      c.fillStyle = K.txt; caber(c, x.v, W/2, 1260, 900, 700, 40, DM); c.restore();
+    }); }
   // 5b. casal: um contra o outro (barras, uma linha de cada vez)
-  if (cz.casal) cena(T.hl, T.fim, u => {
+  if (cz.casal && cz.duelo.length) cena(T.duelo, T.fim, u => {
     c.fillStyle = K.txt; c.font = `800 72px ${BR}`; c.fillText('UM CONTRA O OUTRO', W/2, 260, 980);
     c.fillStyle = K.sub; c.font = `700 30px ${DM}`; c.fillText(cz.so26 ? `SÓ ${ANO_MOMENTO}` : 'DESDE O INÍCIO', W/2, 310);
     c.fillStyle = K.A; c.beginPath(); c.roundRect(70, 350, 450, 110, 30); c.fill(); c.fillStyle = K.B; c.beginPath(); c.roundRect(W - 520, 350, 450, 110, 30); c.fill();
     c.fillStyle = '#FFFFFF'; caber(c, nomeA, 295, 425, 400, 800, 54, BR); caber(c, nomeB, W - 295, 425, 400, 800, 54, BR);
     cz.duelo.forEach((x, i) => {
-      const t0 = .4 + i*.9, e = ent(T.hl + t0), y = 520 + i*300, ta = x.a > x.b, tb = x.b > x.a;
+      const t0 = .6 + i*1.6, e = ent(T.duelo + t0, .6), y = 520 + i*300, ta = x.a > x.b, tb = x.b > x.a;
       if (e <= 0) return;
       c.save(); c.globalAlpha *= e;
       c.fillStyle = K.caixa; c.beginPath(); c.roundRect(70, y, W - 140, 236, 36); c.fill();
       c.fillStyle = K.txt; caber(c, `${x.e} ${x.t}`, W/2, y + 58, 860, 700, 40, DM);
-      c.font = `800 64px ${BR}`; c.textAlign = 'left'; c.fillStyle = K.A; c.fillText(fmt(Math.round(x.a*ease((u - t0)/.9))) + (ta ? ' 👑' : ''), 110, y + 140);
-      c.textAlign = 'right'; c.fillStyle = K.B; c.fillText((tb ? '👑 ' : '') + fmt(Math.round(x.b*ease((u - t0)/.9))), W - 110, y + 140); c.textAlign = 'center';
-      const tot = Math.max(1, x.a + x.b), bx = 110, bw = W - 220, wa = bw * (x.a/tot) * ease((u - t0)/.9) + bw * .5 * (1 - ease((u - t0)/.9));
+      c.font = `800 64px ${BR}`; c.textAlign = 'left'; c.fillStyle = K.A; c.fillText(fmt(Math.round(x.a*ease((u - t0)/1.2))) + (ta ? ' 👑' : ''), 110, y + 140);
+      c.textAlign = 'right'; c.fillStyle = K.B; c.fillText((tb ? '👑 ' : '') + fmt(Math.round(x.b*ease((u - t0)/1.2))), W - 110, y + 140); c.textAlign = 'center';
+      const tot = Math.max(1, x.a + x.b), bx = 110, bw = W - 220, wa = bw * (x.a/tot) * ease((u - t0)/1.2) + bw * .5 * (1 - ease((u - t0)/1.2));
       c.save(); c.beginPath(); c.roundRect(bx, y + 172, bw, 34, 17); c.clip(); c.fillStyle = K.A; c.fillRect(bx, y + 172, wa, 34); c.fillStyle = K.B; c.fillRect(bx + wa, y + 172, bw - wa, 34); c.restore();
       c.restore();
     });
