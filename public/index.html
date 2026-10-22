@@ -363,6 +363,12 @@ html.casal .vota .chip[aria-pressed="true"]{color:#fff}
 .todas-i .small{display:block;color:var(--neblina)}
 .chegou{display:flex;gap:10px;align-items:flex-start;background:var(--manga);color:var(--noite);border-radius:16px;padding:12px 14px;font-size:15px;line-height:1.4}
 .chegou b{color:var(--noite)}
+.nums{width:100%;background:var(--acai);border:1.5px solid var(--linha);border-radius:16px;padding:12px 16px;display:flex;flex-direction:column;gap:10px}
+.nums>summary{cursor:pointer;display:flex;flex-direction:column;gap:2px;list-style:none}
+.nums>summary::-webkit-details-marker{display:none}
+.nums>summary b{font-size:18px}
+.nums>summary::after{content:'Ver números ▾';font-size:14px;font-weight:700;color:var(--manga);margin-top:4px}
+.nums[open]>summary::after{content:'Fechar ▴'}
 .passos{display:grid;grid-template-columns:1fr;gap:10px;width:100%}
 .passo{font:inherit;width:100%;cursor:pointer;display:grid;grid-template-columns:auto 1fr;column-gap:12px;align-items:center;text-align:left;background:var(--acai);border:1.5px solid var(--linha);border-radius:16px;padding:12px 16px;color:var(--areia);text-decoration:none}
 .passo span{grid-row:1/3;font-size:30px}.passo b{font-size:17px}.passo small{color:var(--neblina);font-size:13px}
@@ -658,7 +664,17 @@ const state = { arquivo:null, grupo:'', modo:'amigos', how:'iphone', data:null, 
 function anchor(){} // sem anúncios
 // botão Voltar: pilha das telas visitadas
 const PILHA = []; let VOLTANDO = false;
+// retomar depois de recarregar a página: a conversa fica só neste aparelho (IndexedDB) e a tela atual na aba (sessionStorage)
+const SESS = {
+  db(){ return new Promise((ok, no) => { try { const r = indexedDB.open('retrozap', 1); r.onupgradeneeded = () => r.result.createObjectStore('s'); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); } catch (e){ no(e); } }); },
+  async put(k, v){ try { const db = await SESS.db(); await new Promise((ok, no) => { const tx = db.transaction('s', 'readwrite'); tx.objectStore('s').put(v, k); tx.oncomplete = ok; tx.onerror = () => no(tx.error); }); } catch {} },
+  async get(k){ try { const db = await SESS.db(); return await new Promise(ok => { const r = db.transaction('s').objectStore('s').get(k); r.onsuccess = () => ok(r.result); r.onerror = () => ok(null); }); } catch { return null; } },
+  async limpa(){ try { sessionStorage.removeItem('rz_tela'); sessionStorage.removeItem('rz_esc'); } catch {} try { const db = await SESS.db(); db.transaction('s', 'readwrite').objectStore('s').clear(); } catch {} },
+  tela(k){ try { if (k) sessionStorage.setItem('rz_tela', k); else sessionStorage.removeItem('rz_tela'); } catch {} }
+};
+const TELAS_RETOMA = /^(turma|prologo|categorias|premio\d+|todas|resumo|fim|final)$/;
 function pilha(f, k){
+  if (TELAS_RETOMA.test(k)) SESS.tela(k); else if (k === 'inicio' || k === 'comecar') SESS.tela('');
   if (VOLTANDO){ VOLTANDO = false; } else if (!PILHA.length || PILHA[PILHA.length-1].k !== k) PILHA.push({f, k});
   const b = document.getElementById('voltar'); if (b) b.hidden = false;
 }
@@ -945,18 +961,24 @@ const RESERVAS = {
 };
 // contagem: vencedor com 5+ e o grupo com 10+ no total (taxas e "menos mensagens" têm regras próprias)
 const MIN_VENC = 5, MIN_TOTAL = 10;
+// grupo pequeno: categorias que podem completar a cerimônia (as que saíram de vez nunca voltam)
+const EXTRAS_FORA = new Set(['Mata-Conversa', 'Escritor de Textão', 'Mãe Coruja', 'Síndico de Plantão', 'Achados e Perdidos', 'Classificados do Grupo', 'Inimigo do Texto'].map(gtit));
+const EXTRAS_OK = new Set(['Coruja da Madrugada', 'Figurinha de Ouro', 'Organizador do Rolê', 'Rei do Furo', 'Tio do Bom Dia', 'Rei do Parabéns', 'Fotógrafo Oficial', 'Madrugador', 'Rei do "Ok"', 'Mais Agradecido', 'Quem Mais Ama', 'Rei da Indicação'].map(gtit));
 const porContagem = a => !a.rate && !a.pct && !a.low && a.k !== 'avg' && a.k !== 'resp';
 function buildAwards(d, soLista){
   const list = [];
-  VOL_MIN = Math.min(100, Math.max(30, Math.round(d.total*.05))); // 5% do grupo, entre 30 e 100 mensagens
+  // grupo pequeno (até 5 pessoas): mínimos menores e categorias extras, para nunca sair com 1 ou 2 prêmios
+  const peq = d.people.length <= 5 && state.modo !== 'casal', minV = peq ? 3 : MIN_VENC, minT = peq ? 5 : MIN_TOTAL;
+  VOL_MIN = Math.min(100, Math.max(peq ? 15 : 30, Math.round(d.total*.05))); // 5% do grupo, entre 30 e 100 mensagens (15 no grupo pequeno)
   const corte = +d.end - 182*864e5; // Fantasma: só quem está no grupo há 6+ meses
-  for (const a of AW.filter(a => a.m.includes(state.modo))){
+  const doModo = a => a.m.includes(state.modo);
+  for (const a of AW.filter(a => doModo(a) || (peq && !a.m.includes('casal')))){
     if (a.low && d.people.length < 3 && state.modo !== 'casal') continue;
     const ranked = d.people.filter(p => !(a.low && (isFone(p.name) || !p.ini || +p.ini > corte))).map(p => ({name:p.name, v:val(a,p), p})).filter(r => r.v !== null) // número desconhecido nunca é o Fantasma
       .sort((x,y) => a.low ? x.v - y.v : y.v - x.v);
     if (!ranked.length || (!a.low && ranked[0].v <= 0) || (a.min && ranked[0].v < a.min)) continue;
     const total = d.people.reduce((s,p) => s + (a.rate || a.pct || a.k==='avg' ? 0 : p[a.k]), 0);
-    if (porContagem(a) && a.k !== 'count' && (ranked[0].v < MIN_VENC || total < MIN_TOTAL)) continue;
+    if (porContagem(a) && a.k !== 'count' && (ranked[0].v < minV || total < minT)) continue;
     // empate técnico: os dois primeiros com o mesmo valor
     const empate = ranked[1] && ranked[1].v === ranked[0].v && state.modo !== 'casal';
     const winner = empate ? {...ranked[0], name: `${ranked[0].name} e ${ranked[1].name}`, empate: [ranked[0].name, ranked[1].name]} : ranked[0];
@@ -971,6 +993,14 @@ function buildAwards(d, soLista){
   const reservas = (RESERVAS[state.modo] || []).map(gtit).map(troca).filter(n => tem(n) && !base.includes(n));
   const escolhidas = base.map(n => tem(n) ? n : reservas.shift()).filter(Boolean);
   const shown = escolhidas.map(n => list.find(a => a.n === n)).filter(Boolean);
+  // ainda poucas? completa com outras categorias que tenham vencedor (primeiro as do próprio modo), até 6
+  const ALVO = 6;
+  if (shown.length < ALVO){
+    const ja = new Set(shown.map(a => a.n)), mesmaChave = a => shown.some(s => s.k === a.k && !!s.low === !!a.low);
+    const pode = a => doModo(a) ? !EXTRAS_FORA.has(a.n) : EXTRAS_OK.has(a.n);
+    const extra = list.filter(a => !ja.has(a.n) && pode(a) && !mesmaChave(a) && !(d.semTipo && (a.k === 'audio' || a.k === 'sticker'))).sort((x, y) => doModo(y) - doModo(x));
+    for (const a of extra){ if (shown.length >= ALVO) break; if (mesmaChave(a)) continue; shown.push(a); }
+  }
   if (soLista) return shown;
   state.bonus = []; state.bonusShown = true; state.noBonus = false;
   return comHonra(shown, d);
@@ -1274,7 +1304,7 @@ function inicio(){
   anchor(true);
   ir('/');
   if (ORIGEM && !ORIGEM_VISTA){ ORIGEM_VISTA = true; if (ORIGEM.casal) setModo('casal'); try { if (typeof evento === 'function') evento('chegou_de_compartilhamento', {origem: ORIGEM.de}); } catch {} }
-  PILHA.length = 0; const vb = document.getElementById('voltar'); if (vb) vb.hidden = true;
+  PILHA.length = 0; SESS.tela(''); const vb = document.getElementById('voltar'); if (vb) vb.hidden = true;
   setSteps(0); state.data = null; const cs = state.modo === 'casal';
   view.innerHTML = `
   <section class="screen hero">
@@ -1475,7 +1505,7 @@ function carregando(titulo){
     if (txt) $('#pt').textContent = txt;
   };
 }
-async function run(text, sample){
+async function run(text, sample, retomando){
   setSteps(1); state.sample = sample;
   const prog = carregando('Lendo a conversa inteira, do começo ao fim...');
   const t0 = performance.now();
@@ -1486,6 +1516,7 @@ async function run(text, sample){
     err.textContent = 'Esse arquivo não parece um export de grupo. Confira o passo a passo e tente de novo.'; return;
   }
   if (sample) state.grupo = state.modo === 'casal' ? 'Nosso Cantinho 💕' : 'Turma do Churras'; else if (!state.grupo) state.grupo = nomeDaConversa(text);
+  if (!retomando){ SESS.put('conversa', {text, dur: DUR, grupo: state.grupo, modo: state.modo, how: state.how, sample}); try { sessionStorage.removeItem('rz_esc'); } catch {} }
   evento('upload_ok', {mensagens: msgs.length, modo: state.modo, exemplo: !!sample});
   state.raw = msgs; state.alias = {}; state.hidden = new Set(); state.ctx = ''; state.intervaloVisto = false; state.spoilerVisto = false; state.livreUsadas = 0; state.palavra26 = null; state.intervaloAd = false;
   state.left = new Set(msgs.sys.filter(e => e.type === 'saiu' || e.type === 'removido').map(e => e.who));
@@ -1494,6 +1525,7 @@ async function run(text, sample){
   for (const n of state.left) if (autores.has(n)) state.hidden.add(n);
   if (state.modo === 'casal' && autores.has(state.grupo)) state.grupo = ''; // "Conversa com Fulano" não vira nome do casal
   // escolheu "grupo", mas a conversa tem só 2 pessoas: pergunta se é um casal
+  if (retomando) return;
   if (!sample && state.modo !== 'casal' && [...autores].filter(n => !state.hidden.has(n)).length === 2) return perguntaCasal([...autores].filter(n => !state.hidden.has(n)), roster);
   roster();
 }
@@ -1540,7 +1572,9 @@ function roster(){
     <h1 style="font-size:36px">${dentro} pessoas na cerimônia</h1>
     <div class="panel"><label class="ask" for="gn">${state.modo === 'casal' ? 'Nome do casal' : 'Nome do grupo'} <span class="small">(aparece nos cards)</span></label>
       <input id="gn" type="text" maxlength="44" value="${esc(state.grupo)}" placeholder="Ex.: Família Silva" autocomplete="off" style="width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid var(--linha);background:var(--noite);color:var(--areia);font:inherit;font-size:17px"></div>
-    ${numeros.length ? `<h2 style="font-size:24px">📞 Números desconhecidos</h2>
+    ${todos.length > 12 ? `<button class="btn btn-main" id="go2" type="button" style="width:100%">Tudo certo, começar →</button><p class="small" style="margin:-4px 0 0;text-align:center">Ou revise a turma abaixo antes.</p>` : ''}
+    ${numeros.length ? `${numeros.length > 4 ? `<details class="nums" id="numsD"${state.numAberto ? ' open' : ''}><summary><b>📞 +${numeros.length} números sem nome</b><span class="small">Entram na cerimônia como estão. Toque para revisar ou tirar.</span></summary>
+    <div class="btn-row"><button type="button" class="btn btn-ghost mini" id="numFora">Tirar todos os números da cerimônia</button></div>` : '<h2 style="font-size:24px">📞 Números desconhecidos</h2>'}
     <p class="small">Costumam ser alguém que trocou de número. Comparamos quando cada um falou e o jeito de escrever para sugerir quem é.</p>
     <div class="mems">${numeros.map((x,i) => {
       const s = sug[x.n], junto = state.alias[x.n], fora = state.hidden.has(x.n);
@@ -1553,7 +1587,7 @@ function roster(){
           : `<p class="hint">Não conseguimos descobrir quem é.</p><button type="button" class="btn btn-ghost mini" data-out="${i}">Tirar da cerimônia</button>`}
           <label class="small" for="pick-${i}">${s ? 'Não é? Escolha quem é:' : 'Se souber, escolha quem é:'}</label>
           <select id="pick-${i}" data-pick="${i}"><option value="">Escolher pessoa</option>${pessoas.map(p => `<option>${esc(p.n)}</option>`).join('')}</select>`}
-      </div>`; }).join('')}</div>` : ''}
+      </div>`; }).join('')}</div>${numeros.length > 4 ? '</details>' : ''}` : ''}
     <h2 style="font-size:24px">${state.modo === 'casal' ? '💘 Vocês dois' : '👥 Integrantes'}</h2>
     <p class="small">${state.modo === 'casal' ? 'Se a mesma pessoa aparece duas vezes (trocou de número), toque em "Contato duplicado?".' : 'Desmarque quem não está mais no grupo. Se alguém aparece duas vezes, toque em "Contato duplicado?".'}</p>
     <div class="btn-row"${state.modo === 'casal' ? ' hidden' : ''}><button class="btn btn-ghost mini" id="inat">💤 Tirar quem não fala há 12+ meses</button><button class="btn btn-ghost mini" id="todos">Incluir todo mundo</button></div>
@@ -1589,6 +1623,9 @@ function roster(){
     <button class="btn btn-main" id="go">Tudo certo, começar →</button>
   </section>`;
   const redraw = () => { const y = scrollY; roster(); scrollTo(0, y); };
+  $('#numsD')?.addEventListener('toggle', e => { state.numAberto = e.target.open; });
+  $('#numFora')?.addEventListener('click', () => { for (const x of numeros) if (!state.alias[x.n]) state.hidden.add(x.n); redraw(); });
+  $('#go2')?.addEventListener('click', () => $('#go').click());
   view.querySelectorAll('[data-open]').forEach(bt => bt.onclick = () => { const n = pessoas[+bt.dataset.open].n; state.aberto = state.aberto === n ? null : n; state.mgAlvo = null; redraw(); });
   view.querySelectorAll('[data-mg]').forEach(sl => sl.onchange = () => { if (!sl.value) return;
     const a = state.aberto, b = sl.value, tot = n => pessoas.filter(x => x.n === n || state.alias[x.n] === n).reduce((t, x) => t + x.c, 0);
@@ -1615,18 +1652,41 @@ function roster(){
     const msgs = state.raw.filter(m => !state.hidden.has(m.a) && !state.hidden.has(state.alias[m.a])).map(m => ({t:m.t, a:state.alias[m.a] || m.a, b:m.b}));
     if (new Set(msgs.map(m => m.a)).size < 2){ const e = $('#rerr'); e.hidden = false; e.textContent = 'Deixe pelo menos duas pessoas na cerimônia.'; return; }
     if (state.modo === 'casal' && new Set(msgs.map(m => m.a)).size > 2){ const e = $('#rerr'); e.hidden = false; e.textContent = 'No modo casal, deixe só as duas pessoas da conversa (ou volte e escolha "Um grupo").'; return; }
-    msgs.sys = state.raw.sys; msgs.perdidas = state.raw.perdidas;
-    const prog = carregando('Analisando todas as mensagens...');
-    state.data = await analyze(msgs, f => prog(f, `${fmt(Math.round(f*msgs.length))} de ${fmt(msgs.length)} mensagens analisadas`));
-    state.data.perdidas = state.raw.perdidas || 0;
-    state.compP = comparar(state.data); // em segundo plano; a resposta aparece no Ato I e no Gran Finale
-    prog(1); await sleep(300);
-    state.awards = buildAwards(state.data); state.idx = 0;
+    try { sessionStorage.setItem('rz_esc', JSON.stringify({alias: state.alias, hidden: [...state.hidden], comparar: state.comparar, grupo: state.grupo, modo: state.modo})); } catch {}
+    await analisar();
     story();
   };
   $('#gn').oninput = e => { state.grupo = cortaNome(limpaTxt(e.target.value), 44); };
   $('#cmp').onchange = e => { state.comparar = e.target.checked; };
   window.scrollTo(0,0);
+}
+async function analisar(){
+  const msgs = state.raw.filter(m => !state.hidden.has(m.a) && !state.hidden.has(state.alias[m.a])).map(m => ({t:m.t, a:state.alias[m.a] || m.a, b:m.b}));
+  msgs.sys = state.raw.sys; msgs.perdidas = state.raw.perdidas;
+  const prog = carregando('Analisando todas as mensagens...');
+  state.data = await analyze(msgs, f => prog(f, `${fmt(Math.round(f*msgs.length))} de ${fmt(msgs.length)} mensagens analisadas`));
+  state.data.perdidas = state.raw.perdidas || 0;
+  state.compP = comparar(state.data); // em segundo plano; a resposta aparece no Ato I e no Gran Finale
+  prog(1); await sleep(300);
+  state.awards = buildAwards(state.data); state.idx = 0;
+}
+// volta para a mesma tela depois de recarregar (ou de voltar do WhatsApp no iPhone)
+async function retomar(tela){
+  let esc = null; try { esc = JSON.parse(sessionStorage.getItem('rz_esc') || 'null'); } catch {}
+  if (!tela){ SESS.limpa(); return; } // aba nova: apaga o que tiver sobrado de outra visita
+  const c = await SESS.get('conversa'); if (!c?.text) return;
+  try {
+    DUR = c.dur || {}; state.how = c.how || state.how; setModo((esc && esc.modo) || c.modo || 'amigos'); state.grupo = c.grupo || '';
+    await run(c.text, !!c.sample, true);
+    if (tela === 'turma' || !esc){ PILHA.length = 0; PILHA.push({f: inicio, k: 'inicio'}); return roster(); }
+    state.alias = esc.alias || {}; state.hidden = new Set(esc.hidden || []); state.comparar = esc.comparar; state.grupo = esc.grupo || state.grupo;
+    await analisar();
+    state.spoilerVisto = true; state.intervaloVisto = true;
+    PILHA.length = 0; PILHA.push({f: inicio, k: 'inicio'});
+    const m = tela.match(/^premio(\d+)$/);
+    if (m){ state.idx = Math.min(+m[1], state.awards.length - 1); return award(); }
+    ({prologo: story, categorias: lineup, todas: () => revelarTodas(state.idx), resumo: suspense, fim: () => fimTela(true), final: personagensTela}[tela] || story)();
+  } catch { SESS.limpa(); inicio(); }
 }
 // Sugere quem é um número desconhecido: alguém que começou a falar quando o número parou,
 // que quase não falava ao mesmo tempo que ele e que escreve parecido (horários, palavras, emojis).
@@ -2162,6 +2222,7 @@ function fimTela(semFesta){
 // pop-up final: novidades por e-mail, presente para o grupo, fazer de novo
 const PRESENTE_LINK = 'https://playpartygames.com.br/?utm_source=retrozap&utm_medium=presente&utm_campaign=final';
 function obrigado(){
+  SESS.limpa();
   const ev = n => { try { if (typeof evento === 'function') evento(n); } catch {} };
   const antes = document.activeElement, m = document.createElement('div');
   m.className = 'patro'; m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true'); m.setAttribute('aria-labelledby','obT');
@@ -2340,7 +2401,7 @@ function final(semFesta){
     <p class="ask" style="text-align:center;margin:6px 0 0">📲 Imagens para mandar no grupo e nos stories</p>
     <button class="btn btn-main" id="rs">✨ Resumo do grupo em imagem</button>
     ${destaquesBrasil().length ? '<button class="btn btn-main" id="rk">🏅 Ranking do grupo em imagem</button>' : ''}
-    <button class="btn btn-main" id="t10">🏆 Top 10 categorias e ganhadores</button>
+    <button class="btn btn-main" id="t10">🏆 TOP categorias e ganhadores</button>
     ${temBonus ? `<div class="panel" style="text-align:center;margin-top:8px">
       <div style="font-size:52px" aria-hidden="true">🎁</div>
       <h2 style="font-size:26px;margin:0">Ainda tem ${b.length} prêmios guardados</h2>
@@ -3312,9 +3373,24 @@ function personagens(d, by){
     const opcoes = TRACOS.filter(t => !(t[0] === 'palavrao' && (state.modo === 'familia' || state.modo === 'trabalho')))
       .map(t => { const g = t[3](grupo); const ok = t[0] === 'chars' ? p.text >= 50 : p[t[0]] >= 10; return {t, score: ok && g > 0 ? t[3](p)/g : 0}; })
       .filter(o => o.score > 1.3).sort((a,b) => b.score - a.score); // traço só vale com 10+ ocorrências e 30% acima da média
-    const esc1 = opcoes.find(o => !usados.has(o.t[0])), esc2 = opcoes.find(o => o !== esc1 && o.t[0] !== esc1?.t[0]);
-    let titulo = 'O Pilar do Grupo', e = '🧱', resumo = `${p.name} está sempre presente e segura a conversa.`;
+    // segunda chance: traço mais leve (5+ ocorrências, acima da média) que ninguém usou ainda
+    const leves = TRACOS.filter(t => !(t[0] === 'palavrao' && (state.modo === 'familia' || state.modo === 'trabalho')))
+      .map(t => { const g = t[3](grupo); const ok = t[0] === 'chars' ? p.text >= 20 : p[t[0]] >= 5; return {t, score: ok && g > 0 ? t[3](p)/g : 0}; })
+      .filter(o => o.score > 1.05).sort((a,b) => b.score - a.score);
+    const esc1 = opcoes.find(o => !usados.has(o.t[0])) || leves.find(o => !usados.has(o.t[0])), esc2 = opcoes.find(o => o !== esc1 && o.t[0] !== esc1?.t[0]);
+    // reserva: títulos que não dependem de traço, cada um usado uma vez só
+    const pctP = p.count/Math.max(1, d.total), casalP = state.modo === 'casal';
+    const RES = [
+      pctP >= .2 && [casalP ? 'O Pilar do Casal' : 'O Pilar do Grupo', '🧱', 'está sempre presente e segura a conversa'],
+      pctP < .1 && ['O Observador', '👀', 'lê tudo e fala na hora certa'],
+      ['O Sempre On', '📱', 'aparece a qualquer hora do dia'],
+      ['O Parceiro de Conversa', '🤝', 'nunca deixa ninguém falando sozinho'],
+      ['O Gente Boa', '😌', 'é paz no meio da bagunça'],
+      ['O Equilibrado', '⚖️', 'mistura texto, áudio e figurinha na medida'],
+      [casalP ? 'O Pilar do Casal' : 'O Pilar do Grupo', '🧱', 'está sempre presente e segura a conversa']].filter(Boolean);
+    let titulo, e, resumo;
     if (esc1){ usados.add(esc1.t[0]); [, titulo, e] = esc1.t; resumo = `${p.name} ${esc1.t[5]}.`; }
+    else { const r = RES.find(x => !usados.has(x[0])) || RES.at(-1); usados.add(r[0]); [titulo, e] = r; resumo = `${p.name} ${r[2]}.`; }
     titulo = gtit(titulo, p.name);
     const pct = Math.round(p.count/d.total*100), tx = Math.max(1, p.text);
     const riso = p.laugh/tx, tam = p.chars/tx;
@@ -3632,10 +3708,12 @@ function ajustaAcao(){
 }
 setInterval(ajustaAcao, 800); addEventListener('resize', ajustaAcao); document.addEventListener('click', () => setTimeout(ajustaAcao, 50), true);
 $('#home').onclick = inicio;
+const TELA_SALVA = (() => { try { return sessionStorage.getItem('rz_tela'); } catch { return null; } })();
 $('#voltar').onclick = () => voltar();
 setModo('amigos');
 if (location.pathname !== '/') history.replaceState({}, '', '/');
 inicio(); avisoCookies();
+retomar(TELA_SALVA);
 // prévia: alternar o plano para ver como fica grátis x premium
 function marcaPlano(){ document.querySelectorAll('#planoTeste button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.plano === state.planoTeste))); }
 if (AMBIENTE_TESTE){
