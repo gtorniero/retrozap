@@ -88,7 +88,7 @@ urls.append(page('privacidade.html', 'Política de Privacidade', 'Como o Retroza
 <h2>1. Quem somos</h2>
 <p>O Retrozap (retrozap.com.br) é um site de entretenimento da <b>BEYOND THE WORK PORTAIS DE CONTEUDO NA INTERNET LTDA</b> (nome fantasia Beyond the Work Ideas), CNPJ 69.746.447/0001-00, com sede na Rua Pais Leme, 215, conjunto 1713, Pinheiros, São Paulo/SP, CEP 05424-150. A empresa é a controladora dos poucos dados descritos aqui. O Retrozap não tem relação com o WhatsApp ou a Meta. Contato e encarregado de dados: <a href="mailto:contato@retrozap.com.br">contato@retrozap.com.br</a>.</p>
 <h2>2. Suas mensagens não saem do seu aparelho</h2>
-<p>Quando você escolhe o arquivo exportado do WhatsApp, a leitura e a análise acontecem inteiramente no seu navegador, como uma calculadora que roda no celular ou no computador. O arquivo, as mensagens, os nomes e os telefones <b>não são enviados aos nossos servidores, não são lidos por pessoas e não são guardados por nós</b>. Ao fechar a página, tudo é descartado. Os cards e o vídeo com os resultados também são gerados no seu aparelho; eles só são compartilhados se você decidir mandar. Vale o mesmo para o modo Casal: a conversa de vocês dois nunca sai do aparelho.</p>
+<p>Quando você escolhe o arquivo exportado do WhatsApp, a leitura e a análise acontecem inteiramente no seu navegador, como uma calculadora que roda no celular ou no computador. O arquivo, as mensagens, os nomes e os telefones <b>não são enviados aos nossos servidores, não são lidos por pessoas e não são guardados por nós</b>. Para você não perder a cerimônia se a página recarregar (por exemplo, ao voltar do WhatsApp), uma cópia da conversa fica guardada <b>só no próprio navegador</b> enquanto a retrospectiva está aberta; ela é apagada quando você toca em "Concluir" ou abre o site de novo em outra aba. Você também pode apagá-la limpando os dados do site no navegador. Os cards e o vídeo com os resultados também são gerados no seu aparelho; eles só são compartilhados se você decidir mandar. Vale o mesmo para o modo Casal: a conversa de vocês dois nunca sai do aparelho.</p>
 <p>Os anúncios e as ferramentas de medição nunca têm acesso ao conteúdo do seu grupo.</p>
 <h2>3. Comparação com outros grupos e casais (opcional, só números)</h2>
 <p>Se a opção "Comparar meu grupo com outros grupos" estiver marcada na tela da turma, o site envia apenas números anônimos sobre o grupo inteiro: o tipo de grupo, o total de mensagens, a média por dia, o recorde de mensagens em um dia, a quantidade de áudios e de figurinhas, o número de integrantes, o número de dias da conversa e proporções (como a porcentagem de mensagens com risada ou de madrugada, e quantos "bom dia", parabéns, palavrões ou mensagens apagadas aparecem a cada mil mensagens; no modo Casal, também quantos "te amo" e corações aparecem, em proporção). Casais são comparados só com casais. Também vão os totais desde o início (mensagens e áudios). Junto vai um código gerado a partir da data e hora da primeira mensagem, para o mesmo grupo não ser contado duas vezes; ele não contém texto nem nome. A opção vem marcada. Nenhuma mensagem, nome, telefone ou conteúdo é enviado, e não é possível identificar o grupo ou as pessoas a partir desses números. Eles servem só para mostrar frases como "Top 5% mais risonhos entre os grupos de amigos". O grupo de exemplo nunca é enviado. Você pode desmarcar a opção antes de começar.</p>
@@ -96,6 +96,8 @@ urls.append(page('privacidade.html', 'Política de Privacidade', 'Como o Retroza
 <p>Se você usar a página <a href="/ideias">Envie sua ideia</a>, guardamos o texto da sugestão, o tipo e, se você preencher, o e-mail ou WhatsApp para resposta. Usamos esses dados só para avaliar a ideia e responder. Se você pedir para receber as novidades no final da retrospectiva, guardamos o e-mail informado para enviar novidades e lançamentos do Retrozap e, eventualmente, ofertas de parceiros. Não vendemos nem repassamos o seu e-mail a ninguém, e é só pedir para sair a qualquer momento. Se você escrever para o nosso e-mail, guardamos a conversa para responder. Por favor, não envie mensagens do seu grupo nem dados de outras pessoas.</p>
 <h3>Pagamento do acesso ilimitado</h3>
 <p>A primeira retrospectiva é grátis. Para fazer outras, o acesso ilimitado custa R$ 4,99, pago uma única vez por Pix. O pagamento é processado pelo Mercado Pago, que trata os dados da transação conforme a <a href="https://www.mercadopago.com.br/privacidade" rel="noopener">política de privacidade do Mercado Pago</a>. Nós guardamos apenas o e-mail informado, o identificador da compra, o valor, a situação do pagamento e o código de acesso gerado. Não recebemos dados da sua conta bancária. Para lembrar que o primeiro grupo já foi feito e que o acesso foi liberado, o site guarda no seu navegador um código curto de cada grupo (calculado a partir da data da primeira mensagem, sem conteúdo), o código de acesso e o e-mail informado na compra. Isso fica só no seu aparelho e some se você limpar os dados do navegador.</p>
+<h3>Registros de acesso</h3>
+<p>Como exige o Marco Civil da Internet (Lei 12.965/2014, art. 15), quando o seu navegador conversa com o nosso servidor (ranking, sugestões, pagamento e código de acesso), guardamos o endereço IP, a porta, a data e a hora e a rota acessada, sob sigilo e em ambiente seguro, por 6 meses. Esses registros só são entregues a terceiros por ordem judicial e são apagados depois do prazo.</p>
 <h3>Quem nos ajuda a operar o site</h3>
 <p>Usamos fornecedores que tratam dados em nosso nome: a Cloudflare (hospedagem do site e banco de dados dos números anônimos, sugestões, e-mails e compras), o Mercado Pago (pagamento) e o Google (medição de visitas e anúncios). Alguns desses servidores ficam fora do Brasil; nesses casos, a transferência segue as garantias previstas na LGPD e nos contratos desses fornecedores.</p>
 <h2>5. Dados de uso (Google Analytics)</h2>
@@ -112,9 +114,11 @@ urls.append(page('privacidade.html', 'Política de Privacidade', 'Como o Retroza
 <h2>8. Bases legais (LGPD)</h2>
 <ul><li><b>Legítimo interesse:</b> medição de visitas e exibição de anúncios não personalizados, para manter o site gratuito.</li>
 <li><b>Execução de contrato:</b> dados da compra do acesso ilimitado.</li>
+<li><b>Obrigação legal:</b> registros de acesso (Marco Civil) e dados fiscais das compras.</li>
 <li><b>Consentimento:</b> anúncios personalizados (botão "Aceitar"), comparação com outros grupos ou casais (opção que você pode desmarcar) e dados que você envia de propósito (sugestões e e-mails).</li></ul>
 <h2>9. Por quanto tempo guardamos</h2>
-<ul><li>Mensagens do grupo: não guardamos.</li>
+<ul><li>Mensagens do grupo: não guardamos (a cópia de retomada fica só no seu navegador).</li>
+<li>Registros de acesso (IP, data e hora): 6 meses.</li>
 <li>Números anônimos da comparação: enquanto o recurso existir, só de forma agregada.</li>
 <li>Sugestões e contatos: até 2 anos, ou antes, se você pedir a exclusão.</li>
 <li>E-mail para novidades: até você pedir para sair.</li>
@@ -123,7 +127,7 @@ urls.append(page('privacidade.html', 'Política de Privacidade', 'Como o Retroza
 <h2>10. Seus direitos</h2>
 <p>Pela LGPD, você pode pedir confirmação de tratamento, acesso, correção, anonimização ou exclusão dos seus dados, informações sobre compartilhamento e revogar consentimentos. É só escrever para <a href="mailto:contato@retrozap.com.br">contato@retrozap.com.br</a>. Como não guardamos as suas mensagens, não há conversa sua armazenada para ser apagada.</p>
 <h2>11. Menores de idade</h2>
-<p>O Retrozap não é direcionado a menores de 13 anos. A compra do acesso ilimitado é para maiores de 18 anos ou com autorização dos responsáveis. Não coletamos a idade de ninguém.</p>
+<p>O Retrozap não é direcionado a crianças e não deve ser usado por menores de 13 anos. Adolescentes devem usar com o acompanhamento dos responsáveis, e a compra do acesso ilimitado é para maiores de 18 anos ou com autorização deles. Não coletamos a idade de ninguém e não criamos perfil de ninguém a partir da conversa, que nunca sai do aparelho.</p>
 <h2>12. Mudanças nesta política</h2>
 <p>Se esta política mudar, a data no topo será atualizada. Mudanças importantes serão avisadas no site.</p>
 """, ad=False))
@@ -136,18 +140,24 @@ urls.append(page('termos.html', 'Termos de Uso', 'Regras de uso do Retrozap, a p
 <p>O Retrozap é um site de entretenimento que transforma o arquivo exportado de um grupo de WhatsApp em estatísticas, prêmios e cards. Os prêmios são brincadeiras baseadas em contagens automáticas e não são avaliações sérias sobre ninguém.</p>
 """ + ('<p><b>Preço:</b> a primeira retrospectiva é grátis. O acesso ilimitado custa R$ 4,99, pago uma única vez por Pix pelo Mercado Pago, e vale para o navegador onde foi liberado (ou outro, com o código de acesso). Se tiver qualquer problema com a compra, escreva para <a href="mailto:contato@retrozap.com.br">contato@retrozap.com.br</a>.</p>' if COBRANCA_PUBLICA else '') + """
 <h2>2. Seu papel</h2>
-<ul><li>Use apenas exports de grupos dos quais você participa.</li>
-<li>Pense nas outras pessoas antes de compartilhar cards: o grupo pode não gostar de ver certos resultados fora dele.</li>
-<li>Não use o Retrozap para expor, humilhar ou perseguir ninguém. Categorias ofensivas são bloqueadas.</li></ul>
-<h2>3. Sem garantias</h2>
-<p>As análises dependem do formato do arquivo exportado e podem conter imprecisões. O serviço é oferecido como está, sem garantia de funcionamento contínuo.</p>
-<h2>4. Marcas</h2>
-<p>Retrozap é uma marca da Beyond the Work Ideas. O Retrozap não tem relação com o WhatsApp ou a Meta. WhatsApp é marca de seus respectivos donos.</p>
-<h2>5. Mudanças</h2>
+<ul><li>Use apenas exports de conversas das quais você participa, para uso pessoal e de lazer.</li>
+<li>A conversa é sua e dos outros participantes. Você é responsável pelo que decide compartilhar: pense nas outras pessoas antes de mandar cards e vídeos para fora do grupo.</li>
+<li>Não use o Retrozap para expor, humilhar, perseguir ou discriminar ninguém, nem com conversas de terceiros, de trabalho com dados de clientes ou que tenham informações sensíveis. Categorias ofensivas são bloqueadas.</li>
+<li>Os prêmios, títulos e personagens são brincadeiras geradas automaticamente a partir de contagens. Eles não são avaliações sobre o caráter, a saúde ou a vida de ninguém.</li></ul>
+<h2>3. Compra do acesso ilimitado</h2>
+<ul><li><b>O que é:</b> pagamento único de R$ 4,99 por Pix, pelo Mercado Pago, que libera no navegador os recursos Premium descritos na tela de compra (grupos ilimitados, todos os personagens, categoria livre, baixar o vídeo e sem anúncios). Não é assinatura e não renova.</li>
+<li><b>Entrega:</b> o acesso é liberado assim que o Pix é confirmado, com um código para usar em outro navegador ou recuperar pelo e-mail do pagamento.</li>
+<li><b>Arrependimento:</b> você pode desistir em até 7 dias da compra e recebe o valor de volta por Pix. É só escrever para <a href="mailto:contato@retrozap.com.br">contato@retrozap.com.br</a> com o e-mail usado no pagamento; confirmamos o recebimento e respondemos em até 5 dias.</li>
+<li><b>Por quanto tempo vale:</b> enquanto o Retrozap estiver no ar. Recursos podem mudar, mas os incluídos na compra não viram cobrança extra. Se o Retrozap for encerrado em menos de 12 meses da sua compra, devolvemos o valor pago.</li></ul>
+<h2>4. Sem garantias</h2>
+<p>As análises dependem do formato do arquivo exportado e podem conter imprecisões. O serviço é oferecido como está, sem garantia de funcionamento contínuo. Na medida permitida pela lei, não respondemos pelo uso que cada pessoa faz dos resultados que decidiu compartilhar.</p>
+<h2>5. Marcas</h2>
+<p>Retrozap é uma marca da Beyond the Work Ideas. O Retrozap não tem relação com o WhatsApp, a Meta ou o Spotify. WhatsApp é marca da WhatsApp LLC e Wrapped é marca do Spotify; os nomes aparecem só para explicar o que o site faz.</p>
+<h2>6. Mudanças</h2>
 <p>Estes termos podem ser atualizados. A data no topo indica a versão em vigor.</p>
-<h2>6. Lei e foro</h2>
+<h2>7. Lei e foro</h2>
 <p>Estes termos seguem as leis brasileiras. Fica eleito o foro da cidade de São Paulo/SP, sem prejuízo do direito do consumidor de usar o foro do seu domicílio.</p>
-<h2>7. Contato</h2>
+<h2>8. Contato</h2>
 <p><a href="mailto:contato@retrozap.com.br">contato@retrozap.com.br</a></p>
 """, ad=False))
 

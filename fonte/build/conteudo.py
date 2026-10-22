@@ -7,6 +7,7 @@ NOVOS = [
 ('whatsapp-wrapped', 'WhatsApp Wrapped: como fazer o "Wrapped" do seu grupo de WhatsApp',
  'O Spotify tem o Wrapped; o seu grupo de WhatsApp também pode ter. Veja como gerar a retrospectiva do grupo com prêmios, números e cards.', """
 <h1>WhatsApp Wrapped: como fazer o "Wrapped" do seu grupo</h1>
+<p class="small">Wrapped é marca do Spotify e WhatsApp é marca da WhatsApp LLC. O Retrozap não tem relação com essas empresas; usamos os nomes só para explicar a ideia.</p>
 <p>Todo dezembro o feed se enche de retrospectivas de música. Mas o lugar onde o seu ano realmente aconteceu foi o grupo de WhatsApp: o rolê que quase não saiu, o áudio de quatro minutos, a tia do bom dia que não falhou um dia sequer. O WhatsApp não tem um "Wrapped" oficial, mas dá para fazer um, de graça e sem expor ninguém.</p>
 <h2>O que entra no Wrapped do grupo</h2>
 <ul><li><b>Os números do grupo:</b> mensagens desde o início, ano a ano, áudios, páginas e horas para ler tudo, e a gíria oficial.</li><li><b>O nosso 2026:</b> o ano comparado com 2025, o assunto mais falado e os destaques do ano.</li><li><b>Os prêmios:</b> O Tagarela, O Fantasma, Coruja da Madrugada, Rei do Kkkk, Tio do Bom Dia e outros, escolhidos para o tipo de grupo.</li><li><b>Os personagens:</b> quem é quem no grupo e o jeito de cada um falar.</li><li><b>O ranking:</b> como o seu grupo se compara aos outros grupos do Brasil.</li><li><b>O vídeo e os cards:</b> um vídeo curto e imagens prontas para mandar no próprio grupo ou postar nos stories.</li></ul>
