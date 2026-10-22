@@ -797,7 +797,7 @@ async function analyze(msgs, prog){
   const P = {}, hours = Array(24).fill(0), days = Array(7).fill(0), words = {}, full = {}, emo = {}, porDia = {};
   let palavras = 0, risadas = 0, silencio = 0, silIni = null, audioN = 0, audioSeg = 0, audioMedidos = 0;
   const giria = {}, minSem = new Int32Array(7*1440);
-  const get = a => P[a] || (P[a] = {name:a,count:0,text:0,chars:0,sticker:0,audio:0,photo:0,media:0,deleted:0,laugh:0,bomdia:0,boanoite:0,parabens:0,amo:0,palavrao:0,link:0,furo:0,org:0,mae:0,ok:0,reuniao:0,salva:0,aviso:0,perdido:0,indica:0,vende:0,barulho:0,boasvindas:0,agradece:0,fofoca:0,audioMax:0,night:0,after:0,first:0,revive:0,kill:0,teamo:0,apelido:0,desculpa:0,fome:0,saudade:0,coracao:0,mole:0,respT:0,respN:0,h:Array(24).fill(0),emo:{},words:{},y:{},wd:Array(7).fill(0),rep:{},ini:null,fim:null,giria:{},tema:{},emoD:{},wD:{},wCap:{},_dia:''});
+  const get = a => P[a] || (P[a] = {name:a,count:0,text:0,chars:0,sticker:0,audio:0,photo:0,media:0,deleted:0,laugh:0,bomdia:0,boanoite:0,pergunta:0,parabens:0,amo:0,palavrao:0,link:0,furo:0,org:0,mae:0,ok:0,reuniao:0,salva:0,aviso:0,perdido:0,indica:0,vende:0,barulho:0,boasvindas:0,agradece:0,fofoca:0,audioMax:0,night:0,after:0,first:0,revive:0,kill:0,teamo:0,apelido:0,desculpa:0,fome:0,saudade:0,coracao:0,mole:0,respT:0,respN:0,h:Array(24).fill(0),emo:{},words:{},y:{},wd:Array(7).fill(0),rep:{},ini:null,fim:null,giria:{},tema:{},emoD:{},wD:{},wCap:{},_dia:''});
   let prev = null, lastDay = '';
   for (let q = 0; q < msgs.length; q++){
     if (q % 5000 === 0 && q){ prog && prog(q/msgs.length); await sleep(0); }
@@ -820,6 +820,7 @@ async function analyze(msgs, prog){
       p.coracao += (b.match(CORACOES) || []).length;
       if (RX.amo.test(b) || /❤️|❤|💕|💖|💗|💞|🥰|😍|🫶/u.test(b)) p.mole++;
       if (RX.ok.test(b)) p.ok++;
+      if (/\?[\s\p{Extended_Pictographic}\uFE0F]*$/u.test(b)) p.pergunta++; // mensagem que termina em pergunta
       const pw = b.match(RX.palavrao); if (pw) p.palavrao += pw.length;
       for (const g of semLink.match(GIRIA) || []){ const n = GIRIA_NORM[g] || g; giria[n] = (giria[n]||0) + 1; p.giria[n] = (p.giria[n]||0) + 1; }
       if (b.length > 3){ const bn = b.toLowerCase().normalize('NFD').replace(/\p{M}/gu,''); for (const [k, rx] of TEMAS) if (rx.test(bn)) p.tema[k] = (p.tema[k]||0) + 1; }
@@ -915,6 +916,7 @@ const AW = [
  {m:['casal'],e:'😂',n:'Risada Fácil',crit:'Mais mensagens com risada',k:'laugh',u:'risadas',mech:'palpite',p:'{v} risadas. {w} ri até de piada ruim (principalmente das suas).'},
  {m:['casal'],e:'🍕',n:'Fominha',crit:'Mais papo de comida',k:'fome',u:'mensagens sobre comida',mech:'raspadinha',p:'{v} mensagens sobre comida. Com {w}, todo programa termina em comida.'},
  {m:['casal'],e:'🙏',n:'Pede Desculpas',crit:'"Desculpa", "perdão", "foi mal"',k:'desculpa',u:'pedidos de desculpa',mech:'palpite',p:'{w} pediu desculpas {v} vezes. Quem ama, se desculpa (às vezes).'},
+ {m:['casal'],e:'🕵️',n:'Mil Perguntas',crit:'Mais mensagens com pergunta (que terminam em "?")',k:'pergunta',u:'perguntas',mech:'palpite',p:'{v} perguntas. {w} quer saber de tudo, e quer saber agora.'},
  {m:['casal'],e:'🎙️',n:'Podcaster do Casal',crit:'Mais áudios enviados (e a fatia de cada um)',k:'audio',u:'áudios',fatia:true,mech:'podio',p:'{v} áudios. {w} acha que mensagem de texto é coisa do passado.'},
  {m:['casal'],e:'🦉',n:'Coruja do Casal',crit:'Mais mensagens entre 0h e 5h',k:'night',u:'mensagens de madrugada',mech:'palpite',p:'{v} mensagens de madrugada. {w}, vai dormir (e deixa o outro dormir).'},
  {m:['casal'],e:'💬',n:'Apelido Fofo',crit:'"Amor", "bb", "vida", "neném"...',k:'apelido',u:'apelidos carinhosos',mech:'raspadinha',p:'{v} apelidos carinhosos. {w} esqueceu o nome verdadeiro do outro.'},
@@ -980,7 +982,7 @@ function comHonra(lista, d){
   return shown;
 }
 const PRINCIPAIS = {
-  casal:['Tagarela do Casal','Mais Romântico','Coração Ambulante','Despertador do Amor','Fominha','Pede Desculpas','Podcaster do Casal'],
+  casal:['Tagarela do Casal','Mais Romântico','Coração Ambulante','Despertador do Amor','Fominha','Pede Desculpas','Mil Perguntas','Podcaster do Casal'],
   amigos:['O Tagarela','Podcaster do Grupo','Boca-Suja','Rei do Kkkk','Puxa-Assunto','O Fantasma','Coração Mole','Apaga Mensagens'],
   familia:['O Tagarela','Tio do Bom Dia','Rei do Parabéns','Repórter da Família','Fotógrafo Oficial','Visualiza e Não Responde','Quem Mais Ama','Puxa-Assunto','Podcaster do Grupo'],
   trabalho:['O Tagarela','Rei do "Ok"','Fora do Expediente','Mestre das Reuniões','Salva-Vidas','Locutor Corporativo','Madrugador'],
@@ -2833,7 +2835,7 @@ function drawNosso2026(){
 function categoriasCasal(d){
   const src = state.compD && state.compD.people.length ? state.compD : d, achar = n => src.people.find(p => p.name === n) || {};
   const a = achar(d.people[0].name), b = achar(d.people[1].name);
-  const L = [['💬','Mensagens','count'], semTipo() ? ['📎','Mídias','naoTexto'] : ['🎙️','Áudios','audio'], ['💘','Declarações de amor','teamo'],['🌅','Puxou o papo do dia','first']]
+  const L = [['💬','Mensagens','count'], semTipo() ? ['📎','Mídias','naoTexto'] : ['🎙️','Áudios','audio'], ['💘','Declarações de amor','teamo'],['🌅','Puxou o papo do dia','first'],['🕵️','Mil perguntas','pergunta']]
     .map(([e, t, k]) => ({e, t, a: a[k]||0, b: b[k]||0}));
   return {msg: L[0], cats: L};
 }
