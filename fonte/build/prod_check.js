@@ -11,13 +11,12 @@ const configurado = v => !!v && !/X{4}|^0+$/.test(v);
 /* ---------- Analytics (só contagens, nunca nomes ou mensagens) ---------- */
 window.dataLayer = window.dataLayer || [];
 function gtag(){ dataLayer.push(arguments); }
-if (configurado(CONFIG.GA_ID)){ gtag('js', new Date()); gtag('config', CONFIG.GA_ID, {send_page_view: false, anonymize_ip: true}); } // a tag oficial fica no <head>
+// a tag oficial do Google (gtag js + config) fica no <head>; cada tela nova vira page_view sozinha (medição otimizada: mudanças no histórico)
 function evento(nome, params = {}){ try { if (configurado(CONFIG.GA_ID)) gtag('event', nome, params); } catch {} }
 
 /* ---------- Uma página por tela: cada tela conta como página vista ---------- */
 function ir(rota){
-  if (location.pathname !== rota) history.pushState({rota}, '', rota);
-  evento('page_view', {page_location: location.origin + rota, page_path: rota, page_title: document.title});
+  if (location.pathname !== rota) history.pushState({rota}, '', rota); // o GA conta a troca de tela como page_view
 }
 window.addEventListener('popstate', () => {
   if (location.pathname === '/') return inicio();

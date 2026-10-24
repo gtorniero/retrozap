@@ -49,7 +49,7 @@ if(ad==='denied'){{(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersona
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-R8R1EN0KQN"></script>
 <script>
   gtag('js', new Date());
-  gtag('config', 'G-R8R1EN0KQN', {{anonymize_ip: true}});
+  gtag('config', 'G-R8R1EN0KQN');
 </script>
 <title>{title} · Retrozap</title><meta name="description" content="{desc}">
 <link rel="canonical" href="{url}"><meta name="theme-color" content="#1A0B2E">
