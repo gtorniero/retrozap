@@ -18,6 +18,7 @@ async function autorizado(request, env){
 // consulta que não quebra se a tabela ainda não existe
 const todas = async (env, sql, ...p) => { try { return (await env.DB.prepare(sql).bind(...p).all()).results || []; } catch { return []; } };
 const uma = async (env, sql, ...p) => (await todas(env, sql, ...p))[0] || {};
+const CARTAO = "ordem LIKE 'stripe:%'"; // compra pelo Stripe (cartão, Apple Pay, Google Pay); o resto é Pix
 const mascara = e => String(e || '').replace(/^(.{2}).*(@.*)$/, '$1•••$2');
 
 async function site(env){
@@ -27,9 +28,11 @@ async function site(env){
     uma(env, `SELECT COUNT(*) AS total, SUM(criado >= date('now', '-6 days')) AS semana, SUM(criado = date('now')) AS hoje, SUM(base = '2026') AS ano FROM grupos WHERE ${real}`),
     todas(env, `SELECT modo, COUNT(*) AS n FROM grupos WHERE ${real} GROUP BY modo ORDER BY n DESC`),
     todas(env, `SELECT criado AS dia, COUNT(*) AS n FROM grupos WHERE ${real} AND criado >= date('now', '-29 days') GROUP BY criado`),
-    uma(env, "SELECT SUM(status = 'pago') AS pagos, SUM(CASE WHEN status = 'pago' THEN CAST(valor AS REAL) ELSE 0 END) AS receita, COUNT(*) AS pix, COUNT(DISTINCT CASE WHEN status = 'pago' THEN email END) AS clientes, SUM(status = 'pago' AND pago >= date('now', '-6 days')) AS semana FROM compras WHERE modo = 'ligada'"),
+    uma(env, `SELECT SUM(status = 'pago') AS pagos, SUM(CASE WHEN status = 'pago' THEN CAST(valor AS REAL) ELSE 0 END) AS receita, COUNT(DISTINCT CASE WHEN status = 'pago' THEN email END) AS clientes,
+      SUM(status = 'pago' AND pago >= date('now', '-6 days')) AS semana, SUM(${CARTAO}) AS checkouts, SUM(${CARTAO} AND status = 'pago') AS pagos_cartao,
+      SUM(CASE WHEN ${CARTAO} AND status = 'pago' THEN CAST(valor AS REAL) ELSE 0 END) AS receita_cartao, SUM(NOT ${CARTAO}) AS pix, SUM(NOT ${CARTAO} AND status = 'pago') AS pagos_pix FROM compras WHERE modo = 'ligada'`),
     todas(env, "SELECT substr(pago, 1, 10) AS dia, COUNT(*) AS n FROM compras WHERE modo = 'ligada' AND status = 'pago' AND pago >= date('now', '-29 days') GROUP BY dia"),
-    todas(env, "SELECT email, pago, valor FROM compras WHERE modo = 'ligada' AND status = 'pago' ORDER BY pago DESC LIMIT 8"),
+    todas(env, `SELECT email, pago, valor, CASE WHEN ${CARTAO} THEN 'Cartão' ELSE 'Pix' END AS meio FROM compras WHERE modo = 'ligada' AND status = 'pago' ORDER BY pago DESC LIMIT 8`),
     todas(env, 'SELECT tipo, COUNT(*) AS n FROM ideias GROUP BY tipo'),
     todas(env, "SELECT criado, tipo, texto FROM ideias WHERE tipo != 'novidades' ORDER BY criado DESC LIMIT 10")
   ]);
@@ -176,14 +179,14 @@ const LINKS = [['Cloudflare (Worker)', 'https://dash.cloudflare.com/?to=/:accoun
   ['Mercado Pago', 'https://www.mercadopago.com.br/activities'], ['GitHub', 'https://github.com/gtorniero/retrozap'], ['Instagram', 'https://www.instagram.com/'], ['TikTok Studio', 'https://www.tiktok.com/tiktokstudio'], ['Gmail', 'https://mail.google.com/']];
 
 // ---------- aba Negócio: investimentos (salvos no D1), payback, linha do tempo e plano ----------
-const PRECO = 4.99;
-const NEG_PADRAO = {inicio: '2026-10-17', horasAntes: 0, valorHora: 0, taxa: 0.99, imposto: 0, extraMes: 0, extraAcum: 0, custos: [
+const PRECO = 4.99, PRECO_CARTAO = 6.99;
+const NEG_PADRAO = {inicio: '2026-10-17', horasAntes: 0, valorHora: 0, taxa: 0.99, taxaCartao: 3.99, tarifaCartao: 0.39, imposto: 0, extraMes: 0, extraAcum: 0, custos: [
   {nome: 'Claude (assinatura)', valor: 500, freq: 'mensal', desde: '2026-10-01', obs: ''},
   {nome: 'Empresa (abertura e manutenção)', valor: 1000, freq: 'anual', desde: '2026-10-01', obs: 'estimativa: confirmar'},
   {nome: 'Domínio retrozap.com.br', valor: 40, freq: 'anual', desde: '2026-10-01', obs: ''},
   {nome: 'Higgsfield', valor: 150, freq: 'mensal', desde: '2026-10-01', obs: 'estimativa: confirmar'},
   {nome: 'Outras plataformas', valor: 0, freq: 'mensal', desde: '2026-10-01', obs: 'Cloudflare, GitHub, Google e Mercado Pago no plano grátis'}]};
-const PREMISSAS = [['taxa', 'Taxa do Mercado Pago no Pix (%)'], ['imposto', 'Imposto sobre a venda (%) · MEI = 0'], ['extraMes', 'AdSense + parcerias por mês (R$)'], ['extraAcum', 'Recebido fora do Pix até hoje (R$)'],
+const PREMISSAS = [['taxa', 'Taxa do Mercado Pago no Pix (%)'], ['taxaCartao', 'Taxa do Stripe no cartão (%)'], ['tarifaCartao', 'Tarifa fixa do Stripe por venda (R$)'], ['imposto', 'Imposto sobre a venda (%) · MEI = 0'], ['extraMes', 'AdSense + parcerias por mês (R$)'], ['extraAcum', 'Outras receitas até hoje, AdSense etc. (R$)'],
   ['inicio', 'Início do projeto', 'date'], ['horasAntes', 'Horas de trabalho antes do GitHub'], ['valorHora', 'Quanto vale sua hora (R$) · 0 = não contar']];
 const MARCOS = [
   ['Antes do GitHub', 'V1: a cerimônia num arquivo só (zapped.html), arrastar e soltar a conversa, sem servidor'],
@@ -193,25 +196,33 @@ const MARCOS = [
   ['19/10', 'Retrozap Casais, Destaques 2026 Premium, categoria livre, vídeo para stories, SEO e cookies (LGPD)'],
   ['19/10', 'Ranking só com 2026 (com estimativas no começo) e Turma: quem sumiu, trocou de número ou saiu'],
   ['19–20/10', 'Vídeo de 20s também para grupos; 2026 em números + ranking numa imagem só'],
-  ['20/10', 'AdSense some para quem é Premium; painel /admin com métricas, payback e este plano']];
+  ['20/10', 'AdSense some para quem é Premium; painel /admin com métricas, payback e este plano'],
+  ['20–21/10', 'Retrospectiva em 3 atos (Conhecendo, Categorias, Gran Finale 2026), vídeo de ~30s, regras mais justas nas categorias'],
+  ['21/10', 'Convites com link de origem e chegada personalizada; tela de Mídias com vídeo e imagens'],
+  ['22/10', 'Empresa: CNPJ da Beyond the Work Ideas; termos de compra, arrependimento e registro de acessos (Marco Civil)'],
+  ['23–24/10', 'Cartão, Apple Pay e Google Pay pelo Stripe (R$ 6,99), além do Pix']];
 let NEG = null, DADOS = null;
 const num = v => Number(String(v ?? '').replace(',', '.')) || 0;
 const meses = desde => { const a = new Date(desde + 'T12:00:00'), b = new Date(); return isNaN(a) || a > b ? (isNaN(a) ? 1 : 0) : (b.getFullYear() - a.getFullYear()) * 12 + b.getMonth() - a.getMonth() + 1; };
 const gasto = c => c.freq === 'mensal' ? num(c.valor) * meses(c.desde) : c.freq === 'anual' ? num(c.valor) * Math.ceil(meses(c.desde) / 12) : meses(c.desde) ? num(c.valor) : 0;
 const brl0 = n => Number(n || 0).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL', maximumFractionDigits: 0});
-const quando = m => m <= 0 ? 'Já se pagou' : !isFinite(m) ? 'Sem payback' : m < 1 ? '< 1 mês' : Math.ceil(m) + (Math.ceil(m) === 1 ? ' mês' : ' meses');
+const quando = m => m <= 0 ? 'Já se pagou' : !isFinite(m) ? 'Sem payback' : m < 1 ? '< 1 mês' : m > 120 ? 'mais de 10 anos' : Math.ceil(m) + (Math.ceil(m) === 1 ? ' mês' : ' meses');
 function conta(){
-  const n = NEG, c = DADOS.site?.compras || {}, liq = PRECO * (1 - num(n.taxa) / 100 - num(n.imposto) / 100);
+  const n = NEG, c = DADOS.site?.compras || {}, imp = num(n.imposto) / 100, pagos = c.pagos || 0, pc = c.pagos_cartao || 0, rc = c.receita_cartao || 0;
+  // líquido por venda: Pix (taxa do Mercado Pago) e cartão (taxa + tarifa do Stripe); a média segue o que já foi vendido
+  const liqPix = PRECO * (1 - num(n.taxa) / 100 - imp), liqCartao = PRECO_CARTAO * (1 - num(n.taxaCartao) / 100 - imp) - num(n.tarifaCartao);
+  const vendido = ((c.receita || 0) - rc) * (1 - num(n.taxa) / 100 - imp) + rc * (1 - num(n.taxaCartao) / 100 - imp) - pc * num(n.tarifaCartao);
+  const liq = pagos ? vendido / pagos : liqPix;
   const custoMes = n.custos.reduce((a, x) => a + (x.freq === 'mensal' ? num(x.valor) : x.freq === 'anual' ? num(x.valor) / 12 : 0), 0);
   const investido = n.custos.reduce((a, x) => a + gasto(x), 0), horas = num(n.horasAntes) + (DADOS.historia?.horas || 0), tempo = horas * num(n.valorHora);
-  const vendas30 = (DADOS.site?.cDia || []).reduce((a, x) => a + x.n, 0), recebido = (c.pagos || 0) * liq + num(n.extraAcum);
+  const vendas30 = (DADOS.site?.cDia || []).reduce((a, x) => a + x.n, 0), recebido = vendido + num(n.extraAcum);
   const saldo = recebido - investido, recMes = vendas30 * liq + num(n.extraMes), lucro = recMes - custoMes;
   const pay = (sd, l) => sd >= 0 ? 0 : l > 0 ? -sd / l : Infinity;
-  return {liq, custoMes, investido, horas, tempo, vendas30, recebido, saldo, recMes, lucro, pay, payback: pay(saldo, lucro), equilibrio: Math.max(0, Math.ceil((custoMes - num(n.extraMes)) / liq))};
+  return {liq, liqPix, liqCartao, custoMes, investido, horas, tempo, vendas30, recebido, saldo, recMes, lucro, pay, payback: pay(saldo, lucro), equilibrio: Math.max(0, Math.ceil((custoMes - num(n.extraMes)) / liq))};
 }
 function calcNegocio(){
-  const k = conta(), n = NEG, grupos = DADOS.site?.grupos?.total || 0, pagos = DADOS.site?.compras?.pagos || 0;
-  let h = '<section><h2>Payback</h2><div class="grid">' + tile(brl0(k.investido), 'Investido até hoje', 'custo fixo de ' + brl(k.custoMes) + '/mês') + tile(brl0(k.recebido), 'Recebido (líquido)', fmt(pagos) + ' vendas × ' + brl(k.liq)) +
+  const k = conta(), n = NEG, pagos = DADOS.site?.compras?.pagos || 0;
+  let h = '<section><h2>Payback</h2><div class="grid">' + tile(brl0(k.investido), 'Investido até hoje', 'custo fixo de ' + brl(k.custoMes) + '/mês') + tile(brl0(k.recebido), 'Recebido (líquido)', fmt(pagos) + ' vendas · média ' + brl(k.liq) + ' (Pix ' + brl(k.liqPix) + ' · cartão ' + brl(k.liqCartao) + ')') +
     tile((k.saldo < 0 ? '−' : '+') + brl0(Math.abs(k.saldo)), 'Saldo', k.saldo < 0 ? 'falta recuperar' : 'já no lucro') +
     tile(fmt(k.equilibrio), 'Vendas/mês para empatar', '≈ ' + fmt(Math.ceil(k.equilibrio / 30)) + ' por dia') + tile(quando(k.payback), 'Payback no ritmo atual', fmt(k.vendas30) + ' vendas nos últimos 30 dias' + (isFinite(k.payback) ? '' : ': ainda não cobre o custo fixo'));
   if (num(n.valorHora)) h += tile(brl0(k.tempo), 'Seu tempo', fmt(k.horas) + ' h × ' + brl(n.valorHora)) + tile(quando(k.pay(k.saldo - k.tempo, k.lucro)), 'Payback contando seu tempo');
@@ -224,16 +235,15 @@ function calcNegocio(){
   // linha do tempo
   const hi = DADOS.historia || {}, dias = Math.max(1, Math.round((Date.now() - new Date(n.inicio + 'T00:00:00')) / 864e5));
   h += '<section><h2>Como chegamos aqui</h2><div class="grid">' + tile(fmt(dias), 'Dias de projeto', 'desde ' + new Date(n.inicio + 'T12:00:00').toLocaleDateString('pt-BR')) + tile(fmt(hi.commits), 'Versões publicadas', 'commits em ' + fmt(hi.dias) + ' dias') +
-    tile(fmt(k.horas) + ' h', 'Horas de trabalho', (num(n.horasAntes) ? fmt(n.horasAntes) + ' h antes + ' : '') + fmt(hi.horas) + ' h no GitHub (estimativa mínima)') + tile(fmt(hi.sessoes), 'Sessões de trabalho', 'pelo intervalo entre versões') +
-    tile(pct(grupos ? pagos / grupos : 0), 'Vendas por grupo no ranking', 'aproximado') + '</div>' +
+    tile(fmt(k.horas) + ' h', 'Horas de trabalho', (num(n.horasAntes) ? fmt(n.horasAntes) + ' h antes + ' : '') + fmt(hi.horas) + ' h no GitHub (estimativa mínima)') + tile(fmt(hi.sessoes), 'Sessões de trabalho', 'pelo intervalo entre versões') + '</div>' +
     '<div class="card" style="margin-top:12px"><b>Linha do tempo</b>' + tabela([['Quando'], ['O que entrou']], MARCOS.map(([q, t]) => ['<span style="white-space:nowrap">' + q + '</span>', t])) + '</div></section>';
   // plano de negócio
   const meta = Math.max(0, Math.ceil((-Math.min(0, k.saldo) + 3 * k.custoMes) / k.liq));
-  const P = [['Resumo', 'O Retrozap transforma o export de um grupo de WhatsApp numa retrospectiva estilo Wrapped (personagens, prêmios, ranking, cards e vídeo), lida 100% no navegador. 1º grupo grátis; R$ 4,99 no Pix libera grupos ilimitados e extras.'],
+  const P = [['Resumo', 'O Retrozap transforma o export de um grupo de WhatsApp numa retrospectiva estilo Wrapped (personagens, prêmios, ranking, cards e vídeo), lida 100% no navegador. 1º grupo grátis; R$ 4,99 no Pix ou R$ 6,99 no cartão (Apple Pay e Google Pay) libera grupos ilimitados e extras.'],
     ['Oportunidade', 'O Brasil tem mais de 140 milhões de pessoas no WhatsApp e a vida social acontece nos grupos. Retrospectivas viralizam no fim do ano (Spotify Wrapped) e não existe uma para grupos de WhatsApp, em português e com privacidade.'],
     ['Público', 'Grupos de amigos (18–35 anos), famílias, trabalho e comunidades. Casais como segundo produto: presente e datas comemorativas.'],
     ['Diferencial', 'Nenhuma mensagem sai do celular; humor brasileiro; cards e vídeo prontos para stories. Cada grupo tem vários membros que veem o resultado, então um uso puxa outros.'],
-    ['Receita', 'Premium por Pix (R$ 4,99, pagamento único) · AdSense para quem não é Premium · parceria Party Games (7% das vendas, desligada) · próximas: pacote Casais no Dia dos Namorados (12/06) e preço por temporada.'],
+    ['Receita', 'Premium por pagamento único: R$ 4,99 no Pix ou R$ 6,99 no cartão (Stripe) · AdSense para quem não é Premium · parceria Party Games (7% das vendas, desligada) · próximas: pacote Casais no Dia dos Namorados (12/06) e preço por temporada.'],
     ['Aquisição', 'Cards e vídeo compartilhados levam o endereço do site · Reels e TikTok com exemplos · SEO (blog, “WhatsApp Wrapped”) · datas: dezembro/janeiro (retrospectiva), Dia dos Namorados, aniversários de grupo.'],
     ['Metas', 'Empatar: ' + fmt(k.equilibrio) + ' vendas/mês. Temporada dez–jan: ' + fmt(meta) + ' vendas pagam todo o investimento e 3 meses de custo fixo. Acompanhar: grupos/dia, Pix gerado → pago, vendas por grupo.'],
     ['Riscos', 'WhatsApp mudar o formato do export · venda concentrada no fim do ano · pagamento único (pouca recorrência) · cópia da ideia · custo fixo alto para a receita atual (a assinatura do Claude é o maior custo: dá para baixar o plano fora da temporada).'],
@@ -271,7 +281,7 @@ function negocio(d){
 
 function render(d){
   const s = d.site || {}, g = s.grupos || {}, c = s.compras || {}, a = d.analytics || {}, b = d.busca || {}, ide = Object.fromEntries((s.ideias || []).map(x => [x.tipo, x.n]));
-  const conv = c.pix ? (c.pagos || 0) / c.pix : 0, sug = Object.entries(ide).filter(([t]) => t !== 'novidades').reduce((x, [, n]) => x + n, 0);
+  const conv = c.pix ? (c.pagos_pix || 0) / c.pix : 0, sug = Object.entries(ide).filter(([t]) => t !== 'novidades').reduce((x, [, n]) => x + n, 0);
   let h = '<header><div><h1>Painel Retrozap</h1><div class="sub">Atualizado ' + new Date(d.gerado).toLocaleString('pt-BR') + '</div></div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
     '<span class="status"><span class="ponto' + (d.cobranca === 'ligada' ? '' : ' off') + '"></span>Cobrança ' + esc(d.cobranca) + '</span><button class="sec" id="sair">Sair</button><button id="atualizar">Atualizar</button></div></header>' +
     '<nav class="abas" role="tablist"><button role="tab" data-aba="m">Métricas</button><button role="tab" data-aba="n">Negócio</button></nav><div id="aba-m" role="tabpanel">';
@@ -279,11 +289,11 @@ function render(d){
   if (s.erro) h += '<section><h2>Site</h2>' + falta(s) + '</section>';
   else {
     h += '<section><h2>Site</h2><div class="grid">' + tile(fmt(g.total), 'Grupos no ranking', fmt(g.semana) + ' nos últimos 7 dias · ' + fmt(g.hoje) + ' hoje') +
-      tile(fmt(c.clientes), 'Clientes premium', fmt(c.pagos) + ' pagamentos') + tile(brl0(c.receita), 'Receita bruta (Pix)', fmt(c.semana) + ' pagos nos últimos 7 dias') +
-      tile(pct(conv), 'Pix gerado → pago', fmt(c.pix) + ' Pix gerados') + tile(fmt(ide.novidades), 'E-mails de novidades') + tile(fmt(sug), 'Sugestões recebidas') + '</div>';
+      tile(fmt(c.clientes), 'Clientes premium', fmt(c.pagos) + ' pagamentos') + tile(brl0(c.receita), 'Receita bruta', 'Pix ' + brl0((c.receita || 0) - (c.receita_cartao || 0)) + ' · Cartão ' + brl0(c.receita_cartao) + ' · ' + fmt(c.semana) + ' vendas em 7 dias') +
+      tile(pct(conv), 'Pix gerado → pago', fmt(c.pagos_pix) + ' de ' + fmt(c.pix) + ' Pix') + tile(pct(c.checkouts ? (c.pagos_cartao || 0) / c.checkouts : 0), 'Cartão: checkout → pago', fmt(c.pagos_cartao) + ' de ' + fmt(c.checkouts) + ' checkouts') + tile(fmt(ide.novidades), 'E-mails de novidades') + tile(fmt(sug), 'Sugestões recebidas') + '</div>';
     h += '<div class="dois" style="margin-top:12px">' + barras('Grupos por dia', dias30((s.gDia || []).map(x => [x.dia, x.n])), 'grupos') + barras('Pagamentos por dia', dias30((s.cDia || []).map(x => [x.dia, x.n])), 'pagos') + '</div>';
     h += '<div class="dois" style="margin-top:12px"><div class="card"><b>Grupos por tipo</b>' + tabela([['Tipo'], ['Grupos', 1], ['%', 1]], (s.modos || []).map(m => [MODOS[m.modo] || esc(m.modo), fmt(m.n), pct(m.n / (g.total || 1))])) + '</div>' +
-      '<div class="card"><b>Últimos pagamentos</b>' + tabela([['E-mail'], ['Quando', 1], ['Valor', 1]], (s.ultimas || []).map(u => [esc(u.email), new Date(u.pago).toLocaleString('pt-BR', {dateStyle: 'short', timeStyle: 'short'}), brl(u.valor)])) + '</div></div>';
+      '<div class="card"><b>Últimos pagamentos</b>' + tabela([['E-mail'], ['Meio'], ['Quando', 1], ['Valor', 1]], (s.ultimas || []).map(u => [esc(u.email), u.meio, new Date(u.pago).toLocaleString('pt-BR', {dateStyle: 'short', timeStyle: 'short'}), brl(u.valor)])) + '</div></div>';
     h += '<div class="card" style="margin-top:12px"><b>Sugestões recentes</b>' + tabela([['Quando'], ['Tipo'], ['Texto']], (s.recentes || []).map(r => [new Date(r.criado).toLocaleDateString('pt-BR'), '<span class="tag">' + esc(r.tipo) + '</span>', esc(r.texto)])) + '</div>';
     h += '<p class="aviso">“Grupos no ranking” conta só quem aceitou entrar na comparação (o resto nunca sai do celular). Para todos os acessos, veja o Analytics.</p></section>';
   }
