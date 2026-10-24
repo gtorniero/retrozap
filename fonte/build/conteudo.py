@@ -2,7 +2,7 @@
 # True quando a cobrança de R$ 4,99 estiver ligada para todos (COBRANCA = "ligada" no wrangler.jsonc)
 COBRANCA_PUBLICA = True
 # Google Tag Manager (pixels de mídia paga: Meta, Google Ads, TikTok). Vazio = desligado. Ex.: 'GTM-ABC1234'
-GTM_ID = ''
+GTM_ID = 'GTM-NMLZBBQS'
 CTA = '<p><a class="cta" href="/">Fazer a retrospectiva do meu grupo</a></p>'
 
 NOVOS = [
