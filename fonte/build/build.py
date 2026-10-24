@@ -104,7 +104,7 @@ for k, v in ROTAS.items(): rep(k, k + '\n  ' + v)
 rep("function voltar(){ voltarPilha(); }", "function voltar(){ history.back(); } // o navegador volta e o popstate redesenha a tela anterior")
 
 # eventos
-rep("  state.raw = msgs; state.alias = {};", "  evento('upload_ok', {mensagens: msgs.length, modo: state.modo, exemplo: !!sample});\n  state.raw = msgs; state.alias = {};")
+rep("  state.raw = msgs; state.alias = {};", "  if (!retomando) evento('upload_ok', {mensagens: msgs.length, modo: state.modo, exemplo: !!sample});\n  state.raw = msgs; state.alias = {};")
 rep("    home(); const err = $('#err'); err.hidden = false;", "    evento('upload_erro'); home(); const err = $('#err'); err.hidden = false;")
 rep("  }catch(e){ err.hidden = false;", "  }catch(e){ evento('upload_erro'); err.hidden = false;")
 rep("view.querySelectorAll('.mode').forEach(b => b.onclick = () => { const y = scrollY, k = b.dataset.m;", "view.querySelectorAll('.mode').forEach(b => b.onclick = () => { const y = scrollY, k = b.dataset.m; evento('modo_escolhido', {modo: k});")

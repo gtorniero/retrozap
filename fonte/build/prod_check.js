@@ -956,7 +956,7 @@ async function run(text, sample, retomando){
   }
   if (sample) state.grupo = state.modo === 'casal' ? 'Nosso Cantinho 💕' : 'Turma do Churras'; else if (!state.grupo) state.grupo = nomeDaConversa(text);
   if (!retomando){ SESS.put('conversa', {text, dur: DUR, grupo: state.grupo, modo: state.modo, how: state.how, sample}); try { sessionStorage.removeItem('rz_esc'); } catch {} }
-  evento('upload_ok', {mensagens: msgs.length, modo: state.modo, exemplo: !!sample});
+  if (!retomando) evento('upload_ok', {mensagens: msgs.length, modo: state.modo, exemplo: !!sample});
   state.raw = msgs; state.alias = {}; state.hidden = new Set(); state.ctx = ''; state.intervaloVisto = false; state.spoilerVisto = false; state.livreUsadas = 0; state.palavra26 = null; state.intervaloAd = false;
   state.left = new Set(msgs.sys.filter(e => e.type === 'saiu' || e.type === 'removido').map(e => e.who));
   state.changed = new Set(msgs.sys.filter(e => e.type === 'numero').map(e => e.who));
