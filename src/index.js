@@ -2,10 +2,10 @@
 import { onRequestPost as stats } from '../functions/api/stats.js';
 import { onRequestPost as ideias } from '../functions/api/ideias.js';
 import { config, criar, status, webhook, acesso, recuperar, cartao, stripeWebhook } from '../functions/api/pix.js';
-import { painel, dados, salvar } from './admin.js';
+import { painel, dados, salvar, funil } from './admin.js';
 
 const POST = { '/api/stats': stats, '/api/ideias': ideias, '/api/pix': criar, '/api/pix/status': status, '/api/mp-webhook': webhook, '/api/acesso': acesso, '/api/recuperar': recuperar, '/api/cartao': cartao, '/api/stripe-webhook': stripeWebhook, '/api/admin/negocio': salvar };
-const GET = { '/api/cobranca': config, '/api/admin/dados': dados, '/admin': painel };
+const GET = { '/api/cobranca': config, '/api/admin/dados': dados, '/api/admin/funil': funil, '/admin': painel };
 
 // Marco Civil da Internet (art. 15): registros de acesso (IP, data e hora, rota) guardados sob sigilo por 6 meses.
 // Só nas rotas /api (onde a pessoa interage com o servidor). Nada da conversa passa por aqui.
