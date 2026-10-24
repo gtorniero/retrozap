@@ -587,7 +587,7 @@ function paywall(seguir, ctx){
     caixa.innerHTML = `<button type="button" class="pw-x" id="pwX" aria-label="Fechar">✕</button>
       <p class="pw-ctx">${{personagens: '🔒 Os outros personagens são Premium', video: '🔒 Baixar o vídeo é Premium', livre: '🔒 A categoria livre é Premium', destaques: '🔒 O resto da retrospectiva 2026 é Premium'}[ctx] || '🎁 Seu primeiro grupo foi por nossa conta'}</p>
       <h2 id="pwT" class="pw-tit">Acesso ilimitado.<br><em>Pague 1x só.</em></h2>
-      <div class="pw-preco"><b>R$ 4,99</b><span>não dá nem pro cafezinho do editor ☕</span></div>
+      <div class="pw-preco"><b>R$ 4,99</b><span>no Pix · não dá nem pro cafezinho do editor ☕</span></div>
       <ul class="pw-lista">
         <li><span aria-hidden="true">♾️</span><div><b>Quantos grupos quiser</b>Família, amigos, trabalho, condomínio, a pelada de quinta...</div></li>
         <li><span aria-hidden="true">🎭</span><div><b>Todos os personagens</b>Ninguém escapa: cada um com seu título, jeito de falar e manias.</div></li>
@@ -602,10 +602,11 @@ function paywall(seguir, ctx){
       <label class="pw-lb" for="pwEm">Seu e-mail (para o comprovante)</label>
       <input id="pwEm" type="email" inputmode="email" autocomplete="email" placeholder="voce@email.com" class="pw-in">
       <p class="err" id="pwErr" hidden></p>
-      <button type="button" class="btn btn-main" id="pwPix">🔓 Liberar tudo por R$ 4,99</button>
+      <button type="button" class="btn btn-main" id="pwPix">🔓 Liberar no Pix por R$ 4,99</button>
+      <div id="pwCartaoBox" hidden><button type="button" class="btn btn-ghost" id="pwCartao" style="width:100%">💳 Apple Pay, Google Pay ou cartão · R$ <span id="pwPc">6,99</span></button></div>
       <p class="small" style="margin:0">Ao pagar, você concorda com os <a href="/termos" target="_blank" rel="noopener">Termos de uso</a>. Vendido por Beyond the Work Ideas · CNPJ 69.746.447/0001-00.</p>
       <button type="button" class="pw-lk" id="pwTenho">Já paguei, tenho um código</button>
-      <p class="small" style="margin:0">Continua igual: suas mensagens não saem do seu celular. O pagamento é processado pelo Mercado Pago.</p>`;
+      <p class="small" style="margin:0">Continua igual: suas mensagens não saem do seu celular. O Pix é processado pelo Mercado Pago e o cartão pelo Stripe.</p>`;
     caixa.querySelector('#pwX').onclick = fecha;
     caixa.querySelector('#pwTenho').onclick = codigoTela;
     const em = caixa.querySelector('#pwEm'), err = caixa.querySelector('#pwErr'), bt = caixa.querySelector('#pwPix');
@@ -622,7 +623,29 @@ function paywall(seguir, ctx){
         if (!r.ok || !j.ref) throw new Error(j.error === 'email' ? 'Confira o e-mail.' : 'Não consegui gerar o Pix agora. Tente de novo em instantes.' + (TESTE_COBRANCA ? ` [${r.status}${j.detalhe ? ': ' + j.detalhe : ''}]` : ''));
         try { if (typeof evento === 'function') evento('pix_gerado'); } catch {}
         pixTela(j);
-      } catch (e) { bt.disabled = false; bt.textContent = '🔓 Liberar tudo por R$ 4,99'; err.hidden = false; err.textContent = e.message || 'Sem conexão. Tente de novo.'; }
+      } catch (e) { bt.disabled = false; bt.textContent = '🔓 Liberar no Pix por R$ 4,99'; err.hidden = false; err.textContent = e.message || 'Sem conexão. Tente de novo.'; }
+    };
+    // cartão, Apple Pay e Google Pay (Stripe): só aparece quando o servidor tem a chave; chave de teste só com ?teste_cartao=1
+    const btc = caixa.querySelector('#pwCartao');
+    (AMBIENTE_TESTE ? Promise.resolve({cartao: true}) : fetch('/api/cobranca', {cache: 'no-store'}).then(r => r.json())).then(c => {
+      if (!c?.cartao || (c.cartaoTeste && !/[?&]teste_cartao=1/.test(location.search)) || !btc?.isConnected) return;
+      if (c.precoCartao) caixa.querySelector('#pwPc').textContent = c.precoCartao;
+      caixa.querySelector('#pwCartaoBox').hidden = false;
+    }).catch(() => {});
+    btc.onclick = async () => {
+      const email = em.value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){ err.hidden = false; err.textContent = 'Confira o e-mail.'; em.focus(); return; }
+      lsSet('rz_email', email);
+      if (AMBIENTE_TESTE){ state.planoTeste = 'premium'; marcaPlano(); return libera('RZ-TEST-TEST'); }
+      btc.disabled = true; const txt = btc.innerHTML; btc.textContent = 'Abrindo o pagamento...'; err.hidden = true;
+      try {
+        const r = await fetch('/api/cartao', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({email})});
+        const j = await r.json();
+        if (!r.ok || !j.url) throw new Error(j.error === 'email' ? 'Confira o e-mail.' : 'Não consegui abrir o pagamento agora. Tente de novo ou use o Pix.' + (j.detalhe ? ` [${j.detalhe}]` : ''));
+        try { if (typeof evento === 'function') evento('cartao_aberto'); } catch {}
+        lsSet('rz_cartao_ref', j.ref);
+        location.href = j.url; // volta para o site e a cerimônia continua de onde parou
+      } catch (e) { btc.disabled = false; btc.innerHTML = txt; err.hidden = false; err.textContent = e.message || 'Sem conexão. Tente de novo.'; }
     };
     caixa.querySelector('#pwX').focus({preventScroll:true}); requestAnimationFrame(() => { m.scrollTop = 0; });
   };
@@ -683,6 +706,28 @@ function paywall(seguir, ctx){
   document.body.appendChild(m);
   m.addEventListener('keydown', e => { if (e.key === 'Escape') fecha(); });
   inicio();
+}
+// volta do pagamento no cartão (Stripe): confere e libera o acesso, mostrando o código
+async function confereCartao(ref){
+  if (!/^[\w-]{8,60}$/.test(ref)) return;
+  try { history.replaceState(history.state, '', location.pathname); } catch {}
+  for (let i = 0; i < 8; i++){
+    try {
+      const r = await fetch('/api/pix/status', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({ref})});
+      const s = await r.json();
+      if (s.pago && s.codigo){
+        lsSet('rz_acesso', s.codigo); lsSet('rz_cartao_ref', ''); document.documentElement.classList.add('premium');
+        try { if (typeof evento === 'function') evento('compra_ilimitado', {meio: 'cartao'}); } catch {}
+        const m = document.createElement('div'); m.className = 'patro'; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true'); m.setAttribute('aria-labelledby', 'ccT');
+        m.innerHTML = `<div class="patro-box lemb"><div class="lemb-ic" aria-hidden="true">🎉</div><h2 id="ccT" style="font-size:26px;margin:0">Pagamento confirmado!</h2>
+          <p class="lemb-tx">Agora é ilimitado neste navegador. Para usar em outro celular, digite este código ou o e-mail do pagamento:</p>
+          <div class="pw-cod">${esc(s.codigo)}</div><button type="button" class="btn btn-main" id="ccOk">Continuar 🏆</button></div>`;
+        document.body.appendChild(m); const ok = m.querySelector('#ccOk'); ok.onclick = () => m.remove(); ok.focus();
+        return;
+      }
+    } catch {}
+    await sleep(2500);
+  }
 }
 // abre o app do WhatsApp: no Android o Chrome só aceita o formato intent:// (whatsapp:// vazio é ignorado)
 function linkAbreWhats(){
@@ -3103,11 +3148,13 @@ function ajustaAcao(){
 setInterval(ajustaAcao, 800); addEventListener('resize', ajustaAcao); document.addEventListener('click', () => setTimeout(ajustaAcao, 50), true);
 $('#home').onclick = inicio;
 const TELA_SALVA = (() => { try { return sessionStorage.getItem('rz_tela'); } catch { return null; } })();
+const VOLTA_CARTAO = (() => { try { const q = new URLSearchParams(location.search); return q.get('cartao') === 'ok' ? (q.get('ref') || lsGet('rz_cartao_ref')) : null; } catch { return null; } })();
 $('#voltar').onclick = () => voltar();
 setModo('amigos');
 if (location.pathname !== '/') history.replaceState({}, '', '/');
 inicio(); avisoCookies();
 retomar(TELA_SALVA);
+if (VOLTA_CARTAO) confereCartao(VOLTA_CARTAO);
 // prévia: alternar o plano para ver como fica grátis x premium
 function marcaPlano(){ document.querySelectorAll('#planoTeste button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.plano === state.planoTeste))); }
 if (AMBIENTE_TESTE){

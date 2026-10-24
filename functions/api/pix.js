@@ -15,7 +15,17 @@ const aleatorio = n => [...crypto.getRandomValues(new Uint8Array(n))].map(b => '
 const pago = o => o && (o.status === 'approved' || o.status === 'processed' || /accredited|approved/.test(o.status_detail || '') || (o.transactions?.payments || []).some(p => p.status === 'processed' || /accredited|approved/.test(p.status_detail || '')));
 
 const MP_PAY = 'https://api.mercadopago.com/v1/payments';
+// cartão, Apple Pay e Google Pay pelo Stripe Checkout (segredo STRIPE_KEY; chave de teste = sk_test_/rk_test_)
+const STRIPE = 'https://api.stripe.com/v1/checkout/sessions';
+const stripeKey = env => String(env.STRIPE_KEY || '').trim();
+const stripeTeste = env => /^(sk|rk)_test_/.test(stripeKey(env));
+const precoCartao = env => String(env.PRECO_CARTAO || '6.99');
 async function consultaOrdem(env, id){
+  if (id.startsWith('stripe:')){
+    const r = await fetch(`${env.STRIPE_API || STRIPE}/${encodeURIComponent(id.slice(7))}`, {headers: {Authorization: `Bearer ${stripeKey(env)}`}});
+    const s = r.ok ? await r.json() : null;
+    return s ? {status: s.payment_status === 'paid' ? 'approved' : 'pending'} : null;
+  }
   // "pay:123" = pagamento pela API clássica (/v1/payments); senão, order da API de Orders
   const url = id.startsWith('pay:') ? `${env.MP_PAY_API || MP_PAY}/${encodeURIComponent(id.slice(4))}` : `${env.MP_API || MP_PADRAO}/${encodeURIComponent(id)}`;
   const r = await fetch(url, {headers: {Authorization: `Bearer ${tok(env)}`}});
@@ -59,7 +69,7 @@ async function enviaCodigo(env, email, codigo){
 
 // GET /api/cobranca: o site pergunta se a cobrança está valendo
 export async function config({env}){
-  return json({modo: modo(env), pronto: !!(env.MP_TOKEN && env.DB), preco: '4,99'});
+  return json({modo: modo(env), pronto: !!(env.MP_TOKEN && env.DB), preco: '4,99', cartao: !!(stripeKey(env) && env.DB), cartaoTeste: stripeTeste(env), precoCartao: precoCartao(env).replace('.', ',')});
 }
 
 // POST /api/pix {email}: cria o Pix e devolve o QR
@@ -104,13 +114,49 @@ export async function criar({request, env}){
 
 // POST /api/pix/status {ref}: o site pergunta a cada poucos segundos se já pagou
 export async function status({request, env}){
-  if (!env.MP_TOKEN || !env.DB) return json({error: 'indisponivel'}, 503);
+  if (!(env.MP_TOKEN || stripeKey(env)) || !env.DB) return json({error: 'indisponivel'}, 503);
   let c; try { c = await request.json(); } catch { return json({error: 'bad_request'}, 400); }
   const ref = String(c?.ref || '').slice(0, 60);
   if (!ref) return json({error: 'bad_request'}, 400);
   await tabela(env);
   const codigo = await confirma(env, ref);
   return json(codigo ? {pago: true, codigo} : {pago: false});
+}
+
+// POST /api/cartao {email}: cria a página de pagamento do Stripe (cartão, Apple Pay, Google Pay) e devolve o link
+export async function cartao({request, env}){
+  if (!stripeKey(env) || !env.DB) return json({error: 'indisponivel'}, 503);
+  if (modo(env) === 'desligada') return json({error: 'desligada'}, 403);
+  let c; try { c = await request.json(); } catch { return json({error: 'bad_request'}, 400); }
+  const email = String(c?.email || '').trim().toLowerCase().slice(0, 120);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return json({error: 'email'}, 400);
+  await tabela(env);
+  const ref = crypto.randomUUID(), origem = new URL(request.url).origin, valor = precoCartao(env);
+  const f = new URLSearchParams({
+    mode: 'payment', locale: 'pt-BR', customer_email: email, client_reference_id: ref, 'metadata[ref]': ref,
+    'line_items[0][quantity]': '1', 'line_items[0][price_data][currency]': 'brl',
+    'line_items[0][price_data][unit_amount]': String(Math.round(parseFloat(valor) * 100)),
+    'line_items[0][price_data][product_data][name]': 'Retrozap: acesso ilimitado',
+    'line_items[0][price_data][product_data][description]': 'Pagamento único. Grupos ilimitados, todos os personagens, categoria livre, vídeo e sem anúncios.',
+    success_url: `${origem}/?cartao=ok&ref=${ref}`, cancel_url: `${origem}/?cartao=volta`
+  });
+  const r = await fetch(env.STRIPE_API || STRIPE, {method: 'POST', headers: {Authorization: `Bearer ${stripeKey(env)}`, 'content-type': 'application/x-www-form-urlencoded', 'Idempotency-Key': ref}, body: f});
+  const s = await r.json().catch(() => null);
+  if (!r.ok || !s?.url){ console.log('stripe erro', r.status, JSON.stringify(s?.error || s).slice(0, 300)); return json({error: 'stripe', detalhe: stripeTeste(env) ? (s?.error?.message || String(r.status)) : undefined}, 502); }
+  await env.DB.prepare('INSERT INTO compras (ref, ordem, email, status, criado, valor, modo) VALUES (?, ?, ?, ?, ?, ?, ?)').bind(ref, 'stripe:' + s.id, email, 'pendente', new Date().toISOString(), valor, stripeTeste(env) ? 'teste' : modo(env)).run();
+  return json({ref, url: s.url});
+}
+
+// POST /api/stripe-webhook: aviso do Stripe (checkout.session.completed). A confirmação é sempre conferida direto na API do Stripe.
+export async function stripeWebhook({request, env}){
+  if (!stripeKey(env) || !env.DB) return json({ok: true});
+  let c; try { c = await request.json(); } catch { return json({ok: true}); }
+  const id = String(c?.data?.object?.id || '').slice(0, 120);
+  if (!/^cs_/.test(id)) return json({ok: true});
+  await tabela(env);
+  const linha = await env.DB.prepare('SELECT ref FROM compras WHERE ordem = ?').bind('stripe:' + id).first();
+  if (linha) await confirma(env, linha.ref);
+  return json({ok: true});
 }
 
 // POST /api/mp-webhook: aviso do Mercado Pago (opcional; a confirmação é sempre conferida direto na API)
