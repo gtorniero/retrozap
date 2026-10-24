@@ -51,7 +51,7 @@ if(ad==='denied'){{(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersona
   gtag('js', new Date());
   gtag('config', 'G-R8R1EN0KQN');
 </script>
-<title>{title} · Retrozap</title><meta name="description" content="{desc}">
+{conteudo.gtm_head(getattr(conteudo, 'GTM_ID', ''))}<title>{title} · Retrozap</title><meta name="description" content="{desc}">
 <link rel="canonical" href="{url}"><meta name="theme-color" content="#1A0B2E">
 <meta property="og:title" content="{title}"><meta property="og:description" content="{desc}"><meta property="og:image" content="{SITE}/og-retrozap.png">
 <link rel="icon" href="/favicon.png" type="image/png">

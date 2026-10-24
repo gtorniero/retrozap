@@ -11,7 +11,10 @@ const configurado = v => !!v && !/X{4}|^0+$/.test(v);
 window.dataLayer = window.dataLayer || [];
 function gtag(){ dataLayer.push(arguments); }
 // a tag oficial do Google (gtag js + config) fica no <head>; cada tela nova vira page_view sozinha (medição otimizada: mudanças no histórico)
-function evento(nome, params = {}){ try { if (configurado(CONFIG.GA_ID)) gtag('event', nome, params); } catch {} }
+function evento(nome, params = {}){
+  try { if (configurado(CONFIG.GA_ID)) gtag('event', nome, params); } catch {}
+  try { if (window.RZ_GTM) dataLayer.push(Object.assign({event: 'rz_' + nome}, params)); } catch {} // Tag Manager: gatilhos de conversão (rz_upload_ok, rz_compartilhou...)
+}
 
 /* ---------- Uma página por tela: cada tela conta como página vista ---------- */
 function ir(rota){

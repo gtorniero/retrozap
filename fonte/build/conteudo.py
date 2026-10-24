@@ -1,6 +1,8 @@
 # Conteúdo editorial do Retrozap: artigos do blog e páginas institucionais novas.
 # True quando a cobrança de R$ 4,99 estiver ligada para todos (COBRANCA = "ligada" no wrangler.jsonc)
 COBRANCA_PUBLICA = True
+# Google Tag Manager (pixels de mídia paga: Meta, Google Ads, TikTok). Vazio = desligado. Ex.: 'GTM-ABC1234'
+GTM_ID = ''
 CTA = '<p><a class="cta" href="/">Fazer a retrospectiva do meu grupo</a></p>'
 
 NOVOS = [
@@ -247,3 +249,12 @@ ol,ul{padding-left:22px}li{margin:4px 0}
 
 # AdSense: IDs dos blocos de anúncio (AdSense > Anúncios > Por bloco de anúncios). Vazio = sem bloco nesse lugar.
 AD_SLOT_PAGINAS = ''
+
+
+def gtm_head(gtm_id):
+    """Snippet do Google Tag Manager (vai logo depois do consentimento + gtag). Vazio = nada."""
+    if not gtm_id: return ''
+    return ("<!-- Google Tag Manager (pixels de mídia; respeita o Consent Mode acima) -->\n"
+            "<script>window.RZ_GTM=1;(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});"
+            "var f=d.getElementsByTagName(s)[0],j=d.createElement(s);j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i;"
+            "f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','" + gtm_id + "');</script>\n")

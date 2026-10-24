@@ -53,7 +53,7 @@ if(ad==='denied'){(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersonal
   gtag('js', new Date());
   gtag('config', 'G-R8R1EN0KQN');
 </script>
-<title>Retrozap · Retrospectiva do grupo de WhatsApp</title>
+@@GTM@@<title>Retrozap · Retrospectiva do grupo de WhatsApp</title>
 <meta name="description" content="Descubra a história do seu grupo de WhatsApp: quem fala mais, quem some, quem manda figurinha às 3 da manhã. Prêmios, números e cards para mandar no grupo. Grátis e suas mensagens não saem do celular.">
 <meta name="theme-color" content="#1A0B2E">
 <link rel="canonical" href="https://retrozap.com.br/">
@@ -77,7 +77,8 @@ if(ad==='denied'){(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersonal
 <style>.premium ins.adsbygoogle,.premium .anuncio,.premium .google-auto-placed,.premium .adsbygoogle-noablate{display:none!important}</style>
 <!--LD-->
 """
-s = HEAD + s
+import sys as _sys; _sys.path.insert(0, BASE); import conteudo as _ct
+s = HEAD.replace('@@GTM@@', _ct.gtm_head(getattr(_ct, 'GTM_ID', ''))) + s
 rep('<style>\n', '<style>\n' + FONTES, 1)
 rep('<div class="app">', '</head>\n<body>\n<div class="app">')
 s = s.rstrip() + '\n</body>\n</html>\n'
