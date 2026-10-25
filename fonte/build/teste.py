@@ -29,7 +29,7 @@ async def main():
         print('rota conhecendo:', pg.url); await pg.screenshot(path=f'{SHOTS}/3-conhecendo.png', full_page=True)
         print('titulos:', await pg.eval_on_selector_all('.perso h3', 'es => es.map(e => e.textContent)'))
         await pg.click('#go'); await pg.wait_for_timeout(300); print('rota categorias:', pg.url)
-        await pg.wait_for_selector('#spNao'); await pg.screenshot(path=f'{SHOTS}/4-spoiler.png'); await pg.click('#spNao'); await pg.wait_for_timeout(200)
+        await pg.wait_for_selector('#spNao'); await pg.screenshot(path=f'{SHOTS}/4-spoiler.png'); await pg.click('#spX'); await pg.wait_for_timeout(200)
         await pg.screenshot(path=f'{SHOTS}/5-categorias.png', full_page=True)
         await pg.click('#go'); await pg.wait_for_timeout(300)
         n = 0

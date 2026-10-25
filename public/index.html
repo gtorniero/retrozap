@@ -707,16 +707,37 @@ function anunciaTela(k){
     if (h){ if (!h.hasAttribute('tabindex')) h.setAttribute('tabindex', '-1'); h.focus({preventScroll: true}); } else v.focus({preventScroll: true});
   });
 }
-// emojis decorativos no começo de títulos e botões não são lidos pelo leitor de tela
-const EMO_INI = /^(\s*)((?:\p{Extended_Pictographic}|\p{Regional_Indicator}|[\u{FE0F}\u{200D}\u{20E3}\u{1F3FB}-\u{1F3FF}#*0-9](?=\u{FE0F}?\u{20E3}))+)(\s*)/u;
-function escondeEmojis(raiz){
-  raiz.querySelectorAll('h1,h2,h3,.btn,button,.eyebrow,figcaption').forEach(el => {
-    const t = el.firstChild; if (!t || t.nodeType !== 3) return;
-    const m = t.nodeValue.match(EMO_INI); if (!m || !m[2].trim()) return;
-    const s = document.createElement('span'); s.setAttribute('aria-hidden', 'true'); s.textContent = m[2];
-    t.nodeValue = m[1] + m[3] + t.nodeValue.slice(m[0].length); el.insertBefore(s, t);
-  });
+// emojis não são lidos pelo leitor de tela (atrapalham): cada emoji vira um <span aria-hidden>, e sai de aria-label/alt
+const EMO_RX = /(?:\p{Extended_Pictographic}|\p{Regional_Indicator})(?:️|⃣|[\u{1F3FB}-\u{1F3FF}]|‍(?:\p{Extended_Pictographic}|\p{Regional_Indicator})️?)*/gu;
+const temEmo = s => { EMO_RX.lastIndex = 0; return EMO_RX.test(s); };
+function emoTexto(t){
+  const pai = t.parentNode; if (!pai || pai.closest?.('[aria-hidden="true"],script,style,textarea,svg')) return;
+  const v = t.nodeValue; if (!v || !temEmo(v)) return;
+  // botão ou link que só tem emoji (e sem aria-label) fica como está, senão ficaria sem nome
+  const ctl = pai.closest?.('button,a,[role="button"]');
+  if (ctl && !ctl.getAttribute('aria-label') && !ctl.textContent.replace(EMO_RX, '').trim()) return;
+  const frag = document.createDocumentFragment(); let k = 0; EMO_RX.lastIndex = 0;
+  for (const m of v.matchAll(EMO_RX)){
+    if (m.index > k) frag.appendChild(document.createTextNode(v.slice(k, m.index)));
+    const s = document.createElement('span'); s.setAttribute('aria-hidden', 'true'); s.textContent = m[0]; frag.appendChild(s);
+    k = m.index + m[0].length;
+  }
+  if (k < v.length) frag.appendChild(document.createTextNode(v.slice(k)));
+  pai.replaceChild(frag, t);
 }
+function emoAttr(el){ for (const a of ['aria-label', 'alt', 'title']){ const v = el.getAttribute?.(a); if (v && temEmo(v)) el.setAttribute(a, v.replace(EMO_RX, '').replace(/\s{2,}/g, ' ').trim()); } }
+function escondeEmojis(raiz){
+  if (!raiz) return;
+  if (raiz.nodeType === 3) return emoTexto(raiz);
+  if (raiz.nodeType !== 1) return;
+  emoAttr(raiz); raiz.querySelectorAll('[aria-label],[alt],[title]').forEach(emoAttr);
+  const w = document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT), lista = [];
+  while (w.nextNode()) if (temEmo(w.currentNode.nodeValue)) lista.push(w.currentNode);
+  lista.forEach(emoTexto);
+}
+// o que entra na tela depois (revelações, pop-ups, contagens) também passa pelo filtro
+try { new MutationObserver(ms => { for (const m of ms) m.addedNodes.forEach(n => { if (!(n.nodeType === 1 && n.getAttribute('aria-hidden') === 'true')) escondeEmojis(n); }); })
+  .observe(document.body, {childList: true, subtree: true}); } catch {}
 // pop-ups: enquanto um estiver aberto, o resto da página fica inativo (Tab não sai do pop-up)
 new MutationObserver(() => {
   const ab = [...document.body.children].filter(e => e.classList?.contains('patro'));
@@ -1975,14 +1996,14 @@ function lineup(){
     <button class="btn btn-ghost" id="spoil" type="button" style="width:100%">📲 Última chance: ${state.modo === 'casal' ? 'mandar o spoiler' : 'mandar o spoiler no grupo'}</button>
     <button class="btn btn-main" id="go">🥁 Revelar as categorias</button>
   </section>`;
-  intervaloComercial(); ativaAnuncios(); popSpoiler(ativos);
+  intervaloComercial(); ativaAnuncios(); popSpoiler(ativos, award); // o pop-up já mostra as categorias: dele vai direto para o 1º prêmio
   $('#spoil').onclick = () => openCard(() => drawSpoiler(ativos), convite('spoiler', ativos.length), `Spoiler${state.grupo ? ' do grupo ' + state.grupo : ''}: os ${ativos.length} troféus em disputa são ${juntar(ativos.map(a => a.n))}. Quem leva cada um?`);
   $('#go').onclick = award;
   window.scrollTo(0,0);
 }
 
 // "Agora é a hora": antes da revelação, convida a mandar o spoiler no grupo (uma vez por retrospectiva)
-function popSpoiler(ativos){
+function popSpoiler(ativos, comecar){
   if (state.spoilerVisto || !ativos.length) return; state.spoilerVisto = true;
   const casal = state.modo === 'casal', n = ativos.length, url = drawSpoiler(ativos), antes = document.activeElement, m = document.createElement('div');
   const alt = `Spoiler: os ${n} troféus em disputa são ${juntar(ativos.map(a => a.n))}.`;
@@ -1994,18 +2015,18 @@ function popSpoiler(ativos){
     <p class="lemb-tx" id="spD">${casal ? `São ${n} troféus em disputa. Mande o spoiler para o seu amor e apostem: quem leva cada um?` : `São ${n} troféus em disputa. Mande o spoiler no grupo, deixe a galera palpitar quem leva cada um e depois volte com os resultados.`}</p>
     <img src="${url}" alt="${esc(alt)}" class="sp-img">
     <button type="button" class="btn btn-main" id="spOk">📤 ${casal ? 'Mandar o spoiler' : 'Mandar o spoiler no grupo'}</button>
-    <button type="button" class="btn btn-ghost" id="spNao">Agora não, quero ver primeiro</button>
+    <button type="button" class="btn btn-ghost" id="spNao">Agora não, começar a revelação</button>
   </div>`;
   document.body.appendChild(m);
   const fecha = () => { m.remove(); try { antes?.focus(); } catch {} };
   const ev = n2 => { try { if (typeof evento === 'function') evento(n2); } catch {} };
   ev('spoiler_popup');
-  m.querySelector('#spX').onclick = fecha; m.querySelector('#spNao').onclick = fecha;
+  m.querySelector('#spX').onclick = fecha; m.querySelector('#spNao').onclick = () => { fecha(); comecar?.(); };
   m.querySelector('#spOk').onclick = async () => {
     ev('spoiler_popup_clique');
     const blob = paraBlob(url), nome = 'retrozap-spoiler.png', f = new File([blob], nome, {type: 'image/png'});
     let pode = false; try { pode = !!navigator.canShare?.({files: [f]}); } catch {}
-    fecha();
+    fecha(); comecar?.();
     if (pode) await compartilhaArquivo(blob, nome, convite('spoiler', n)); else openCard(() => url, convite('spoiler', n), alt);
   };
   m.addEventListener('keydown', e => { if (e.key === 'Escape') fecha(); });

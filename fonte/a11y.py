@@ -14,7 +14,7 @@ async def main():
         await pg.click('#comecar'); await pg.wait_for_selector('#demo'); await audit(pg,'home')
         await pg.click('#demo'); await pg.wait_for_selector('#go'); await audit(pg,'turma')
         await pg.click('#go'); await pg.wait_for_selector('.persona', timeout=20000); await pg.wait_for_timeout(1500); await audit(pg,'conhecendo')
-        await pg.click('#go'); await pg.wait_for_selector('#spNao'); await audit(pg,'spoiler-popup'); await pg.click('#spNao'); await pg.wait_for_timeout(300); await audit(pg,'categorias')
+        await pg.click('#go'); await pg.wait_for_selector('#spNao'); await audit(pg,'spoiler-popup'); await pg.click('#spX'); await pg.wait_for_timeout(300); await audit(pg,'categorias')
         if await pg.query_selector('#patroFecha'): await pg.click('#patroFecha'); await pg.wait_for_timeout(200)
         await pg.click('#go'); await pg.wait_for_timeout(400); await audit(pg,'premio-antes')
         mechs=set()

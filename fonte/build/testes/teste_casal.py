@@ -25,7 +25,9 @@ async def main():
     print('persos', await pg.eval_on_selector_all('.perso',"es=>es.map(e=>e.className+':'+e.querySelector('h3').textContent)"))
     print('classif', await pg.eval_on_selector('.persona','e=>e.textContent.slice(0,80)'))
     await pg.click('#go'); await pg.wait_for_selector('#spNao'); await pg.click('#spNao'); await pg.wait_for_timeout(300); await pg.screenshot(path=O+'/4-categorias.png',full_page=True)
-    await pg.click('#go'); await pg.wait_for_timeout(300); n=0; tit=[]
+    print('spoiler foi direto ao 1º prêmio:', '/premios/' in pg.url)
+    if '/premios/' not in pg.url: await pg.click('#go')
+    await pg.wait_for_timeout(300); n=0; tit=[]
     while '/premios/' in pg.url and n<20:
       n+=1
       if await pg.query_selector('#rvl'): await pg.click('#rvl'); await pg.wait_for_timeout(2400)
