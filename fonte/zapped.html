@@ -25,7 +25,13 @@ html{scroll-padding-top:calc(var(--toph,72px) + 8px)}
 h1,h2,h3{font-family:var(--titulo);font-weight:800;line-height:1.05;margin:0;text-wrap:balance;letter-spacing:-.01em}
 p{margin:0}
 button{font:inherit;color:inherit;cursor:pointer}
-button:focus-visible,input:focus-visible,label:focus-visible{outline:3px solid var(--manga);outline-offset:3px}
+button:focus-visible,input:focus-visible,label:focus-visible,a:focus-visible,select:focus-visible,summary:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--manga);outline-offset:3px}
+[tabindex="-1"]:focus:not(:focus-visible){outline:none}
+html{scroll-padding-bottom:120px}
+.pular-conteudo{position:absolute;left:8px;top:-60px;z-index:100;background:var(--manga);color:var(--noite);padding:10px 16px;border-radius:12px;font-weight:700;text-decoration:none}
+.pular-conteudo:focus{top:8px}
+.vwrap{position:relative}
+.vpausa{position:absolute;bottom:34px;right:10px;z-index:2;width:40px;height:40px;border-radius:50%;border:0;background:rgba(0,0,0,.5);color:#fff;font:inherit;font-size:13px;font-weight:800;padding:0;cursor:pointer;line-height:1}
 .top{position:fixed;top:0;left:0;right:0;z-index:12;background:rgba(26,11,46,.97);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:calc(12px + env(safe-area-inset-top,0px)) max(16px,calc(50vw - 260px)) 12px;transform:translateZ(0);border-bottom:1px solid var(--linha);display:flex;align-items:center;justify-content:space-between;gap:12px}
 .logo{font-family:var(--titulo);font-weight:800;font-size:26px;color:var(--manga);letter-spacing:-.02em;display:flex;align-items:baseline;gap:2px;background:none;border:0;padding:0}
 .logo span{display:inline-block;transform:rotate(14deg) translateY(-2px);font-size:18px}
@@ -515,13 +521,14 @@ ol.how li.on{color:var(--manga);font-weight:700}
 @media (prefers-reduced-motion: reduce){.tt *{animation:none!important;transition:none!important}}
 </style>
 
+<a class="pular-conteudo" href="#view">Pular para o conteúdo</a>
 <div class="app">
   <header class="top">
     <button class="voltar" id="voltar" type="button" hidden>← Voltar</button>
     <button class="logo" id="home" aria-label="Retrozap, voltar ao início">retrozap<span>🏆</span></button>
-    <div class="steps" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i></div>
+    <div class="steps" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i></div><span class="sr-only" id="etapa" aria-live="polite"></span>
   </header>
-  <main id="view"></main>
+  <main id="view" tabindex="-1"></main>
 </div>
 <canvas id="confetti" aria-hidden="true"></canvas>
 <script>
@@ -556,7 +563,51 @@ const SESS = {
   tela(k){ try { if (k) sessionStorage.setItem('rz_tela', k); else sessionStorage.removeItem('rz_tela'); } catch {} }
 };
 const TELAS_RETOMA = /^(turma|prologo|categorias|premio\d+|todas|resumo|fim|final)$/;
+// acessibilidade: a cada tela nova, foco no título principal e título da aba atualizado (leitor de tela anuncia a mudança)
+let TELA_ATUAL = null;
+function anunciaTela(k){
+  if (k === TELA_ATUAL) return; const primeira = TELA_ATUAL === null; TELA_ATUAL = k;
+  requestAnimationFrame(() => {
+    const v = document.getElementById('view'); if (!v) return;
+    escondeEmojis(v);
+    const h = v.querySelector('h1') || v.querySelector('h2');
+    const nome = (h?.textContent || '').replace(/\s+/g, ' ').trim();
+    document.title = k === 'inicio' || !nome ? 'Retrozap · Retrospectiva do grupo de WhatsApp' : `${nome.slice(0, 60)} · Retrozap`;
+    if (primeira || document.querySelector('.patro')) return; // no primeiro carregamento não mexe no foco
+    if (h){ if (!h.hasAttribute('tabindex')) h.setAttribute('tabindex', '-1'); h.focus({preventScroll: true}); } else v.focus({preventScroll: true});
+  });
+}
+// emojis decorativos no começo de títulos e botões não são lidos pelo leitor de tela
+const EMO_INI = /^(\s*)((?:\p{Extended_Pictographic}|\p{Regional_Indicator}|[\u{FE0F}\u{200D}\u{20E3}\u{1F3FB}-\u{1F3FF}#*0-9](?=\u{FE0F}?\u{20E3}))+)(\s*)/u;
+function escondeEmojis(raiz){
+  raiz.querySelectorAll('h1,h2,h3,.btn,button,.eyebrow,figcaption').forEach(el => {
+    const t = el.firstChild; if (!t || t.nodeType !== 3) return;
+    const m = t.nodeValue.match(EMO_INI); if (!m || !m[2].trim()) return;
+    const s = document.createElement('span'); s.setAttribute('aria-hidden', 'true'); s.textContent = m[2];
+    t.nodeValue = m[1] + m[3] + t.nodeValue.slice(m[0].length); el.insertBefore(s, t);
+  });
+}
+// pop-ups: enquanto um estiver aberto, o resto da página fica inativo (Tab não sai do pop-up)
+new MutationObserver(() => {
+  const ab = [...document.body.children].filter(e => e.classList?.contains('patro'));
+  const topo = ab[ab.length - 1];
+  for (const el of document.body.children){
+    if (el.tagName === 'SCRIPT' || el.classList.contains('cookies')) continue;
+    if (topo && el !== topo){ if (!el.hasAttribute('data-inert')){ el.setAttribute('data-inert', ''); el.inert = true; } }
+    else if (el.hasAttribute('data-inert')){ el.removeAttribute('data-inert'); el.inert = false; }
+  }
+  if (topo && !topo.dataset.a11y){ topo.dataset.a11y = '1'; escondeEmojis(topo); if (!topo.contains(document.activeElement)) (topo.querySelector('h2,[autofocus],button,input') || topo).focus?.({preventScroll: true}); }
+}).observe(document.body, {childList: true});
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Tab') return;
+  const ab = document.querySelectorAll('body > .patro'), topo = ab[ab.length - 1]; if (!topo) return;
+  const fs = [...topo.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])')].filter(x => x.offsetParent !== null);
+  if (!fs.length) return; const pri = fs[0], ult = fs[fs.length - 1], at = document.activeElement;
+  if (e.shiftKey && (at === pri || !topo.contains(at))){ e.preventDefault(); ult.focus(); }
+  else if (!e.shiftKey && (at === ult || !topo.contains(at))){ e.preventDefault(); pri.focus(); }
+});
 function pilha(f, k){
+  anunciaTela(k);
   if (TELAS_RETOMA.test(k)) SESS.tela(k); else if (k === 'inicio' || k === 'comecar') SESS.tela('');
   if (VOLTANDO){ VOLTANDO = false; } else if (!PILHA.length || PILHA[PILHA.length-1].k !== k) PILHA.push({f, k});
   const b = document.getElementById('voltar'); if (b) b.hidden = false;
@@ -567,7 +618,8 @@ function voltarPilha(){
   VOLTANDO = true; t.f();
 }
 function voltar(){ voltarPilha(); }
-function setSteps(n){ document.querySelectorAll('.steps i').forEach((el,i)=>el.classList.toggle('on', i<=n)); }
+const ETAPAS = ['Começo', 'Ato I: conhecendo o grupo', 'Ato II: as categorias', 'Ato III: o final'];
+function setSteps(n){ document.querySelectorAll('.steps i').forEach((el,i)=>el.classList.toggle('on', i<=n)); const e = document.getElementById('etapa'); if (e) e.textContent = `Etapa ${n + 1} de 4: ${ETAPAS[n] || ''}`; }
 function setModo(m){ state.modo=m; if (m !== 'casal') state.ultimoGrupo = m; document.documentElement.style.setProperty('--modo', MODOS[m].c); document.documentElement.classList.toggle('casal', m === 'casal'); }
 
 /* ---------- parser do export ---------- */
@@ -1093,7 +1145,7 @@ function paywall(seguir, ctx){
       <p class="small" style="margin:0">Pagamento único · sem assinatura · liberado na hora · 7 dias para desistir e receber de volta</p>
       <label class="pw-lb" for="pwEm">Seu e-mail (para o comprovante)</label>
       <input id="pwEm" type="email" inputmode="email" autocomplete="email" placeholder="voce@email.com" class="pw-in">
-      <p class="err" id="pwErr" hidden></p>
+      <p class="err" role="alert" id="pwErr" hidden></p>
       <button type="button" class="btn btn-main" id="pwPix">🔓 Liberar no Pix por R$ 4,99</button>
       <div id="pwCartaoBox" hidden><button type="button" class="btn btn-ghost" id="pwCartao" style="width:100%"><span class="pwc"><b>💳 No cartão por R$&nbsp;<span id="pwPc">6,99</span></b><small>Apple Pay, Google Pay ou cartão</small></span></button></div>
       <p class="small" style="margin:0">Ao pagar, você concorda com os <a href="/termos" target="_blank" rel="noopener">Termos de uso</a>. Vendido por Beyond the Work Ideas · CNPJ 69.746.447/0001-00.</p>
@@ -1175,7 +1227,7 @@ function paywall(seguir, ctx){
       <h2 id="pwT" style="font-size:22px;margin:0">Recuperar acesso</h2>
       <label class="pw-lb" for="pwCod">Digite o código (RZ-XXXX-XXXX) ou o e-mail que você usou no Pix</label>
       <input id="pwCod" class="pw-in" placeholder="RZ-XXXX-XXXX ou voce@email.com" autocapitalize="none" autocomplete="off">
-      <p class="err" id="pwErr" hidden></p>
+      <p class="err" role="alert" id="pwErr" hidden></p>
       <button type="button" class="btn btn-main" id="pwOk">Liberar</button>
       <button type="button" class="pw-lk" id="pwVolta">← Voltar</button>
       <p class="small" style="margin:0">Não lembra o e-mail? Escreva para <a href="mailto:contato@retrozap.com.br" style="color:var(--areia)">contato@retrozap.com.br</a>.</p>`;
@@ -1232,7 +1284,7 @@ let ORIGEM_VISTA = false;
 function inicio(){
   anchor(true);
   if (ORIGEM && !ORIGEM_VISTA){ ORIGEM_VISTA = true; if (ORIGEM.casal) setModo('casal'); try { if (typeof evento === 'function') evento('chegou_de_compartilhamento', {origem: ORIGEM.de}); } catch {} }
-  PILHA.length = 0; SESS.tela(''); const vb = document.getElementById('voltar'); if (vb) vb.hidden = true;
+  PILHA.length = 0; SESS.tela(''); anunciaTela('inicio'); const vb = document.getElementById('voltar'); if (vb) vb.hidden = true;
   setSteps(0); state.data = null; const cs = state.modo === 'casal';
   view.innerHTML = `
   <section class="screen hero">
@@ -1331,7 +1383,7 @@ function home(){
       </div>
     </div>`}
     <button class="btn btn-main" id="start"${state.arquivo ? '' : ' disabled'}>${state.modo === 'casal' ? '💕 Fazer a retrospectiva do casal' : '🏆 Fazer a retrospectiva'}</button>
-    <p class="err" id="err" hidden></p>
+    <p class="err" role="alert" id="err" hidden></p>
     <div class="btn-row"><button class="btn btn-ghost" id="demo">${state.modo === 'casal' ? '👀 Ver com um casal de exemplo' : '👀 Ver com um grupo de exemplo'}</button></div>
     <p class="small">Protótipo do Retrozap. Nos testes, o grupo de exemplo é inventado.</p>
   </section>`;
@@ -1544,7 +1596,7 @@ function roster(){
         </div>` : ''}
       </div>`; }).join('')}</div>
     <label class="optin"><input type="checkbox" id="cmp"${state.comparar === false ? '' : ' checked'}><span>📊 ${state.modo === 'casal' ? 'Comparar com outros casais do Retrozap' : 'Comparar meu grupo com outros grupos do Retrozap'}<span class="small">Vem marcado e você pode desmarcar. Só sobem números do ${state.modo === 'casal' ? 'casal' : 'grupo inteiro'}, como o total de mensagens. Nenhuma mensagem, nome ou telefone sai do celular.</span></span></label>
-    <p class="err" id="rerr" hidden></p>
+    <p class="err" role="alert" id="rerr" hidden></p>
     <button class="btn btn-main" id="go">Tudo certo, começar →</button>
   </section>`;
   const redraw = () => { const y = scrollY; roster(); scrollTo(0, y); };
@@ -1935,7 +1987,8 @@ function suspense(){
   const sl = $('#sl'), bt = $('#rl'), dots = view.querySelectorAll('.dots i');
   const conta = (el, alvo, txt) => {
     const t0 = performance.now(), dur = 900;
-    const passo = agora => { if (!el.isConnected) return; const p = Math.min(1, (agora - t0)/dur); el.textContent = p < 1 ? fmt(Math.round(alvo*(1 - Math.pow(1 - p, 3)))) + txt.replace(/^[\d.]+/, '') : txt; if (p < 1) requestAnimationFrame(passo); };
+    const viva = el.closest('[aria-live]'); viva?.setAttribute('aria-busy', 'true');
+    const passo = agora => { if (!el.isConnected) return; const p = Math.min(1, (agora - t0)/dur); el.textContent = p < 1 ? fmt(Math.round(alvo*(1 - Math.pow(1 - p, 3)))) + txt.replace(/^[\d.]+/, '') : txt; if (p < 1) requestAnimationFrame(passo); else viva?.removeAttribute('aria-busy'); };
     requestAnimationFrame(passo);
   };
   const mostra = x => {
@@ -1960,7 +2013,7 @@ function suspense(){
 function videoHTML(casal){
   if (!videoSuportado()) return '';
   return `<figure class="card-fim video-fim"><figcaption>🎬 Vídeo ${casal ? 'do casal' : 'do grupo'} <span class="small">· ${state.data ? Math.round(cenasVideo(state.data).T.fim + 2.6) : 30} segundos · ${state.compD ? 'foco em ' + ANO_MOMENTO : 'desde o início'}</span></figcaption>
-    <canvas id="vlive" class="rimg" width="540" height="960" role="img" aria-label="Prévia do vídeo ${casal ? 'do casal' : 'do grupo'}: ${ANO_MOMENTO} em números${casal ? ' e um contra o outro' : ' e os destaques'}"></canvas>
+    <div class="vwrap"><canvas id="vlive" class="rimg" width="540" height="960" role="img" aria-label="Prévia do vídeo ${casal ? 'do casal' : 'do grupo'}: ${ANO_MOMENTO} em números${casal ? ' e um contra o outro' : ' e os destaques'}"></canvas><button type="button" class="vpausa" id="vpausa" aria-label="Pausar prévia">❚❚</button></div>
     <p class="small" id="vmsg" role="status" style="margin:0">${premiumLocal() ? 'Um toque: o vídeo fica pronto em segundos e abre as opções do celular (salvar na galeria, WhatsApp, Instagram).' : 'A prévia é grátis. Para salvar e compartilhar o vídeo, é Premium.'}</p>
     <button type="button" class="btn btn-main" id="vger" style="width:100%">${premiumLocal() ? '📤 Salvar ou compartilhar' : '🔒 Salvar ou compartilhar'}</button></figure>`;
 }
@@ -2045,7 +2098,7 @@ function fimTela(semFesta){
       ${(() => { const itens = [videoHTML(casal), fig(3, `🏆 Troféus ${casal ? 'do casal' : 'do grupo'}`, 'desde o início', altTop10()), fig(1, `📸 Resumo ${casal ? 'do casal' : 'do grupo'}`, 'desde o início', altResumo(d)),
           casal ? fig(5, '💞 Nós dois: um contra o outro', so26 ? 'só ' + ANO_MOMENTO : 'desde o início', altCasal(d)) : '', so26 ? fig(4, `🗓️ Nosso ${ANO_MOMENTO}`, 'só ' + ANO_MOMENTO, altNosso2026()) : ''].filter(Boolean);
         return `<p class="carr-dica" aria-hidden="true">👉 Arraste para o lado: são ${itens.length} mídias</p><div class="carr-box"><button type="button" class="carr-lado esq" data-carr="-1" aria-label="Mídia anterior">‹</button><div class="carr" id="carr" role="region" aria-roledescription="carrossel" aria-label="Vídeo e imagens para compartilhar" tabindex="0">${itens.map((x, i) => `<div class="carr-i" role="group" aria-roledescription="item" aria-label="${i + 1} de ${itens.length}">${x}</div>`).join('')}</div><button type="button" class="carr-lado dir" data-carr="1" aria-label="Próxima mídia">›</button></div>
-        <div class="carr-nav"><button type="button" class="carr-seta" data-carr="-1" aria-label="Anterior">‹ Anterior</button><div class="carr-dots">${itens.map((_, i) => `<button type="button" data-dot="${i}" aria-label="Ver item ${i + 1} de ${itens.length}"${i ? '' : ' aria-current="true"'}></button>`).join('')}</div><button type="button" class="carr-seta prox" data-carr="1" aria-label="Próximo">Próximo ›</button></div><p class="carr-n small" aria-hidden="true">1 de ${itens.length}</p>`; })()}
+        <div class="carr-nav"><button type="button" class="carr-seta" data-carr="-1" aria-label="Anterior">‹ Anterior</button><div class="carr-dots">${itens.map((_, i) => `<button type="button" data-dot="${i}" aria-label="Ver item ${i + 1} de ${itens.length}"${i ? '' : ' aria-current="true"'}></button>`).join('')}</div><button type="button" class="carr-seta prox" data-carr="1" aria-label="Próximo">Próximo ›</button></div><p class="carr-n small" aria-hidden="true">1 de ${itens.length}</p><p class="sr-only" id="carrVivo" aria-live="polite"></p>`; })()}
     </section>
     <section class="extras" aria-labelledby="exT">
       <h2 id="exT">Ainda não acabou! 👀</h2>
@@ -2061,7 +2114,7 @@ function fimTela(semFesta){
           <div class="vota" aria-label="Sugestões">${(casal ? ['saudade', 'amor', 'pizza', 'cansado'] : ['cerveja', 'bora', 'trabalho', 'futebol']).map(w => `<button type="button" class="chip" data-sug="${w}">${w}</button>`).join('')}</div>
           <p class="small" id="lvN" style="margin:0">${livreRestam()} de ${LIVRE_MAX} tentativas</p>
           <form id="lvF" class="livre-f"><label for="lvP" class="sr-only">Uma palavra</label><input id="lvP" maxlength="24" autocomplete="off" autocapitalize="none" placeholder="${casal ? 'ex.: saudade' : 'ex.: cerveja'}"><button type="submit" class="btn btn-main">Ver quem ganha</button></form>
-          <p class="err" id="lvE" hidden></p>
+          <p class="err" role="alert" id="lvE" hidden></p>
           <div id="lvR" aria-live="polite"></div>
         </div>
       </div>
@@ -2089,7 +2142,7 @@ function fimTela(semFesta){
     const meio = el => el.offsetLeft + el.offsetWidth/2 - car.clientWidth/2;
     const atual = () => { let m = 0, dm = 1e9; its.forEach((el, k) => { const dd = Math.abs(meio(el) - car.scrollLeft); if (dd < dm){ dm = dd; m = k; } }); return m; };
     const vai = i => { i = Math.max(0, Math.min(its.length - 1, i)); car.scrollTo({left: Math.max(0, meio(its[i])), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); };
-    const marca = () => { const i = atual(); dots.forEach((b, k) => b.toggleAttribute('aria-current', k === i)); if (num) num.textContent = `${i + 1} de ${its.length}`; view.querySelectorAll('[data-carr="-1"]').forEach(b => b.disabled = i === 0); view.querySelectorAll('[data-carr="1"]').forEach(b => b.disabled = i === its.length - 1);
+    const marca = () => { const i = atual(); dots.forEach((b, k) => b.toggleAttribute('aria-current', k === i)); if (num) num.textContent = `${i + 1} de ${its.length}`; const vv = document.getElementById('carrVivo'), cap = its[i]?.querySelector('figcaption')?.textContent.replace(/\s+/g, ' ').trim(); if (vv && car._mexeu) vv.textContent = `${cap || 'Item'}, ${i + 1} de ${its.length}`; car._mexeu = true; view.querySelectorAll('[data-carr="-1"]').forEach(b => b.disabled = i === 0); view.querySelectorAll('[data-carr="1"]').forEach(b => b.disabled = i === its.length - 1);
 };
     car.addEventListener('scroll', () => { clearTimeout(car._t); car._t = setTimeout(marca, 80); }, {passive: true});
     dots.forEach(b => b.onclick = () => vai(+b.dataset.dot));
@@ -3137,13 +3190,19 @@ function frameVideo(c, t, cz){
 }
 // prévia do vídeo tocando na página (metade da resolução, pausa fora da tela e com pop-up aberto)
 function tocaPrevia(cv, d){
-  const c = cv.getContext('2d'), cz = cenasVideo(d); let ini = performance.now(), vis = true, parado = 0;
+  const c = cv.getContext('2d'), cz = cenasVideo(d); let ini = performance.now(), vis = true, parado = 0, desenhou = false;
+  // prévia em loop pode ser pausada (WCAG 2.2.2); com "reduzir movimento" ligado, começa pausada
+  if (state.previaPausada === undefined) state.previaPausada = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const bp = cv.parentNode.querySelector('#vpausa');
+  const marca = () => { if (!bp) return; bp.textContent = state.previaPausada ? '▶' : '❚❚'; bp.setAttribute('aria-label', state.previaPausada ? 'Tocar prévia' : 'Pausar prévia'); };
+  if (bp){ marca(); bp.onclick = () => { state.previaPausada = !state.previaPausada; marca(); }; }
   c.setTransform(cv.width/1080, 0, 0, cv.height/1920, 0, 0);
   try { new IntersectionObserver(es => { vis = es.some(e => e.isIntersecting); }).observe(cv); } catch {}
   const loop = now => {
     if (!cv.isConnected) return;
-    const pausa = !vis || document.hidden || document.querySelector('.patro');
-    if (pausa){ parado = parado || now; } else { if (parado){ ini += now - parado; parado = 0; } frameVideo(c, ((now - ini)/1000) % VID_DUR, cz); }
+    const pausa = !vis || document.hidden || document.querySelector('.patro') || state.previaPausada;
+    if (state.previaPausada && !desenhou){ frameVideo(c, Math.max(1, (cz.T.cat || 4) - 1), cz); desenhou = true; ini = now - (Math.max(1, (cz.T.cat || 4) - 1))*1000; }
+    if (pausa){ parado = parado || now; } else { desenhou = true; if (parado){ ini += now - parado; parado = 0; } frameVideo(c, ((now - ini)/1000) % VID_DUR, cz); }
     requestAnimationFrame(loop);
   };
   document.fonts.ready.then(() => requestAnimationFrame(loop));
@@ -3400,7 +3459,7 @@ const custom = (texto = '') => {
       <p class="ask">Escolha uma categoria pronta</p>
       <div class="prontas">${PRONTAS[state.modo].map((x,i) => `<button type="button" class="pronta" data-p="${i}"><span class="em" aria-hidden="true">${x[0]}</span><b>${x[1]}</b><span class="small">${x[2]}</span></button>`).join('')}</div>
     </div>
-    <p class="err" id="cerr" hidden></p>
+    <p class="err" role="alert" id="cerr" hidden></p>
     <button class="btn btn-ghost" id="back">← Voltar ao destaque</button>
   </section>`;
   $('#back').onclick = final;

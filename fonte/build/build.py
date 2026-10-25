@@ -147,7 +147,7 @@ if '${' in HERO:  # a home tem a versão Grupos e Casais: pré-renderiza a de Gr
     import subprocess
     HERO = subprocess.run(['node', '-e', 'const cs = false, ORIGEM = null, anuncio = () => ""; process.stdout.write(eval("`" + require("fs").readFileSync(0, "utf8") + "`"))'], input=HERO, capture_output=True, text=True, check=True).stdout
     if '${' in HERO: sys.exit('inicio() ainda tem interpolacao')
-rep('<main id="view"></main>', '<main id="view">' + HERO + '</main>')
+rep('<main id="view" tabindex="-1"></main>', '<main id="view" tabindex="-1">' + HERO + '</main>')
 _faq = [(_html.unescape(re.sub('<[^>]+>', '', q)), _html.unescape(re.sub('<[^>]+>', '', a))) for q, a in re.findall(r'<details><summary>(.*?)</summary><p>(.*?)</p></details>', HERO)]
 LD = {"@context": "https://schema.org", "@graph": [
   {"@type": "WebSite", "@id": "https://retrozap.com.br/#site", "name": "Retrozap", "alternateName": ["Retrozap Brasil", "retrozap.com.br"], "url": "https://retrozap.com.br/", "inLanguage": "pt-BR"},
