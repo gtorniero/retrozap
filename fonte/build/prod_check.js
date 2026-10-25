@@ -318,9 +318,11 @@ async function analyze(msgs, prog){
     const dk = new Date(+m.t - 5*3600e3).toDateString(); if (dk !== lastDay){ p.first++; lastDay = dk; } // o dia começa às 5h (quem manda boa-noite 0h10 não vira despertador)
     const dia = `${m.t.getFullYear()}-${String(m.t.getMonth()+1).padStart(2,'0')}-${String(m.t.getDate()).padStart(2,'0')}`; porDia[dia] = (porDia[dia]||0) + 1;
     if (prev && m.t - prev.t > silencio){ silencio = m.t - prev.t; silIni = prev.t; }
-    // Puxa-Assunto: 3h+ de silêncio fora da noite (0h–7h) e alguém responde em até 30 min
-    if (prev && m.t - prev.t >= 3*3600e3){ const noite = m.t.toDateString() !== prev.t.toDateString() || prev.t.getHours() < 7 || m.t.getHours() < 7, nx = msgs[q+1];
-      if (!noite && nx && nx.a !== m.a && nx.t - m.t <= 30*60e3) p.revive++; get(prev.a).kill++; }
+    // Puxa-Assunto: quem manda a 1ª mensagem depois de 6h+ de silêncio (inclusive de um dia para o outro),
+    // fora da madrugada (a partir das 7h), e alguém responde em até 2h (calibrado em 25/10 com grupos reais)
+    if (prev && m.t - prev.t >= 6*3600e3 && m.t.getHours() >= 7){
+      for (let j = q + 1; j < msgs.length && j <= q + 40 && msgs[j].t - m.t <= 2*3600e3; j++) if (msgs[j].a !== m.a){ p.revive++; break; } }
+    if (prev && m.t - prev.t >= 3*3600e3) get(prev.a).kill++;
     prev = m;
   }
   for (const p of Object.values(P)) p.naoTexto = p.audio + p.sticker + p.photo; // áudio + figurinha + foto/vídeo/mídia
@@ -353,7 +355,7 @@ const AW = [
  {m:['amigos','familia'],e:'🦉',n:'Coruja da Madrugada',crit:'Mais mensagens entre 0h e 5h',k:'night',u:'mensagens de madrugada',mech:'palpite',p:'{v} mensagens entre 0h e 5h. {w}, vai dormir.'},
  {m:['amigos'],e:'🙅',n:'Rei do Furo',crit:'"Não vou conseguir", "foi mal", "fica pra próxima"',k:'furo',u:'desculpas',mech:'palpite',p:'{v} furos registrados em cartório. Nunca foi o trânsito, {w}.'},
  {m:['amigos'],e:'🍻',n:'Organizador do Rolê',crit:'"Bora", "quem vai", "vamos marcar"',k:'org',u:'convocações',mech:'podio',p:'{w} convocou o grupo {v} vezes. Sem essa pessoa, ninguém saía de casa.'},
- {m:['amigos','familia'],e:'🔥',n:'Puxa-Assunto',crit:'Reabriu o grupo depois de 3h+ de silêncio',k:'revive',u:'ressurreições',mech:'palpite',p:'{w} ressuscitou o grupo {v} vezes. Desfibrilador humano.'},
+ {m:['amigos','familia'],e:'🔥',n:'Puxa-Assunto',crit:'Manda a primeira mensagem depois de 6h+ de grupo parado (e alguém responde)',k:'revive',u:'ressurreições',mech:'palpite',p:'{w} ressuscitou o grupo {v} vezes. Desfibrilador humano.'},
  {m:['amigos'],e:'🪦',n:'Mata-Conversa',crit:'Mensagem seguida de 3h+ de silêncio',k:'kill',u:'conversas encerradas',mech:'raspadinha',p:'{v} conversas morreram depois de uma mensagem de {w}. Sem ressentimentos. Ou com.'},
  {m:['amigos'],e:'👻',n:'O Fantasma',crit:'Menos mensagens no grupo',k:'count',low:true,u:'mensagens',mech:'raspadinha',p:'Só {v} mensagens. {w} lê tudo e não fala nada. Respeitamos o mistério.'},
  {m:['amigos'],e:'💌',n:'Coração Mole',crit:'Mensagens de carinho: "amo vocês", "saudade de vocês", "vocês são demais", ❤️ 🥰',k:'mole',min:5,u:'mensagens de carinho',mech:'palpite',p:'{v} mensagens de carinho. Por trás da zoeira, {w} é puro sentimento.'},
