@@ -53,7 +53,7 @@ const MODOS = {
   trabalho:{n:'Trabalho',e:'💼',c:'#2EC4F1'},
   comunidade:{n:'Comunidade',e:'🏘️',c:'#A98BFF'}
 };
-const state = { arquivo:null, grupo:'', modo:'amigos', how:'iphone', data:null, awards:[], idx:0, sample:false };
+const state = { arquivo:null, grupo:'', modo:'amigos', how: /Android/i.test(navigator.userAgent) ? 'android' : 'iphone', data:null, awards:[], idx:0, sample:false };
 function anchor(){} // sem anúncios
 // botão Voltar: pilha das telas visitadas
 const PILHA = []; let VOLTANDO = false;
@@ -848,68 +848,61 @@ function home(){
   <section class="screen">
     <p class="eyebrow">Passo a passo</p>
     <h1 style="font-size:clamp(30px,8vw,40px)">${state.modo === 'casal' ? 'Traga a conversa de vocês dois 💕' : 'Traga a conversa do seu grupo'}</h1>
-    <div class="panel">
-      <p class="ask" id="passo1">1. É de um grupo ou de um casal?</p>
-      <div class="tipo-conversa" role="group" aria-labelledby="passo1">
-        <button type="button" data-tipo="grupo" aria-pressed="${state.modo !== 'casal'}">🏆 Grupo</button>
-        <button type="button" data-tipo="casal" aria-pressed="${state.modo === 'casal'}">💘 Casal</button>
-      </div>
+    <div class="tipo-conversa" role="group" aria-label="É de um grupo ou de um casal?">
+      <button type="button" data-tipo="grupo" aria-pressed="${state.modo !== 'casal'}">🏆 Grupo</button>
+      <button type="button" data-tipo="casal" aria-pressed="${state.modo === 'casal'}">💘 Casal</button>
     </div>
-    <div class="panel">
-      <p class="ask">2. Exporte a conversa do WhatsApp</p>
-      <div class="tabs" role="tablist">
-        <button role="tab" id="tab-iphone" aria-selected="${state.how==='iphone'}" data-h="iphone">iPhone</button>
-        <button role="tab" id="tab-android" aria-selected="${state.how==='android'}" data-h="android">Android</button>
-      </div>
+    <label class="drop${state.arquivo ? ' ok' : ''}${state.voltou ? ' voltou' : ''}" for="file">
+      <span class="big" aria-hidden="true">${state.arquivo ? '✅' : '📂'}</span>
+      <b id="dropT">${state.voltou ? 'Agora escolha o arquivo que você salvou' : 'Já exportou? Escolha o arquivo da conversa'}</b>
+      <span class="small" id="fname">${state.arquivo ? 'Arquivo escolhido: ' + esc(state.arquivo.name) : state.how === 'iphone' ? 'No iPhone ele fica em <b>Arquivos › Recentes</b>, com o nome "WhatsApp Chat - ….zip"' : 'No Android ele fica em <b>Downloads</b> (ou no Drive), com o nome "Conversa do WhatsApp com ….txt"'}</span>
+      <input type="file" id="file">
+    </label>
+    <p class="err" role="alert" id="err" hidden></p>
+    <div class="badge priv"><span aria-hidden="true">🔒</span><span><b>Suas mensagens não saem do seu celular.</b> Tudo é analisado aqui no navegador. A gente não recebe, não lê e não guarda nenhuma mensagem. <a href="/privacidade" style="color:var(--areia)">Entenda</a></span></div>
+    <div class="panel" id="exportar">
+      <p class="ask">Ainda não exportou? É rapidinho:</p>
       ${tutorialHTML()}
       ${state.how==='iphone' ? `<ol class="how">
         <li>${state.modo === 'casal' ? 'Abra a conversa e toque no <b>nome da pessoa</b> lá em cima.' : 'Abra o grupo e toque no <b>nome do grupo</b> lá em cima.'}</li>
         <li>Role até o fim e toque em <b>Exportar conversa</b>.</li>
         <li>Escolha <b>Sem mídia</b>.</li>
-        <li>Toque em <b>Salvar em Arquivos</b>.</li></ol>`
+        <li>Toque em <b>Salvar em Arquivos</b> e depois volte aqui.</li></ol>`
       : `<ol class="how">
         <li>Abra ${state.modo === 'casal' ? 'a conversa' : 'o grupo'} e toque nos <b>três pontinhos ⋮</b>.</li>
         <li>Toque em <b>Mais</b> e depois em <b>Exportar conversa</b>.</li>
         <li>Escolha <b>Sem mídia</b>.</li>
-        <li>Salve em <b>Downloads</b> ou no Drive.</li></ol>`}
-      <a class="btn btn-wa" href="${linkAbreWhats()}" style="text-decoration:none"><i class="ic-wa" aria-hidden="true"></i>Abrir o WhatsApp para exportar</a>
+        <li>Salve em <b>Downloads</b> (ou no Drive) e depois volte aqui.</li></ol>`}
+      <a class="btn btn-wa" id="abreWa" href="${linkAbreWhats()}" style="text-decoration:none"><i class="ic-wa" aria-hidden="true"></i>Abrir o WhatsApp para exportar</a>
+      <button type="button" class="lnk" id="outroOs" style="align-self:center">${state.how === 'iphone' ? 'Usa Android? Ver o passo a passo' : 'Usa iPhone? Ver o passo a passo'}</button>
     </div>
-    <label class="drop${state.arquivo ? ' ok' : ''}" for="file">
-      <span class="big" aria-hidden="true">${state.arquivo ? '✅' : '📲'}</span>
-      <b>3. Toque para escolher o arquivo</b>
-      <span class="small" id="fname">${state.arquivo ? 'Arquivo escolhido: ' + esc(state.arquivo.name) : 'Aceita o .zip ou o .txt que o WhatsApp gera'}</span>
-      <input type="file" id="file">
-    </label>
-    <div class="badge priv"><span aria-hidden="true">🔒</span><span><b>Suas mensagens não saem do seu celular.</b> Tudo é analisado aqui no navegador. A gente não recebe, não lê e não guarda nenhuma mensagem. <a href="/privacidade" style="color:var(--areia)">Entenda</a></span></div>
-    ${state.modo === 'casal' ? '' : `<div class="panel">
-      <p class="ask">4. Que tipo de grupo é?</p>
-      <div class="modes" role="group" aria-label="Tipo de grupo">
-        ${Object.entries(MODOS).filter(([k]) => k !== 'casal').map(([k,m]) => `<button class="mode" data-m="${k}" style="--c:${m.c}" aria-pressed="${state.modo===k}"><span class="em">${m.e}</span>${m.n}</button>`).join('')}
-      </div>
-    </div>`}
-    <button class="btn btn-main" id="start"${state.arquivo ? '' : ' disabled'}>${state.modo === 'casal' ? '💕 Fazer a retrospectiva do casal' : '🏆 Fazer a retrospectiva'}</button>
-    <p class="err" role="alert" id="err" hidden></p>
     <div class="btn-row"><button class="btn btn-ghost" id="demo">${state.modo === 'casal' ? '👀 Ver com um casal de exemplo' : '👀 Ver com um grupo de exemplo'}</button></div>
     <p class="small">O grupo de exemplo é inventado, para você ver como funciona antes de usar o seu.</p>
     <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a></nav>
     <p class="small" style="text-align:center;margin:0">© 2026 Retrozap · Beyond the Work Ideas · CNPJ 69.746.447/0001-00</p>
   </section>`;
-  view.querySelectorAll('.mode').forEach(b => b.onclick = () => { const y = scrollY, k = b.dataset.m; evento('modo_escolhido', {modo: k}); setModo(k); home(); scrollTo(0, y); view.querySelector(`[data-m="${k}"]`)?.focus({preventScroll:true}); });
-  view.querySelectorAll('[data-h]').forEach(b => b.onclick = () => { const y = scrollY, k = b.dataset.h; state.how = k; home(); scrollTo(0, y); view.querySelector(`[data-h="${k}"]`)?.focus({preventScroll:true}); });
+  $('#outroOs').onclick = () => { const y = scrollY; state.how = state.how === 'iphone' ? 'android' : 'iphone'; home(); scrollTo(0, y); $('#outroOs')?.focus({preventScroll:true}); };
+  // tocou em "Abrir o WhatsApp": quando voltar para o site, a tela já pede o arquivo
+  $('#abreWa').addEventListener('click', () => { state.esperandoWhats = true; try { if (typeof evento === 'function') evento('abriu_whatsapp'); } catch {} });
+  state.voltou = false;
   $('#file').onchange = e => {
     const f = e.target.files[0]; if (!f) return;
-    state.arquivo = f; state.bytes = null;
-    // Android: lê já na escolha, porque o acesso ao arquivo pode expirar depois
-    f.arrayBuffer().then(b => { if (state.arquivo === f) state.bytes = b; }).catch(() => {}); const lb = view.querySelector('.drop'); lb.classList.add('ok'); lb.querySelector('.big').textContent = '✅';
-    $('#fname').textContent = 'Arquivo escolhido: ' + f.name; $('#start').disabled = false; $('#err').hidden = true;
-    (view.querySelector('.modes') || $('#start')).scrollIntoView({behavior:'smooth', block:'center'});
+    state.arquivo = f; state.bytes = null; $('#err').hidden = true;
+    const lb = view.querySelector('.drop'); lb.classList.add('ok'); lb.querySelector('.big').textContent = '✅'; $('#fname').textContent = 'Arquivo escolhido: ' + f.name;
+    try { if (typeof evento === 'function') evento('arquivo_escolhido'); } catch {}
+    readFile(f); // começa na hora: sem botão extra
   };
-  $('#start').onclick = () => state.arquivo && lembrete(() => readFile(state.arquivo));
   view.querySelectorAll('[data-tipo]').forEach(b => b.onclick = () => { const k = b.dataset.tipo, y = scrollY; setModo(k === 'casal' ? 'casal' : (state.ultimoGrupo || 'amigos')); home(); scrollTo(0, y); view.querySelector(`[data-tipo="${k}"]`)?.focus({preventScroll: true}); });
   tutorial(state.how);
   $('#demo').onclick = () => { DUR = {}; run(state.modo === 'casal' ? demoCasal() : demoChat(), true); };
   window.scrollTo(0,0);
 }
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden || !state.esperandoWhats || TELA_ATUAL !== 'comecar' || state.arquivo) return;
+  state.esperandoWhats = false; state.voltou = true; home();
+  const d = view.querySelector('.drop'); d?.scrollIntoView({block: 'center'}); d?.focus?.();
+  try { if (typeof evento === 'function') evento('voltou_do_whatsapp'); } catch {}
+});
 // duração de cada áudio .opus do zip (só exports "com mídia"): lê a última página Ogg do arquivo
 async function duracoes(zip){
   const out = {}, lista = Object.values(zip.files).filter(z => /\.(?:opus|ogg)$/i.test(z.name)).slice(0, 5000);
@@ -1058,6 +1051,10 @@ function roster(){
     <h1 style="font-size:36px">${dentro} pessoas na cerimônia</h1>
     <div class="panel"><label class="ask" for="gn">${state.modo === 'casal' ? 'Nome do casal' : 'Nome do grupo'} <span class="small">(aparece nos cards)</span></label>
       <input id="gn" type="text" maxlength="44" value="${esc(state.grupo)}" placeholder="Ex.: Família Silva" autocomplete="off" style="width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid var(--linha);background:var(--noite);color:var(--areia);font:inherit;font-size:17px"></div>
+    ${state.modo === 'casal' ? '' : `<div class="panel"><p class="ask" id="tipoG">Que tipo de grupo é? <span class="small">(muda as categorias)</span></p>
+      <div class="modes" role="group" aria-labelledby="tipoG">
+        ${Object.entries(MODOS).filter(([k]) => k !== 'casal').map(([k,m]) => `<button type="button" class="mode" data-m="${k}" style="--c:${m.c}" aria-pressed="${state.modo===k}"><span class="em">${m.e}</span>${m.n}</button>`).join('')}
+      </div></div>`}
     ${todos.length > 12 ? `<button class="btn btn-main" id="go2" type="button" style="width:100%">Tudo certo, começar →</button><p class="small" style="margin:-4px 0 0;text-align:center">Ou revise a turma abaixo antes.</p>` : ''}
     ${numeros.length ? `${numeros.length > 4 ? `<details class="nums" id="numsD"${state.numAberto ? ' open' : ''}><summary><b>📞 +${numeros.length} números sem nome</b><span class="small">Entram na cerimônia como estão. Toque para revisar ou tirar.</span></summary>
     <div class="btn-row"><button type="button" class="btn btn-ghost mini" id="numFora">Tirar todos os números da cerimônia</button></div>` : '<h2 style="font-size:24px">📞 Números desconhecidos</h2>'}
@@ -1109,6 +1106,7 @@ function roster(){
     <button class="btn btn-main" id="go">Tudo certo, começar →</button>
   </section>`;
   const redraw = () => { const y = scrollY; roster(); scrollTo(0, y); };
+  view.querySelectorAll('.mode').forEach(b => b.onclick = () => { const k = b.dataset.m; evento('modo_escolhido', {modo: k}); setModo(k); redraw(); view.querySelector(`[data-m="${k}"]`)?.focus({preventScroll:true}); });
   $('#numsD')?.addEventListener('toggle', e => { state.numAberto = e.target.open; });
   $('#numFora')?.addEventListener('click', () => { for (const x of numeros) if (!state.alias[x.n]) state.hidden.add(x.n); redraw(); });
   $('#go2')?.addEventListener('click', () => $('#go').click());
