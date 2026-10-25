@@ -337,6 +337,8 @@ html.casal .vota .chip[aria-pressed="true"]{color:#fff}
 .nums>summary b{font-size:18px}
 .nums>summary::after{content:'Ver números ▾';font-size:14px;font-weight:700;color:var(--manga);margin-top:4px}
 .nums[open]>summary::after{content:'Fechar ▴'}
+#todosD>summary::after{content:'Ver lista ▾'}
+#todosD[open]>summary::after{content:'Fechar ▴'}
 .pwc{display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.25;text-align:center}
 .pwc small{font-size:13px;font-weight:600;opacity:.8;white-space:nowrap}
 .pbloco{display:flex;flex-direction:column;gap:14px;width:100%;background:var(--acai);border:1.5px solid var(--linha);border-radius:22px;padding:20px 18px}
@@ -415,6 +417,8 @@ html.casal .esc-g{background:#FFF;color:#5A4A1A;border-color:#F2D58A}
 html.casal .esc-c:not([aria-pressed="true"]){color:#9B1648}
 .vid{position:relative;width:100%}
 .vid video{display:block;width:100%;border-radius:18px}
+.perso.amostra .corte{max-height:150px;overflow:hidden;-webkit-mask-image:linear-gradient(to bottom,#000 35%,transparent 100%);mask-image:linear-gradient(to bottom,#000 35%,transparent 100%);user-select:none;pointer-events:none}
+.perso-c{display:flex;flex-direction:column;gap:10px}
 .perso.trancado,.d26b.trancado{position:relative;width:100%}
 .perso.trancado h3,.perso.trancado .bio,.perso.trancado .fala,.perso.trancado ul,.d26b.trancado .dest{filter:blur(7px);user-select:none;pointer-events:none}
 .destrava{position:absolute;left:50%;top:55%;transform:translate(-50%,-50%);z-index:2;width:auto;white-space:nowrap;padding:12px 18px;font-size:15px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
@@ -1572,6 +1576,41 @@ function roster(){
   const mmaa = t => t.toLocaleDateString('pt-BR', {month:'short', year:'numeric'});
   const dentro = todos.filter(r => !state.hidden.has(r.n) && !state.alias[r.n]).length;
   const sug = {}; for (const x of numeros) sug[x.n] = sugerir(x, pessoas, raw);
+  // só aparece de cara quem precisa de atenção: sumido, saiu, nome parecido com outro, já juntado ou fora da cerimônia
+  const ativos = pessoas.filter(r => !state.alias[r.n]);
+  const primeiro = n => norm(limpaTxt(n)).split(/[^\p{L}]+/u).find(w => w.length >= 3) || '';
+  const cont = {}; for (const r of ativos){ const p = primeiro(r.n); if (p) cont[p] = (cont[p] || 0) + 1; }
+  const parecido = r => cont[primeiro(r.n)] > 1 || ativos.some(x => x !== r && norm(x.n).length >= 4 && norm(r.n).includes(norm(x.n)));
+  const atencao = r => state.hidden.has(r.n) || state.left.has(r.n) || meses(r) >= 12 || parecido(r) || pessoas.some(x => state.alias[x.n] === r.n) || state.aberto === r.n;
+  const aten = state.modo === 'casal' ? ativos : ativos.filter(atencao), resto = state.modo === 'casal' ? [] : ativos.filter(r => !atencao(r));
+  const membro = r => {
+      const i = pessoas.indexOf(r), off = state.hidden.has(r.n), b = [];
+      if (state.left.has(r.n)) b.push('🚪 Saiu do grupo');
+      { const par = ativos.find(x => x !== r && (primeiro(x.n) && primeiro(x.n) === primeiro(r.n) || (norm(x.n).length >= 4 && (norm(r.n).includes(norm(x.n)) || norm(x.n).includes(norm(r.n)))))); if (par) b.push('👯 Nome parecido com ' + esc(par.n)); }
+      const sumido = meses(r) >= 12;
+      const juntos = pessoas.filter(x => state.alias[x.n] === r.n), nums = numeros.filter(x => state.alias[x.n] === r.n);
+      const total = r.c + juntos.reduce((s,x) => s + x.c, 0) + nums.reduce((s,x) => s + x.c, 0);
+      const aberto = state.aberto === r.n;
+      const pal = n => norm(n).split(/[^\p{L}]+/u).filter(w => w.length >= 3), meu = pal(r.n);
+      const depois = x => x.first > r.last ? 1 : 0;
+      const opcoes = pessoas.filter(x => x.n !== r.n && !state.alias[x.n]).sort((x, y) => (pal(y.n).some(w => meu.includes(w)) - pal(x.n).some(w => meu.includes(w))) || (depois(y) - depois(x)) || x.n.localeCompare(y.n));
+      return `<div class="mem${off ? ' off' : ''}${sumido && !off ? ' alerta' : ''}">
+        <div class="mem-line">
+          <input type="checkbox" id="in-${i}" data-in="${i}" ${off ? '' : 'checked'} aria-label="Incluir ${esc(r.n)} na cerimônia">
+          <div class="mem-name">
+            <b>${esc(r.n)}</b><span class="small">${fmt(total)} mensagens${nums.length ? ' + número antigo' : ''} · última em ${mmaa(r.last)}</span>
+            ${b.length ? `<span class="chips">${b.map(x => `<span class="chip warn">${x}</span>`).join('')}</span>` : ''}
+            ${sumido ? `<span class="sumido">⚠️ <b>Sem falar há ${meses(r)} meses.</b> ${off ? 'Fora da cerimônia.' : 'Trocou de número ou saiu do grupo?'}
+              ${off ? '' : `<span class="sumido-bts"><button type="button" class="btn btn-main mini" data-open="${i}" aria-expanded="${aberto}">${aberto ? 'Cancelar' : '🔗 Trocou de número (duplicado)'}</button><button type="button" class="btn btn-ghost mini" data-tira="${i}">🚪 Saiu: tirar da cerimônia</button></span>`}</span>` : ''}
+            ${sumido && !off ? '' : `<button type="button" class="lnk dup" data-open="${i}" aria-expanded="${aberto}">${aberto ? 'Cancelar' : 'Contato duplicado?'}</button>`}
+          </div>
+        </div>
+        ${juntos.length ? `<p class="small">🔗 Inclui ${juntos.map(j => esc(j.n)).join(', ')} · <button type="button" class="lnk" data-sep="${i}">Separar</button></p>` : ''}
+        ${aberto ? `<div class="merge">
+          <label class="small" for="mg-${i}">${esc(r.n)} é a mesma pessoa que... <span class="small">(junta na hora e fica o nome com mais mensagens)</span></label>
+          <select id="mg-${i}" data-mg="${i}"><option value="">Escolher pessoa</option>${opcoes.map(x => `<option>${esc(x.n)}</option>`).join('')}</select>
+        </div>` : ''}
+      </div>`; };
   view.innerHTML = `<section class="screen">
     ${state.sample ? `<span class="sample">${state.modo === 'casal' ? 'Casal de exemplo' : 'Grupo de exemplo'}</span>` : ''}
     <p class="eyebrow">Antes de começar · ${state.modo === 'casal' ? 'Confira os nomes' : 'Confira a turma'}</p>
@@ -1598,41 +1637,17 @@ function roster(){
           <label class="small" for="pick-${i}">${s ? 'Não é? Escolha quem é:' : 'Se souber, escolha quem é:'}</label>
           <select id="pick-${i}" data-pick="${i}"><option value="">Escolher pessoa</option>${pessoas.map(p => `<option>${esc(p.n)}</option>`).join('')}</select>`}
       </div>`; }).join('')}</div>${numeros.length > 4 ? '</details>' : ''}` : ''}
-    <h2 style="font-size:24px">${state.modo === 'casal' ? '💘 Vocês dois' : '👥 Integrantes'}</h2>
-    <p class="small">${state.modo === 'casal' ? 'Se a mesma pessoa aparece duas vezes (trocou de número), toque em "Contato duplicado?".' : 'Desmarque quem não está mais no grupo. Se alguém aparece duas vezes, toque em "Contato duplicado?".'}</p>
+    <h2 style="font-size:24px">${state.modo === 'casal' ? '💘 Vocês dois' : '👀 Vale conferir'}</h2>
+    <p class="small">${state.modo === 'casal' ? 'Se a mesma pessoa aparece duas vezes (trocou de número), toque em "Contato duplicado?".' : 'Mostramos só quem pode precisar de ajuste: quem sumiu, quem saiu e nomes parecidos (pode ser a mesma pessoa com outro número). O resto já está certo.'}</p>
     <div class="btn-row"${state.modo === 'casal' ? ' hidden' : ''}><button class="btn btn-ghost mini" id="inat">💤 Tirar quem não fala há 12+ meses</button><button class="btn btn-ghost mini" id="todos">Incluir todo mundo</button></div>
-    <div class="mems">${pessoas.filter(r => !state.alias[r.n]).map(r => {
-      const i = pessoas.indexOf(r), off = state.hidden.has(r.n), b = [];
-      if (state.left.has(r.n)) b.push('🚪 Saiu do grupo');
-      const sumido = meses(r) >= 12;
-      const juntos = pessoas.filter(x => state.alias[x.n] === r.n), nums = numeros.filter(x => state.alias[x.n] === r.n);
-      const total = r.c + juntos.reduce((s,x) => s + x.c, 0) + nums.reduce((s,x) => s + x.c, 0);
-      const aberto = state.aberto === r.n;
-      const pal = n => norm(n).split(/[^\p{L}]+/u).filter(w => w.length >= 3), meu = pal(r.n);
-      const depois = x => x.first > r.last ? 1 : 0;
-      const opcoes = pessoas.filter(x => x.n !== r.n && !state.alias[x.n]).sort((x, y) => (pal(y.n).some(w => meu.includes(w)) - pal(x.n).some(w => meu.includes(w))) || (depois(y) - depois(x)) || x.n.localeCompare(y.n));
-      return `<div class="mem${off ? ' off' : ''}${sumido && !off ? ' alerta' : ''}">
-        <div class="mem-line">
-          <input type="checkbox" id="in-${i}" data-in="${i}" ${off ? '' : 'checked'} aria-label="Incluir ${esc(r.n)} na cerimônia">
-          <div class="mem-name">
-            <b>${esc(r.n)}</b><span class="small">${fmt(total)} mensagens${nums.length ? ' + número antigo' : ''} · última em ${mmaa(r.last)}</span>
-            ${b.length ? `<span class="chips">${b.map(x => `<span class="chip warn">${x}</span>`).join('')}</span>` : ''}
-            ${sumido ? `<span class="sumido">⚠️ <b>Sem falar há ${meses(r)} meses.</b> ${off ? 'Fora da cerimônia.' : 'Trocou de número ou saiu do grupo?'}
-              ${off ? '' : `<span class="sumido-bts"><button type="button" class="btn btn-main mini" data-open="${i}" aria-expanded="${aberto}">${aberto ? 'Cancelar' : '🔗 Trocou de número (duplicado)'}</button><button type="button" class="btn btn-ghost mini" data-tira="${i}">🚪 Saiu: tirar da cerimônia</button></span>`}</span>` : ''}
-            ${sumido && !off ? '' : `<button type="button" class="lnk dup" data-open="${i}" aria-expanded="${aberto}">${aberto ? 'Cancelar' : 'Contato duplicado?'}</button>`}
-          </div>
-        </div>
-        ${juntos.length ? `<p class="small">🔗 Inclui ${juntos.map(j => esc(j.n)).join(', ')} · <button type="button" class="lnk" data-sep="${i}">Separar</button></p>` : ''}
-        ${aberto ? `<div class="merge">
-          <label class="small" for="mg-${i}">${esc(r.n)} é a mesma pessoa que... <span class="small">(junta na hora e fica o nome com mais mensagens)</span></label>
-          <select id="mg-${i}" data-mg="${i}"><option value="">Escolher pessoa</option>${opcoes.map(x => `<option>${esc(x.n)}</option>`).join('')}</select>
-        </div>` : ''}
-      </div>`; }).join('')}</div>
+    ${aten.length ? `<div class="mems">${aten.map(membro).join('')}</div>` : `<p class="small" style="margin:0">✅ Nada estranho por aqui: ninguém sumido, sem nomes repetidos.</p>`}
+    ${resto.length ? `<details class="nums" id="todosD"${state.todosAberto ? ' open' : ''}><summary><b>👥 Ver ${aten.length ? 'os outros ' : 'todos os '}${resto.length} integrantes</b><span class="small">Tudo certo com eles. Toque se quiser conferir.</span></summary><div class="mems">${resto.map(membro).join('')}</div></details>` : ''}
     <label class="optin"><input type="checkbox" id="cmp"${state.comparar === false ? '' : ' checked'}><span>📊 ${state.modo === 'casal' ? 'Comparar com outros casais do Retrozap' : 'Comparar meu grupo com outros grupos do Retrozap'}<span class="small">Vem marcado e você pode desmarcar. Só sobem números do ${state.modo === 'casal' ? 'casal' : 'grupo inteiro'}, como o total de mensagens. Nenhuma mensagem, nome ou telefone sai do celular.</span></span></label>
     <p class="err" role="alert" id="rerr" hidden></p>
     <button class="btn btn-main" id="go">Tudo certo, começar →</button>
   </section>`;
   const redraw = () => { const y = scrollY; roster(); scrollTo(0, y); };
+  $('#todosD')?.addEventListener('toggle', e => { state.todosAberto = e.target.open; });
   view.querySelectorAll('.mode').forEach(b => b.onclick = () => { const k = b.dataset.m; setModo(k); redraw(); view.querySelector(`[data-m="${k}"]`)?.focus({preventScroll:true}); });
   $('#numsD')?.addEventListener('toggle', e => { state.numAberto = e.target.open; });
   $('#numFora')?.addEventListener('click', () => { for (const x of numeros) if (!state.alias[x.n]) state.hidden.add(x.n); redraw(); });
@@ -2155,12 +2170,19 @@ function fimTela(semFesta){
       <div class="panel" style="width:100%;text-align:left">
         <h3 id="psT" style="font-size:24px;margin:0;text-align:center">🎭 ${casal ? 'Quem é quem' : 'Os personagens do grupo'}${livre ? '' : ' <span class="tag-periodo">🔒 Premium</span>'}</h3>
         <p class="small" style="margin:0;text-align:center">${casal ? 'O jeito de cada um nessa relação.' : 'Os 5 que mais movimentam o grupo, e o que faz cada um ser quem é.'}</p>
-        <div class="persos">${persos.map((x, i) => { const tr = i >= 1 && !livre; return `<div class="perso${tr ? ' trancado' : ''}">
-          <div class="ph"><span class="em" aria-hidden="true">${x.e}</span><div><span class="small">${esc(x.nome)}</span><h3${tr ? ' aria-hidden="true"' : ''}>${x.titulo}</h3></div></div>
-          ${tr ? '<button type="button" class="btn btn-main destrava" data-unlock>🔓 Ver todos os personagens</button>' : ''}
-          <p class="bio"${tr ? ' aria-hidden="true"' : ''}>${esc(casalTxt(x.texto))}</p>
-          ${x.fala.length || x.emojis.length ? `<div class="fala"${tr ? ' aria-hidden="true"' : ''}><span class="rot">Jeito de falar</span><div class="chips">${x.fala.map(f => `<span class="chip">${esc(f)}</span>`).join('')}${x.emojis.length ? `<span class="chip emo">${x.emojis.join(' ')}</span>` : ''}</div></div>` : ''}
-          <ul${tr ? ' aria-hidden="true"' : ''}>${x.fatos.map(f => `<li>${esc(casalTxt(f))}</li>`).join('')}</ul></div>`; }).join('')}</div>
+        ${(() => { const card = (x, corte) => `<div class="perso${corte ? ' amostra' : ''}">
+          <div class="ph"><span class="em" aria-hidden="true">${x.e}</span><div><span class="small">${esc(x.nome)}</span><h3>${x.titulo}</h3></div></div>
+          <div class="${corte ? 'corte' : 'perso-c'}"${corte ? ' aria-hidden="true"' : ''}>
+          <p class="bio">${esc(casalTxt(x.texto))}</p>
+          ${x.fala.length || x.emojis.length ? `<div class="fala"><span class="rot">Jeito de falar</span><div class="chips">${x.fala.map(f => `<span class="chip">${esc(f)}</span>`).join('')}${x.emojis.length ? `<span class="chip emo">${x.emojis.join(' ')}</span>` : ''}</div></div>` : ''}
+          <ul>${x.fatos.map(f => `<li>${esc(casalTxt(f))}</li>`).join('')}</ul></div></div>`;
+          if (livre) return `<div class="persos">${persos.map(x => card(x, false)).join('')}</div>`;
+          // grátis: só o primeiro, com a descrição sumindo pela metade; o resto fica por trás de um botão (sem rolagem infinita)
+          const resto = persos.slice(1).map(x => limpaTxt(x.nome).split(' ')[0]);
+          return `<div class="persos">${persos[0] ? card(persos[0], true) : ''}</div>
+            <p class="sr-only">${persos[0] ? esc(casalTxt(persos[0].texto)) : ''}</p>
+            <button type="button" class="btn btn-main" id="persoLock" style="width:100%">🔓 Ver ${casal ? 'os personagens completos' : `todos os ${persos.length} personagens`}</button>
+            ${resto.length ? `<p class="small" style="margin:0;text-align:center">Ainda tem ${juntar(resto.map(esc))} esperando o seu título.</p>` : ''}`; })()}
       </div>
     </section>
     ${anuncio('fim')}
@@ -2198,7 +2220,7 @@ function fimTela(semFesta){
   liga(5, () => drawCasal(d), 'retrozap-nos-dois.png', casal ? altCasal(d) : '');
   const destrava = tipo => () => paywall(() => { const y = scrollY; fimTela(true); scrollTo(0, y); }, tipo);
   $('#livreLock')?.addEventListener('click', destrava('livre'));
-  view.querySelectorAll('.perso.trancado').forEach(cd => { cd.style.cursor = 'pointer'; cd.onclick = destrava('personagens'); });
+  $('#persoLock')?.addEventListener('click', destrava('personagens'));
   // cobrança desligada ou grupo de exemplo: libera os extras sem pagar
   if (!livre) premiumLiberado().then(ok => { if (ok && !state.planoTeste && $('#concluir')){ state.premOk = true; const y = scrollY; fimTela(true); scrollTo(0, y); } });
   view.querySelectorAll('[data-sug]').forEach(bt => bt.onclick = () => { $('#lvP').value = bt.dataset.sug; $('#lvF').requestSubmit(); });
