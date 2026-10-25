@@ -1479,16 +1479,8 @@ function home(){
       <button type="button" data-tipo="grupo" aria-pressed="${state.modo !== 'casal'}">🏆 Grupo</button>
       <button type="button" data-tipo="casal" aria-pressed="${state.modo === 'casal'}">💘 Casal</button>
     </div>
-    <label class="drop${state.arquivo ? ' ok' : ''}${state.voltou ? ' voltou' : ''}" for="file">
-      <span class="big" aria-hidden="true">${state.arquivo ? '✅' : '📂'}</span>
-      <b id="dropT">${state.voltou ? 'Agora escolha o arquivo que você salvou' : 'Já exportou? Escolha o arquivo da conversa'}</b>
-      <span class="small" id="fname">${state.arquivo ? 'Arquivo escolhido: ' + esc(state.arquivo.name) : state.how === 'iphone' ? 'No iPhone ele fica em <b>Arquivos › Recentes</b>, com o nome "WhatsApp Chat - ….zip"' : 'No Android ele fica em <b>Downloads</b> (ou no Drive), com o nome "Conversa do WhatsApp com ….txt"'}</span>
-      <input type="file" id="file">
-    </label>
-    <p class="err" role="alert" id="err" hidden></p>
-    <div class="badge priv"><span aria-hidden="true">🔒</span><span><b>Suas mensagens não saem do seu celular.</b> Tudo é analisado aqui no navegador. A gente não recebe, não lê e não guarda nenhuma mensagem. <a href="/privacidade" style="color:var(--areia)">Entenda</a></span></div>
     <div class="panel" id="exportar">
-      <p class="ask">Ainda não exportou? É rapidinho:</p>
+      <p class="ask">1. Exporte a conversa do WhatsApp</p>
       ${tutorialHTML()}
       ${state.how==='iphone' ? `<ol class="how">
         <li>${state.modo === 'casal' ? 'Abra a conversa e toque no <b>nome da pessoa</b> lá em cima.' : 'Abra o grupo e toque no <b>nome do grupo</b> lá em cima.'}</li>
@@ -1503,6 +1495,13 @@ function home(){
       <a class="btn btn-wa" id="abreWa" href="${linkAbreWhats()}" style="text-decoration:none"><i class="ic-wa" aria-hidden="true"></i>Abrir o WhatsApp para exportar</a>
       <button type="button" class="lnk" id="outroOs" style="align-self:center">${state.how === 'iphone' ? 'Usa Android? Ver o passo a passo' : 'Usa iPhone? Ver o passo a passo'}</button>
     </div>
+    <label class="drop${state.arquivo ? ' ok' : ''}${state.voltou ? ' voltou' : ''}" for="file">
+      <span class="big" aria-hidden="true">${state.arquivo ? '✅' : '📂'}</span>
+      <b id="dropT">${state.voltou ? 'Agora escolha o arquivo que você salvou' : '2. Escolha o arquivo da conversa'}</b>
+      <span class="small" id="fname">${state.arquivo ? 'Arquivo escolhido: ' + esc(state.arquivo.name) : state.how === 'iphone' ? 'No iPhone ele fica em <b>Arquivos › Recentes</b>, com o nome "WhatsApp Chat - ….zip"' : 'No Android ele fica em <b>Downloads</b> (ou no Drive), com o nome "Conversa do WhatsApp com ….txt"'}</span>
+      <input type="file" id="file">
+    </label>
+    <p class="err" role="alert" id="err" hidden></p>
     <div class="btn-row"><button class="btn btn-ghost" id="demo">${state.modo === 'casal' ? '👀 Ver com um casal de exemplo' : '👀 Ver com um grupo de exemplo'}</button></div>
     <p class="small">O grupo de exemplo é inventado, para você ver como funciona antes de usar o seu.</p>
     <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a></nav>
@@ -1517,7 +1516,7 @@ function home(){
     state.arquivo = f; state.bytes = null; $('#err').hidden = true;
     const lb = view.querySelector('.drop'); lb.classList.add('ok'); lb.querySelector('.big').textContent = '✅'; $('#fname').textContent = 'Arquivo escolhido: ' + f.name;
     try { if (typeof evento === 'function') evento('arquivo_escolhido'); } catch {}
-    readFile(f); // começa na hora: sem botão extra
+    lembrete(() => readFile(f)); // lembrete de privacidade (1 vez) e começa na hora: sem botão extra
   };
   view.querySelectorAll('[data-tipo]').forEach(b => b.onclick = () => { const k = b.dataset.tipo, y = scrollY; setModo(k === 'casal' ? 'casal' : (state.ultimoGrupo || 'amigos')); home(); scrollTo(0, y); view.querySelector(`[data-tipo="${k}"]`)?.focus({preventScroll: true}); });
   tutorial(state.how);
