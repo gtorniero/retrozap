@@ -350,6 +350,10 @@ html.casal .pb-num{color:#fff}
 .pb-cab p b{color:var(--areia)}
 .pb-veja{margin:4px 0 -6px;font-size:14px;font-weight:700;color:var(--neblina);text-align:center}
 .pbloco .drop{margin:0}
+.turma-ok{display:flex;gap:14px;align-items:center;width:100%;background:color-mix(in srgb,#22C55E 18%,var(--acai));border:2px solid #22C55E;border-radius:20px;padding:16px 18px}
+.turma-ok .tok-ic{font-size:34px}
+.turma-ok b{display:block;font-size:20px;color:var(--areia)}
+.turma-ok span:not(.tok-ic){font-size:14px;color:var(--neblina)}
 .drop.voltou{border-color:var(--manga);box-shadow:0 0 0 4px color-mix(in srgb,var(--manga) 35%,transparent)}
 .tipo-conversa{margin-bottom:4px}
 .passos{display:grid;grid-template-columns:1fr;gap:10px;width:100%}
@@ -1411,6 +1415,7 @@ function home(){
         <span class="small" id="fname">${state.arquivo ? esc(state.arquivo.name) : 'Aceita o .zip ou o .txt do WhatsApp'}</span>
         <input type="file" id="file">
       </label>
+      <button class="btn btn-main" id="start"${state.arquivo ? '' : ' disabled'}>${state.modo === 'casal' ? '💕 Fazer a retrospectiva do casal' : '🏆 Fazer a retrospectiva'}</button>
     </section>
     <p class="err" role="alert" id="err" hidden></p>
     <div class="btn-row"><button class="btn btn-ghost" id="demo">${state.modo === 'casal' ? '👀 Ver com um casal de exemplo' : '👀 Ver com um grupo de exemplo'}</button></div>
@@ -1425,8 +1430,10 @@ function home(){
     state.arquivo = f; state.bytes = null; $('#err').hidden = true;
     const lb = view.querySelector('.drop'); lb.classList.add('ok'); lb.querySelector('.big').textContent = '✅'; $('#dropT').textContent = 'Arquivo escolhido'; $('#fname').textContent = f.name;
     try { if (typeof evento === 'function') evento('arquivo_escolhido'); } catch {}
-    lembrete(() => readFile(f)); // lembrete de privacidade (1 vez) e começa na hora: sem botão extra
+    $('#start').disabled = false;
+    lembrete(() => readFile(f)); // lembrete de privacidade (1 vez) e começa na hora; o botão fica para quem voltar a esta tela
   };
+  $('#start').onclick = () => state.arquivo && lembrete(() => readFile(state.arquivo));
   view.querySelectorAll('[data-tipo]').forEach(b => b.onclick = () => { const k = b.dataset.tipo, y = scrollY; setModo(k === 'casal' ? 'casal' : (state.ultimoGrupo || 'amigos')); home(); scrollTo(0, y); view.querySelector(`[data-tipo="${k}"]`)?.focus({preventScroll: true}); });
   tutorial(state.how);
   $('#demo').onclick = () => { DUR = {}; run(state.modo === 'casal' ? demoCasal() : demoChat(), true); };
@@ -1584,7 +1591,7 @@ function roster(){
   const cont = {}; for (const r of ativos){ const p = primeiro(r.n); if (p) cont[p] = (cont[p] || 0) + 1; }
   const parecido = r => cont[primeiro(r.n)] > 1 || ativos.some(x => x !== r && norm(x.n).length >= 4 && norm(r.n).includes(norm(x.n)));
   const atencao = r => state.hidden.has(r.n) || state.left.has(r.n) || meses(r) >= 12 || parecido(r) || pessoas.some(x => state.alias[x.n] === r.n) || state.aberto === r.n;
-  const aten = state.modo === 'casal' ? ativos : ativos.filter(atencao), resto = state.modo === 'casal' ? [] : ativos.filter(r => !atencao(r));
+  const aten = state.modo === 'casal' ? ativos : ativos.filter(atencao), resto = state.modo === 'casal' ? [] : ativos.filter(r => !atencao(r)), turmaOk = state.modo !== 'casal' && !aten.length;
   const membro = r => {
       const i = pessoas.indexOf(r), off = state.hidden.has(r.n), b = [];
       if (state.left.has(r.n)) b.push('🚪 Saiu do grupo');
@@ -1639,11 +1646,11 @@ function roster(){
           <label class="small" for="pick-${i}">${s ? 'Não é? Escolha quem é:' : 'Se souber, escolha quem é:'}</label>
           <select id="pick-${i}" data-pick="${i}"><option value="">Escolher pessoa</option>${pessoas.map(p => `<option>${esc(p.n)}</option>`).join('')}</select>`}
       </div>`; }).join('')}</div>${numeros.length > 4 ? '</details>' : ''}` : ''}
-    <h2 style="font-size:24px">${state.modo === 'casal' ? '💘 Vocês dois' : '👀 Vale conferir'}</h2>
-    <p class="small">${state.modo === 'casal' ? 'Se a mesma pessoa aparece duas vezes (trocou de número), toque em "Contato duplicado?".' : 'Mostramos só quem pode precisar de ajuste: quem sumiu, quem saiu e nomes parecidos (pode ser a mesma pessoa com outro número). O resto já está certo.'}</p>
-    <div class="btn-row"${state.modo === 'casal' ? ' hidden' : ''}><button class="btn btn-ghost mini" id="inat">💤 Tirar quem não fala há 12+ meses</button><button class="btn btn-ghost mini" id="todos">Incluir todo mundo</button></div>
-    ${aten.length ? `<div class="mems">${aten.map(membro).join('')}</div>` : `<p class="small" style="margin:0">✅ Nada estranho por aqui: ninguém sumido, sem nomes repetidos.</p>`}
-    ${resto.length ? `<details class="nums" id="todosD"${state.todosAberto ? ' open' : ''}><summary><b>👥 Ver ${aten.length ? 'os outros ' : 'todos os '}${resto.length} integrantes</b><span class="small">Tudo certo com eles. Toque se quiser conferir.</span></summary><div class="mems">${resto.map(membro).join('')}</div></details>` : ''}
+    <h2 style="font-size:24px"${turmaOk ? ' hidden' : ''}>${state.modo === 'casal' ? '💘 Vocês dois' : '👀 Vale conferir'}</h2>
+    <p class="small"${turmaOk ? ' hidden' : ''}>${state.modo === 'casal' ? 'Se a mesma pessoa aparece duas vezes (trocou de número), toque em "Contato duplicado?".' : 'Mostramos só quem pode precisar de ajuste: quem sumiu, quem saiu e nomes parecidos (pode ser a mesma pessoa com outro número). O resto já está certo.'}</p>
+    <div class="btn-row"${state.modo === 'casal' || turmaOk ? ' hidden' : ''}><button class="btn btn-ghost mini" id="inat">💤 Tirar quem não fala há 12+ meses</button><button class="btn btn-ghost mini" id="todos">Incluir todo mundo</button></div>
+    ${aten.length ? `<div class="mems">${aten.map(membro).join('')}</div>` : `<div class="turma-ok"><span class="tok-ic" aria-hidden="true">✅</span><div><b>Turma conferida: tudo certo!</b><span>Ninguém sumido e sem nomes repetidos. É só começar.</span></div></div>`}
+    ${resto.length ? `<details class="nums" id="todosD"${state.todosAberto ? ' open' : ''}><summary><b>👥 Ver ${aten.length ? 'os outros ' : 'todos os '}${resto.length} integrantes</b><span class="small">${turmaOk ? 'Só se quiser conferir.' : 'Tudo certo com eles. Toque se quiser conferir.'}</span></summary><div class="mems">${resto.map(membro).join('')}</div></details>` : ''}
     <label class="optin"><input type="checkbox" id="cmp"${state.comparar === false ? '' : ' checked'}><span>📊 ${state.modo === 'casal' ? 'Comparar com outros casais do Retrozap' : 'Comparar meu grupo com outros grupos do Retrozap'}<span class="small">Vem marcado e você pode desmarcar. Só sobem números do ${state.modo === 'casal' ? 'casal' : 'grupo inteiro'}, como o total de mensagens. Nenhuma mensagem, nome ou telefone sai do celular.</span></span></label>
     <p class="err" role="alert" id="rerr" hidden></p>
     <button class="btn btn-main" id="go">Tudo certo, começar →</button>

@@ -14,7 +14,6 @@ async def main():
     await pg.click('[data-esc=casal]'); await pg.wait_for_timeout(300); await pg.screenshot(path=O+'/0b-inicio-casal.png',full_page=True); await pg.click('#comecar'); await pg.wait_for_selector('#file',state='attached')
     await pg.screenshot(path=O+'/1-comecar-casal.png',full_page=True)
     await pg.set_input_files('#file',S+'/_chat_casal.txt'); await pg.wait_for_timeout(300)
-    if await pg.query_selector('#start'): await pg.click('#start')
     await pg.wait_for_timeout(500); t0=time.time()
     for sel in ['#lbOk','#lbSim','#lbGo']:
       if await pg.query_selector(sel): await pg.click(sel); break
