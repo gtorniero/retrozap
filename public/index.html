@@ -117,7 +117,7 @@ html{scroll-padding-bottom:120px}
 .mode[aria-pressed="true"]{border-color:var(--c);background:color-mix(in srgb,var(--c) 18%,var(--acai-2))}
 .tabs{display:flex;gap:6px;background:var(--acai-2);border-radius:999px;padding:4px}
 .tabs button{flex:1;border:0;background:transparent;border-radius:999px;padding:8px;font-weight:700;font-size:14px;color:var(--neblina)}
-.tabs button[aria-selected="true"]{background:var(--areia);color:var(--noite)}
+.tabs button[aria-selected="true"],.tabs button[aria-pressed="true"]{background:var(--areia);color:var(--noite)}
 ol.how{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px;font-size:15px}
 ol.how b{color:var(--manga)}
 .drop{border:2px dashed var(--manga);border-radius:var(--raio);padding:22px;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center;background:rgba(255,194,60,.06)}
@@ -383,6 +383,15 @@ html.casal .vota .chip[aria-pressed="true"]{color:#fff}
 .nums[open]>summary::after{content:'Fechar ▴'}
 .pwc{display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.25;text-align:center}
 .pwc small{font-size:13px;font-weight:600;opacity:.8;white-space:nowrap}
+.pbloco{display:flex;flex-direction:column;gap:14px;width:100%;background:var(--acai);border:1.5px solid var(--linha);border-radius:22px;padding:20px 18px}
+.pb-cab{display:flex;gap:14px;align-items:flex-start}
+.pb-num{flex:none;width:42px;height:42px;border-radius:50%;background:var(--manga);color:var(--noite);font-family:var(--titulo);font-weight:800;font-size:24px;display:flex;align-items:center;justify-content:center}
+html.casal .pb-num{color:#fff}
+.pb-cab h2{font-size:24px;line-height:1.15;margin:4px 0 6px}
+.pb-cab p{margin:0;font-size:15px;color:var(--neblina)}
+.pb-cab p b{color:var(--areia)}
+.pb-veja{margin:4px 0 -6px;font-size:14px;font-weight:700;color:var(--neblina);text-align:center}
+.pbloco .drop{margin:0}
 .drop.voltou{border-color:var(--manga);box-shadow:0 0 0 4px color-mix(in srgb,var(--manga) 35%,transparent)}
 .tipo-conversa{margin-bottom:4px}
 .passos{display:grid;grid-template-columns:1fr;gap:10px;width:100%}
@@ -1138,7 +1147,6 @@ const TT_CENAS = {
     {p:3, cap:'Salve em Arquivos (Downloads)', x:62, y:84, h:`<div class="tt-bar a"><span>←</span><i class="tt-av">🍖</i><b>Turma do Churras</b><span class="tt-r">⋮</span></div>${TT_BOLHAS}
       <div class="tt-veu"></div><div class="tt-sheet"><small>Compartilhar</small><div class="tt-ics"><span><i>☁️</i>Drive</span><span><i>✉️</i>E-mail</span><span class="alvo"><i>📁</i>Arquivos</span><span><i>📶</i>Bluetooth</span></div></div>`},
     {p:4, cap:'No Retrozap, escolha o arquivo', x:50, y:45, h:TT_SITE(false)},
-    {p:4, cap:'E toque em Fazer a retrospectiva', x:50, y:67, h:TT_SITE(true)},
     {p:4, cap:'Pronto! 🎉', h:TT_SITE(true, true), fim:true}
   ],
   iphone: [
@@ -1156,7 +1164,6 @@ const TT_CENAS = {
     {p:3, cap:'E toque em Salvar', x:86, y:6.5, h:`<div class="tt-bar i"><span class="az">Cancelar</span><b>Arquivos</b><span class="tt-r az alvo" style="font-weight:700">Salvar</span></div>
       <div class="tt-info"><div class="tt-lst"><div>☁️ iCloud Drive</div><div>📱 No meu iPhone</div><div>📥 Downloads ✓</div></div></div>`},
     {p:4, cap:'No Retrozap, escolha o arquivo', x:50, y:45, h:TT_SITE(false)},
-    {p:4, cap:'E toque em Fazer a retrospectiva', x:50, y:67, h:TT_SITE(true)},
     {p:4, cap:'Pronto! 🎉', h:TT_SITE(true, true), fim:true}
   ]
 };
@@ -1500,9 +1507,12 @@ function home(){
       <button type="button" data-tipo="grupo" aria-pressed="${state.modo !== 'casal'}">🏆 Grupo</button>
       <button type="button" data-tipo="casal" aria-pressed="${state.modo === 'casal'}">💘 Casal</button>
     </div>
-    <div class="panel" id="exportar">
-      <p class="ask">1. Exporte a conversa do WhatsApp</p>
-      ${tutorialHTML()}
+    <section class="pbloco" id="exportar" aria-labelledby="pb1">
+      <div class="pb-cab"><span class="pb-num" aria-hidden="true">1</span><div><h2 id="pb1">Exporte a conversa no WhatsApp</h2><p>Primeiro, o WhatsApp gera um arquivo com a conversa. Leva uns 30 segundos.</p></div></div>
+      <div class="tabs" role="group" aria-label="Seu celular">
+        <button type="button" data-h="iphone" aria-pressed="${state.how==='iphone'}">iPhone</button>
+        <button type="button" data-h="android" aria-pressed="${state.how==='android'}">Android</button>
+      </div>
       ${state.how==='iphone' ? `<ol class="how">
         <li>${state.modo === 'casal' ? 'Abra a conversa e toque no <b>nome da pessoa</b> lá em cima.' : 'Abra o grupo e toque no <b>nome do grupo</b> lá em cima.'}</li>
         <li>Role até o fim e toque em <b>Exportar conversa</b>.</li>
@@ -1513,29 +1523,33 @@ function home(){
         <li>Toque em <b>Mais</b> e depois em <b>Exportar conversa</b>.</li>
         <li>Escolha <b>Sem mídia</b>.</li>
         <li>Salve em <b>Downloads</b> (ou no Drive) e depois volte aqui.</li></ol>`}
-      <a class="btn btn-wa" id="abreWa" href="${linkAbreWhats()}" style="text-decoration:none"><i class="ic-wa" aria-hidden="true"></i>Abrir o WhatsApp para exportar</a>
-      <button type="button" class="lnk" id="outroOs" style="align-self:center">${state.how === 'iphone' ? 'Usa Android? Ver o passo a passo' : 'Usa iPhone? Ver o passo a passo'}</button>
-    </div>
-    <label class="drop${state.arquivo ? ' ok' : ''}${state.voltou ? ' voltou' : ''}" for="file">
-      <span class="big" aria-hidden="true">${state.arquivo ? '✅' : '📂'}</span>
-      <b id="dropT">${state.voltou ? 'Agora escolha o arquivo que você salvou' : '2. Escolha o arquivo da conversa'}</b>
-      <span class="small" id="fname">${state.arquivo ? 'Arquivo escolhido: ' + esc(state.arquivo.name) : state.how === 'iphone' ? 'No iPhone ele fica em <b>Arquivos › Recentes</b>, com o nome "WhatsApp Chat - ….zip"' : 'No Android ele fica em <b>Downloads</b> (ou no Drive), com o nome "Conversa do WhatsApp com ….txt"'}</span>
-      <input type="file" id="file">
-    </label>
+      <a class="btn btn-wa" id="abreWa" href="${linkAbreWhats()}" style="text-decoration:none"><i class="ic-wa" aria-hidden="true"></i>Abrir o WhatsApp</a>
+      <p class="pb-veja">Veja como é:</p>
+      ${tutorialHTML()}
+    </section>
+    <section class="pbloco" aria-labelledby="pb2">
+      <div class="pb-cab"><span class="pb-num" aria-hidden="true">2</span><div><h2 id="pb2">${state.voltou ? 'Agora escolha o arquivo' : 'Escolha o arquivo aqui'}</h2><p>${state.how === 'iphone' ? 'Ele fica em <b>Arquivos › Recentes</b>, com o nome "WhatsApp Chat - ….zip".' : 'Ele fica em <b>Downloads</b> (ou no Drive), com o nome "Conversa do WhatsApp com ….txt".'}</p></div></div>
+      <label class="drop${state.arquivo ? ' ok' : ''}${state.voltou ? ' voltou' : ''}" for="file">
+        <span class="big" aria-hidden="true">${state.arquivo ? '✅' : '📂'}</span>
+        <b id="dropT">${state.arquivo ? 'Arquivo escolhido' : 'Toque para escolher o arquivo'}</b>
+        <span class="small" id="fname">${state.arquivo ? esc(state.arquivo.name) : 'Aceita o .zip ou o .txt do WhatsApp'}</span>
+        <input type="file" id="file">
+      </label>
+    </section>
     <p class="err" role="alert" id="err" hidden></p>
     <div class="btn-row"><button class="btn btn-ghost" id="demo">${state.modo === 'casal' ? '👀 Ver com um casal de exemplo' : '👀 Ver com um grupo de exemplo'}</button></div>
     <p class="small">O grupo de exemplo é inventado, para você ver como funciona antes de usar o seu.</p>
     <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a></nav>
     <p class="small" style="text-align:center;margin:0">© 2026 Retrozap · Beyond the Work Ideas · CNPJ 69.746.447/0001-00</p>
   </section>`;
-  $('#outroOs').onclick = () => { const y = scrollY; state.how = state.how === 'iphone' ? 'android' : 'iphone'; home(); scrollTo(0, y); $('#outroOs')?.focus({preventScroll:true}); };
+  view.querySelectorAll('[data-h]').forEach(b => b.onclick = () => { const y = scrollY, k = b.dataset.h; state.how = k; home(); scrollTo(0, y); view.querySelector(`[data-h="${k}"]`)?.focus({preventScroll:true}); });
   // tocou em "Abrir o WhatsApp": quando voltar para o site, a tela já pede o arquivo
   $('#abreWa').addEventListener('click', () => { state.esperandoWhats = true; try { if (typeof evento === 'function') evento('abriu_whatsapp'); } catch {} });
   state.voltou = false;
   $('#file').onchange = e => {
     const f = e.target.files[0]; if (!f) return;
     state.arquivo = f; state.bytes = null; $('#err').hidden = true;
-    const lb = view.querySelector('.drop'); lb.classList.add('ok'); lb.querySelector('.big').textContent = '✅'; $('#fname').textContent = 'Arquivo escolhido: ' + f.name;
+    const lb = view.querySelector('.drop'); lb.classList.add('ok'); lb.querySelector('.big').textContent = '✅'; $('#dropT').textContent = 'Arquivo escolhido'; $('#fname').textContent = f.name;
     try { if (typeof evento === 'function') evento('arquivo_escolhido'); } catch {}
     lembrete(() => readFile(f)); // lembrete de privacidade (1 vez) e começa na hora: sem botão extra
   };
