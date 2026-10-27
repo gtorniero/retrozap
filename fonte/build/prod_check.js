@@ -482,6 +482,7 @@ const PRINCIPAIS = {
 
 /* ---------- telas ---------- */
 /* ---------- tutorial animado: celular desenhado mostrando como exportar a conversa ---------- */
+const VIDEO_EXPORTAR = '/assets/como-exportar-v1';
 const TT_BOLHAS = `<div class="tt-chat">
   <div class="tt-b">Bora churras sábado? 🍖</div>
   <div class="tt-b me">Bora! Eu levo o carvão</div>
@@ -892,6 +893,10 @@ function home(){
       <a class="btn btn-wa" id="abreWa" href="${linkAbreWhats()}" style="text-decoration:none"><i class="ic-wa" aria-hidden="true"></i>Abrir o WhatsApp</a>
       <p class="pb-veja">Veja como é:</p>
       ${tutorialHTML()}
+      <details class="pb-video"><summary>▶️ Prefere vídeo? Assista em 45 segundos</summary>
+        <video controls playsinline preload="none" poster="${VIDEO_EXPORTAR}.jpg" src="${VIDEO_EXPORTAR}.mp4" aria-label="Vídeo: como exportar a conversa do WhatsApp no iPhone e no Android"></video>
+        <p class="small">Vídeo sem som. <a href="/como-exportar">Abrir a página do vídeo</a></p>
+      </details>
     </section>
     <section class="pbloco" aria-labelledby="pb2">
       <div class="pb-cab"><span class="pb-num" aria-hidden="true">2</span><div><h2 id="pb2">${state.voltou ? 'Agora escolha o arquivo' : 'Escolha o arquivo aqui'}</h2><p>${state.how === 'iphone' ? 'Ele fica em <b>Arquivos › Recentes</b>, com o nome "WhatsApp Chat - ….zip".' : 'Ele fica em <b>Downloads</b> (ou no Drive), com o nome "Conversa do WhatsApp com ….txt".'}</p></div></div>

@@ -24,8 +24,11 @@ for w in (400, 500, 700):
 shutil.copy(os.path.join(NM, 'jszip/dist/jszip.min.js'), os.path.join(PUB, 'assets/jszip.min.js'))
 shutil.copy(os.path.join(NM, 'qrcode-generator/qrcode.js'), os.path.join(PUB, 'assets/qrcode.js'))
 shutil.copy(os.path.join(NM, 'mp4-muxer/build/mp4-muxer.js'), os.path.join(PUB, 'assets/mp4-muxer-5.2.1.js'))
+s = s.replace("const VIDEO_EXPORTAR = 'https://retrozap.com.br/assets/como-exportar-v1';", "const VIDEO_EXPORTAR = '/assets/como-exportar-v1';")
 s = s.replace("const MUX_URL = 'https://cdn.jsdelivr.net/npm/mp4-muxer@5.2.1/build/mp4-muxer.js';", "const MUX_URL = '/assets/mp4-muxer-5.2.1.js';")
 shutil.copy(os.path.join(SCR, 'partygames.jpg'), os.path.join(PUB, 'assets/partygames.jpg'))
+shutil.copy(os.path.join(SCR, 'como-exportar.mp4'), os.path.join(PUB, 'assets/como-exportar-v1.mp4'))
+shutil.copy(os.path.join(SCR, 'como-exportar.jpg'), os.path.join(PUB, 'assets/como-exportar-v1.jpg'))
 s = re.sub(r"const PATRO_IMG = '[^']*';", "const PATRO_IMG = '/assets/partygames.jpg';", s)
 FONTES = """@font-face{font-family:'Bricolage Grotesque';src:url(/assets/bricolage.woff2) format('woff2');font-weight:200 800;font-display:swap}
 @font-face{font-family:'DM Sans';src:url(/assets/dmsans-400.woff2) format('woff2');font-weight:400;font-display:swap}
