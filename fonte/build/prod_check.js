@@ -798,7 +798,7 @@ function anuncio(onde){
   return `<div class="anuncio" data-anuncio><p class="small" style="margin:0">Publicidade</p><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4039247360984618" data-ad-slot="${slot}" data-ad-format="auto" data-full-width-responsive="true"></ins></div>`;
 }
 function ativaAnuncios(){ view.querySelectorAll('[data-anuncio] ins:not([data-adsbygoogle-status])').forEach(() => { try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch {} }); }
-const AMBIENTE_TESTE = !/(^|\.)retrozap\.com\.br$|workers\.dev$|^localhost$|^127\./.test(location.hostname) || (/^localhost$|^127\./.test(location.hostname) && /[?&]plano_teste=1/.test(location.search)); // nunca no site oficial
+const AMBIENTE_TESTE = !/(^|\.)retrozap\.com\.br$|^retrozap-v2\.[^.]+\.workers\.dev$|^localhost$|^127\./.test(location.hostname) || (/^localhost$|^127\./.test(location.hostname) && /[?&]plano_teste=1/.test(location.search)); // nunca no site oficial
 if (AMBIENTE_TESTE) state.planoTeste = 'gratis';
 const premiumLocal = () => state.planoTeste ? state.planoTeste === 'premium' : !!(state.sample || lsGet('rz_acesso'));
 // premium liberado? (grupo de exemplo, código de acesso guardado ou cobrança desligada)
@@ -2371,7 +2371,7 @@ function drawResumo(d){
   let y = topo;
   for (const [ic, num, rot] of linhas){
     c.fillStyle = CV().caixa; c.beginPath(); c.roundRect(70, y, W-140, alt, 28); c.fill();
-    c.textAlign = 'left'; c.font = `${Math.round(alt*.48)}px serif`; c.fillStyle = CV().txt; c.fillText(ic, 105, y + alt*.66);
+    c.textAlign = 'left'; emojiC(c, ic, 105 + alt*.24, y + alt*.5, Math.round(alt*.48));
     c.fillStyle = CV().ouro; caber(c, num, 225, y + alt*.48, 760, 800, Math.round(alt*.36), BR);
     c.fillStyle = CV().txt; caber(c, rot, 225, y + alt*.82, 760, 600, Math.min(40, Math.round(alt*.24)), DM);
     y += passo;
@@ -2467,7 +2467,7 @@ async function comparar(d){
   // grupo de exemplo: comparação simulada, e nada é enviado ao banco
   if (state.sample){ state.comp = {...simula({}), top:{risadas:3, palavrao:2, furos:4, por_dia:6, madrugada:7, recorde:9, audios:12, total:4, figurinhas:38, textao:60, apagadas:41, dias:30, bomdia:70, parabens:55, fora:80, amor:3, coracoes:5, hist_total:7, hist_audios:11}}; return; }
   if (!state.compD){ if (AMBIENTE_TESTE) state.comp = {pronto:true, n:120, exemplo:true, escopo:'tipo', top:{dias:45}}; return; }
-  try {
+  if (!AMBIENTE_TESTE) try { // versão de teste (prévia/branch) nunca grava no ranking real
     const pri = (state.raw || d.msgs).reduce((a, m) => +m.t < a ? +m.t : a, Infinity), base = `${pri}|${state.modo}`;
     const h = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(base)))].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
     const r = await fetch('/api/stats', {method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({id: h, modo: state.modo, base: String(ANO_MOMENTO), ...numerosDoGrupo(state.compD), dias: Math.max(1, Math.round((d.end - d.start)/864e5) + 1), hist_total: d.total, hist_audios: d.semTipo ? null : d.people.reduce((t, p) => t + p.audio, 0), ...(d.semTipo ? {audios: null, figurinhas: null} : {})})});
