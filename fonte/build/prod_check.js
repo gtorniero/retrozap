@@ -1165,7 +1165,7 @@ async function readFile(f){
 function carregando(titulo){
   { const vb = document.getElementById('voltar'); if (vb) vb.hidden = true; }
   anchor(false);
-  view.innerHTML = `<section class="loader"><div class="trofinho" aria-hidden="true">🏆</div><h2 id="lf">${titulo}</h2>
+  view.innerHTML = `<section class="loader"><div class="trofinho" aria-hidden="true">${state.modo === 'casal' ? logoSVG('#E0245E', '#FFF3EC') : logoSVG('#FFC23C', '#1A0B2E')}</div><h2 id="lf">${titulo}</h2>
     <div class="pbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="pb"></i></div>
     <p class="cd" id="cd">calculando o tempo...</p><p class="small" id="pt"></p><p class="small">Tudo acontecendo no seu celular 🔒</p></section>`;
   const t0 = performance.now();

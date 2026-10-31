@@ -671,6 +671,9 @@ html.casal .scratch{background:#FFD6E2}
 .opt.longo{font-size:15px}
 html.casal .opts .opt.longo{font-size:clamp(16px,4.6vw,22px)}
 .selo.longo{font-size:clamp(26px,8vw,38px)}
+.top .steps{display:none}
+.top{justify-content:flex-start}
+.trofinho{width:110px;height:110px;line-height:0}.trofinho svg{width:100%;height:100%;display:block}
 </style>
 
 <a class="pular-conteudo" href="#view">Pular para o conteúdo</a>
@@ -1779,7 +1782,7 @@ async function readFile(f){
 function carregando(titulo){
   { const vb = document.getElementById('voltar'); if (vb) vb.hidden = true; }
   anchor(false);
-  view.innerHTML = `<section class="loader"><div class="trofinho" aria-hidden="true">🏆</div><h2 id="lf">${titulo}</h2>
+  view.innerHTML = `<section class="loader"><div class="trofinho" aria-hidden="true">${state.modo === 'casal' ? logoSVG('#E0245E', '#FFF3EC') : logoSVG('#FFC23C', '#1A0B2E')}</div><h2 id="lf">${titulo}</h2>
     <div class="pbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="pb"></i></div>
     <p class="cd" id="cd">calculando o tempo...</p><p class="small" id="pt"></p><p class="small">Tudo acontecendo no seu celular 🔒</p></section>`;
   const t0 = performance.now();
