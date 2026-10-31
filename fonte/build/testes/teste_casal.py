@@ -23,7 +23,10 @@ async def main():
     await pg.screenshot(path=O+'/3-conhecendo-gratis.png',full_page=True)
     print('persos', await pg.eval_on_selector_all('.perso',"es=>es.map(e=>e.className+':'+e.querySelector('h3').textContent)"))
     print('classif', await pg.eval_on_selector('.persona','e=>e.textContent.slice(0,80)'))
-    await pg.click('#go'); await pg.wait_for_selector('#spNao'); await pg.click('#spNao'); await pg.wait_for_timeout(300); await pg.screenshot(path=O+'/4-categorias.png',full_page=True)
+    await pg.click('#go'); await pg.wait_for_selector('.patro .pw-ctx'); print('paywall casal:', await pg.text_content('.patro .pw-ctx')); await pg.screenshot(path=O+'/3b-paywall-casal.png')
+    await pg.click('#pwX'); await pg.wait_for_timeout(200); print('fechar paywall fica no Ato I:', '/conhecendo' in pg.url)
+    await pg.click('#go'); await pg.wait_for_selector('#pwEm'); await pg.fill('#pwEm','teste@exemplo.com'); await pg.click('#pwPix'); await pg.click('#pwSeg')
+    await pg.wait_for_selector('#spNao'); await pg.click('#spNao'); await pg.click('#planoTeste [data-plano=gratis]'); await pg.wait_for_timeout(300); await pg.screenshot(path=O+'/4-categorias.png',full_page=True)
     print('spoiler foi direto ao 1º prêmio:', '/premios/' in pg.url)
     if '/premios/' not in pg.url: await pg.click('#go')
     await pg.wait_for_timeout(300); n=0; tit=[]

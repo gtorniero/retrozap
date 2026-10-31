@@ -1,5 +1,5 @@
 # Conteúdo editorial do Retrozap: artigos do blog e páginas institucionais novas.
-# True quando a cobrança de R$ 4,99 estiver ligada para todos (COBRANCA = "ligada" no wrangler.jsonc)
+# True quando a cobrança (R$ 6,99 Pix / R$ 8,99 cartão) estiver ligada para todos (COBRANCA = "ligada" no wrangler.jsonc)
 COBRANCA_PUBLICA = True
 # Google Tag Manager (pixels de mídia paga: Meta, Google Ads, TikTok). Vazio = desligado. Ex.: 'GTM-ABC1234'
 GTM_ID = 'GTM-NMLZBBQS'
@@ -185,7 +185,7 @@ COMO_FUNCIONA = ('como-funciona.html', 'Como funciona o Retrozap', 'Do arquivo e
 """ + CTA)
 
 FAQ = [
- (('O Retrozap é grátis?', 'A primeira retrospectiva é grátis. Para fazer quantos grupos quiser, o acesso ilimitado custa R$ 4,99, pago uma única vez no Pix.') if COBRANCA_PUBLICA else ('O Retrozap é grátis?', 'Sim. Você pode fazer a retrospectiva de quantos grupos quiser, sem pagar nada.')),
+ (('O Retrozap é grátis?', 'A retrospectiva do primeiro grupo é grátis. Para fazer quantos grupos quiser e a retrospectiva de casal, o acesso ilimitado custa R$ 6,99 no Pix ou R$ 8,99 no cartão, pago uma única vez.') if COBRANCA_PUBLICA else ('O Retrozap é grátis?', 'Sim. Você pode fazer a retrospectiva de quantos grupos quiser, sem pagar nada.')),
  ('Minhas mensagens são enviadas para algum servidor?', 'Não. A leitura do arquivo acontece no seu navegador. As mensagens, os nomes e os telefones não saem do seu celular ou computador.'),
  ('Funciona no iPhone e no Android?', 'Sim. O site aceita o .zip ou o .txt que o WhatsApp gera nos dois sistemas, e também funciona no computador.'),
  ('Preciso exportar com mídia?', 'Não. Exporte "Sem mídia": o arquivo fica pequeno e a análise é mais rápida. Com mídia, o site também consegue medir a duração dos áudios.'),
