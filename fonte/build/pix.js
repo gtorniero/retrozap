@@ -120,7 +120,14 @@ export async function status({request, env}){
   if (!ref) return json({error: 'bad_request'}, 400);
   await tabela(env);
   const codigo = await confirma(env, ref);
-  return json(codigo ? {pago: true, codigo} : {pago: false});
+  if (!codigo) return json({pago: false});
+  const venda = await env.DB.prepare('SELECT valor, modo FROM compras WHERE ref = ?').bind(ref).first();
+  let medicao;
+  if (venda?.modo === 'ligada' && Number(venda.valor) > 0){
+    const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('retrozap-venda:' + ref));
+    medicao = {id: Array.from(new Uint8Array(hash), b => b.toString(16).padStart(2, '0')).join(''), valor: Number(venda.valor), moeda:'BRL'};
+  }
+  return json({pago:true, codigo, ...(medicao ? {medicao} : {})});
 }
 
 // POST /api/cartao {email}: cria a página de pagamento do Stripe (cartão, Apple Pay, Google Pay) e devolve o link

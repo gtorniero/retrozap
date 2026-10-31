@@ -3,16 +3,14 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- Consentimento (LGPD) + Google tag (gtag.js) -->
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
-(function(){var ok=null;try{ok=localStorage.getItem('rz_cookies');}catch(e){}var ad=ok==='sim'?'granted':'denied';
-gtag('consent','default',{ad_storage:ad,ad_user_data:ad,ad_personalization:ad,analytics_storage:ok==='nao'?'denied':'granted'});
+(function(){var ok=null;try{ok=localStorage.getItem('rz_cookies');}catch(e){}var mk=null;try{mk=localStorage.getItem('rz_marketing_v1');}catch(e){}var ad=ok==='sim'&&mk==='sim'?'granted':'denied';
+gtag('consent','default',{ad_storage:ad,ad_user_data:ad,ad_personalization:ad,analytics_storage:ok==='sim'?'granted':'denied'});
 if(ad==='denied'){(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersonalizedAds=1;}})();</script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-R8R1EN0KQN"></script>
+<script>if(/^(?:www\.)?retrozap\.com\.br$/.test(location.hostname)){var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=G-R8R1EN0KQN';document.head.appendChild(s)}</script>
 <script>
   gtag('js', new Date());
-  gtag('config', 'G-R8R1EN0KQN');
+  gtag('config', 'G-R8R1EN0KQN', {page_title:'Retrozap',page_location:location.origin+location.pathname,page_referrer:''});
 </script>
-<!-- Google Tag Manager (pixels de mídia; respeita o Consent Mode acima) -->
-<script>window.RZ_GTM=1;(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s);j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-NMLZBBQS');</script>
 <script>/* Mensuração de mídia: só após novo aceite que menciona a Meta.
    Nunca passar state, parâmetros de evento, nomes, mensagens ou dados da compra. */
 (function () {
@@ -23,6 +21,8 @@ if(ad==='denied'){(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersonal
     upload_ok: 'RetrospectivaIniciada',
     final_visto: 'RetrospectivaConcluida',
     compartilhou: 'MidiaCompartilhada',
+    card_compartilhado: 'MidiaCompartilhada',
+    card_salvo: 'MidiaSalva',
     pix_gerado: 'PixGerado',
     cartao_aberto: 'CheckoutAberto'
   };
@@ -30,10 +30,21 @@ if(ad==='denied'){(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersonal
     try { return localStorage.getItem('rz_marketing_v1') === 'sim'; }
     catch (_) { return false; }
   }
+  function safeQuery() {
+    var q = new URLSearchParams(location.search);
+    for (var pair of q) {
+      if (/^utm_(source|medium|campaign|content|term)$/.test(pair[0]) && /^[a-z0-9_.-]{1,100}$/i.test(pair[1])) continue;
+      if (/^(gclid|fbclid|gbraid|wbraid)$/.test(pair[0]) && /^[a-z0-9_.-]{1,300}$/i.test(pair[1])) continue;
+      if (pair[0] === 'de' && /^(trofeu|spoiler|resumo|video|convite)$/.test(pair[1])) continue;
+      if (pair[0] === 'm' && pair[1] === 'casal') continue;
+      return false;
+    }
+    return true;
+  }
   function safePage() {
     // O SDK envia a URL da página. Não carregar em retornos de pagamento,
     // links com parâmetros, fragmentos ou rotas fora desta lista pública.
-    return /^(?:www\.)?retrozap\.com\.br$/.test(location.hostname) && !location.search && !location.hash &&
+    return /^(?:www\.)?retrozap\.com\.br$/.test(location.hostname) && safeQuery() && !location.hash &&
       /^\/(?:|comecar|turma|conhecendo|categorias|premios\/\d+|resumo|fim|destaque|personagens|bonus|privacidade|termos|sobre|contato|como-funciona|como-exportar|perguntas-frequentes|blog\/(?:[a-z0-9-]+)?)$/.test(location.pathname);
   }
   function start() {
@@ -57,6 +68,12 @@ if(ad==='denied'){(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersonal
     document.head.appendChild(script);
     return true;
   }
+  window.rzSafeMeasurementPage = safePage;
+  window.rzMetaPurchase = function (value, id) {
+    if (!Number.isFinite(value) || value <= 0 || !/^[a-f0-9]{64}$/.test(id) || !start()) return false;
+    window.fbq('track', 'Purchase', {value: value, currency: 'BRL'}, {eventID: id});
+    return true;
+  };
   window.rzMetaEvent = function (name, example) {
     if (!allowed[name] || example || !start()) return;
     window.fbq('trackCustom', allowed[name]);
@@ -68,6 +85,8 @@ if(ad==='denied'){(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersonal
   start();
 })();
 </script>
+<!-- GTM de mídia: só com aceite explícito e URL pública segura -->
+<script>(function(){function start(){try{if(window.RZ_GTM||localStorage.getItem('rz_marketing_v1')!=='sim'||!window.rzSafeMeasurementPage())return}catch(e){return}window.RZ_GTM=1;window.dataLayer=window.dataLayer||[];window.dataLayer.push({'gtm.start':Date.now(),event:'gtm.js'});var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtm.js?id=GTM-NMLZBBQS';document.head.appendChild(s)}window.addEventListener('rz:marketing-consent',start);start()})();</script>
 <title>Dá para analisar a conversa do WhatsApp sem expor ninguém? · Retrozap</title><meta name="description" content="Como o Retrozap analisa grupos de WhatsApp sem enviar suas mensagens para servidores, e cuidados para compartilhar os resultados.">
 <link rel="canonical" href="https://retrozap.com.br/blog/privacidade-ao-analisar-conversas-do-whatsapp"><meta name="theme-color" content="#1A0B2E">
 <meta property="og:title" content="Dá para analisar a conversa do WhatsApp sem expor ninguém?"><meta property="og:description" content="Como o Retrozap analisa grupos de WhatsApp sem enviar suas mensagens para servidores, e cuidados para compartilhar os resultados."><meta property="og:image" content="https://retrozap.com.br/og-retrozap.png">

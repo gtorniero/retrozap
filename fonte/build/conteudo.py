@@ -256,7 +256,8 @@ def gtm_head(gtm_id):
     import os
     meta = '<script>' + open(os.path.join(os.path.dirname(__file__), 'meta_pixel.js'), encoding='utf-8').read() + '</script>\n'
     if not gtm_id: return meta
-    return ("<!-- Google Tag Manager (pixels de mídia; respeita o Consent Mode acima) -->\n"
-            "<script>window.RZ_GTM=1;(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});"
-            "var f=d.getElementsByTagName(s)[0],j=d.createElement(s);j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i;"
-            "f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','" + gtm_id + "');</script>\n") + meta
+    return meta + ("<!-- GTM de mídia: só com aceite explícito e URL pública segura -->\n"
+            "<script>(function(){function start(){try{if(window.RZ_GTM||localStorage.getItem('rz_marketing_v1')!=='sim'||!window.rzSafeMeasurementPage())return}catch(e){return}"
+            "window.RZ_GTM=1;window.dataLayer=window.dataLayer||[];window.dataLayer.push({'gtm.start':Date.now(),event:'gtm.js'});"
+            "var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtm.js?id=" + gtm_id + "';document.head.appendChild(s)}"
+            "window.addEventListener('rz:marketing-consent',start);start()})();</script>\n")

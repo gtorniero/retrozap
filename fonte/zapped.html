@@ -1163,7 +1163,7 @@ function paywall(seguir, ctx){
   const fecha = () => { vivo = false; clearTimeout(tm); m.remove(); try { antes?.focus(); } catch {} };
   const libera = codigo => {
     lsSet('rz_acesso', codigo); document.documentElement.classList.add('premium'); // some com os anúncios na hora
-    try { if (typeof evento === 'function') evento('compra_ilimitado'); } catch {}
+    try { if (typeof evento === 'function') evento('acesso_liberado'); } catch {}
     caixa.innerHTML = `<div class="lemb-ic" aria-hidden="true">🎉</div>
       <h2 id="pwT" style="font-size:26px;margin:0">Liberado!</h2>
       <p class="lemb-tx">Agora é ilimitado neste navegador, com todos os personagens, a categoria livre e o vídeo. Para usar em outro celular, digite este código ou o e-mail que você usou no Pix:</p>
@@ -1263,7 +1263,7 @@ function paywall(seguir, ctx){
       if (!document.hidden) try {
         const r = await fetch('/api/pix/status', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({ref: j.ref})});
         const s = await r.json();
-        if (s.pago && s.codigo) return libera(s.codigo);
+        if (s.pago && s.codigo){ try { compraConfirmada(s.medicao); } catch {} return libera(s.codigo); }
       } catch {}
       // consulta a cada 3 s no começo e vai espaçando (menos carga no servidor se viralizar)
       const passou = Date.now() - t0;
@@ -1311,7 +1311,7 @@ async function confereCartao(ref){
       const s = await r.json();
       if (s.pago && s.codigo){
         lsSet('rz_acesso', s.codigo); lsSet('rz_cartao_ref', ''); document.documentElement.classList.add('premium');
-        try { if (typeof evento === 'function') evento('compra_ilimitado', {meio: 'cartao'}); } catch {}
+        try { if (typeof evento === 'function') compraConfirmada(s.medicao); } catch {}
         const m = document.createElement('div'); m.className = 'patro'; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true'); m.setAttribute('aria-labelledby', 'ccT');
         m.innerHTML = `<div class="patro-box lemb"><div class="lemb-ic" aria-hidden="true">🎉</div><h2 id="ccT" style="font-size:26px;margin:0">Pagamento confirmado!</h2>
           <p class="lemb-tx">Agora é ilimitado neste navegador. Para usar em outro celular, digite este código ou o e-mail do pagamento:</p>
