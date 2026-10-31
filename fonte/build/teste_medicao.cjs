@@ -32,3 +32,12 @@ c=client();for(const m of [null,{id:'RZ-SEGREDO',valor:6.99,moeda:'BRL'},{id,val
  }
  console.log('OK: consentimento, campos privados, URL segura, venda única, metadata de venda real, pendente e modo teste. Sem rede ou cobrança real.');
 })().catch(e=>{console.error(e);process.exitCode=1});
+// URLs de campanha continuam atribuíveis, mas pagamento/e-mail/fragmento nunca entram no GA4.
+const html=fs.readFileSync(__dirname+'/../../public/index.html','utf8');
+const configScript=[...html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)].map(m=>m[1]).find(s=>s.includes("gtag('config', 'G-R8R1EN0KQN'"));
+const calls=[];
+vm.runInNewContext(configScript,{URL,Date,location:{href:'https://retrozap.com.br/?utm_source=instagram&utm_medium=paid_social&utm_campaign=teste_01&ref=SEGREDO&email=pessoa%40example.com#PRIVADO',origin:'https://retrozap.com.br',pathname:'/'},gtag:(...x)=>calls.push(x)});
+const cfg=calls.find(x=>x[0]==='config')[2];
+assert.equal(cfg.page_title,'Retrozap');assert.equal(cfg.page_referrer,'');
+assert.equal(cfg.page_location,'https://retrozap.com.br/?utm_source=instagram&utm_medium=paid_social&utm_campaign=teste_01');
+console.log('OK: atribuição de campanha preservada, ref/e-mail/fragmento removidos dos parâmetros Google.');

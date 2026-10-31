@@ -50,7 +50,7 @@ if(ad==='denied'){{(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersona
 <script>if(/^(?:www\.)?retrozap\.com\.br$/.test(location.hostname)){{var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=G-R8R1EN0KQN';document.head.appendChild(s)}}</script>
 <script>
   gtag('js', new Date());
-  gtag('config', 'G-R8R1EN0KQN', {{page_title:'Retrozap',page_location:location.origin+location.pathname,page_referrer:''}});
+  gtag('config', 'G-R8R1EN0KQN', {{page_title:'Retrozap',page_location:(function(){{var u=new URL(location.href);u.hash='';for(var pair of Array.from(u.searchParams)){{var k=pair[0],v=pair[1];if(/^utm_(source|medium|campaign|content|term)$/.test(k)&&/^[a-z0-9_.-]{{1,100}}$/i.test(v))continue;if(/^(gclid|fbclid|gbraid|wbraid)$/.test(k)&&/^[a-z0-9_.-]{{1,300}}$/i.test(v))continue;u.searchParams.delete(k)}}return u.origin+u.pathname+u.search}})(),page_referrer:''}});
 </script>
 {conteudo.gtm_head(getattr(conteudo, 'GTM_ID', ''))}<title>{title} · Retrozap</title><meta name="description" content="{desc}">
 <link rel="canonical" href="{url}"><meta name="theme-color" content="#1A0B2E">
