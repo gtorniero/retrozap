@@ -148,7 +148,7 @@ _i = s.index("function inicio(){"); _a = s.index("view.innerHTML = `", _i) + len
 HERO = s[_a:_b]
 if '${' in HERO:  # a home tem a versão Grupos e Casais: pré-renderiza a de Grupos (a que abre primeiro)
     import subprocess
-    HERO = subprocess.run(['node', '-e', 'const cs = false, ORIGEM = null, anuncio = () => ""; process.stdout.write(eval("`" + require("fs").readFileSync(0, "utf8") + "`"))'], input=HERO, capture_output=True, text=True, check=True).stdout
+    HERO = subprocess.run(['node', '-e', 'const cs = false, ORIGEM = null, anuncio = () => "", logoSVG = () => "", icHeart = () => ""; process.stdout.write(eval("`" + require("fs").readFileSync(0, "utf8") + "`"))'], input=HERO, capture_output=True, text=True, check=True).stdout
     if '${' in HERO: sys.exit('inicio() ainda tem interpolacao')
 rep('<main id="view" tabindex="-1"></main>', '<main id="view" tabindex="-1">' + HERO + '</main>')
 _faq = [(_html.unescape(re.sub('<[^>]+>', '', q)), _html.unescape(re.sub('<[^>]+>', '', a))) for q, a in re.findall(r'<details><summary>(.*?)</summary><p>(.*?)</p></details>', HERO)]
@@ -156,7 +156,7 @@ LD = {"@context": "https://schema.org", "@graph": [
   {"@type": "WebSite", "@id": "https://retrozap.com.br/#site", "name": "Retrozap", "alternateName": ["Retrozap Brasil", "retrozap.com.br"], "url": "https://retrozap.com.br/", "inLanguage": "pt-BR"},
   {"@type": "Organization", "@id": "https://retrozap.com.br/#org", "name": "Retrozap", "url": "https://retrozap.com.br/", "logo": "https://retrozap.com.br/icon-512.png", "email": "contato@retrozap.com.br"},
   {"@type": "WebApplication", "name": "Retrozap", "url": "https://retrozap.com.br/", "description": "Retrospectiva do grupo de WhatsApp: prêmios, números e cards para mandar no grupo.", "applicationCategory": "EntertainmentApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "BRL"}, "inLanguage": "pt-BR", "publisher": {"@id": "https://retrozap.com.br/#org"}},
-  {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in _faq]}]}
+  ] + ([{"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in _faq]}] if _faq else [])}
 rep('<!--LD-->', '<script type="application/ld+json">' + json.dumps(LD, ensure_ascii=False) + '</script>')
 
 # sobras do artefato que não podem ir para produção

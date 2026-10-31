@@ -129,18 +129,172 @@ function emoTexto(t){
   if (k < v.length) frag.appendChild(document.createTextNode(v.slice(k)));
   pai.replaceChild(frag, t);
 }
+/* ---------- Identidade 2: símbolo, medalhas e ícones próprios no lugar de emoji ----------
+   Cada ícone é desenhado em SVG (grade 120, traço grosso arredondado). No site e nos cards
+   eles aparecem dentro de uma "figurinha" colorida; no meio de um texto, só o desenho. */
+const IC_BR = "'Bricolage Grotesque',sans-serif";
+const icCor = c => {  // paleta da casa
+  return c ? {ink:'#5E0B2B', acc:'#FF4F8B', bgs:['#FFD6E2','#FFB59A','#FFC9D6','#FFE3D3'], ouro:'#FFC23C'}
+           : {ink:'#1A0B2E', acc:'#FFF4E0', bgs:['#FFC23C','#FF4F8B','#2EC4F1','#A98BFF','#FF7A59'], ouro:'#FFC23C'};
+};
+const icBub = (x, i, f) => `<path d="M${18+x} 28h60a12 12 0 0 1 12 12v28a12 12 0 0 1-12 12H${46+x}l-18 16V80H${18+x}A12 12 0 0 1 ${6+x} 68V40a12 12 0 0 1 12-12z" fill="${f}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/>`;
+const icHeart = (f, i, s = 1, dx = 0, dy = 0, sw = 6) => `<path transform="translate(${dx} ${dy}) scale(${s})" d="M60 98C30 78 14 62 14 44a22 22 0 0 1 46-8 22 22 0 0 1 46 8c0 18-16 34-46 54z" fill="${f}" stroke="${i}" stroke-width="${sw/s}" stroke-linejoin="round"/>`;
+const icT = (txt, x, y, s, f) => `<text x="${x}" y="${y}" text-anchor="middle" font-family="${IC_BR}" font-weight="800" font-size="${s}" fill="${f}">${txt}</text>`;
+const L = (d, i, w = 8) => `<path d="${d}" stroke="${i}" stroke-width="${w}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+const ICONES = {
+  // marca: medalha de conversa
+  '🏆': {marca: true, g: (i, a, c) => { const f = c ? '#E0245E' : '#FFC23C', d = c ? '#FFF3EC' : '#1A0B2E';
+    return `<path d="M30 14h60a8 8 0 0 1 8 8v26a38 38 0 0 1-76 0V22a8 8 0 0 1 8-8z" fill="${f}"/><path d="M22 24H12v14a20 20 0 0 0 16 20M98 24h10v14a20 20 0 0 1-16 20" stroke="${f}" stroke-width="8" fill="none" stroke-linecap="round"/><rect x="52" y="84" width="16" height="14" fill="${f}"/><rect x="34" y="98" width="52" height="14" rx="6" fill="${f}"/><circle cx="43" cy="46" r="7" fill="${d}"/><circle cx="60" cy="46" r="7" fill="${d}"/><circle cx="77" cy="46" r="7" fill="${d}"/>`; }},
+  '🥇': {medalha: 1}, '🥈': {medalha: 2}, '🥉': {medalha: 3}, '🏅': {medalha: 1},
+  '🗣️': {g: (i, a) => `${icBub(0, i, i)}${L('M24 46h46M24 60h30', a)}<path d="M80 8h26a8 8 0 0 1 8 8v14a8 8 0 0 1-8 8h-4v8l-10-8H80a8 8 0 0 1-8-8V16a8 8 0 0 1 8-8z" fill="${a}" stroke="${i}" stroke-width="5" stroke-linejoin="round"/>`},
+  '💬': {g: (i, a) => `${icBub(10, i, a)}${L('M34 46h44M34 60h28', i, 7)}`},
+  '🎙️': {g: (i, a) => `<rect x="44" y="12" width="32" height="56" rx="16" fill="${i}"/>${L('M51 30h18M51 42h18M51 54h18', a, 5)}${L('M32 52a28 28 0 0 0 56 0', i)}${L('M60 80v16M44 104h32', i)}${L('M98 34q8 12 0 26M108 26q14 20 0 42', i, 6)}`},
+  '🎤': {g: (i, a) => `<circle cx="74" cy="34" r="22" fill="${a}" stroke="${i}" stroke-width="6"/>${L('M58 50L22 98', i, 12)}${L('M64 40l20-12', i, 4)}`},
+  '🎧': {g: (i, a) => `${L('M22 74V60a38 38 0 0 1 76 0v14', i, 9)}<rect x="14" y="66" width="24" height="40" rx="10" fill="${a}" stroke="${i}" stroke-width="6"/><rect x="82" y="66" width="24" height="40" rx="10" fill="${a}" stroke="${i}" stroke-width="6"/>`},
+  '🤬': {g: (i, a) => `${icBub(4, i, i)}${icT('#$!@', 54, 67, 34, a)}`},
+  '😂': {g: (i, a) => `<path d="M14 46l20 16 26-30 26 30 20-16-8 40H22z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/><circle cx="60" cy="30" r="5" fill="${i}"/>${icT('KKKK', 60, 112, 26, i)}`},
+  '🔥': {g: (i, a) => `<path d="M60 8c8 22 32 30 32 60a32 32 0 0 1-64 0c0-14 8-22 14-30 2 10 6 14 12 16-4-16 0-32 6-46z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/><path d="M60 62c4 10 14 14 14 26a14 14 0 0 1-28 0c0-8 6-12 14-26z" fill="${i}"/>`},
+  '👻': {g: (i, a) => `<path d="M24 106V54a36 36 0 0 1 72 0v52l-12-10-12 10-12-10-12 10-12-10z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/><ellipse cx="48" cy="56" rx="6" ry="9" fill="${i}"/><ellipse cx="72" cy="56" rx="6" ry="9" fill="${i}"/><ellipse cx="60" cy="78" rx="6" ry="5" fill="${i}"/>`},
+  '🫥': {g: (i, a) => `<circle cx="60" cy="60" r="44" fill="none" stroke="${i}" stroke-width="7" stroke-dasharray="10 12" stroke-linecap="round"/><ellipse cx="46" cy="54" rx="6" ry="9" fill="${i}"/><ellipse cx="74" cy="54" rx="6" ry="9" fill="${i}"/>${L('M46 82h28', i, 6)}`},
+  '💌': {g: (i, a) => `${icHeart(a, i, .9, 6, 0)}<path d="M38 74v18a6 6 0 0 0 12 0V80M76 76v24a6 6 0 0 0 12 0V70" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/>`},
+  '🗑️': {g: (i, a) => `${L('M24 30h72M48 30v-8h24v8', i)}<path d="M32 40h56l-6 66H38z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/>${L('M50 56v34M70 56v34', i, 6)}`},
+  '🖼️': {g: (i, a) => `<path d="M20 16h80v58L74 104H20z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/><path d="M74 104V74h26" fill="${i}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/><circle cx="46" cy="44" r="6" fill="${i}"/><circle cx="74" cy="44" r="6" fill="${i}"/>${L('M44 62q16 12 32 0', i, 6)}`},
+  '🦉': {g: (i, a) => `<path d="M24 30l14 10h44l14-10v56a36 36 0 0 1-72 0z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/><circle cx="44" cy="62" r="13" fill="${i}"/><circle cx="76" cy="62" r="13" fill="${i}"/><circle cx="44" cy="62" r="5" fill="${a}"/><circle cx="76" cy="62" r="5" fill="${a}"/><path d="M60 72l-7 10h14z" fill="${i}"/>`},
+  '🙅': {g: (i, a) => `<rect x="16" y="22" width="88" height="84" rx="14" fill="${a}" stroke="${i}" stroke-width="6"/>${L('M16 44h88', i, 6)}${L('M36 12v18M84 12v18', i)}${L('M44 60l32 32M76 60l-32 32', i, 9)}`},
+  '🍻': {g: (i, a) => `<path d="M14 36h40v58a8 8 0 0 1-8 8H22a8 8 0 0 1-8-8z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round" transform="rotate(-10 34 70)"/><path d="M66 36h40v58a8 8 0 0 1-8 8H74a8 8 0 0 1-8-8z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round" transform="rotate(10 86 70)"/>${L('M20 32q10-12 22 0M72 32q10-12 22 0', i, 6)}`},
+  '☀️': {g: (i, a) => `<circle cx="60" cy="60" r="24" fill="${a}" stroke="${i}" stroke-width="6"/>${L('M60 10v14M60 96v14M10 60h14M96 60h14M25 25l10 10M85 85l10 10M25 95l10-10M85 35l10-10', i, 8)}`},
+  '🙏': {g: (i, a, c) => c ? `${L('M30 12v100', i)}<path d="M34 18c20-10 34 10 70 0v46c-36 10-50-10-70 0z" fill="#FFFFFF" stroke="${i}" stroke-width="6" stroke-linejoin="round"/>${icHeart('#FF4F8B', '#FF4F8B', .28, 52, 26)}`
+                                   : `<path d="M58 12c-10 18-26 40-26 62v32h26zM62 12c10 18 26 40 26 62v32H62z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/>`},
+  '📜': {g: (i, a) => `<path d="M30 14h60v80a12 12 0 0 1-12 12H30a12 12 0 0 1-12-12V26a12 12 0 0 1 12-12z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/>${L('M34 36h40M34 52h40M34 68h28', i, 6)}<path d="M78 94a12 12 0 0 0 24 0V82H78z" fill="${i}"/>`},
+  '🎂': {g: (i, a) => `<rect x="16" y="56" width="88" height="50" rx="10" fill="${a}" stroke="${i}" stroke-width="6"/>${L('M16 76q11 10 22 0t22 0 22 0 22 0', i, 6)}${L('M40 54V38M60 54V34M80 54V38', i, 7)}<path d="M60 14c6 8 6 14 0 16-6-2-6-8 0-16z" fill="${i}"/>`},
+  '📰': {g: (i, a) => `<rect x="14" y="20" width="92" height="80" rx="10" fill="${a}" stroke="${i}" stroke-width="6"/><rect x="26" y="34" width="30" height="26" rx="4" fill="${i}"/>${L('M66 38h28M66 52h28M26 74h68M26 88h50', i, 6)}`},
+  '📸': {g: (i, a) => `<rect x="12" y="34" width="96" height="66" rx="14" fill="${a}" stroke="${i}" stroke-width="6"/><path d="M42 34l8-14h20l8 14" fill="${i}"/><circle cx="60" cy="67" r="20" fill="${i}"/><circle cx="60" cy="67" r="9" fill="${a}"/>`},
+  '🌙': {g: (i, a) => `<path d="M76 14a46 46 0 1 0 30 70A38 38 0 0 1 76 14z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/><circle cx="88" cy="34" r="5" fill="${i}"/>`},
+  '📅': {g: (i, a) => `<rect x="16" y="22" width="88" height="84" rx="14" fill="${a}" stroke="${i}" stroke-width="6"/><path d="M16 36a14 14 0 0 1 14-14h60a14 14 0 0 1 14 14v10H16z" fill="${i}"/>${L('M36 12v18M84 12v18', i)}${icT('31', 60, 94, 38, i)}`},
+  '📎': {g: (i, a) => L('M78 34L44 68a10 10 0 0 0 14 14l38-38a18 18 0 0 0-26-26L30 58a26 26 0 0 0 36 36l26-26', i, 9)},
+  '📚': {g: (i, a) => `<rect x="14" y="20" width="22" height="86" rx="4" fill="${a}" stroke="${i}" stroke-width="6"/><rect x="40" y="30" width="22" height="76" rx="4" fill="${i}"/><rect x="70" y="18" width="22" height="88" rx="4" fill="${a}" stroke="${i}" stroke-width="6" transform="rotate(12 81 62)"/>`},
+  '🤙': {g: (i, a) => `${icBub(4, i, a)}${icT('“bora”', 52, 64, 26, i)}`},
+  '🏡': {g: (i, a) => `<path d="M14 58L60 18l46 40v48H14z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/><rect x="48" y="72" width="24" height="34" rx="4" fill="${i}"/>${icHeart(i, i, .22, 47, 34, 1)}`},
+  '🏘️': {g: (i, a) => `<path d="M8 62l26-24 26 24v42H8z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/><path d="M60 54l26-26 26 26v50H60z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/><rect x="26" y="78" width="16" height="26" fill="${i}"/><rect x="78" y="72" width="16" height="32" fill="${i}"/>`},
+  '💼': {g: (i, a) => `<rect x="12" y="38" width="96" height="66" rx="12" fill="${a}" stroke="${i}" stroke-width="6"/>${L('M44 38V28a8 8 0 0 1 8-8h16a8 8 0 0 1 8 8v10', i, 7)}${L('M12 64h96', i, 6)}<rect x="52" y="56" width="16" height="16" rx="3" fill="${i}"/>`},
+  '🪦': {g: (i, a) => `<path d="M26 104V48a34 34 0 0 1 68 0v56z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/>${L('M12 106h96', i)}${icT('RIP', 60, 72, 26, i)}`},
+  '📋': {g: (i, a) => `<rect x="20" y="18" width="80" height="92" rx="12" fill="${a}" stroke="${i}" stroke-width="6"/><rect x="42" y="10" width="36" height="18" rx="6" fill="${i}"/>${L('M36 50h48M36 66h48M36 82h30', i, 6)}`},
+  '🔎': {g: (i, a) => `<circle cx="50" cy="50" r="32" fill="${a}" stroke="${i}" stroke-width="8"/>${L('M74 74l30 30', i, 12)}`},
+  '🕵️': {g: (i, a) => `<circle cx="50" cy="50" r="34" fill="${a}" stroke="${i}" stroke-width="7"/>${L('M76 76l30 30', i, 12)}${icT('?', 50, 66, 46, i)}`},
+  '🤝': {g: (i, a) => `<path d="M8 56l22-20 30 10 30-10 22 20-30 34H38z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/>${L('M44 60l18 16M56 54l18 16M68 50l14 12', i, 6)}`},
+  '🏷️': {g: (i, a) => `<path d="M14 20h46l48 48-40 40-48-48V20z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/><circle cx="38" cy="44" r="8" fill="${i}"/>`},
+  '🔊': {g: (i, a) => `<path d="M14 46h22l30-26v80L36 74H14z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/>${L('M80 44q10 16 0 32M92 32q20 28 0 56', i, 7)}`},
+  '👋': {g: (i, a) => `<path d="M34 104c-14-10-22-30-20-46l6-14a6 6 0 0 1 11 3l-2 16 6-46a7 7 0 0 1 14 1l-2 34 6-44a7 7 0 0 1 14 1l-3 44 8-38a7 7 0 0 1 13 3l-6 40 8-22a6 6 0 0 1 11 4l-8 36c-6 26-26 34-56 24z" fill="${a}" stroke="${i}" stroke-width="5" stroke-linejoin="round"/>`},
+  '👀': {g: (i, a) => `<ellipse cx="38" cy="60" rx="24" ry="32" fill="${a}" stroke="${i}" stroke-width="6"/><ellipse cx="82" cy="60" rx="24" ry="32" fill="${a}" stroke="${i}" stroke-width="6"/><circle cx="46" cy="64" r="11" fill="${i}"/><circle cx="90" cy="64" r="11" fill="${i}"/>`},
+  '💞': {g: (i, a) => `${icHeart(a, i, .7, -2, 4)}${icHeart(i, i, .55, 50, 40, 1)}`},
+  '💕': {g: (i, a) => `${icHeart(a, i, .7, -2, 4)}${icHeart(i, i, .55, 50, 40, 1)}`},
+  '❤️': {g: (i, a) => icHeart(a, i, .95, 3, 2)},
+  '🫶': {g: (i, a) => icHeart(a, i, .95, 3, 2)},
+  '👍': {g: (i, a) => `<path d="M40 104V54l20-38a10 10 0 0 1 16 8l-6 26h30a10 10 0 0 1 10 12l-8 34a10 10 0 0 1-10 8z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/><rect x="12" y="52" width="22" height="54" rx="6" fill="${i}"/>`},
+  '☕': {g: (i, a) => `<path d="M16 44h70v34a26 26 0 0 1-26 26H42a26 26 0 0 1-26-26z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/>${L('M86 52h6a12 12 0 0 1 0 24h-8', i, 7)}${L('M38 14q8 8 0 16M58 14q8 8 0 16', i, 6)}`},
+  '🛟': {g: (i, a) => `<circle cx="60" cy="60" r="44" fill="${a}" stroke="${i}" stroke-width="6"/><circle cx="60" cy="60" r="20" fill="none" stroke="${i}" stroke-width="6"/>${L('M30 30l14 14M90 30L76 44M30 90l14-14M90 90L76 76', i, 12)}`},
+  '💘': {g: (i, a) => `${icHeart(a, i, .85, 9, 10)}${L('M12 98L104 26', i, 7)}${L('M104 26l-18 2M104 26l-2 18', i, 7)}${L('M12 98l4-14M12 98l14-4M20 92l4-14M20 92l14-4', i, 5)}`},
+  '🥰': {g: (i, a) => `${icHeart(a, i, .8, 12, -4)}${L('M46 76v26l-10 6M74 76v26l10 6', i, 7)}<circle cx="48" cy="40" r="5" fill="${i}"/><circle cx="72" cy="40" r="5" fill="${i}"/>${L('M50 54q10 8 20 0', i, 5)}`},
+  '⚡': {g: (i, a) => `<path d="M70 8L24 68h32l-8 44 48-62H64z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/>`},
+  '🐢': {g: (i, a) => `<path d="M16 80a40 40 0 0 1 80 0z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/><circle cx="104" cy="70" r="12" fill="${i}"/>${L('M26 80v14M50 80v14M70 80v14M88 80v14', i, 8)}${L('M40 56l16-14 16 14M56 42v-6', i, 5)}`},
+  '🍕': {g: (i, a) => `<path d="M14 26q46-22 92 0L60 112z" fill="#FFC23C" stroke="${i}" stroke-width="6" stroke-linejoin="round"/>${L('M14 26q46-22 92 0', i, 12)}<circle cx="48" cy="44" r="8" fill="${a === '#FFF4E0' ? '#FF4F8B' : a}"/><circle cx="72" cy="52" r="8" fill="${a === '#FFF4E0' ? '#FF4F8B' : a}"/><circle cx="58" cy="74" r="7" fill="${a === '#FFF4E0' ? '#FF4F8B' : a}"/>`},
+  '🥺': {g: (i, a) => `<circle cx="60" cy="60" r="44" fill="${a}" stroke="${i}" stroke-width="6"/><circle cx="44" cy="56" r="11" fill="${i}"/><circle cx="76" cy="56" r="11" fill="${i}"/><circle cx="47" cy="52" r="4" fill="${a}"/><circle cx="79" cy="52" r="4" fill="${a}"/>${L('M50 84q10-8 20 0', i, 6)}`},
+  '🛋️': {g: (i, a) => `<rect x="20" y="30" width="80" height="40" rx="12" fill="${a}" stroke="${i}" stroke-width="6"/><rect x="8" y="56" width="104" height="34" rx="12" fill="${a}" stroke="${i}" stroke-width="6"/>${L('M20 92v14M100 92v14', i)}`},
+  '📨': {g: (i, a) => `<rect x="12" y="28" width="96" height="66" rx="10" fill="${a}" stroke="${i}" stroke-width="6"/>${L('M14 32l46 36 46-36', i, 6)}`},
+  '📈': {g: (i, a) => `<rect x="12" y="12" width="96" height="96" rx="14" fill="${a}" stroke="${i}" stroke-width="6"/>${L('M26 84l22-24 16 14 30-34', i, 9)}${L('M80 40h14v14', i, 9)}`},
+  '🚀': {g: (i, a) => `<path d="M60 8c22 14 30 38 22 66H38C30 46 38 22 60 8z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/><circle cx="60" cy="42" r="10" fill="${i}"/><path d="M38 74l-16 14 4-28M82 74l16 14-4-28" fill="${i}"/><path d="M48 80h24l-12 28z" fill="#FF7A59" stroke="${i}" stroke-width="5" stroke-linejoin="round"/>`},
+  '🥁': {g: (i, a) => `<path d="M18 52v34c0 10 19 18 42 18s42-8 42-18V52" fill="${a}" stroke="${i}" stroke-width="6"/><ellipse cx="60" cy="52" rx="42" ry="16" fill="${a}" stroke="${i}" stroke-width="6"/>${L('M30 66l16 30M60 70v34M90 66L74 96', i, 5)}${L('M34 40L12 10M86 40l22-30', i, 7)}`},
+  '📲': {g: (i, a) => `<rect x="42" y="10" width="56" height="100" rx="12" fill="${a}" stroke="${i}" stroke-width="6"/>${L('M8 60h34M30 48l12 12-12 12', i, 8)}`},
+  '🔒': {g: (i, a) => `${L('M34 52V38a26 26 0 0 1 52 0v14', i, 10)}<rect x="20" y="50" width="80" height="58" rx="14" fill="${a}" stroke="${i}" stroke-width="6"/><circle cx="60" cy="76" r="8" fill="${i}"/><rect x="56" y="78" width="8" height="16" rx="4" fill="${i}"/>`},
+  '🎉': {g: (i, a) => `<path d="M14 106l26-70 44 44z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/>${L('M66 30q10-16 26-8M78 50q18-8 30 6M56 18l4-8M96 34l10-4', i, 6)}`},
+  '🎬': {g: (i, a) => `<rect x="12" y="44" width="96" height="62" rx="10" fill="${a}" stroke="${i}" stroke-width="6"/><path d="M12 30l92-16 4 24-92 16z" fill="${i}"/>`},
+  '🗓️': {g: (i, a) => `<rect x="16" y="22" width="88" height="84" rx="14" fill="${a}" stroke="${i}" stroke-width="6"/><path d="M16 36a14 14 0 0 1 14-14h60a14 14 0 0 1 14 14v10H16z" fill="${i}"/>${L('M36 12v18M84 12v18', i)}${icT('26', 60, 94, 38, i)}`},
+  '🍔': {g: (i, a) => `<path d="M16 54a44 34 0 0 1 88 0z" fill="#FFC23C" stroke="${i}" stroke-width="6" stroke-linejoin="round"/><rect x="12" y="62" width="96" height="14" rx="7" fill="${i}"/><path d="M16 84h88v6a14 14 0 0 1-14 14H30a14 14 0 0 1-14-14z" fill="#FFC23C" stroke="${i}" stroke-width="6" stroke-linejoin="round"/>`},
+  '🧾': {g: (i, a) => `<path d="M24 10h72v100l-12-8-12 8-12-8-12 8-12-8-12 8z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/>${L('M40 34h40M40 50h40M40 66h24', i, 6)}${icHeart(i, i, .2, 64, 64, 1)}`},
+  '✨': {g: (i, a) => `<path d="M48 10l10 34 34 10-34 10-10 34-10-34-34-10 34-10z" fill="${a}" stroke="${i}" stroke-width="6" stroke-linejoin="round"/><path d="M92 70l5 15 15 5-15 5-5 15-5-15-15-5 15-5z" fill="${i}"/>`}
+};
+// cada ícone com uma cor fixa de figurinha, para não mudar de uma tela para outra
+const icNorm = e => String(e || '').replace(/️/g, '');
+const IC_KEYS = new Map(Object.keys(ICONES).map(k => [icNorm(k), k]));
+const icKey = e => IC_KEYS.get(icNorm(e));
+// a taça que fala (símbolo da marca) em qualquer cor
+const logoSVG = (f, d) => `<svg viewBox="0 0 120 120" focusable="false"><path d="M30 14h60a8 8 0 0 1 8 8v26a38 38 0 0 1-76 0V22a8 8 0 0 1 8-8z" fill="${f}"/><path d="M22 24H12v14a20 20 0 0 0 16 20M98 24h10v14a20 20 0 0 1-16 20" stroke="${f}" stroke-width="8" fill="none" stroke-linecap="round"/><rect x="52" y="84" width="16" height="14" fill="${f}"/><rect x="34" y="98" width="52" height="14" rx="6" fill="${f}"/><circle cx="43" cy="46" r="7" fill="${d}"/><circle cx="60" cy="46" r="7" fill="${d}"/><circle cx="77" cy="46" r="7" fill="${d}"/></svg>`;
+function medalhaSVG(n, c){
+  const r1 = c ? '#E0245E' : '#FF4F8B', r2 = c ? '#5E0B2B' : '#1A0B2E', ink = r2, met = {1:'#FFC23C', 2:'#D9D3E4', 3:'#E8925E'}[n];
+  return `<path d="M32 4h22l12 36H44zM88 4H66L54 40h22z" fill="${r1}"/><path d="M44 4h10l12 36H56zM76 4H66L54 40h10z" fill="${r2}"/><circle cx="60" cy="76" r="38" fill="${met}" stroke="${ink}" stroke-width="6"/><circle cx="60" cy="76" r="27" fill="none" stroke="${ink}" stroke-width="3" opacity=".35"/>${icT(n, 60, 92, 44, ink)}`;
+}
+// svg completo de um emoji; figurinha = com o quadrado colorido atrás
+function iconeSVG(e, {figurinha = true, casal = (typeof state !== 'undefined' && state.modo === 'casal'), cor} = {}){
+  const k = icKey(e); if (!k) return null; const it = ICONES[k], P = icCor(casal);
+  if (it.medalha) return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">${medalhaSVG(it.medalha, casal)}</svg>`;
+  if (it.marca) return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">${it.g(0, 0, casal)}</svg>`;
+  const idx = [...k].reduce((s, ch) => s + ch.codePointAt(0), 0) % P.bgs.length;
+  if (!figurinha){ const olho = icNorm(k) === icNorm('👀'); // olhos no meio do texto: brancos, com pupila escura (como o emoji)
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -10 140 140" width="120" height="120">${olho ? it.g('#1A0B2E', '#FFFFFF', casal) : it.g(cor || 'currentColor', casal ? '#FF4F8B' : '#FFC23C', casal)}</svg>`; }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -10 140 140" width="120" height="120"><rect x="-10" y="-10" width="140" height="140" rx="34" fill="${P.bgs[idx]}"/>${it.g(P.ink, P.acc, casal)}</svg>`;
+}
+// imagens prontas para o canvas (cards e vídeo); carregadas uma vez por casa
+const IC_IMG = new Map();
+function icImg(e, casal){
+  const k = icKey(e); if (!k) return null; const id = k + (casal ? '|c' : '|g'); let im = IC_IMG.get(id);
+  if (!im){ im = new Image(); im.decoding = 'async'; im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(iconeSVG(k, {casal})); IC_IMG.set(id, im); }
+  return im.complete && im.naturalWidth ? im : null;
+}
+function icPreparar(){
+  const ps = [];
+  for (const k of Object.keys(ICONES)) for (const c of [false, true]){ icImg(k, c); const im = IC_IMG.get(k + (c ? '|c' : '|g')); if (im && !im.complete) ps.push(im.decode().catch(() => {})); }
+  return Promise.all(ps);
+}
+let IC_PRONTO = null;
+const prontoArte = () => (IC_PRONTO ||= Promise.all([document.fonts.ready, icPreparar()]));
+// no site: troca o emoji por ícone (figurinha nos lugares de destaque, desenho simples no meio do texto)
+const IC_DESTAQUE = '.em,.em-g,.res-i,.dest,.ph,.mode,.cat,.award,.tt-logo';
+function trocaIcones(raiz){
+  if (!raiz || raiz.nodeType !== 1) return;
+  const SEL = 'span[aria-hidden="true"],.em,.em-g,.logo>span,.tambor';
+  const alvos = raiz.matches?.(SEL) ? [raiz] : [];
+  raiz.querySelectorAll(SEL).forEach(x => alvos.push(x));
+  for (const el of alvos){
+    if (el.dataset.ico || el.children.length) continue;
+    const t = (el.textContent || '').trim(); if (!t || !icKey(t)) continue;
+    const dest = !!el.closest(IC_DESTAQUE) && !icKey(t).match(/🥇|🥈|🥉|🏅/u);
+    const k = icKey(t), it = ICONES[k], bt = it.marca && !el.closest('.logo') && el.closest('button,.btn,a');
+    // símbolo dentro de botão: na cor do texto do botão, com os pontinhos na cor do fundo
+    let sv = iconeSVG(t, {figurinha: dest || !!it.marca || !!it.medalha});
+    if (bt){ const cs = getComputedStyle(bt), bg = cs.backgroundColor; sv = logoSVG('currentColor', bg && !/rgba\(0, 0, 0, 0\)|transparent/.test(bg) ? bg : 'var(--noite)'); }
+    el.dataset.ico = '1'; el.classList.add('ico'); if (dest) el.classList.add('ico-fig');
+    el.innerHTML = sv.replace('<svg ', '<svg aria-hidden="true" focusable="false" ');
+  }
+}
+document.addEventListener('DOMContentLoaded', () => trocaIcones(document.body));
+try { prontoArte(); } catch {}
+// no canvas: desenha o ícone (ou a medalha) centrado em (cx, cy)
+function iconeC(c, e, cx, cy, size){
+  const casal = state.modo === 'casal', im = icImg(e, casal); if (!im) return false;
+  const k = icKey(e), s = ICONES[k].medalha || ICONES[k].marca ? size*1.25 : size*1.2;
+  c.drawImage(im, cx - s/2, cy - s/2, s, s); return true;
+}
+// assinatura nos cards e no vídeo: símbolo + "retrozap"
+function marcaC(c, cx, y, tam, cor){
+  c.save(); c.font = `800 ${tam}px "Bricolage Grotesque", sans-serif`; c.textBaseline = 'alphabetic';
+  const w = c.measureText('retrozap').width, s = tam*1.15, tot = s + tam*.18 + w, x0 = cx - tot/2;
+  const im = icImg('🏆', state.modo === 'casal'); if (im) c.drawImage(im, x0, y - tam*.92, s, s);
+  c.fillStyle = cor; c.textAlign = 'left'; c.fillText('retrozap', x0 + s + tam*.18, y); c.restore();
+}
+
 function emoAttr(el){ for (const a of ['aria-label', 'alt', 'title']){ const v = el.getAttribute?.(a); if (v && temEmo(v)) el.setAttribute(a, v.replace(EMO_RX, '').replace(/\s{2,}/g, ' ').trim()); } }
 function escondeEmojis(raiz){
   if (!raiz) return;
-  if (raiz.nodeType === 3) return emoTexto(raiz);
+  if (raiz.nodeType === 3){ const pai = raiz.parentNode; emoTexto(raiz); return trocaIcones(pai); }
   if (raiz.nodeType !== 1) return;
   emoAttr(raiz); raiz.querySelectorAll('[aria-label],[alt],[title]').forEach(emoAttr);
   const w = document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT), lista = [];
   while (w.nextNode()) if (temEmo(w.currentNode.nodeValue)) lista.push(w.currentNode);
   lista.forEach(emoTexto);
+  trocaIcones(raiz);
 }
 // o que entra na tela depois (revelações, pop-ups, contagens) também passa pelo filtro
-try { new MutationObserver(ms => { for (const m of ms) m.addedNodes.forEach(n => { if (!(n.nodeType === 1 && n.getAttribute('aria-hidden') === 'true')) escondeEmojis(n); }); })
+try { new MutationObserver(ms => { for (const m of ms) m.addedNodes.forEach(n => { if (!(n.nodeType === 1 && n.getAttribute('aria-hidden') === 'true')) escondeEmojis(n); else trocaIcones(n); }); })
   .observe(document.body, {childList: true, subtree: true}); } catch {}
 // pop-ups: enquanto um estiver aberto, o resto da página fica inativo (Tab não sai do pop-up)
 new MutationObserver(() => {
@@ -175,7 +329,8 @@ function voltarPilha(){
 function voltar(){ history.back(); } // o navegador volta e o popstate redesenha a tela anterior
 const ETAPAS = ['Começo', 'Ato I: conhecendo o grupo', 'Ato II: as categorias', 'Ato III: o final'];
 function setSteps(n){ document.querySelectorAll('.steps i').forEach((el,i)=>el.classList.toggle('on', i<=n)); const e = document.getElementById('etapa'); if (e) e.textContent = `Etapa ${n + 1} de 4: ${ETAPAS[n] || ''}`; }
-function setModo(m){ state.modo=m; if (m !== 'casal') state.ultimoGrupo = m; document.documentElement.style.setProperty('--modo', MODOS[m].c); document.documentElement.classList.toggle('casal', m === 'casal'); }
+function setModo(m){ state.modo=m; if (m !== 'casal') state.ultimoGrupo = m; document.documentElement.style.setProperty('--modo', MODOS[m].c); document.documentElement.classList.toggle('casal', m === 'casal');
+  const lg = document.querySelector('.logo>span'); if (lg && typeof logoSVG === 'function') lg.innerHTML = logoSVG(m === 'casal' ? '#E0245E' : '#FFC23C', m === 'casal' ? '#FFF3EC' : '#1A0B2E'); }
 
 /* ---------- parser do export ---------- */
 const STRIP = /[‎‏‪-‮⁦-⁩]/g;
@@ -651,7 +806,7 @@ function anuncio(onde){
   return `<div class="anuncio" data-anuncio><p class="small" style="margin:0">Publicidade</p><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4039247360984618" data-ad-slot="${slot}" data-ad-format="auto" data-full-width-responsive="true"></ins></div>`;
 }
 function ativaAnuncios(){ view.querySelectorAll('[data-anuncio] ins:not([data-adsbygoogle-status])').forEach(() => { try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch {} }); }
-const AMBIENTE_TESTE = !/(^|\.)retrozap\.com\.br$|workers\.dev$|^localhost$|^127\./.test(location.hostname) || (/^localhost$|^127\./.test(location.hostname) && /[?&]plano_teste=1/.test(location.search)); // nunca no site oficial
+const AMBIENTE_TESTE = !/(^|\.)retrozap\.com\.br$|^retrozap-v2\.[^.]+\.workers\.dev$|^localhost$|^127\./.test(location.hostname) || (/^localhost$|^127\./.test(location.hostname) && /[?&]plano_teste=1/.test(location.search)); // nunca no site oficial
 if (AMBIENTE_TESTE) state.planoTeste = 'gratis';
 const premiumLocal = () => state.planoTeste ? state.planoTeste === 'premium' : !!(state.sample || lsGet('rz_acesso'));
 // premium liberado? (grupo de exemplo, código de acesso guardado ou cobrança desligada)
@@ -847,44 +1002,15 @@ function inicio(){
   view.innerHTML = `
   <section class="screen hero">
     ${ORIGEM ? `<div class="chegou" role="note"><span aria-hidden="true">👋</span><span>${cs ? 'Um casal te mandou a retrospectiva deles? <b>Agora é a vez de vocês.</b>' : 'Te mandaram a retrospectiva de um grupo? <b>Agora é a vez do seu.</b> Descubra quem é o tagarela, o fantasma e o boca-suja.'}</span></div>` : ''}
-    ${cs ? `<p class="eyebrow">A retrospectiva dos casais do Brasil</p>
-    <h1>Toda história de amor tem números. <em>Descubra os de vocês.</em></h1>
-    <p class="lead">Quem manda mais "te amo", quem puxa o papo do dia, quem pede desculpas: cada um leva o seu troféu. 💘</p>` : `<p class="eyebrow">A retrospectiva oficial dos grupos do Brasil</p>
-    <h1>Todo grupo tem uma história. <em>Descubra a do seu.</em></h1>
-    <p class="lead">Quem fala demais, quem some, quem manda figurinha às 3 da manhã: cada um leva o seu troféu. 🏆</p>`}
-    <div class="badge"><span aria-hidden="true">🔒</span><span><b>Suas mensagens não saem do seu celular.</b> Tudo é analisado aqui no navegador. A gente não recebe, não lê e não guarda nenhuma mensagem. <a href="/privacidade" style="color:var(--areia)">Entenda</a></span></div>
+    <p class="eyebrow">${cs ? 'A retrospectiva dos casais do Brasil' : 'A retrospectiva oficial dos grupos do Brasil'}</p>
+    <h1 class="h-home">${cs ? 'O 2026 de vocês,' : 'Seu 2026,'} <em>premiado.</em></h1>
+    <p class="lead">${cs ? 'Quem manda mais "te amo", quem puxa o papo do dia, quem pede desculpas: troféus, números e o resumo do ano de vocês dois.' : 'Quem fala demais, quem some, quem manda figurinha às 3 da manhã: troféus, números e o resumo do ano do seu grupo.'} Tudo no seu celular.</p>
     <div class="escolha" role="group" aria-label="O que você quer analisar?">
-      <button type="button" class="esc esc-g" data-esc="grupo" aria-pressed="${!cs}"><span class="em" aria-hidden="true">🏆</span><b>Grupos</b><span>Amigos, família, trabalho, condomínio</span></button>
-      <button type="button" class="esc esc-c" data-esc="casal" aria-pressed="${cs}"><i class="novo">Novo</i><span class="em" aria-hidden="true">💘</span><b>Casais</b><span>A retrospectiva de vocês dois</span></button>
+      <button type="button" class="esc esc-g" data-esc="grupo" aria-pressed="${!cs}"><span class="esc-ic" aria-hidden="true">${logoSVG('#1A0B2E', '#FFC23C')}</span><b>Grupos</b><span>amigos, família, trampo, condomínio</span></button>
+      <button type="button" class="esc esc-c" data-esc="casal" aria-pressed="${cs}"><i class="novo">Novo</i><span class="esc-ic" aria-hidden="true"><svg viewBox="0 0 120 120" focusable="false">${icHeart('#FFF3EC', '#5E0B2B', 1, 0, 0, 7)}</svg></span><b>Casais</b><span>vocês dois em troféus</span></button>
     </div>
-    <div class="panel oque">
-      <p class="ask">O que você vai encontrar</p>
-      ${cs ? `<ol class="oque-l">
-        <li><span class="em" aria-hidden="true">📈</span><div><b>A história de vocês em números</b><span>Mensagens ano a ano, áudios, a frase mais dita e há quanto tempo vocês conversam.</span></div></li>
-        <li><span class="em" aria-hidden="true">🏆</span><div><b>7 categorias com troféus</b><span>Do Tagarela ao Mais Romântico, com card para mandar um para o outro.</span></div></li>
-        <li><span class="em" aria-hidden="true">🎬</span><div><b>O nosso 2026 e um vídeo para os stories</b><span>Um contra o outro, e como vocês se comparam aos casais do Brasil.</span></div></li>
-      </ol>` : `<ol class="oque-l">
-        <li><span class="em" aria-hidden="true">📈</span><div><b>O grupo em números</b><span>Mensagens ano a ano, áudios, gíria oficial e como o grupo se compara aos grupos do Brasil.</span></div></li>
-        <li><span class="em" aria-hidden="true">🏆</span><div><b>As categorias com troféus</b><span>Do Tagarela ao Fantasma, com pódio e card para mandar no grupo.</span></div></li>
-        <li><span class="em" aria-hidden="true">🎬</span><div><b>O nosso 2026 e um vídeo</b><span>O ano comparado com 2025, os destaques e um vídeo pronto para os stories.</span></div></li>
-      </ol>`}
-    </div>
+    <div class="badge priv-l"><span class="ok-ic" aria-hidden="true">✓</span><span><b>Nada sai do seu celular. Sem cadastro.</b> Tudo é analisado aqui no navegador: a gente não recebe, não lê e não guarda nenhuma mensagem. <a href="/privacidade">Entenda</a></span></div>
     <button class="btn btn-main" id="comecar">${cs ? 'Começar a retrospectiva do casal →' : 'Vamos começar →'}</button>
-    <section class="seo-home" aria-labelledby="seo-t">
-      <h2 id="seo-t">Como fazer a retrospectiva do seu grupo de WhatsApp</h2>
-      <p>O Retrozap é a retrospectiva do seu grupo de WhatsApp: transforma a conversa em números, prêmios e um resumo para mandar no grupo. Funciona com grupo de amigos, da família, do trabalho e do condomínio.</p>
-      <ol>
-        <li><b>Exporte a conversa.</b> No WhatsApp, abra o grupo, toque no nome dele e escolha Exportar conversa, Sem mídia. <a href="/blog/como-exportar-conversa-whatsapp">Passo a passo</a>.</li>
-        <li><b>Escolha o arquivo aqui.</b> A leitura acontece no seu navegador, em menos de um minuto, e as mensagens não saem do celular.</li>
-        <li><b>Revele os prêmios e mande o card no grupo.</b> Quem mais fala, quem some, a tia do bom dia e o coruja da madrugada levam o troféu.</li>
-      </ol>
-      <h2>Perguntas frequentes</h2>
-      <details><summary>O Retrozap é grátis?</summary><p>A retrospectiva do primeiro grupo é grátis. Para fazer quantos grupos quiser e a retrospectiva de casal, o acesso ilimitado custa R$ 6,99 no Pix ou R$ 8,99 no cartão, pago uma única vez.</p></details>
-      <details><summary>Minhas mensagens são enviadas para algum servidor?</summary><p>Não. A leitura do arquivo acontece no seu navegador. As mensagens, os nomes e os telefones não saem do seu celular ou computador.</p></details>
-      <details><summary>Funciona no iPhone e no Android?</summary><p>Sim. O site aceita o .zip ou o .txt que o WhatsApp gera nos dois sistemas, e também funciona no computador.</p></details>
-      <details><summary>Funciona com a conversa de um casal?</summary><p>Sim. No Retrozap Casais, a retrospectiva é de vocês dois: quem manda mais "te amo", quem puxa o papo do der, o card "Nós dois" e um vídeo para os stories.</p></details>
-      <details><summary>Quais prêmios o grupo pode ganhar?</summary><p>São de 7 a 10 categorias, escolhidas para o tipo de grupo, como O Tagarela, O Fantasma, Boca-Suja e Tio do Bom Dia, além do ranking do grupo comparado a outros grupos do Brasil.</p></details>
-    </section>
     ${anuncio('inicio')}
     <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a></nav>
     <p class="small" style="text-align:center;margin:0">© 2026 Retrozap · Beyond the Work Ideas · CNPJ 69.746.447/0001-00</p>
@@ -922,13 +1048,13 @@ function home(){
         <li>Toque em <b>Mais</b> e depois em <b>Exportar conversa</b>.</li>
         <li>Escolha <b>Sem mídia</b>.</li>
         <li>Salve em <b>Downloads</b> (ou no Drive) e depois volte aqui.</li></ol>`}
-      <a class="btn btn-wa" id="abreWa" href="${linkAbreWhats()}" style="text-decoration:none"><i class="ic-wa" aria-hidden="true"></i>Abrir o WhatsApp</a>
       <p class="pb-veja">Veja como é:</p>
       ${tutorialHTML()}
       <details class="pb-video"><summary>▶️ Prefere vídeo? Assista em 45 segundos</summary>
         <video controls playsinline preload="none" poster="${VIDEO_EXPORTAR}.jpg" src="${VIDEO_EXPORTAR}.mp4" aria-label="Vídeo: como exportar a conversa do WhatsApp no iPhone e no Android"></video>
         <p class="small">Vídeo sem som. <a href="/como-exportar">Abrir a página do vídeo</a></p>
       </details>
+      <a class="btn btn-wa" id="abreWa" href="${linkAbreWhats()}" style="text-decoration:none"><i class="ic-wa" aria-hidden="true"></i>Abrir o WhatsApp</a>
     </section>
     <section class="pbloco" aria-labelledby="pb2">
       <div class="pb-cab"><span class="pb-num" aria-hidden="true">2</span><div><h2 id="pb2">${state.voltou ? 'Agora escolha o arquivo' : 'Escolha o arquivo aqui'}</h2><p>${state.how === 'iphone' ? 'Ele fica em <b>Arquivos › Recentes</b>, com o nome "WhatsApp Chat - ….zip".' : 'Ele fica em <b>Downloads</b> (ou no Drive), com o nome "Conversa do WhatsApp com ….txt".'}</p></div></div>
@@ -1039,7 +1165,7 @@ async function readFile(f){
 function carregando(titulo){
   { const vb = document.getElementById('voltar'); if (vb) vb.hidden = true; }
   anchor(false);
-  view.innerHTML = `<section class="loader"><div class="trofinho" aria-hidden="true">🏆</div><h2 id="lf">${titulo}</h2>
+  view.innerHTML = `<section class="loader"><div class="trofinho" aria-hidden="true">${state.modo === 'casal' ? logoSVG('#E0245E', '#FFF3EC') : logoSVG('#FFC23C', '#1A0B2E')}</div><h2 id="lf">${titulo}</h2>
     <div class="pbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="pb"></i></div>
     <p class="cd" id="cd">calculando o tempo...</p><p class="small" id="pt"></p><p class="small">Tudo acontecendo no seu celular 🔒</p></section>`;
   const t0 = performance.now();
@@ -1107,6 +1233,8 @@ function roster(){
   }
   const todos = Object.values(info).sort((a,b) => b.c - a.c);
   for (const r of todos) r.ts.sort((a,b) => a - b);
+  // casal: o nome do casal já vem preenchido com os dois primeiros nomes ("Ana & Bruno"); dá para trocar
+  if (state.modo === 'casal' && !state.grupo && todos.length >= 2){ const pn = n => (limpaTxt(state.alias?.[n] || n).split(' ').find(w => /\p{L}/u.test(w)) || n); state.grupo = cortaNome(`${pn(todos[0].n)} & ${pn(todos[1].n)}`, 44); }
   const numeros = todos.filter(r => isFone(r.n)), pessoas = todos.filter(r => !isFone(r.n));
   const meses = r => Math.floor((end - r.last) / (30*864e5));
   const mmaa = t => t.toLocaleDateString('pt-BR', {month:'short', year:'numeric'});
@@ -1152,7 +1280,7 @@ function roster(){
     <p class="eyebrow">Antes de começar · ${state.modo === 'casal' ? 'Confira os nomes' : 'Confira a turma'}</p>
     <h1 style="font-size:36px">${dentro} pessoas na cerimônia</h1>
     <div class="panel"><label class="ask" for="gn">${state.modo === 'casal' ? 'Nome do casal' : 'Nome do grupo'} <span class="small">(aparece nos cards)</span></label>
-      <input id="gn" type="text" maxlength="44" value="${esc(state.grupo)}" placeholder="Ex.: Família Silva" autocomplete="off" style="width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid var(--linha);background:var(--noite);color:var(--areia);font:inherit;font-size:17px"></div>
+      <input id="gn" type="text" maxlength="44" value="${esc(state.grupo)}" placeholder="${state.modo === 'casal' ? 'Ex.: Eu e você' : 'Ex.: Família Silva'}" autocomplete="off" style="width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid var(--linha);background:var(--noite);color:var(--areia);font:inherit;font-size:17px"></div>
     ${state.modo === 'casal' ? '' : `<div class="panel"><p class="ask" id="tipoG">Que tipo de grupo é? <span class="small">(muda as categorias)</span></p>
       <div class="modes" role="group" aria-labelledby="tipoG">
         ${Object.entries(MODOS).filter(([k]) => k !== 'casal').map(([k,m]) => `<button type="button" class="mode" data-m="${k}" style="--c:${m.c}" aria-pressed="${state.modo===k}"><span class="em">${m.e}</span>${m.n}</button>`).join('')}
@@ -1480,7 +1608,8 @@ function award(){
   }
   view.innerHTML = `<section class="screen">
     ${state.sample ? `<span class="sample">${state.modo === 'casal' ? 'Casal de exemplo' : 'Grupo de exemplo'}</span>` : ''}
-    <p class="count">Ato II · Categoria ${state.idx+1} de ${n}</p>
+    <div class="tp" aria-hidden="true"><span>Troféu ${state.idx+1} de ${n}</span><span>Ato II</span></div><div class="tp-bar" aria-hidden="true"><i style="width:${Math.round((state.idx+1)/n*100)}%"></i></div>
+    <p class="sr-only">Ato II · Categoria ${state.idx+1} de ${n}</p>
     <div class="award">
       <div class="em" aria-hidden="true">${a.e}</div>
       <h1 class="h-award">${a.n}</h1>
@@ -1489,7 +1618,7 @@ function award(){
       <div id="res" class="reveal" aria-live="polite" hidden></div>
     </div>
     ${state.idx >= Math.ceil(n/2) && state.idx < n - 1 ? `<button type="button" class="lnk todas" id="todas">⏩ Revelar as ${n - state.idx} que faltam de uma vez</button>` : ''}
-    <div class="acao"><button class="btn btn-main" id="rvl"></button><button class="btn btn-ghost" id="next" style="flex:0 0 auto">${state.idx === n-1 ? 'Pular para o final' : 'Pular →'}</button></div>
+    <div class="acao"><button class="btn btn-main" id="rvl"></button><button class="btn btn-ghost" id="next" style="flex:0 1 auto;max-width:46%">${state.idx === n-1 ? 'Pular para o final' : 'Pular →'}</button></div>
   </section>`;
   view.querySelector('section').classList.add('com-acao');
   $('#next').onclick = next;
@@ -1593,7 +1722,7 @@ function suspense(){
       ? `<div class="em-g" aria-hidden="true">${x.e}</div><h2 style="font-size:30px">Top 3 destaques de ${ANO_MOMENTO}</h2>
          <div class="dest">${x.destaques.map(y => `<div><span aria-hidden="true">${y.e}</span><div><span class="small">${esc(y.t)}</span><b>${esc(y.n)}</b><span class="small">${esc(y.v)}</span></div></div>`).join('')}</div>
          <p class="piada">${esc(x.piada)}</p>`
-      : `<div class="em-g" aria-hidden="true">${x.e}</div><div class="big" id="bg">${esc(x.big)}</div><p class="sub">${esc(x.sub)}</p>
+      : `<div class="em-g" aria-hidden="true">${x.e}</div><div class="big${/^[\d.]+/.test(x.big) ? '' : ' txt'}" id="bg">${esc(x.big)}</div><p class="sub">${esc(x.sub)}</p>
          ${x.pills?.length ? `<div class="pills" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">${x.pills.map(p => `<span class="pill ${p.c}">${esc(p.t)}</span>`).join('')}</div>` : ''}
          ${x.desde ? `<div class="desde"><span class="tag-periodo">desde o início</span><b>${esc(x.desde.t)}</b><span class="small">${esc(x.desde.s)}</span>${x.desde.quem ? `<span class="quem">🎙️ ${esc(x.desde.quem)}</span>` : ''}${x.desde.top ? `<span class="pills" data-top="${x.desde.top}" hidden></span>` : ''}</div>` : ''}
          <p class="piada">${esc(x.piada)}</p>`;
@@ -1676,7 +1805,7 @@ function imgSobDemanda(el, fz){
 }
 function rodaFilaImg(){
   if (filaRodando) return; filaRodando = true;
-  const passo = () => { const f = FILA_IMG.shift(); if (!f){ filaRodando = false; return; } document.fonts.ready.then(() => { try { f(); } catch {} setTimeout(passo, 80); }); };
+  const passo = () => { const f = FILA_IMG.shift(); if (!f){ filaRodando = false; return; } prontoArte().then(() => { try { f(); } catch {} setTimeout(passo, 80); }); };
   passo();
 }
 const liberado = () => premiumLocal() || (!state.planoTeste && !!state.premOk);
@@ -1695,8 +1824,9 @@ function fimTela(semFesta){
     <section class="compartilhar" aria-labelledby="cmpT">
       <h1 id="cmpT" style="font-size:clamp(30px,9vw,40px);margin:0">📲 Mídias ${casal ? 'de vocês' : 'do grupo'}</h1>
       <p class="small">Para compartilhar onde quiser: ${casal ? 'um com o outro' : 'no grupo'}, nos stories, no status. Tudo é feito aqui no seu celular.</p>
-      ${(() => { const itens = [videoHTML(casal), fig(3, `🏆 Troféus ${casal ? 'do casal' : 'do grupo'}`, 'desde o início', altTop10()), fig(1, `📸 Resumo ${casal ? 'do casal' : 'do grupo'}`, 'desde o início', altResumo(d)),
-          casal ? fig(5, '💞 Nós dois: um contra o outro', so26 ? 'só ' + ANO_MOMENTO : 'desde o início', altCasal(d)) : '', so26 ? fig(4, `🗓️ Nosso ${ANO_MOMENTO}`, 'só ' + ANO_MOMENTO, altNosso2026()) : ''].filter(Boolean);
+      ${(() => { const per = so26 ? 'só ' + ANO_MOMENTO : 'desde o início', itens = casal
+          ? [videoHTML(casal), fig(6, '🧾 Recibo do amor', per, altRecibo(d)), fig(7, '💞 Placar do casal', per, altPlacar(d)), fig(5, '💞 Nós dois: um contra o outro', per, altCasal(d)), fig(3, '🏆 Quadro de troféus', 'desde o início', altTop10()), fig(1, '📸 Resumo do casal', 'desde o início', altResumo(d)), so26 ? fig(4, `🗓️ O nosso ${ANO_MOMENTO}`, 'só ' + ANO_MOMENTO, altNosso2026()) : '']
+          : [videoHTML(casal), fig(3, '🏆 Quadro de troféus', 'desde o início', altTop10()), fig(9, `💬 ${so26 ? 'O número de ' + ANO_MOMENTO : 'O número do grupo'}`, per, altNumero()), fig(1, '📸 Resumo do grupo', 'desde o início', altResumo(d)), so26 ? fig(4, `🗓️ Nosso ${ANO_MOMENTO}`, 'só ' + ANO_MOMENTO, altNosso2026()) : ''].filter(Boolean);
         return `<p class="carr-dica" aria-hidden="true">👉 Arraste para o lado: são ${itens.length} mídias</p><div class="carr-box"><button type="button" class="carr-lado esq" data-carr="-1" aria-label="Mídia anterior">‹</button><div class="carr" id="carr" role="region" aria-roledescription="carrossel" aria-label="Vídeo e imagens para compartilhar" tabindex="0">${itens.map((x, i) => `<div class="carr-i" role="group" aria-roledescription="item" aria-label="${i + 1} de ${itens.length}">${x}</div>`).join('')}</div><button type="button" class="carr-lado dir" data-carr="1" aria-label="Próxima mídia">›</button></div>
         <div class="carr-nav"><button type="button" class="carr-seta" data-carr="-1" aria-label="Anterior">‹ Anterior</button><div class="carr-dots">${itens.map((_, i) => `<button type="button" data-dot="${i}" aria-label="Ver item ${i + 1} de ${itens.length}"${i ? '' : ' aria-current="true"'}></button>`).join('')}</div><button type="button" class="carr-seta prox" data-carr="1" aria-label="Próximo">Próximo ›</button></div><p class="carr-n small" aria-hidden="true">1 de ${itens.length}</p><p class="sr-only" id="carrVivo" aria-live="polite"></p>`; })()}
     </section>
@@ -1740,7 +1870,7 @@ function fimTela(semFesta){
     <button class="btn btn-main" id="concluir" style="width:100%">Concluir 🎉</button>
   </section>`;
   // imagens desenhadas sob demanda, uma de cada vez, quando chegam perto da tela (deixa a página e os pop-ups leves)
-  [['#rimg1', () => drawResumo(d)], ['#rimg3', () => drawTop10()], ['#rimg4', () => drawNosso2026()], ['#rimg5', () => drawCasal(d)]].forEach(([sel, fz]) => imgSobDemanda($(sel), fz));
+  [['#rimg1', () => drawResumo(d)], ['#rimg3', () => drawTop10()], ['#rimg4', () => drawNosso2026()], ['#rimg5', () => drawCasal(d)], ['#rimg6', () => drawRecibo(d)], ['#rimg7', () => drawPlacar(d)], ['#rimg9', () => drawNumero()]].forEach(([sel, fz]) => imgSobDemanda($(sel), fz));
   ligaVideo(d, casal, () => fimTela(true));
   ativaAnuncios();
   // carrossel: arrastar para o lado, bolinhas e setas mostram onde está
@@ -1757,7 +1887,7 @@ function fimTela(semFesta){
     car.addEventListener('keydown', e => { if (e.key === 'ArrowRight'){ e.preventDefault(); vai(atual() + 1); } if (e.key === 'ArrowLeft'){ e.preventDefault(); vai(atual() - 1); } });
     marca();
     // as imagens do carrossel já são desenhadas, uma de cada vez, sem esperar a pessoa arrastar
-    [['#rimg3', () => drawTop10()], ['#rimg1', () => drawResumo(d)], ['#rimg5', () => drawCasal(d)], ['#rimg4', () => drawNosso2026()]].forEach(([s, fz]) => { const el = $(s); if (el && !el.src){ FILA_IMG.push(() => { if (el.isConnected && !el.src) el.src = fz(); }); } });
+    [['#rimg6', () => drawRecibo(d)], ['#rimg7', () => drawPlacar(d)], ['#rimg3', () => drawTop10()], ['#rimg9', () => drawNumero()], ['#rimg1', () => drawResumo(d)], ['#rimg5', () => drawCasal(d)], ['#rimg4', () => drawNosso2026()]].forEach(([s, fz]) => { const el = $(s); if (el && !el.src){ FILA_IMG.push(() => { if (el.isConnected && !el.src) el.src = fz(); }); } });
     rodaFilaImg(); }
   // celular: abre direto as opções (galeria, WhatsApp...); computador: abre a imagem grande com baixar e copiar
   const liga = (id, fz, nome, alt) => { if (!$('#sv' + id)) return;
@@ -1769,6 +1899,9 @@ function fimTela(semFesta){
   liga(3, () => drawTop10(), 'retrozap-trofeus.png', altTop10());
   liga(4, () => drawNosso2026(), `retrozap-${ANO_MOMENTO}.png`, so26 ? altNosso2026() : '');
   liga(5, () => drawCasal(d), 'retrozap-nos-dois.png', casal ? altCasal(d) : '');
+  liga(6, () => drawRecibo(d), 'retrozap-recibo-do-amor.png', casal ? altRecibo(d) : '');
+  liga(7, () => drawPlacar(d), 'retrozap-placar-do-casal.png', casal ? altPlacar(d) : '');
+  liga(9, () => drawNumero(), 'retrozap-numero-do-grupo.png', casal ? '' : altNumero());
   const destrava = tipo => () => paywall(() => { const y = scrollY; fimTela(true); scrollTo(0, y); }, tipo);
   $('#livreLock')?.addEventListener('click', destrava('livre'));
   $('#persoLock')?.addEventListener('click', destrava('personagens'));
@@ -1885,7 +2018,7 @@ function maisPremios(){
 function podio(a, g){
   g.innerHTML = `<div class="podium" id="pd"></div>`;
   const order = [1,0,2], heights = {0:150,1:110,2:80};
-  $('#pd').innerHTML = order.filter(i => a.ranked[i]).map(i => `<div class="pod p${i+1}" data-i="${i}"><span class="who">${esc(a.ranked[i].name)}</span><span class="v">${vfmt(a,a.ranked[i].v)}</span><div class="blk" style="height:${heights[i]}px">${i+1}º</div></div>`).join('');
+  $('#pd').innerHTML = order.filter(i => a.ranked[i]).map(i => `<div class="pod p${i+1}" data-i="${i}"><span class="med" aria-hidden="true">${['🥇','🥈','🥉'][i]}</span><span class="who">${esc(a.ranked[i].name)}</span><span class="v">${vfmt(a,a.ranked[i].v)}</span><div class="blk" style="height:${heights[i]}px">${i+1}º</div></div>`).join('');
   return {txt:'🥁 Revelar o pódio', fn: async () => {
     for (const i of [2,1,0]){ const el = g.querySelector(`[data-i="${i}"]`); if (el){ el.classList.add('up'); await sleep(700); } }
     showResult(a);
@@ -1893,12 +2026,12 @@ function podio(a, g){
 }
 function palpite(a, g){
   const pool = a.ranked.slice(0,6).map(r=>r.name).sort(() => Math.random()-.5);
-  g.innerHTML = `<p class="ask">Quem você acha que levou?</p><div class="opts">${pool.map(n=>`<button class="opt">${esc(n)}</button>`).join('')}</div>`;
+  g.innerHTML = `<p class="ask">Quem você acha que levou?</p><div class="opts">${pool.map(n=>`<button class="opt${limpaTxt(n).split(' ').some(w => w.length > 10) || limpaTxt(n).length > 16 ? ' longo' : ''}">${esc(n)}</button>`).join('')}</div>`;
   const marca = b => {
     const certos = a.winner.empate || [a.winner.name], ok = b && certos.includes(b.textContent);
     g.querySelectorAll('.opt').forEach(o => { o.disabled = true; if (certos.includes(o.textContent)) o.classList.add('right'); });
     if (b && !ok) b.classList.add('wrong');
-    showResult(a, b ? `<p class="ask">${ok ? 'Acertou! Você conhece esse grupo. 🎯' : 'Errou! Ninguém esperava. Nem a gente. 😅'}</p>` : '');
+    showResult(a, b ? `<p class="ask">${ok ? (state.modo === 'casal' ? 'Acertou! Você conhece esse casal. 🎯' : 'Acertou! Você conhece esse grupo. 🎯') : 'Errou! Ninguém esperava. Nem a gente. 😅'}</p>` : '');
   };
   g.querySelectorAll('.opt').forEach(b => b.onclick = () => marca(b));
   return {txt:'🥁 Revelar sem palpitar', fn: () => marca(null)};
@@ -1944,17 +2077,24 @@ const vunid = (a, v) => `${vfmt(a, v)} ${a.u}`;
 const fatia = (a, v) => a.total ? Math.round(v/a.total*100) + '%' : '';
 function detalhe(a, r){ return a.det && r.p ? a.det(r.p) : a.fatia && a.total ? `${fatia(a, r.v)} dos ${a.u}` : ''; }
 function phrase(a){ return a.p.replaceAll('{w}', a.winner.name).replaceAll('{v}', vfmt(a, a.winner.v)).replaceAll('{s}', fatia(a, a.winner.v)); }
+// casal: os dois lado a lado (ouro e prata), com a diferença em destaque
+function duelo(a){
+  const r = a.ranked.slice(0, 2); if (r.length < 2 || a.mech === 'podio') return '';
+  const dif = Math.abs((r[0].v || 0) - (r[1].v || 0));
+  return `<div class="duelo">${r.map((x, i) => `<div class="du du${i+1}"><span class="med" aria-hidden="true">${['🥇','🥈'][i]}</span><b>${esc(x.name)}</b><span class="du-v">${vfmt(a, x.v)}</span><span class="du-u">${esc(a.u)}</span></div>`).join('')}</div>
+    ${dif && !a.pct && !a.rate ? `<p class="du-dif">Por <em>${fmt(dif)}</em>.</p>` : ''}`;
+}
 function showResult(a, extra=''){
   evento('premio_revelado', {premio: a.n});
   const res = $('#res'); res.hidden = false;
   res.closest('.award')?.classList.add('revelado');
-  res.innerHTML = `${extra}${a.empate ? '<p class="ask" style="margin:0">🤝 Empate técnico!</p>' : ''}<div class="selo">${esc(a.winner.name)}</div>
+  res.innerHTML = `${extra}${a.empate ? '<p class="ask" style="margin:0">🤝 Empate técnico!</p>' : ''}<div class="selo${limpaTxt(a.winner.name).length > 14 ? ' longo' : ''}">${esc(a.winner.name)}</div>
     <p class="frase">${esc(phrase(a))}</p>
-    <div class="top3"${a.mech === 'podio' ? ' hidden' : ''}>${a.ranked.slice(0,3).map((r,i)=>`<div><span>${['🥇','🥈','🥉'][i]} ${esc(r.name)}</span><span>${vunid(a, r.v)}${detalhe(a, r) ? `<small> · ${esc(detalhe(a, r))}</small>` : ''}</span></div>`).join('')}</div>
-    <button class="btn btn-main" id="card" style="width:100%">📲 Gerar card para o grupo</button>`;
+    <div class="top3"${a.mech === 'podio' || state.modo === 'casal' ? ' hidden' : ''}>${a.ranked.slice(0,3).map((r,i)=>`<div><span>${['🥇','🥈','🥉'][i]} ${esc(r.name)}</span><span>${vunid(a, r.v)}${detalhe(a, r) ? `<small> · ${esc(detalhe(a, r))}</small>` : ''}</span></div>`).join('')}</div>
+    ${state.modo === 'casal' ? duelo(a) : ''}<button class="btn btn-main" id="card" style="width:100%">📲 ${state.modo === 'casal' ? 'Gerar card do troféu' : 'Gerar card para o grupo'}</button>`;
   $('#card').onclick = () => openCard(() => cardAward(a), convite('premio', a), `Card do prêmio ${a.n}: ${a.winner.name}, com ${vunid(a, a.winner.v)}`);
   const nx = $('#next'), rv = $('#rvl'); if (rv) rv.remove();
-  if (nx){ nx.classList.replace('btn-ghost','btn-main'); nx.style.flex = '1'; nx.textContent = state.idx < state.awards.length-1 ? 'Próximo prêmio →' : 'Ir para o Gran Finale 🥁'; }
+  if (nx){ nx.classList.replace('btn-ghost','btn-main'); nx.style.flex = '1'; nx.style.maxWidth = 'none'; nx.textContent = state.idx < state.awards.length-1 ? 'Próximo prêmio →' : 'Ir para o Gran Finale 🥁'; }
   confetti();
   // o resultado e o botão do card ficam sempre à vista, sem a pessoa precisar rolar
   requestAnimationFrame(() => { const c = $('#card'); if (!c) return; const r = c.getBoundingClientRect(), barra = ($('.acao')?.getBoundingClientRect().height || 0) + 12;
@@ -2030,24 +2170,22 @@ function personagensTela(){
 }
 function altTop10(){ return `Troféus ${state.modo === 'casal' ? 'do casal' : 'do grupo'}${state.grupo ? ' ' + state.grupo : ''}: ${principais().map(a => `${gtit(a.n, a.winner.name)}: ${a.winner.name}`).join('; ')}.`; }
 function drawTop10(){
-  const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
-  const BR = '"Bricolage Grotesque", sans-serif', DM = '"DM Sans", sans-serif';
-  fundo(c, W, H, 1100);
-  c.textAlign = 'center';
-  c.fillStyle = CV().ouro; c.font = `800 48px ${BR}`; c.fillText(state.modo === 'casal' ? 'retrozap 💕' : 'retrozap 🏆', W/2, 100);
-  c.fillStyle = CV().sub; c.font = `700 30px ${DM}`; c.fillText(`${state.modo === 'casal' ? 'TROFÉUS DO CASAL' : 'TROFÉUS DO GRUPO'} · ${periodo()}`, W/2, 172, 980);
-  c.fillStyle = CV().txt; caber(c, limpaTxt(state.grupo || nomePadrao()), W/2, 250, 940, 800, 60, BR);
-  const ps = principais(), topo = 300, base = 1790, passo = (base - topo)/Math.max(ps.length, 1), alt = passo - 14;
+  const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d'), K = K2(), casal = state.modo === 'casal';
+  c.fillStyle = K.fundo; c.fillRect(0, 0, W, H);
+  c.textAlign = 'left'; marcaC(c, 70 + 128, 150, 44, casal ? K.txt : K.dest);
+  c.fillStyle = K.txt; c.font = `800 120px ${BR2}`; espaco(c, -4); c.fillText('Quadro de', 70, 330); c.fillText('troféus', 70, 448); espaco(c, 0);
+  c.fillStyle = K.dest; caber(c, `${limpaTxt(state.grupo || nomePadrao())} · ${state.compD ? ANO_MOMENTO : 'desde o início'}`, 70, 520, 940, 700, 40, DM2);
+  const ps = principais(), cols = 2, gap = 28, cw = (W - 140 - gap)/cols, rows = Math.ceil(ps.length/cols);
+  const ch = Math.min(250, (1700 - 590 - gap*(rows - 1))/Math.max(rows, 1)), y0 = 590;
   ps.forEach((a, i) => {
-    const y = topo + i*passo;
-    c.fillStyle = CV().caixa; c.beginPath(); c.roundRect(70, y, W-140, alt, 26); c.fill();
-    c.textAlign = 'left';
-    c.fillStyle = CV().ouro; c.font = `800 ${Math.round(alt*.34)}px ${BR}`; c.fillText(String(i + 1), 100, y + alt*.62);
-    c.font = `${Math.round(alt*.46)}px serif`; c.fillStyle = CV().txt; c.fillText(a.e, 168, y + alt*.66);
-    c.fillStyle = CV().sub; caber(c, gtit(a.n, a.winner.name).toUpperCase(), 270, y + alt*.42, 720, 700, Math.round(alt*.2), DM);
-    c.fillStyle = CV().ouro; caber(c, a.winner.name, 270, y + alt*.8, 720, 800, Math.round(alt*.34), BR);
+    const x = 70 + (i % cols)*(cw + gap), y = y0 + Math.floor(i/cols)*(ch + gap);
+    c.fillStyle = K.caixa; c.beginPath(); c.roundRect(x, y, cw, ch, 32); c.fill();
+    const ic = Math.min(ch*.62, 130); emojiC(c, a.e, x + 28 + ic/2, y + ch/2, ic*.84);
+    const tx = x + 28 + ic + 22, tw = cw - (tx - x) - 22;
+    c.textAlign = 'left'; c.fillStyle = K.sub; caber(c, gtit(a.n, a.winner.name), tx, y + ch*.42, tw, 700, Math.round(Math.min(32, ch*.16)), DM2);
+    c.fillStyle = K.txt; caber(c, nomeCurto(a.winner.name), tx, y + ch*.74, tw, 800, Math.round(Math.min(56, ch*.27)), BR2);
   });
-  c.textAlign = 'center'; c.fillStyle = CV().txt; c.font = `700 36px ${DM}`; c.fillText(TAGLINE(), W/2, 1868);
+  c.textAlign = 'center'; c.fillStyle = K.txt; c.font = `700 40px ${DM2}`; c.fillText(K.provoca, W/2, 1830, 980);
   return cv.toDataURL('image/png');
 }
 
@@ -2171,26 +2309,19 @@ function destaques(d){
   if (ps.length >= 3 && fant !== dono) out.push({e:'👻', t:'O Fantasma', n:fant.name, v:`só ${fmt(fant.count)} ${fant.count === 1 ? 'mensagem' : 'mensagens'}`});
   return out;
 }
-const corFundo = () => state.modo === 'casal' ? '#FFEAF1' : '#1A0B2E';
+const corFundo = () => state.modo === 'casal' ? '#FFF3EC' : '#1A0B2E';
 // cores dos cards: noite + ouro no grupo; rosa claro + pink no casal
 const CV = () => state.modo === 'casal'
-  ? {txt:'#3B1230', ouro:'#D81B60', sub:'#8E5B74', caixa:'rgba(255,255,255,.82)', brilho:a => `rgba(232,51,109,${a})`, A:'#E8336D', B:'#8E44D9'}
-  : {txt:'#FFF4E0', ouro:'#FFC23C', sub:'#B9A8CC', caixa:'rgba(61,26,92,.88)', brilho:a => `rgba(255,194,60,${a})`, A:'#FFC23C', B:'#2EC4F1'};
+  ? {txt:'#5E0B2B', ouro:'#CC1D59', sub:'#87445C', caixa:'#FFD6E2', brilho:a => `rgba(255,79,139,${a})`, A:'#E0245E', B:'#5E0B2B'}
+  : {txt:'#FFF4E0', ouro:'#FFC23C', sub:'#B9A8CC', caixa:'#3D1A5C', brilho:a => `rgba(255,194,60,${a})`, A:'#FFC23C', B:'#2EC4F1'};
 function coracao(c, x, y, t){ c.beginPath(); c.moveTo(x, y + t*.35); c.bezierCurveTo(x, y - t*.3, x - t, y - t*.3, x - t, y + t*.25); c.bezierCurveTo(x - t, y + t*.75, x, y + t*1.1, x, y + t*1.35); c.bezierCurveTo(x, y + t*1.1, x + t, y + t*.75, x + t, y + t*.25); c.bezierCurveTo(x + t, y - t*.3, x, y - t*.3, x, y + t*.35); c.fill(); }
 // período que o card cobre: a conversa inteira ou só 2026
 const mesAno = t => `${MESES[t.getMonth()].slice(0,3)}/${t.getFullYear()}`;
 const periodo = () => { const d = state.data; return d ? `DESDE O INÍCIO · ${mesAno(d.start).toUpperCase()} → ${mesAno(d.end).toUpperCase()}` : ''; };
 const periodo26 = () => { const d = state.data; return d && d.end.getFullYear() === ANO_MOMENTO ? `SÓ ${ANO_MOMENTO} · JAN → ${MESES[d.end.getMonth()].slice(0,3).toUpperCase()}` : `SÓ ${ANO_MOMENTO}`; };
 function fundo(c, W, H, raio){
+  // identidade 2: cor chapada, sem degradê nem confete
   c.fillStyle = corFundo(); c.fillRect(0,0,W,H);
-  const g = c.createRadialGradient(W/2,0,60,W/2,0,raio); g.addColorStop(0,CV().brilho(.30)); g.addColorStop(1,CV().brilho(0)); c.fillStyle = g; c.fillRect(0,0,W,H);
-  const cols = ['#FFC23C','#FF4F8B','#FF7A59','#2EC4F1','#A98BFF']; let sd = 7;
-  const casal = state.modo === 'casal', rosas = ['#E8336D','#FF8FB1','#F06292','#C2185B','#FFB3C8'];
-  for (let i=0;i<Math.round(H/(casal ? 30 : 22));i++){ sd = (sd*9301+49297)%233280; const r = sd/233280; c.save(); c.translate(r*W, (i*211)%H);
-    if (casal){ c.globalAlpha = .28; c.fillStyle = rosas[i%5]; c.rotate((r-.5)*.8); coracao(c, 0, 0, 10 + (i%4)*5); }
-    else { c.fillStyle = cols[i%5]; c.globalAlpha = .5; c.rotate(r*6); c.fillRect(-8,-3,16,6); }
-    c.restore(); }
-  c.globalAlpha = 1; c.fillStyle = MODOS[state.modo].c; c.fillRect(0,0,W,16);
 }
 // texto que encolhe até caber na largura
 // remove marcas invisíveis de direção (vêm no nome do arquivo exportado pelo iPhone e desalinham o texto)
@@ -2209,7 +2340,7 @@ function drawResumo(d){
   fundo(c, W, H, 1100);
   const v = vibe(d), lv = livro(d), au = audios(d), fr = frase(d), desde = d.start.toLocaleDateString('pt-BR', {month:'short', year:'numeric'}).replace('.', '');
   c.textAlign = 'center';
-  c.fillStyle = CV().ouro; c.font = `800 48px ${BR}`; c.fillText(state.modo === 'casal' ? 'retrozap 💕' : 'retrozap 🏆', W/2, 100);
+  marcaC(c, W/2, 100, 48, CV().ouro);
   c.fillStyle = CV().sub; c.font = `700 30px ${DM}`; c.fillText(`${state.modo === 'casal' ? 'RESUMO DO CASAL' : 'RESUMO DO GRUPO'} · ${periodo()}`, W/2, 175, 980);
   c.fillStyle = CV().ouro;
   const nomeT = limpaTxt(state.grupo || nomePadrao());
@@ -2223,7 +2354,7 @@ function drawResumo(d){
   let y = topo;
   for (const [ic, num, rot] of linhas){
     c.fillStyle = CV().caixa; c.beginPath(); c.roundRect(70, y, W-140, alt, 28); c.fill();
-    c.textAlign = 'left'; c.font = `${Math.round(alt*.48)}px serif`; c.fillStyle = CV().txt; c.fillText(ic, 105, y + alt*.66);
+    c.textAlign = 'left'; emojiC(c, ic, 105 + alt*.24, y + alt*.5, Math.round(alt*.48));
     c.fillStyle = CV().ouro; caber(c, num, 225, y + alt*.48, 760, 800, Math.round(alt*.36), BR);
     c.fillStyle = CV().txt; caber(c, rot, 225, y + alt*.82, 760, 600, Math.min(40, Math.round(alt*.24)), DM);
     y += passo;
@@ -2246,7 +2377,7 @@ function drawResumoQ(d){
   fundo(c, W, H, 800);
   const v = vibe(d), lv = livro(d), fr = frase(d), desde = d.start.toLocaleDateString('pt-BR', {month:'short', year:'numeric'}).replace('.', '');
   c.textAlign = 'center';
-  c.fillStyle = CV().ouro; c.font = `800 40px ${BR}`; c.fillText(state.modo === 'casal' ? 'retrozap 💕' : 'retrozap 🏆', W/2, 76);
+  marcaC(c, W/2, 76, 40, CV().ouro);
   c.fillStyle = CV().sub; c.font = `700 24px ${DM}`; c.fillText(`${state.modo === 'casal' ? 'RESUMO DO CASAL' : 'RESUMO DO GRUPO'} · ${periodo()}`, W/2, 130, 1000);
   c.fillStyle = CV().ouro; caber(c, state.grupo || nomePadrao(), W/2, 215, 960, 800, 64, BR);
   const tiles = [
@@ -2279,7 +2410,7 @@ function drawSpoiler(lista){
   const BR = '"Bricolage Grotesque", sans-serif', DM = '"DM Sans", sans-serif';
   fundo(c, W, H, 900);
   c.textAlign = 'center';
-  c.fillStyle = CV().ouro; c.font = `800 46px ${BR}`; c.fillText(state.modo === 'casal' ? 'retrozap 💕' : 'retrozap 🏆', W/2, 92);
+  marcaC(c, W/2, 92, 46, CV().ouro);
   if (state.grupo){ c.fillStyle = CV().txt; caber(c, state.grupo, W/2, 152, 940, 700, 40, DM); }
   emojiC(c, '👀', W/2, 258, 120);
   c.fillStyle = CV().ouro; c.font = `800 110px ${BR}`; c.fillText('SPOILER!', W/2, 418);
@@ -2288,7 +2419,7 @@ function drawSpoiler(lista){
   lista.forEach((a, i) => {
     const col = i % 2, lin = Math.floor(i/2), x = 70 + col*480, y = y0 + lin*alt;
     c.fillStyle = CV().caixa; c.beginPath(); c.roundRect(x, y, 460, alt - 14, 22); c.fill();
-    c.textAlign = 'left'; c.font = `${Math.round(alt*.42)}px serif`; c.fillStyle = CV().txt; c.fillText(a.e, x + 22, y + alt*.6);
+    c.textAlign = 'left'; emojiC(c, a.e, x + 22 + alt*.24, y + alt*.46, Math.round(alt*.42));
     c.fillStyle = CV().txt; caber(c, a.n, x + 22 + alt*.6, y + alt*.56, 460 - 44 - alt*.6, 800, 30, BR);
   });
   c.textAlign = 'center';
@@ -2319,7 +2450,7 @@ async function comparar(d){
   // grupo de exemplo: comparação simulada, e nada é enviado ao banco
   if (state.sample){ state.comp = {...simula({}), top:{risadas:3, palavrao:2, furos:4, por_dia:6, madrugada:7, recorde:9, audios:12, total:4, figurinhas:38, textao:60, apagadas:41, dias:30, bomdia:70, parabens:55, fora:80, amor:3, coracoes:5, hist_total:7, hist_audios:11}}; return; }
   if (!state.compD){ if (AMBIENTE_TESTE) state.comp = {pronto:true, n:120, exemplo:true, escopo:'tipo', top:{dias:45}}; return; }
-  try {
+  if (!AMBIENTE_TESTE) try { // versão de teste (prévia/branch) nunca grava no ranking real
     const pri = (state.raw || d.msgs).reduce((a, m) => +m.t < a ? +m.t : a, Infinity), base = `${pri}|${state.modo}`;
     const h = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(base)))].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
     const r = await fetch('/api/stats', {method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({id: h, modo: state.modo, base: String(ANO_MOMENTO), ...numerosDoGrupo(state.compD), dias: Math.max(1, Math.round((d.end - d.start)/864e5) + 1), hist_total: d.total, hist_audios: d.semTipo ? null : d.people.reduce((t, p) => t + p.audio, 0), ...(d.semTipo ? {audios: null, figurinhas: null} : {})})});
@@ -2385,7 +2516,7 @@ function drawComparacao(d){
   const tipo = {casal:'DE CASAIS', amigos:'DE AMIGOS', familia:'DE FAMÍLIA', trabalho:'DE TRABALHO', comunidade:'DE COMUNIDADE'}[state.modo];
   fundo(c, W, H, 1100);
   c.textAlign = 'center';
-  c.fillStyle = CV().ouro; c.font = `800 48px ${BR}`; c.fillText(state.modo === 'casal' ? 'retrozap 💕' : 'retrozap 🏆', W/2, 100);
+  marcaC(c, W/2, 100, 48, CV().ouro);
   if (state.grupo){ c.fillStyle = CV().txt; caber(c, state.grupo, W/2, 178, 960, 800, 62, BR); }
   emojiC(c, '🏅', W/2, 298, 120);
   c.fillStyle = CV().ouro; c.font = `800 78px ${BR}`; c.fillText(state.modo === 'casal' ? 'NÓS DOIS' : 'NOSSO GRUPO', W/2, 450); c.fillText('NO RANKING', W/2, 535);
@@ -2394,7 +2525,7 @@ function drawComparacao(d){
   lista.forEach((x, i) => {
     const y = y0 + i*passo;
     c.fillStyle = CV().caixa; c.beginPath(); c.roundRect(70, y, W-140, alt, 30); c.fill();
-    c.textAlign = 'left'; c.font = `${Math.round(alt*.45)}px serif`; c.fillStyle = CV().txt; c.fillText(x.e, 105, y + alt*.64);
+    c.textAlign = 'left'; emojiC(c, x.e, 105 + alt*.25, y + alt*.48, Math.round(alt*.45));
     c.fillStyle = CV().ouro; caber(c, x.big, 240, y + alt*.5, 740, 800, Math.round(alt*.38), BR);
     c.fillStyle = CV().txt; caber(c, x.num ? `${x.rot} · ${x.num}` : x.rot, 240, y + alt*.84, 740, 700, Math.round(alt*.22), DM);
   });
@@ -2424,30 +2555,32 @@ function drawNosso2026(){
   const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
   const BR = '"Bricolage Grotesque", sans-serif', DM = '"DM Sans", sans-serif', K = CV(), casal = state.modo === 'casal', {nums, txt, ds} = nosso2026();
   fundo(c, W, H, 1000); c.textAlign = 'center';
-  c.fillStyle = K.ouro; c.font = `800 46px ${BR}`; c.fillText(casal ? 'retrozap 💕' : 'retrozap 🏆', W/2, 96);
+  marcaC(c, W/2, 96, 46, K.ouro);
   c.fillStyle = K.txt; caber(c, limpaTxt(state.grupo || nomePadrao()), W/2, 172, 960, 800, 54, BR);
-  c.fillStyle = K.ouro; c.font = `800 100px ${BR}`; c.fillText(casal ? `O NOSSO ${ANO_MOMENTO}` : `NOSSO ${ANO_MOMENTO}`, W/2, 290, 980);
+  c.fillStyle = K.txt; c.font = `800 112px ${BR}`; espaco(c, -4); c.fillText(casal ? `O nosso ${ANO_MOMENTO}` : `Nosso ${ANO_MOMENTO}`, W/2, 292, 980); espaco(c, 0);
   c.fillStyle = K.sub; caber(c, `${periodo26()} · VS ANOS ANTERIORES E ${casal ? 'OS CASAIS' : 'OS GRUPOS'} DO BRASIL`, W/2, 340, 980, 700, 26, DM);
   // números em grade 2 × 2 (sempre começa por mensagens)
   const tw = (W - 100 - 16)/2, th = 262, y0 = 380;
   nums.forEach((x, i) => {
     const tx = 50 + (i % 2)*(tw + 16), ty = y0 + Math.floor(i/2)*(th + 16);
-    c.fillStyle = K.caixa; c.beginPath(); c.roundRect(tx, ty, tw, th, 30); c.fill();
-    c.textAlign = 'left'; c.font = '54px serif'; c.fillStyle = K.txt; c.fillText(x.e, tx + 26, ty + 74);
-    c.fillStyle = K.ouro; caber(c, fmt(x.n), tx + 100, ty + 78, tw - 124, 800, 68, BR);
-    c.fillStyle = K.txt; caber(c, x.t, tx + 28, ty + 124, tw - 56, 700, 30, DM);
+    // identidade 2: cada número numa cor chapada da casa
+    const [bg, ink] = (casal ? [['#FF4F8B','#5E0B2B'],['#CC1D59','#FFF3EC'],['#FFD6E2','#5E0B2B'],['#FFB59A','#5E0B2B']] : [['#FF4F8B','#1A0B2E'],['#FFC23C','#1A0B2E'],['#2EC4F1','#1A0B2E'],['#A98BFF','#1A0B2E']])[i % 4];
+    c.fillStyle = bg; c.beginPath(); c.roundRect(tx, ty, tw, th, 30); c.fill();
+    c.textAlign = 'left';
+    c.fillStyle = ink; caber(c, fmt(x.n), tx + 28, ty + 86, tw - 56, 800, 84, BR);
+    caber(c, x.t, tx + 28, ty + 128, tw - 56, 700, 30, DM);
     let py = ty + 148;
     const selo = (t, fill, cor) => { let fs = 24; c.font = `800 ${fs}px ${DM}`; let w = c.measureText(t).width + 36; while (w > tw - 56 && fs > 16){ fs -= 2; c.font = `800 ${fs}px ${DM}`; w = c.measureText(t).width + 36; }
       c.fillStyle = fill; c.beginPath(); c.roundRect(tx + 28, py, w, 44, 22); c.fill(); c.fillStyle = cor; c.fillText(t, tx + 46, py + 30); py += 54; };
     if (x.vs) selo(x.vs, corTend(x), '#FFFFFF');
-    if (x.rank) selo(x.rank, K.txt, casal ? '#FFFFFF' : '#1A0B2E');
+    if (x.rank) selo(x.rank, ink, bg);
     c.textAlign = 'center';
   });
   let y = y0 + Math.ceil(nums.length/2)*(th + 16) + 4;
   const fim = ds.length ? 1572 : 1820, passo = Math.min(200, (fim - y)/Math.max(1, txt.length)), h = passo - 16;
   for (const x of txt){
     c.fillStyle = K.caixa; c.beginPath(); c.roundRect(50, y, W - 100, h, 30); c.fill();
-    c.textAlign = 'left'; c.font = `${Math.round(h*.42)}px serif`; c.fillStyle = K.txt; c.fillText(x.e, 80, y + h*.64);
+    c.textAlign = 'left'; emojiC(c, x.e, 80 + h*.24, y + h*.5, Math.round(h*.42));
     c.fillStyle = K.ouro; caber(c, x.big, 190, y + h*.5, 800, 800, Math.round(h*.34), BR);
     c.fillStyle = K.sub; caber(c, x.sub, 192, y + h*.82, 800, 600, Math.round(h*.17), DM);
     c.textAlign = 'center'; y += passo;
@@ -2468,6 +2601,99 @@ function drawNosso2026(){
   return cv.toDataURL('image/png');
 }
 
+
+// identidade 2: recibo do amor (casal) — os números de vocês dois num cupom
+function altRecibo(d){ const [a, b] = d.people, {cats} = categoriasCasal(d); return `Recibo do amor de ${a.name} e ${b.name}: ` + cats.map(x => `${x.t}: ${x.a} e ${x.b}`).join('; ') + '.'; }
+function drawRecibo(d){
+  const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
+  const BR = '"Bricolage Grotesque", sans-serif', MO = 'ui-monospace, Menlo, Consolas, "Courier New", monospace', DM = '"DM Sans", sans-serif';
+  const VINHO = '#5E0B2B', [a, b] = d.people, {cats} = categoriasCasal(d);
+  c.fillStyle = '#FF4F8B'; c.fillRect(0, 0, W, H);
+  c.textAlign = 'center'; marcaC(c, W/2, 110, 46, '#FFF3EC');
+  // papel com borda serrilhada
+  const px = 110, py = 190, pw = W - 220, ph = 300 + (cats.length + 2)*84 + 470;
+  c.save(); c.translate(W/2, py + ph/2); c.rotate(-.012); c.translate(-W/2, -(py + ph/2));
+  c.shadowColor = 'rgba(94,11,43,.28)'; c.shadowBlur = 40; c.shadowOffsetY = 22;
+  c.fillStyle = '#FFFDF8'; c.beginPath(); c.moveTo(px, py); c.lineTo(px + pw, py); c.lineTo(px + pw, py + ph);
+  for (let x = px + pw, k = 0; x > px; x -= 34, k++) c.lineTo(x - 17, py + ph + (k % 2 ? 0 : -22));
+  c.lineTo(px, py + ph); c.closePath(); c.fill(); c.shadowColor = 'transparent';
+  const im = icImg('🏆', true); if (im) c.drawImage(im, W/2 - 50, py + 40, 100, 100);
+  c.fillStyle = VINHO; caber(c, 'RECIBO DO AMOR', W/2, py + 210, pw - 100, 800, 84, BR);
+  caber(c, `${nomeCurto(a.name)} & ${nomeCurto(b.name)} · ${state.compD ? ANO_MOMENTO : 'desde o início'}`, W/2, py + 268, pw - 100, 500, 40, MO);
+  const linha = y => { c.fillStyle = VINHO; c.globalAlpha = .45; c.font = `500 34px ${MO}`; c.fillText('-'.repeat(34), W/2, y, pw - 80); c.globalAlpha = 1; };
+  linha(py + 320);
+  let y = py + 390; const L = px + 60, R = px + pw - 60, f = v => fmt(v || 0);
+  const item = (rot, val) => { c.textAlign = 'left'; c.fillStyle = VINHO; caber(c, rot, L, y, pw - 420, 500, 40, MO); c.textAlign = 'right'; caber(c, val, R, y, 320, 600, 40, MO); y += 84; };
+  for (const x of cats){ item(x.t.toLowerCase(), `${(x.fmt || f)(x.a)} × ${(x.fmt || f)(x.b)}`); }
+  const tro = n => (state.awards || []).filter(w => !w.honra && w.winner && w.winner.name === n).length;
+  item(`troféus de ${nomeCurto(a.name, 12)}`, f(tro(a.name))); item(`troféus de ${nomeCurto(b.name, 12)}`, f(tro(b.name)));
+  y += 6; c.textAlign = 'center'; linha(y); y += 70;
+  const top = state.comp?.top?.total;
+  c.textAlign = 'left'; c.fillStyle = VINHO; caber(c, 'TOTAL', L, y, 300, 800, 48, MO);
+  c.textAlign = 'right'; caber(c, top != null && top <= 50 ? `TOP ${top}% CASAIS` : `${f(cats[0].a + cats[0].b)} MSGS`, R, y, pw - 360, 800, 48, MO);
+  y += 80; c.textAlign = 'center'; caber(c, 'via do casal · não tem devolução', W/2, y, pw - 100, 500, 30, MO);
+  // código de barras
+  let bx = W/2 - 220; const by = y + 50; c.fillStyle = VINHO; let sd = 11;
+  while (bx < W/2 + 220){ sd = (sd*9301 + 49297) % 233280; const w = 3 + (sd % 4)*3; c.fillRect(bx, by, w, 110); bx += w + 6 + (sd % 3)*3; }
+  c.restore();
+  c.textAlign = 'center'; c.fillStyle = '#FFF3EC'; caber(c, 'e o de vocês? retrozap.com.br', W/2, 1800, 900, 700, 40, DM);
+  return cv.toDataURL('image/png');
+}
+// identidade 2: placar do casal ("Dani 4×1 Cris"), com cada disputa
+function placarCasal(d){ const [a, b] = d.people, {cats} = categoriasCasal(d); let pa = 0, pb = 0; for (const x of cats){ if (x.a > x.b) pa++; else if (x.b > x.a) pb++; } return {a, b, cats, pa, pb}; }
+function altPlacar(d){ const {a, b, cats, pa, pb} = placarCasal(d); return `Placar do casal: ${a.name} ${pa} a ${pb} ${b.name}. ` + cats.map(x => `${x.t}: ${fmt(x.a)} a ${fmt(x.b)}`).join('; ') + '.'; }
+function drawPlacar(d){
+  const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
+  const VINHO = '#5E0B2B', ROSA = '#FF4F8B', CREME = '#FFF3EC', {a, b, cats, pa, pb} = placarCasal(d);
+  c.fillStyle = VINHO; c.fillRect(0, 0, W, H); c.textAlign = 'center';
+  marcaC(c, W/2, 150, 46, CREME);
+  c.fillStyle = ROSA; c.font = `700 34px ${DM2}`; espaco(c, 8); c.fillText(`CAMPEONATO DO AMOR · ${state.compD ? ANO_MOMENTO : 'DESDE O INÍCIO'}`, W/2, 290, 980); espaco(c, 0);
+  c.fillStyle = ROSA; c.font = `800 300px ${BR2}`; espaco(c, -10); c.fillText(`${pa}×${pb}`, W/2, 640); espaco(c, 0);
+  const nm = n => limpaTxt(n).split(' ')[0];
+  c.fillStyle = CREME; caber(c, nm(a.name), W/2 - 270, 760, 400, 800, 80, BR2); caber(c, nm(b.name), W/2 + 270, 760, 400, 800, 80, BR2);
+  let y = 860; const rh = Math.min(150, 760/cats.length);
+  for (const x of cats){
+    c.fillStyle = 'rgba(255,243,236,.08)'; c.beginPath(); c.roundRect(70, y, W - 140, rh - 22, 26); c.fill();
+    const meio = y + (rh - 22)/2 + 16, ga = x.a > x.b, gb = x.b > x.a;
+    c.textAlign = 'left'; c.fillStyle = ga ? ROSA : CREME; caber(c, fmt(x.a), 110, meio, 260, 800, 52, BR2);
+    c.textAlign = 'right'; c.fillStyle = gb ? ROSA : CREME; caber(c, fmt(x.b), W - 110, meio, 260, 800, 52, BR2);
+    c.textAlign = 'center'; c.fillStyle = CREME; caber(c, x.t, W/2, meio - 4, 400, 700, 36, DM2);
+    y += rh;
+  }
+  const lider = pa === pb ? null : pa > pb ? b : a;
+  c.fillStyle = ROSA; c.textAlign = 'center'; caber(c, lider ? `${nm(lider.name)} pediu revanche em ${ANO_MOMENTO + 1}.` : 'Empate. Ninguém dorme hoje.', W/2, Math.min(y + 70, 1730), 940, 500, 44, DM2);
+  c.fillStyle = CREME; c.font = `700 40px ${DM2}`; c.fillText('e o de vocês? retrozap.com.br', W/2, 1830, 980);
+  return cv.toDataURL('image/png');
+}
+// identidade 2: número gigante do grupo, com o selo do ranking e uma provocação
+function numeroGrupo(){
+  const src = state.compD || state.data, so26 = !!state.compD, ps = [...src.people].sort((x, y) => y.count - x.count);
+  const tot = ps.reduce((t, p) => t + p.count, 0), top = state.comp?.top?.total;
+  return {tot, so26, top, dono: ps[0], pct: tot ? Math.round(ps[0].count/tot*100) : 0};
+}
+function altNumero(){ const x = numeroGrupo(); return `${state.grupo || 'O grupo'} mandou ${fmt(x.tot)} mensagens${x.so26 ? ' em ' + ANO_MOMENTO : ''}. ${x.dono ? `Só ${x.dono.name} mandou ${x.pct}% delas.` : ''}`; }
+function drawNumero(){
+  const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
+  const NOITE = '#1A0B2E', CHI = '#FF4F8B', AREIA = '#FFF4E0', x = numeroGrupo();
+  c.fillStyle = CHI; c.fillRect(0, 0, W, H);
+  c.textAlign = 'left'; marcaC(c, 70 + 128, 150, 44, NOITE);
+  c.fillStyle = NOITE; caber(c, `${limpaTxt(state.grupo || nomePadrao())} mandou`, 70, 330, 940, 700, 48, DM2);
+  const N = fmt(x.tot); let f = 400; c.font = `800 ${f}px ${BR2}`; espaco(c, -18);
+  while (c.measureText(N).width > 960 && f > 160){ f -= 10; c.font = `800 ${f}px ${BR2}`; }
+  c.fillText(N, 56, 360 + f*.86); espaco(c, 0);
+  const yy = 360 + f*.86 + 130;
+  c.fillStyle = AREIA; c.font = `800 96px ${BR2}`; c.fillText('mensagens', 70, yy); c.fillText(x.so26 ? `em ${ANO_MOMENTO}.` : 'no total.', 70, yy + 100);
+  if (x.dono){ c.fillStyle = NOITE; c.font = `500 46px ${DM2}`; const t = `Só ${limpaTxt(x.dono.name).split(' ')[0]} mandou ${x.pct}% delas. ${limpaTxt(x.dono.name).split(' ')[0]}, explica.`;
+    wrap(c, t, 70, yy + 260, 540, 60); }
+  if (x.top != null && x.top <= 50){
+    c.save(); c.translate(820, yy + 340); c.rotate(-.18);
+    c.fillStyle = '#FFC23C'; c.beginPath(); c.arc(0, 0, 190, 0, 7); c.fill(); c.lineWidth = 12; c.strokeStyle = NOITE; c.stroke();
+    c.fillStyle = NOITE; c.textAlign = 'center'; c.font = `800 44px ${DM2}`; c.fillText('TOP', 0, -60); c.font = `800 120px ${BR2}`; c.fillText(`${x.top}%`, 0, 52);
+    c.font = `800 34px ${DM2}`; c.fillText('DOS GRUPOS', 0, 108); c.restore();
+  }
+  c.textAlign = 'center'; c.fillStyle = NOITE; c.font = `700 40px ${DM2}`; c.fillText('e o seu grupo? retrozap.com.br', W/2, 1830, 980);
+  return cv.toDataURL('image/png');
+}
 // card do casal: quem manda mais o quê (sem rótulo de gênero, só os nomes)
 function categoriasCasal(d){
   const src = state.compD && state.compD.people.length ? state.compD : d, achar = n => src.people.find(p => p.name === n) || {};
@@ -2482,7 +2708,7 @@ function drawCasal(d){
   const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
   const BR = '"Bricolage Grotesque", sans-serif', DM = '"DM Sans", sans-serif', K = CV(), [a, b] = d.people, {cats} = categoriasCasal(d);
   fundo(c, W, H, 1000); c.textAlign = 'center';
-  c.fillStyle = K.ouro; c.font = `800 46px ${BR}`; c.fillText('retrozap 💕', W/2, 96);
+  marcaC(c, W/2, 96, 46, K.ouro);
   c.fillStyle = K.sub; c.font = `700 26px ${DM}`; c.fillText(`UM CONTRA O OUTRO · ${state.compD ? periodo26() : periodo()}`, W/2, 146, 980);
   // os dois frente a frente
   c.fillStyle = K.A; c.beginPath(); c.roundRect(50, 190, 430, 170, 40); c.fill();
@@ -2587,7 +2813,7 @@ function drawRanking2026(){
   const BR = '"Bricolage Grotesque", sans-serif', DM = '"DM Sans", sans-serif', K = CV(), casal = state.modo === 'casal';
   const lista = ordem26(), txtPill = casal ? '#FFFFFF' : '#1A0B2E', ant = destaquesBrasil().find(x => x.k === 'dias');
   fundo(c, W, H, 1000); c.textAlign = 'center';
-  c.fillStyle = K.ouro; c.font = `800 46px ${BR}`; c.fillText(casal ? 'retrozap 💕' : 'retrozap 🏆', W/2, 96);
+  marcaC(c, W/2, 96, 46, K.ouro);
   c.fillStyle = K.txt; caber(c, limpaTxt(state.grupo || nomePadrao()), W/2, 175, 960, 800, 56, BR);
   c.fillStyle = K.ouro; c.font = `800 92px ${BR}`; c.fillText(`${ANO_MOMENTO} EM NÚMEROS`, W/2, 300, 980);
   c.fillStyle = K.sub; caber(c, `${periodo26()} · VS ANOS ANTERIORES E ${casal ? 'OS CASAIS' : 'OS GRUPOS'} DO RETROZAP`, W/2, 352, 980, 700, 26, DM);
@@ -2595,7 +2821,7 @@ function drawRanking2026(){
   lista.forEach((x, i) => {
     const y = 400 + i*passo;
     c.fillStyle = K.caixa; c.beginPath(); c.roundRect(50, y, W - 100, h, 32); c.fill();
-    c.textAlign = 'left'; c.font = `${Math.round(h*.38)}px serif`; c.fillText(x.e, 80, y + h*.55);
+    c.textAlign = 'left'; emojiC(c, x.e, 80 + h*.22, y + h*.42, Math.round(h*.38));
     c.fillStyle = K.ouro; c.font = `800 ${Math.round(h*.32)}px ${BR}`; c.fillText(fmt(x.n), 210, y + h*.4);
     c.fillStyle = K.txt; c.font = `700 ${Math.round(h*.14)}px ${DM}`; c.fillText(x.t, 212, y + h*.6);
     let px = 210; const py = y + h*.7, ph = h*.22;
@@ -2643,6 +2869,7 @@ const d_pessoas = cz => state.data ? state.data.people.length : 0;
 // emoji centralizado de verdade: mede os pixels do desenho (o centro do texto erra com emoji em alguns celulares)
 const EMO_CACHE = new Map();
 function emojiC(c, e, cx, cy, size){
+  if (iconeC(c, e, cx, cy, size)) return;
   const k = e + '|' + size; let it = EMO_CACHE.get(k);
   if (it === undefined){
     const s = Math.ceil(size*1.7), cv = document.createElement('canvas'); cv.width = cv.height = s; const x = cv.getContext('2d', {willReadFrequently: true});
@@ -2661,7 +2888,7 @@ function frameVideo(c, t, cz){
   const W = 1080, H = 1920, K = CV(), BR = '"Bricolage Grotesque", sans-serif', DM = '"DM Sans", sans-serif', T = cz.T;
   const cl = x => Math.max(0, Math.min(1, x)), ease = x => 1 - Math.pow(1 - cl(x), 3), ent = (t0, dur = .6) => ease((t - t0)/dur);
   c.drawImage(fundoVideo(), 0, 0, W, H); c.textAlign = 'center'; c.globalAlpha = 1;
-  c.fillStyle = K.ouro; c.font = `800 46px ${BR}`; c.fillText(cz.casal ? 'retrozap 💕' : 'retrozap 🏆', W/2, 110);
+  marcaC(c, W/2, 110, 46, K.ouro);
   const nomeA = limpaTxt(cz.a.name), nomeB = limpaTxt(cz.b?.name || ''), txtPill = cz.casal ? '#FFFFFF' : '#1A0B2E';
   const cena = (t0, t1, f) => { if (t < t0 || t >= t1) return; const fade = Math.min(cl((t - t0)/.35), cl((t1 - t)/.3)); c.save(); c.globalAlpha = fade; f(t - t0); c.restore(); };
   // 1. abertura
@@ -2732,7 +2959,7 @@ function frameVideo(c, t, cz){
       const t0 = .3 + i*.6, e = ent(T.res + t0), y = 340 + i*400 + 60*(1 - e);
       c.save(); c.globalAlpha *= e; c.textAlign = 'left';
       c.fillStyle = K.caixa; c.beginPath(); c.roundRect(70, y, W - 140, 370, 40); c.fill();
-      c.font = '96px serif'; c.fillText(x.e, 110, y + 130);
+      emojiC(c, x.e, 110 + 54, y + 96, 96);
       c.fillStyle = K.ouro; c.font = `800 110px ${BR}`; c.fillText(fmt(Math.round(x.n * ease((u - t0)/1.2))), 250, y + 130);
       c.fillStyle = K.txt; c.font = `700 42px ${DM}`; c.fillText(x.t, 254, y + 190);
       selos(x, 110, y + 222, 36, W - 100);
@@ -2816,7 +3043,7 @@ function tocaPrevia(cv, d){
     if (pausa){ parado = parado || now; } else { desenhou = true; if (parado){ ini += now - parado; parado = 0; } frameVideo(c, ((now - ini)/1000) % VID_DUR, cz); }
     requestAnimationFrame(loop);
   };
-  document.fonts.ready.then(() => requestAnimationFrame(loop));
+  prontoArte().then(() => requestAnimationFrame(loop));
 }
 // vídeo rápido: cada quadro é desenhado e codificado na hora (WebCodecs + MP4), sem esperar os 30 s em tempo real
 const MUX_URL = '/assets/mp4-muxer-5.2.1.js';
@@ -2824,7 +3051,7 @@ let MUX_LIB = null;
 const carregaMux = () => MUX_LIB || (MUX_LIB = new Promise((ok, falha) => { const s = document.createElement('script'); s.src = MUX_URL; s.onload = () => window.Mp4Muxer ? ok(window.Mp4Muxer) : falha(); s.onerror = () => { MUX_LIB = null; falha(); }; document.head.appendChild(s); }));
 async function gravarVideoRapido(d, prog){
   if (typeof VideoEncoder === 'undefined' || typeof VideoFrame === 'undefined') throw new Error('sem WebCodecs');
-  const W = 720, H = 1280, FPS = 24, M = await carregaMux(); await document.fonts.ready; // 720p a 24 quadros: bom para stories e bem mais rápido
+  const W = 720, H = 1280, FPS = 24, M = await carregaMux(); await prontoArte(); // 720p a 24 quadros: bom para stories e bem mais rápido
   let esc = null;
   for (const [codec, mux] of [['avc1.64001f', 'avc'], ['avc1.4d001f', 'avc'], ['avc1.42001f', 'avc'], ['vp09.00.31.08', 'vp9']]){
     try { const s = await VideoEncoder.isConfigSupported({codec, width: W, height: H, bitrate: 4e6, framerate: FPS}); if (s.supported){ esc = {codec, mux}; break; } } catch {}
@@ -2850,7 +3077,7 @@ async function gravarVideoRapido(d, prog){
 }
 const videoSuportado = () => typeof MediaRecorder !== 'undefined' && !!HTMLCanvasElement.prototype.captureStream;
 async function gravarVideo(d, prog){
-  await document.fonts.ready;
+  await prontoArte();
   const cz = cenasVideo(d), cv = document.createElement('canvas'); cv.width = 1080; cv.height = 1920; const c = cv.getContext('2d');
   const tipo = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find(x => MediaRecorder.isTypeSupported?.(x)) || '';
   frameVideo(c, 0, cz);
@@ -3029,7 +3256,7 @@ function wrap(c, text, x, y, maxW, lh){
     c.save(); c.direction = 'ltr'; c.textAlign = 'left'; c.fillText(l, x0, y + i*lh); c.restore(); });
   return lines.length;
 }
-function cardAward(a){ return drawCard({podio: (a.ranked || []).length > 1 ? a.ranked.slice(1,3).map((r,i) => `${['🥈','🥉'][i]} ${r.name} · ${vfmt(a, r.v)}`) : null, emoji:a.e, title:gtit(a.n, a.winner.name), winner:a.winner.name, line:`${vunid(a, a.winner.v)}${a.fatia && a.total ? ` · ${fatia(a, a.winner.v)} do grupo` : ''}${a.custom ? ' · categoria criada pelo grupo' : ''}`}); }
+function cardAward(a){ return drawCard({podio: (a.ranked || []).length > 1 ? a.ranked.slice(1,3).filter(r => r.v > 0).map((r,i) => `${['🥈','🥉'][i]} ${r.name} · ${vfmt(a, r.v)}`) : null, emoji:a.e, title:gtit(a.n, a.winner.name), winner:a.winner.name, line:`${vunid(a, a.winner.v)}${a.fatia && a.total ? ` · ${fatia(a, a.winner.v)} do grupo` : ''}${a.custom ? ' · categoria criada pelo grupo' : ''}`}); }
 
 /* ---------- Crie seu prêmio (grátis no lançamento) ---------- */
 const BLOCK = /feio|feia|burr|idiot|gord|nojent|lixo|retardad|imbecil|otari|macac|viad|bicha|piranha|vagabund|corno|baleia|aleijad|pobre|doente|religi|gay|lesbic/;
@@ -3100,41 +3327,53 @@ const custom = (texto = '') => {
   }
 };
 
+// identidade 2: paleta dos cards por casa (grupos à noite; casais em papel e vinho)
+const K2 = () => state.modo === 'casal'
+  ? {fundo:'#FFF3EC', txt:'#5E0B2B', dest:'#CC1D59', destTxt:'#FFF3EC', sub:'#87445C', caixa:'#FFD6E2', caixa2:'#FFE6EC', escuro:'#5E0B2B', claro:'#FFF3EC', provoca:'e o de vocês? retrozap.com.br'}
+  : {fundo:'#1A0B2E', txt:'#FFF4E0', dest:'#FFC23C', destTxt:'#1A0B2E', sub:'#B9A8CC', caixa:'#3D1A5C', caixa2:'#2A1242', escuro:'#1A0B2E', claro:'#FFF4E0', provoca:'e o seu grupo? retrozap.com.br'};
+const BR2 = '"Bricolage Grotesque", sans-serif', DM2 = '"DM Sans", sans-serif';
+// nome curto para caber em caixas pequenas: "Maria Eduarda Albuquerque" vira "Maria E. Albuquerque" ou "Maria A."
+function nomeCurto(n, max = 14){ const t = limpaTxt(n), p = t.split(' ').filter(w => /\p{L}|\d/u.test(w)); if (t.length <= max || p.length < 2) return p.length ? (t.length <= max ? t : p.join(' ')) : t;
+  const ab = p[0] + ' ' + p[p.length - 1]; if (ab.length <= max) return ab; return p[0] + ' ' + p[p.length - 1][0] + '.'; }
+function espaco(c, px){ try { c.letterSpacing = px + 'px'; } catch {} }
+// etiqueta inclinada com o nome (o "selo" do vencedor)
+function seloC(c, txt, cx, cy, maxW, tam, bg, fg, rot = -.05){
+  const T = limpaTxt(txt); let f = tam; c.font = `800 ${f}px ${BR2}`;
+  while (c.measureText(T).width > maxW && f > tam*.72){ f -= 4; c.font = `800 ${f}px ${BR2}`; }
+  if (c.measureText(T).width > maxW && T.includes(' ')){ // nome comprido: duas linhas, letra grande
+    const ws = T.split(' '); let best = null;
+    for (let k = 1; k < ws.length; k++){ const l1 = ws.slice(0, k).join(' '), l2 = ws.slice(k).join(' '), m = Math.max(c.measureText(l1).width, c.measureText(l2).width); if (!best || m < best.m) best = {l1, l2, m}; }
+    while (best.m > maxW && f > 40){ f -= 4; c.font = `800 ${f}px ${BR2}`; best.m = Math.max(c.measureText(best.l1).width, c.measureText(best.l2).width); }
+    const w = Math.min(maxW, best.m) + f*.9, h = f*2.3;
+    c.save(); c.translate(cx, cy); c.rotate(rot); c.fillStyle = bg; c.beginPath(); c.roundRect(-w/2, -h/2, w, h, f*.26); c.fill();
+    c.fillStyle = fg; c.textAlign = 'center'; caber(c, best.l1, 0, -f*.18, maxW, 800, f, BR2); caber(c, best.l2, 0, f*.86, maxW, 800, f, BR2); c.restore(); return;
+  }
+  const w = Math.min(maxW, c.measureText(T).width) + f*.9, h = f*1.32;
+  c.save(); c.translate(cx, cy); c.rotate(rot); c.fillStyle = bg; c.beginPath(); c.roundRect(-w/2, -h/2, w, h, f*.26); c.fill();
+  c.fillStyle = fg; c.textAlign = 'center'; caber(c, T, 0, f*.36, maxW, 800, f, BR2); c.restore();
+}
+// troféu em 9:16 para os stories: ícone, nome do troféu e o nome de quem ganhou, enorme
 function drawCard({emoji, title, winner, line, small, podio}){
-  const cv = document.createElement('canvas'); cv.width = cv.height = 1080; const c = cv.getContext('2d');
-  const modo = MODOS[state.modo].c;
-  c.fillStyle = corFundo(); c.fillRect(0,0,1080,1080);
-  const g = c.createRadialGradient(540,0,50,540,0,800); g.addColorStop(0,CV().brilho(.28)); g.addColorStop(1,CV().brilho(0));
-  c.fillStyle = g; c.fillRect(0,0,1080,1080);
-  const cols = ['#FFC23C','#FF4F8B','#FF7A59','#2EC4F1','#FFF4E0']; let s = 11;
-  const casal = state.modo === 'casal', rosas = ['#E8336D','#FF8FB1','#F06292','#C2185B','#FFB3C8'];
-  for (let i=0;i<(casal ? 40 : 70);i++){ s = (s*9301+49297)%233280; const r = s/233280; c.save(); c.translate(r*1080, ((i*137)%1080));
-    if (casal){ c.fillStyle = rosas[i%5]; c.globalAlpha = .3; c.rotate((r-.5)*.8); coracao(c, 0, 0, 9 + (i%4)*5); }
-    else { c.fillStyle = cols[i%5]; c.globalAlpha = .7; c.rotate(r*6); c.fillRect(-7,-3,14,6); }
-    c.restore(); }
-  c.globalAlpha = 1;
-  c.fillStyle = modo; c.fillRect(0,0,1080,16);
-  c.textAlign = 'center'; c.fillStyle = CV().ouro; c.font = '800 52px "Bricolage Grotesque", sans-serif'; c.fillText(state.modo === 'casal' ? 'retrozap 💕' : 'retrozap 🏆', 540, 100);
-  if (state.grupo){ c.fillStyle = CV().txt; caber(c, state.grupo, 540, 158, 900, 700, 38, '"DM Sans", sans-serif'); c.fillStyle = CV().ouro; }
-  // título em até 2 linhas: com 2, o emoji encolhe e sobe para nada encostar no nome
-  const TT = limpaTxt(title.toUpperCase()); let tf = 66; c.font = `800 ${tf}px "Bricolage Grotesque", sans-serif`;
-  while (linhasDe(c, TT, 900) > 2 && tf > 44){ tf -= 4; c.font = `800 ${tf}px "Bricolage Grotesque", sans-serif`; }
-  const duas = linhasDe(c, TT, 900) > 1;
-  emojiC(c, emoji, 540, duas ? 275 : 320, duas ? 180 : 230);
-  c.fillStyle = CV().txt; c.font = `800 ${tf}px "Bricolage Grotesque", sans-serif`; wrap(c, TT, 540, duas ? 445 : 510, 900, tf + 6);
-  // nome do vencedor: cabe na faixa e fica centralizado (posição calculada à mão, o centro automático falha no Safari)
-  const W0 = limpaTxt(winner); let wf = small ? 64 : 96; c.font = `800 ${wf}px "Bricolage Grotesque", sans-serif`;
-  while (c.measureText(W0).width > 820 && wf > 40){ wf -= 4; c.font = `800 ${wf}px "Bricolage Grotesque", sans-serif`; }
-  const w = Math.min(960, c.measureText(W0).width + 100), yb = duas ? 690 : 680;
-  c.save(); c.translate(540, yb); c.rotate(-0.07);
-  c.fillStyle = modo; c.fillRect(-w/2+14, -70+14, w, 140);
-  c.fillStyle = CV().ouro; c.fillRect(-w/2, -70, w, 140);
-  c.fillStyle = corFundo(); c.textAlign = 'center'; caber(c, W0, 0, wf*.36, 820, 800, wf, '"Bricolage Grotesque", sans-serif');
-  c.restore(); c.textAlign = 'center';
-  c.fillStyle = CV().sub; caber(c, line, 540, podio?.length ? 830 : 850, 960, 500, 44, '"DM Sans", sans-serif');
-  if (podio?.length){ c.fillStyle = CV().txt; caber(c, podio.join('   ·   '), 540, 900, 960, 700, 40, '"DM Sans", sans-serif'); }
-  if (periodo()){ c.fillStyle = CV().sub; c.font = '700 26px "DM Sans", sans-serif'; c.fillText(periodo(), 540, 962, 980); }
-  c.fillStyle = CV().txt; c.font = '700 34px "DM Sans", sans-serif'; c.fillText(TAGLINE(), 540, 1010);
+  const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d'), K = K2(), casal = state.modo === 'casal';
+  c.fillStyle = K.fundo; c.fillRect(0, 0, W, H); c.textAlign = 'center';
+  marcaC(c, W/2, 150, 46, casal ? K.txt : K.dest);
+  c.fillStyle = K.dest; c.font = `700 34px ${DM2}`; espaco(c, 7);
+  c.fillText(`${casal ? 'TROFÉU DO CASAL' : 'TROFÉU DO GRUPO'} · ${state.compD ? ANO_MOMENTO : 'DESDE O INÍCIO'}`, W/2, 270, 980); espaco(c, 0);
+  if (state.grupo && !casal){ c.fillStyle = K.sub; caber(c, state.grupo, W/2, 326, 900, 700, 36, DM2); }
+  emojiC(c, emoji, W/2, 610, 380);
+  const TT = limpaTxt(title); let tf = 110; c.font = `800 ${tf}px ${BR2}`;
+  while (linhasDe(c, TT, 940) > 2 && tf > 60){ tf -= 6; c.font = `800 ${tf}px ${BR2}`; }
+  c.fillStyle = K.txt; const nl = wrap(c, TT, W/2, 960, 940, tf*1.02);
+  const yb = 960 + (nl - 1)*tf*1.02 + 190;
+  seloC(c, winner, W/2, yb, 860, small ? 100 : 130, casal ? '#CC1D59' : '#FFC23C', casal ? '#FFF3EC' : '#1A0B2E');
+  c.fillStyle = K.txt; c.font = `500 46px ${DM2}`; let yl = yb + 170;
+  const nlin = wrap(c, limpaTxt(line), W/2, yl, 900, 58); yl += nlin*58 + 30;
+  if (podio?.length){
+    const its = podio.map(t => { const ch = [...t]; return {e: ch[0], t: limpaTxt(ch.slice(1).join(''))}; });
+    for (const it of its){ if (yl > 1700) break; c.font = `700 40px ${DM2}`; const w = Math.min(c.measureText(it.t).width, 820), x0 = W/2 - (w + 64)/2;
+      emojiC(c, it.e, x0 + 24, yl - 14, 46); c.save(); c.textAlign = 'left'; c.fillStyle = K.sub; c.fillText(it.t, x0 + 64, yl, 820); c.restore(); yl += 62; }
+  }
+  c.fillStyle = K.txt; c.font = `700 40px ${DM2}`; c.fillText(K.provoca, W/2, 1830, 980);
   return cv.toDataURL('image/png');
 }
 function paraBlob(url){
@@ -3174,7 +3413,7 @@ async function mandarWhats(blob, nome, texto, msg, semNada){
 }
 async function openCard(fazer, texto = convite('resumo'), alt = 'Card para compartilhar no grupo'){
   evento('card_gerado');
-  await document.fonts.ready; // desenha só depois das fontes carregarem
+  await prontoArte(); // desenha só depois das fontes carregarem
   const url = typeof fazer === 'function' ? fazer() : fazer, blob = paraBlob(url), nome = `retrozap-card-${++nCard}.png`;
   let celular = false;
   try { celular = !!navigator.canShare?.({files:[new File([blob], nome, {type:'image/png'})]}); } catch {}
