@@ -8,7 +8,7 @@ function browser(choice, search = '', hash = '', existing = false, hostname = 'r
   const window = {addEventListener: (n, f) => listeners[n] = f};
   if (existing) window.fbq = () => {};
   vm.runInNewContext(source, {
-    window, localStorage: {getItem: k => storage.get(k)},
+    URLSearchParams, window, localStorage: {getItem: k => storage.get(k)},
     location: {hostname, pathname: '/', search, hash},
     document: {createElement: () => ({}), head: {appendChild: s => scripts.push(s)}}
   });
@@ -16,6 +16,10 @@ function browser(choice, search = '', hash = '', existing = false, hostname = 'r
 }
 for (const choice of [undefined, 'nao']) assert.equal(browser(choice).scripts.length, 0);
 assert.equal(browser('sim', '?ref=segredo').scripts.length, 0);
+assert.equal(browser('sim', '?utm_source=instagram&utm_medium=paid_social&utm_campaign=teste_01&fbclid=abc123').scripts.length, 1);
+assert.equal(browser('sim', '?utm_source=pessoa%40email.com').scripts.length, 0);
+assert.equal(browser('sim', '?cartao=ok&ref=privado').scripts.length, 0);
+assert.equal(browser('sim', '?de=convite&m=casal').scripts.length, 1);
 assert.equal(browser('sim', '', '#segredo').scripts.length, 0);
 assert.equal(browser('sim', '', '', true).scripts.length, 0);
 assert.equal(browser('sim', '', '', false, 'localhost').scripts.length, 0);

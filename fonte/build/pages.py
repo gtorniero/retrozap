@@ -43,14 +43,14 @@ def page(path, title, desc, body, ad=True):
 <html lang="pt-BR"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- Consentimento (LGPD) + Google tag (gtag.js) -->
-<script>window['ga-disable-G-R8R1EN0KQN']=!/(^|\.)retrozap\.com\.br$/.test(location.hostname);window.dataLayer=window.dataLayer||[];function gtag(){{dataLayer.push(arguments);}}
-(function(){{var ok=null;try{{ok=localStorage.getItem('rz_cookies');}}catch(e){{}}var ad=ok==='sim'?'granted':'denied';
-gtag('consent','default',{{ad_storage:ad,ad_user_data:ad,ad_personalization:ad,analytics_storage:ok==='nao'?'denied':'granted'}});
+<script>window.dataLayer=window.dataLayer||[];function gtag(){{dataLayer.push(arguments);}}
+(function(){{var ok=null;try{{ok=localStorage.getItem('rz_cookies');}}catch(e){{}}var mk=null;try{{mk=localStorage.getItem('rz_marketing_v1');}}catch(e){{}}var ad=ok==='sim'&&mk==='sim'?'granted':'denied';
+gtag('consent','default',{{ad_storage:ad,ad_user_data:ad,ad_personalization:ad,analytics_storage:ok==='sim'?'granted':'denied'}});
 if(ad==='denied'){{(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersonalizedAds=1;}}}})();</script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-R8R1EN0KQN"></script>
+<script>if(/^(?:www\.)?retrozap\.com\.br$/.test(location.hostname)){{var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=G-R8R1EN0KQN';document.head.appendChild(s)}}</script>
 <script>
   gtag('js', new Date());
-  gtag('config', 'G-R8R1EN0KQN');
+  gtag('config', 'G-R8R1EN0KQN', {{page_title:'Retrozap',page_location:location.origin+location.pathname,page_referrer:''}});
 </script>
 {conteudo.gtm_head(getattr(conteudo, 'GTM_ID', ''))}<title>{title} · Retrozap</title><meta name="description" content="{desc}">
 <link rel="canonical" href="{url}"><meta name="theme-color" content="#1A0B2E">
@@ -111,7 +111,7 @@ urls.append(page('privacidade.html', 'Política de Privacidade', 'Como o Retroza
 <li>Você pode bloquear ou apagar cookies a qualquer momento nas configurações do seu navegador. O site continua funcionando normalmente.</li></ul>
 <p>No primeiro acesso, o aviso de cookies pergunta a sua escolha. Com <b>"Aceitar"</b>, o Google pode mostrar anúncios personalizados. Com <b>"Só o essencial"</b>, os anúncios continuam, mas sem personalização e sem cookies de publicidade. Para mudar de ideia, limpe os dados do site no navegador e o aviso aparece de novo.</p>
 <h3>Pixel da Meta (opcional)</h3>
-<p>Somente após um novo aceite no aviso que menciona a Meta, usamos o Pixel da Meta para medir visitas e ações como iniciar e concluir uma retrospectiva, compartilhar uma mídia ou abrir o pagamento. Não enviamos mensagens, nomes, telefones, arquivos, resultados individuais, e-mails ou códigos de compra ao pixel. A coleta automática de cliques e formulários e a correspondência avançada não são habilitadas. O pixel pode tratar dados técnicos do navegador, como IP, cookies e a página visitada, para mensuração e personalização de anúncios, conforme a <a href="https://www.facebook.com/privacy/policy/" rel="noopener">política de privacidade da Meta</a>. Com "Só o essencial", o pixel não carrega. Não o carregamos em páginas com parâmetros ou fragmentos na URL, incluindo retornos de pagamento. Para revogar o aceite neste aparelho, limpe os dados do site no navegador e escolha "Só o essencial" no próximo acesso.</p>
+<p>Somente após um novo aceite no aviso que menciona a Meta, usamos o Pixel da Meta para medir visitas e ações como iniciar e concluir uma retrospectiva, compartilhar uma mídia ou abrir o pagamento. Não enviamos mensagens, nomes, telefones, arquivos, resultados individuais, e-mails ou códigos de compra ao pixel. A coleta automática de cliques e formulários e a correspondência avançada não são habilitadas. O pixel pode tratar dados técnicos do navegador, como IP, cookies e a página visitada, para mensuração e personalização de anúncios, conforme a <a href="https://www.facebook.com/privacy/policy/" rel="noopener">política de privacidade da Meta</a>. Com "Só o essencial", o pixel não carrega. Não o carregamos em retornos de pagamento, URLs com parâmetros desconhecidos ou fragmentos. Parâmetros padronizados de campanha e origem do compartilhamento podem ser usados na medição após o aceite. Para mudar a escolha no aplicativo, toque em "Preferências de cookies" e escolha "Só o essencial". Vendas aprovadas podem enviar somente valor, moeda e um identificador técnico irreversível da transação, nunca e-mail, código de acesso ou referência de pagamento.</p>
 <h2>7. Links de parceiros</h2>
 <p>Alguns conteúdos têm links de parceiros, sempre sinalizados. Se você comprar por eles, o Retrozap pode receber uma comissão, sem custo extra para você. Ao sair do Retrozap, vale a política de privacidade do site de destino.</p>
 <h2>8. Bases legais (LGPD)</h2>

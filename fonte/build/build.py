@@ -47,14 +47,14 @@ HEAD = """<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- Consentimento (LGPD) + Google tag (gtag.js) -->
-<script>window['ga-disable-G-R8R1EN0KQN']=!/(^|\.)retrozap\.com\.br$/.test(location.hostname);window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
-(function(){var ok=null;try{ok=localStorage.getItem('rz_cookies');}catch(e){}var ad=ok==='sim'?'granted':'denied';
-gtag('consent','default',{ad_storage:ad,ad_user_data:ad,ad_personalization:ad,analytics_storage:ok==='nao'?'denied':'granted'});
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+(function(){var ok=null;try{ok=localStorage.getItem('rz_cookies');}catch(e){}var mk=null;try{mk=localStorage.getItem('rz_marketing_v1');}catch(e){}var ad=ok==='sim'&&mk==='sim'?'granted':'denied';
+gtag('consent','default',{ad_storage:ad,ad_user_data:ad,ad_personalization:ad,analytics_storage:ok==='sim'?'granted':'denied'});
 if(ad==='denied'){(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersonalizedAds=1;}})();</script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-R8R1EN0KQN"></script>
+<script>if(/^(?:www\.)?retrozap\.com\.br$/.test(location.hostname)){var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=G-R8R1EN0KQN';document.head.appendChild(s)}</script>
 <script>
   gtag('js', new Date());
-  gtag('config', 'G-R8R1EN0KQN');
+  gtag('config', 'G-R8R1EN0KQN', {page_title:'Retrozap',page_location:location.origin+location.pathname,page_referrer:''});
 </script>
 @@GTM@@<title>Retrozap · Retrospectiva do grupo de WhatsApp</title>
 <meta name="description" content="Descubra a história do seu grupo de WhatsApp: quem fala mais, quem some, quem manda figurinha às 3 da manhã. Prêmios, números e cards para mandar no grupo. Grátis e suas mensagens não saem do celular.">

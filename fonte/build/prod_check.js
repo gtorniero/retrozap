@@ -13,13 +13,34 @@ window.dataLayer = window.dataLayer || [];
 function gtag(){ dataLayer.push(arguments); }
 // a tag oficial do Google (gtag js + config) fica no <head>; cada tela nova vira page_view sozinha (medição otimizada: mudanças no histórico)
 function evento(nome, params = {}){
-  try { if (window.rzMetaEvent) window.rzMetaEvent(nome, !!params.exemplo || !!state.sample); } catch {}
-  try { if (configurado(CONFIG.GA_ID)) gtag('event', nome, params); } catch {}
-  try { if (window.RZ_GTM) dataLayer.push(Object.assign({event: 'rz_' + nome}, params)); } catch {} // Tag Manager: gatilhos de conversão (rz_upload_ok, rz_compartilhou...)
+  // Sem eventos antes de aceitar; não copiar parâmetros livres nem conteúdo do grupo.
+  let analytics = false, marketing = false;
+  try { analytics = localStorage.getItem('rz_cookies') === 'sim'; marketing = localStorage.getItem('rz_marketing_v1') === 'sim'; } catch {}
+  const exemplo = !!params.exemplo || !!state.sample;
+  const p = {};
+  if (['amigos','familia','trabalho','comunidade','casal'].includes(params.modo)) p.modo = params.modo;
+  if (['image','video'].includes(params.tipo)) p.tipo = params.tipo;
+  if (['trofeu','spoiler','resumo','video','convite'].includes(params.origem)) p.origem = params.origem;
+  if (exemplo) p.exemplo = true;
+  try { if (window.rzMetaEvent && marketing) window.rzMetaEvent(nome, exemplo); } catch {}
+  try { if (analytics && configurado(CONFIG.GA_ID)) gtag('event', nome, p); } catch {}
+  try { if (marketing && window.RZ_GTM && !exemplo) dataLayer.push(Object.assign({event: 'rz_' + nome}, p)); } catch {}
+}
+function compraConfirmada(m){
+  if (!m || !/^[a-f0-9]{64}$/.test(m.id) || !Number.isFinite(m.valor) || m.valor <= 0 || m.moeda !== 'BRL') return;
+  try {
+    if (localStorage.getItem('rz_cookies') !== 'sim' || localStorage.getItem('rz_venda_' + m.id)) return;
+    // Não tentar medir em URL sensível; o servidor só fornece m para venda real aprovada.
+    if (!window.rzSafeMeasurementPage?.()) return;
+    localStorage.setItem('rz_venda_' + m.id, '1');
+    gtag('event', 'purchase', {transaction_id:m.id,value:m.valor,currency:'BRL',page_title:'Retrozap',page_location:location.origin+location.pathname});
+    if (localStorage.getItem('rz_marketing_v1') === 'sim') window.rzMetaPurchase?.(m.valor, m.id);
+  } catch {} // Sem armazenamento, não arriscar duplicar venda.
 }
 
 /* ---------- Uma página por tela: cada tela conta como página vista ---------- */
 function ir(rota){
+  gtag('set', {page_title:'Retrozap',page_location:location.origin+rota,page_referrer:''});
   if (location.pathname !== rota) history.pushState({rota}, '', rota); // o GA conta a troca de tela como page_view
 }
 window.addEventListener('popstate', () => {
@@ -29,8 +50,9 @@ window.addEventListener('popstate', () => {
 });
 
 /* ---------- Aviso de cookies ---------- */
-function avisoCookies(){
-  try { if (localStorage.getItem('rz_cookies') && localStorage.getItem('rz_marketing_v1')) return; } catch {}
+function avisoCookies(forcar = false){
+  if (document.querySelector('.cookies')) return;
+  try { if (!forcar && localStorage.getItem('rz_cookies') && localStorage.getItem('rz_marketing_v1')) return; } catch {}
   const b = document.createElement('div'); b.className = 'cookies';
   b.innerHTML = 'Usamos cookies para contar visitas. Se você aceitar, Google e Meta também poderão medir nossas campanhas e personalizar anúncios. Suas mensagens nunca saem do seu celular. <a href="/privacidade">Política de privacidade</a> <button class="btn btn-main mini" type="button" data-ck="sim">Aceitar</button> <button class="btn btn-ghost mini" type="button" data-ck="nao">Só o essencial</button>';
   b.querySelectorAll('[data-ck]').forEach(bt => bt.onclick = () => {
@@ -40,6 +62,13 @@ function avisoCookies(){
     b.remove(); document.body.classList.remove('has-cookies'); });
   document.body.appendChild(b); document.body.classList.add('has-cookies'); // espaço extra para o aviso não cobrir nenhum botão
 }
+
+// Permite mudar/revogar a escolha sem apagar todo o site ou o código Premium.
+window.addEventListener('DOMContentLoaded', () => {
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'btn btn-ghost mini';
+  b.textContent = 'Preferências de cookies'; b.onclick = () => avisoCookies(true);
+  document.body.appendChild(b);
+});
 
 /* ---------- utilidades ---------- */
 const $ = s => document.querySelector(s);
@@ -788,7 +817,7 @@ function paywall(seguir, ctx){
   const fecha = () => { vivo = false; clearTimeout(tm); m.remove(); try { antes?.focus(); } catch {} };
   const libera = codigo => {
     lsSet('rz_acesso', codigo); document.documentElement.classList.add('premium'); // some com os anúncios na hora
-    try { if (typeof evento === 'function') evento('compra_ilimitado'); } catch {}
+    try { if (typeof evento === 'function') evento('acesso_liberado'); } catch {}
     caixa.innerHTML = `<div class="lemb-ic" aria-hidden="true">🎉</div>
       <h2 id="pwT" style="font-size:26px;margin:0">Liberado!</h2>
       <p class="lemb-tx">Agora é ilimitado neste navegador, com todos os personagens, a categoria livre e o vídeo. Para usar em outro celular, digite este código ou o e-mail que você usou no Pix:</p>
@@ -888,7 +917,7 @@ function paywall(seguir, ctx){
       if (!document.hidden) try {
         const r = await fetch('/api/pix/status', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({ref: j.ref})});
         const s = await r.json();
-        if (s.pago && s.codigo) return libera(s.codigo);
+        if (s.pago && s.codigo){ try { compraConfirmada(s.medicao); } catch {} return libera(s.codigo); }
       } catch {}
       // consulta a cada 3 s no começo e vai espaçando (menos carga no servidor se viralizar)
       const passou = Date.now() - t0;
@@ -936,7 +965,7 @@ async function confereCartao(ref){
       const s = await r.json();
       if (s.pago && s.codigo){
         lsSet('rz_acesso', s.codigo); lsSet('rz_cartao_ref', ''); document.documentElement.classList.add('premium');
-        try { if (typeof evento === 'function') evento('compra_ilimitado', {meio: 'cartao'}); } catch {}
+        try { if (typeof evento === 'function') compraConfirmada(s.medicao); } catch {}
         const m = document.createElement('div'); m.className = 'patro'; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true'); m.setAttribute('aria-labelledby', 'ccT');
         m.innerHTML = `<div class="patro-box lemb"><div class="lemb-ic" aria-hidden="true">🎉</div><h2 id="ccT" style="font-size:26px;margin:0">Pagamento confirmado!</h2>
           <p class="lemb-tx">Agora é ilimitado neste navegador. Para usar em outro celular, digite este código ou o e-mail do pagamento:</p>
