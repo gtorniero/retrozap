@@ -554,6 +554,123 @@ ol.how li.on{color:var(--manga);font-weight:700}
 @keyframes ttrola{from{transform:translateY(0)}to{transform:translateY(-62px)}}
 @keyframes tttap{0%{box-shadow:0 0 0 0 rgba(255,79,139,.6)}100%{box-shadow:0 0 0 18px rgba(255,79,139,0)}}
 @media (prefers-reduced-motion: reduce){.tt *{animation:none!important;transition:none!important}}
+
+/* ================= Identidade 2: cor chapada, um herói por tela, duas casas ================= */
+body{background-image:none}
+.top{background:var(--noite)}
+html.casal .top{background:var(--noite)}
+html.casal .logo{color:#5E0B2B}
+.logo span{width:1.15em;height:1.15em}
+/* início */
+.hero .h-home{font-size:clamp(50px,15vw,80px);line-height:.94;letter-spacing:-.045em}
+.hero h1 em{color:var(--manga)}
+.escolha{gap:12px}
+.esc{min-height:190px;justify-content:flex-end;gap:2px;border:0;border-radius:28px;padding:18px 16px}
+.esc-ic{position:absolute;left:16px;top:16px;width:52px;height:52px}
+.esc-ic svg{width:100%;height:100%;display:block}
+.esc b{font-size:clamp(26px,8vw,34px);letter-spacing:-.03em;line-height:1}
+.esc span:not(.esc-ic){font-size:14px;opacity:1;font-weight:500}
+.esc-g,html.casal .esc-g{background:#FFC23C;color:#1A0B2E;border:0}
+.esc-c,html.casal .esc-c,html.casal .esc-c:not([aria-pressed="true"]){background:#FF4F8B;color:#5E0B2B;border:0}
+.esc-g[aria-pressed="true"]{background:#FFC23C;color:#1A0B2E}
+.esc-c[aria-pressed="true"]{background:#FF4F8B;color:#5E0B2B}
+.esc[aria-pressed="true"]{transform:none;box-shadow:0 0 0 3px var(--noite),0 0 0 6px var(--areia)}
+.esc[aria-pressed="false"]{opacity:1}
+.esc[aria-pressed="true"]::after{content:"✓";position:absolute;right:14px;top:14px;bottom:auto;width:28px;height:28px;border-radius:50%;background:var(--noite);color:var(--areia);display:grid;place-items:center;font-size:15px}
+html.casal .esc[aria-pressed="true"]::after{background:#5E0B2B;color:#FFF3EC}
+.esc .novo{top:auto;bottom:auto;right:14px;top:14px}
+.esc-c[aria-pressed="true"] .novo{display:none}
+.priv-l{align-items:center;background:transparent;border:0;padding:0}
+.priv-l a{color:var(--areia)}
+.ok-ic{flex:none;width:32px;height:32px;border-radius:10px;background:var(--acai);color:var(--manga);display:grid;place-items:center;font-weight:800;font-size:16px}
+/* prêmio a prêmio */
+.tp{display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--manga)}
+.tp-bar{height:5px;border-radius:9px;background:color-mix(in srgb,var(--manga) 22%,transparent);margin-top:-12px;overflow:hidden}
+.tp-bar i{display:block;height:100%;border-radius:9px;background:var(--manga)}
+.award{background:transparent;padding:6px 0 0;border-radius:0;overflow:visible}
+.award::before{display:none}
+.award .em{font-size:108px;filter:none}
+.award h2,.h-award{font-size:clamp(34px,10.5vw,46px);letter-spacing:-.03em}
+.award .crit{font-size:16px}
+.award .ask{font-family:var(--titulo);font-weight:800;font-size:20px;color:var(--manga);line-height:1.2}
+.opts{gap:10px}
+.opt{background:transparent;border:2px solid color-mix(in srgb,var(--areia) 26%,transparent);border-radius:16px;font-family:var(--titulo);font-weight:800;font-size:18px;min-height:56px;padding:14px 10px;color:var(--areia)}
+.opt:not([disabled]):hover{border-color:var(--manga)}
+.opt.right{border-color:var(--manga);background:color-mix(in srgb,var(--manga) 16%,transparent);opacity:1}
+.opt.wrong{border-color:var(--goiaba);opacity:.6}
+.opt[disabled]:not(.right):not(.wrong){opacity:.5}
+html.casal .opts .opt{border:0;min-height:96px;font-size:clamp(22px,7vw,30px);border-radius:24px;background:#FFD6E2;color:#5E0B2B;padding:16px 12px}
+html.casal .opts .opt:nth-child(2){background:#E0245E;color:#FFF3EC}
+html.casal .opts .opt.right{box-shadow:0 0 0 3px var(--noite),0 0 0 6px #5E0B2B;opacity:1}
+html.casal .opts .opt.wrong{opacity:.45}
+.podium{min-height:250px;gap:10px;overflow:visible}
+.pod{gap:4px}
+.pod .med{display:block;width:42px;height:42px;line-height:0}
+.pod .med.ico{width:42px;height:42px}
+.pod.p1 .med,.pod.p1 .med.ico{width:52px;height:52px}
+.pod .who{font-family:var(--titulo);font-weight:800;font-size:16px;color:var(--areia)}
+.pod .v{color:var(--areia);opacity:.8}
+.pod .blk{border-radius:18px 18px 0 0;font-size:30px;padding-top:10px;color:#1A0B2E}
+.pod.p1 .blk{background:#FFC23C;color:#1A0B2E}
+.pod.p2 .blk{background:#FF4F8B}
+.pod.p3 .blk{background:#A98BFF}
+html.casal .podium{align-items:flex-start;min-height:0}
+html.casal .pod{max-width:none;border-radius:24px;padding:18px 10px 20px;background:#FFD6E2;margin-top:40px}
+html.casal .pod.p1{background:#E0245E;order:-1;margin-top:0}
+html.casal .pod .blk{display:none}
+html.casal .pod .med,html.casal .pod .med.ico{width:58px;height:58px}
+html.casal .pod.p1 .med,html.casal .pod.p1 .med.ico{width:70px;height:70px}
+html.casal .pod .who{font-size:clamp(22px,7vw,30px);color:#5E0B2B}
+html.casal .pod .v{font-family:var(--titulo);font-weight:800;font-size:22px;color:#5E0B2B;opacity:1}
+html.casal .pod.p1 .who,html.casal .pod.p1 .v{color:#FFF3EC}
+.selo{box-shadow:none;border-radius:18px;transform:rotate(-3deg);font-size:clamp(34px,11vw,54px);padding:6px 26px;margin:4px 0 16px;letter-spacing:-.02em}
+@keyframes pop{from{transform:rotate(-3deg) scale(.3);opacity:0}}
+.frase{font-size:18px;line-height:1.45}
+.top3{border-top-color:color-mix(in srgb,var(--areia) 18%,transparent)}
+html.casal .acao #rvl{background:#5E0B2B;color:#FFF3EC}
+.btn-ghost{border-color:color-mix(in srgb,var(--areia) 28%,transparent)}
+/* Ato III: um número por tela */
+.slide>.em-g{font-size:60px}
+.slide .big{font-size:clamp(64px,22vw,118px);color:var(--areia);letter-spacing:-.055em;line-height:.95}
+.slide .sub{font-family:var(--titulo);font-weight:800;font-size:22px;line-height:1.2;letter-spacing:-.01em}
+.pill.pos{background:var(--manga);color:var(--noite)}
+.pill.igual{background:color-mix(in srgb,var(--areia) 22%,transparent);color:var(--areia)}
+.pill.desce{background:#E0245E;color:#fff}
+.desde{border:0}
+.ano i,html.casal .ano i{background:var(--areia);opacity:.22;border-radius:12px 12px 4px 4px}
+.ano.atual i,html.casal .ano.atual i{background:var(--manga);opacity:1}
+html.casal .ano.atual i{background:#E0245E}
+.yb{background:var(--areia);opacity:.22}
+.yr.rec .yb{background:var(--manga);opacity:1}
+/* painéis: chapados, sem borda */
+.nums,.pbloco,.desde{border-color:transparent}
+.card-fim{background:var(--acai)}
+
+.slide .big.txt{font-size:clamp(40px,13vw,76px);letter-spacing:-.04em;overflow-wrap:anywhere}
+.duelo{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;align-items:start}
+.du{display:flex;flex-direction:column;align-items:center;gap:4px;border-radius:24px;padding:16px 10px 18px;background:#FFD6E2;color:#5E0B2B;min-width:0}
+.du1{background:#CC1D59;color:#FFF3EC}
+.du2{margin-top:34px}
+.du .med,.du .med.ico{width:56px;height:56px}
+.du1 .med,.du1 .med.ico{width:66px;height:66px}
+.du b{font-family:var(--titulo);font-weight:800;font-size:clamp(22px,7vw,30px);line-height:1.05;max-width:100%;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.du-v{font-family:var(--titulo);font-weight:800;font-size:clamp(26px,8vw,36px);line-height:1;font-variant-numeric:tabular-nums}
+.du-u{font-size:13px;font-weight:500}
+.du-dif{font-family:var(--titulo);font-weight:800;font-size:26px;margin:0;color:#5E0B2B}
+.du-dif em{font-style:normal;color:#E0245E}
+html.casal .scratch{background:#FFD6E2}
+
+/* nomes longos: sempre inteiros, quebrando a linha (nada de reticências) */
+.opt{display:flex;align-items:center;justify-content:center;text-align:center;overflow:visible;-webkit-line-clamp:unset;overflow-wrap:anywhere;hyphens:auto;line-height:1.15}
+.pod .who,.du b{display:block;overflow:visible;-webkit-line-clamp:unset;overflow-wrap:anywhere;hyphens:auto}
+.pod .who{font-size:clamp(13px,3.8vw,16px)}
+.mem.off{opacity:1;background:var(--acai-2)}
+.esc-c span:not(.esc-ic){color:#3D0719}
+
+.opt,.pod .who,.du b{overflow-wrap:break-word;word-break:normal;hyphens:manual}
+.opt.longo{font-size:15px}
+html.casal .opts .opt.longo{font-size:clamp(16px,4.6vw,22px)}
+.selo.longo{font-size:clamp(26px,8vw,38px)}
 </style>
 
 <a class="pular-conteudo" href="#view">Pular para o conteúdo</a>
@@ -644,7 +761,8 @@ const icT = (txt, x, y, s, f) => `<text x="${x}" y="${y}" text-anchor="middle" f
 const L = (d, i, w = 8) => `<path d="${d}" stroke="${i}" stroke-width="${w}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
 const ICONES = {
   // marca: medalha de conversa
-  '🏆': {marca: true, g: (i, a, c) => `<path d="M34 6h20l14 34H48zM86 6H66L52 40h20z" fill="${c ? '#E0245E' : '#FF4F8B'}"/><circle cx="60" cy="74" r="38" fill="${c ? '#E0245E' : '#FFC23C'}"/><path d="M42 58h36a8 8 0 0 1 8 8v16a8 8 0 0 1-8 8H58l-10 9v-9h-6a8 8 0 0 1-8-8V66a8 8 0 0 1 8-8z" fill="${c ? '#FFF3EC' : '#1A0B2E'}"/><circle cx="50" cy="74" r="4.5" fill="${c ? '#E0245E' : '#FFC23C'}"/><circle cx="60" cy="74" r="4.5" fill="${c ? '#E0245E' : '#FFC23C'}"/><circle cx="70" cy="74" r="4.5" fill="${c ? '#E0245E' : '#FFC23C'}"/>`},
+  '🏆': {marca: true, g: (i, a, c) => { const f = c ? '#E0245E' : '#FFC23C', d = c ? '#FFF3EC' : '#1A0B2E';
+    return `<path d="M30 14h60a8 8 0 0 1 8 8v26a38 38 0 0 1-76 0V22a8 8 0 0 1 8-8z" fill="${f}"/><path d="M22 24H12v14a20 20 0 0 0 16 20M98 24h10v14a20 20 0 0 1-16 20" stroke="${f}" stroke-width="8" fill="none" stroke-linecap="round"/><rect x="52" y="84" width="16" height="14" fill="${f}"/><rect x="34" y="98" width="52" height="14" rx="6" fill="${f}"/><circle cx="43" cy="46" r="7" fill="${d}"/><circle cx="60" cy="46" r="7" fill="${d}"/><circle cx="77" cy="46" r="7" fill="${d}"/>`; }},
   '🥇': {medalha: 1}, '🥈': {medalha: 2}, '🥉': {medalha: 3}, '🏅': {medalha: 1},
   '🗣️': {g: (i, a) => `${icBub(0, i, i)}${L('M24 46h46M24 60h30', a)}<path d="M80 8h26a8 8 0 0 1 8 8v14a8 8 0 0 1-8 8h-4v8l-10-8H80a8 8 0 0 1-8-8V16a8 8 0 0 1 8-8z" fill="${a}" stroke="${i}" stroke-width="5" stroke-linejoin="round"/>`},
   '💬': {g: (i, a) => `${icBub(10, i, a)}${L('M34 46h44M34 60h28', i, 7)}`},
@@ -717,6 +835,8 @@ const ICONES = {
 const icNorm = e => String(e || '').replace(/️/g, '');
 const IC_KEYS = new Map(Object.keys(ICONES).map(k => [icNorm(k), k]));
 const icKey = e => IC_KEYS.get(icNorm(e));
+// a taça que fala (símbolo da marca) em qualquer cor
+const logoSVG = (f, d) => `<svg viewBox="0 0 120 120" focusable="false"><path d="M30 14h60a8 8 0 0 1 8 8v26a38 38 0 0 1-76 0V22a8 8 0 0 1 8-8z" fill="${f}"/><path d="M22 24H12v14a20 20 0 0 0 16 20M98 24h10v14a20 20 0 0 1-16 20" stroke="${f}" stroke-width="8" fill="none" stroke-linecap="round"/><rect x="52" y="84" width="16" height="14" fill="${f}"/><rect x="34" y="98" width="52" height="14" rx="6" fill="${f}"/><circle cx="43" cy="46" r="7" fill="${d}"/><circle cx="60" cy="46" r="7" fill="${d}"/><circle cx="77" cy="46" r="7" fill="${d}"/></svg>`;
 function medalhaSVG(n, c){
   const r1 = c ? '#E0245E' : '#FF4F8B', r2 = c ? '#5E0B2B' : '#1A0B2E', ink = r2, met = {1:'#FFC23C', 2:'#D9D3E4', 3:'#E8925E'}[n];
   return `<path d="M32 4h22l12 36H44zM88 4H66L54 40h22z" fill="${r1}"/><path d="M44 4h10l12 36H56zM76 4H66L54 40h10z" fill="${r2}"/><circle cx="60" cy="76" r="38" fill="${met}" stroke="${ink}" stroke-width="6"/><circle cx="60" cy="76" r="27" fill="none" stroke="${ink}" stroke-width="3" opacity=".35"/>${icT(n, 60, 92, 44, ink)}`;
@@ -755,7 +875,10 @@ function trocaIcones(raiz){
     if (el.dataset.ico || el.children.length) continue;
     const t = (el.textContent || '').trim(); if (!t || !icKey(t)) continue;
     const dest = !!el.closest(IC_DESTAQUE) && !icKey(t).match(/🥇|🥈|🥉|🏅/u);
-    const k = icKey(t), it = ICONES[k], sv = iconeSVG(t, {figurinha: dest || !!it.marca || !!it.medalha});
+    const k = icKey(t), it = ICONES[k], bt = it.marca && !el.closest('.logo') && el.closest('button,.btn,a');
+    // símbolo dentro de botão: na cor do texto do botão, com os pontinhos na cor do fundo
+    let sv = iconeSVG(t, {figurinha: dest || !!it.marca || !!it.medalha});
+    if (bt){ const cs = getComputedStyle(bt), bg = cs.backgroundColor; sv = logoSVG('currentColor', bg && !/rgba\(0, 0, 0, 0\)|transparent/.test(bg) ? bg : 'var(--noite)'); }
     el.dataset.ico = '1'; el.classList.add('ico'); if (dest) el.classList.add('ico-fig');
     el.innerHTML = sv.replace('<svg ', '<svg aria-hidden="true" focusable="false" ');
   }
@@ -823,7 +946,8 @@ function voltarPilha(){
 function voltar(){ voltarPilha(); }
 const ETAPAS = ['Começo', 'Ato I: conhecendo o grupo', 'Ato II: as categorias', 'Ato III: o final'];
 function setSteps(n){ document.querySelectorAll('.steps i').forEach((el,i)=>el.classList.toggle('on', i<=n)); const e = document.getElementById('etapa'); if (e) e.textContent = `Etapa ${n + 1} de 4: ${ETAPAS[n] || ''}`; }
-function setModo(m){ state.modo=m; if (m !== 'casal') state.ultimoGrupo = m; document.documentElement.style.setProperty('--modo', MODOS[m].c); document.documentElement.classList.toggle('casal', m === 'casal'); }
+function setModo(m){ state.modo=m; if (m !== 'casal') state.ultimoGrupo = m; document.documentElement.style.setProperty('--modo', MODOS[m].c); document.documentElement.classList.toggle('casal', m === 'casal');
+  const lg = document.querySelector('.logo>span'); if (lg && typeof logoSVG === 'function') lg.innerHTML = logoSVG(m === 'casal' ? '#E0245E' : '#FFC23C', m === 'casal' ? '#FFF3EC' : '#1A0B2E'); }
 
 /* ---------- parser do export ---------- */
 const STRIP = /[‎‏‪-‮⁦-⁩]/g;
@@ -1494,16 +1618,14 @@ function inicio(){
   view.innerHTML = `
   <section class="screen hero">
     ${ORIGEM ? `<div class="chegou" role="note"><span aria-hidden="true">👋</span><span>${cs ? 'Um casal te mandou a retrospectiva deles? <b>Agora é a vez de vocês.</b>' : 'Te mandaram a retrospectiva de um grupo? <b>Agora é a vez do seu.</b> Descubra quem é o tagarela, o fantasma e o boca-suja.'}</span></div>` : ''}
-    ${cs ? `<p class="eyebrow">A retrospectiva dos casais do Brasil</p>
-    <h1>Toda história de amor tem números. <em>Descubra os de vocês.</em></h1>
-    <p class="lead">Quem manda mais "te amo", quem puxa o papo do dia, quem pede desculpas: cada um leva o seu troféu. 💘</p>` : `<p class="eyebrow">A retrospectiva oficial dos grupos do Brasil</p>
-    <h1>Todo grupo tem uma história. <em>Descubra a do seu.</em></h1>
-    <p class="lead">Quem fala demais, quem some, quem manda figurinha às 3 da manhã: cada um leva o seu troféu. 🏆</p>`}
-    <div class="badge"><span aria-hidden="true">🔒</span><span><b>Suas mensagens não saem do seu celular.</b> Tudo é analisado aqui no navegador. A gente não recebe, não lê e não guarda nenhuma mensagem. <a href="/privacidade" style="color:var(--areia)">Entenda</a></span></div>
+    <p class="eyebrow">${cs ? 'A retrospectiva dos casais do Brasil' : 'A retrospectiva oficial dos grupos do Brasil'}</p>
+    <h1 class="h-home">${cs ? 'O 2026 de vocês,' : 'Seu 2026,'} <em>premiado.</em></h1>
+    <p class="lead">${cs ? 'Quem manda mais "te amo", quem puxa o papo do dia, quem pede desculpas: troféus, números e o resumo do ano de vocês dois.' : 'Quem fala demais, quem some, quem manda figurinha às 3 da manhã: troféus, números e o resumo do ano do seu grupo.'} Tudo no seu celular.</p>
     <div class="escolha" role="group" aria-label="O que você quer analisar?">
-      <button type="button" class="esc esc-g" data-esc="grupo" aria-pressed="${!cs}"><span class="em" aria-hidden="true">🏆</span><b>Grupos</b><span>Amigos, família, trabalho, condomínio</span></button>
-      <button type="button" class="esc esc-c" data-esc="casal" aria-pressed="${cs}"><i class="novo">Novo</i><span class="em" aria-hidden="true">💘</span><b>Casais</b><span>A retrospectiva de vocês dois</span></button>
+      <button type="button" class="esc esc-g" data-esc="grupo" aria-pressed="${!cs}"><span class="esc-ic" aria-hidden="true">${logoSVG('#1A0B2E', '#FFC23C')}</span><b>Grupos</b><span>amigos, família, trampo, condomínio</span></button>
+      <button type="button" class="esc esc-c" data-esc="casal" aria-pressed="${cs}"><i class="novo">Novo</i><span class="esc-ic" aria-hidden="true"><svg viewBox="0 0 120 120" focusable="false">${icHeart('#FFF3EC', '#5E0B2B', 1, 0, 0, 7)}</svg></span><b>Casais</b><span>vocês dois em troféus</span></button>
     </div>
+    <div class="badge priv-l"><span class="ok-ic" aria-hidden="true">✓</span><span><b>Nada sai do seu celular. Sem cadastro.</b> Tudo é analisado aqui no navegador: a gente não recebe, não lê e não guarda nenhuma mensagem. <a href="/privacidade">Entenda</a></span></div>
     <div class="panel oque">
       <p class="ask">O que você vai encontrar</p>
       ${cs ? `<ol class="oque-l">
@@ -2119,7 +2241,8 @@ function award(){
   }
   view.innerHTML = `<section class="screen">
     ${state.sample ? `<span class="sample">${state.modo === 'casal' ? 'Casal de exemplo' : 'Grupo de exemplo'}</span>` : ''}
-    <p class="count">Ato II · Categoria ${state.idx+1} de ${n}</p>
+    <div class="tp" aria-hidden="true"><span>Troféu ${state.idx+1} de ${n}</span><span>Ato II</span></div><div class="tp-bar" aria-hidden="true"><i style="width:${Math.round((state.idx+1)/n*100)}%"></i></div>
+    <p class="sr-only">Ato II · Categoria ${state.idx+1} de ${n}</p>
     <div class="award">
       <div class="em" aria-hidden="true">${a.e}</div>
       <h1 class="h-award">${a.n}</h1>
@@ -2231,7 +2354,7 @@ function suspense(){
       ? `<div class="em-g" aria-hidden="true">${x.e}</div><h2 style="font-size:30px">Top 3 destaques de ${ANO_MOMENTO}</h2>
          <div class="dest">${x.destaques.map(y => `<div><span aria-hidden="true">${y.e}</span><div><span class="small">${esc(y.t)}</span><b>${esc(y.n)}</b><span class="small">${esc(y.v)}</span></div></div>`).join('')}</div>
          <p class="piada">${esc(x.piada)}</p>`
-      : `<div class="em-g" aria-hidden="true">${x.e}</div><div class="big" id="bg">${esc(x.big)}</div><p class="sub">${esc(x.sub)}</p>
+      : `<div class="em-g" aria-hidden="true">${x.e}</div><div class="big${/^[\d.]+/.test(x.big) ? '' : ' txt'}" id="bg">${esc(x.big)}</div><p class="sub">${esc(x.sub)}</p>
          ${x.pills?.length ? `<div class="pills" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">${x.pills.map(p => `<span class="pill ${p.c}">${esc(p.t)}</span>`).join('')}</div>` : ''}
          ${x.desde ? `<div class="desde"><span class="tag-periodo">desde o início</span><b>${esc(x.desde.t)}</b><span class="small">${esc(x.desde.s)}</span>${x.desde.quem ? `<span class="quem">🎙️ ${esc(x.desde.quem)}</span>` : ''}${x.desde.top ? `<span class="pills" data-top="${x.desde.top}" hidden></span>` : ''}</div>` : ''}
          <p class="piada">${esc(x.piada)}</p>`;
@@ -2332,8 +2455,9 @@ function fimTela(semFesta){
     <section class="compartilhar" aria-labelledby="cmpT">
       <h1 id="cmpT" style="font-size:clamp(30px,9vw,40px);margin:0">📲 Mídias ${casal ? 'de vocês' : 'do grupo'}</h1>
       <p class="small">Para compartilhar onde quiser: ${casal ? 'um com o outro' : 'no grupo'}, nos stories, no status. Tudo é feito aqui no seu celular.</p>
-      ${(() => { const itens = [videoHTML(casal), fig(3, `🏆 Troféus ${casal ? 'do casal' : 'do grupo'}`, 'desde o início', altTop10()), fig(1, `📸 Resumo ${casal ? 'do casal' : 'do grupo'}`, 'desde o início', altResumo(d)),
-          casal ? fig(5, '💞 Nós dois: um contra o outro', so26 ? 'só ' + ANO_MOMENTO : 'desde o início', altCasal(d)) : '', casal ? fig(6, '🧾 Recibo do amor', so26 ? 'só ' + ANO_MOMENTO : 'desde o início', altRecibo(d)) : '', so26 ? fig(4, `🗓️ Nosso ${ANO_MOMENTO}`, 'só ' + ANO_MOMENTO, altNosso2026()) : ''].filter(Boolean);
+      ${(() => { const per = so26 ? 'só ' + ANO_MOMENTO : 'desde o início', itens = casal
+          ? [videoHTML(casal), fig(6, '🧾 Recibo do amor', per, altRecibo(d)), fig(7, '💞 Placar do casal', per, altPlacar(d)), fig(5, '💞 Nós dois: um contra o outro', per, altCasal(d)), fig(3, '🏆 Quadro de troféus', 'desde o início', altTop10()), fig(1, '📸 Resumo do casal', 'desde o início', altResumo(d)), so26 ? fig(4, `🗓️ O nosso ${ANO_MOMENTO}`, 'só ' + ANO_MOMENTO, altNosso2026()) : '']
+          : [videoHTML(casal), fig(3, '🏆 Quadro de troféus', 'desde o início', altTop10()), fig(9, `💬 ${so26 ? 'O número de ' + ANO_MOMENTO : 'O número do grupo'}`, per, altNumero()), fig(1, '📸 Resumo do grupo', 'desde o início', altResumo(d)), so26 ? fig(4, `🗓️ Nosso ${ANO_MOMENTO}`, 'só ' + ANO_MOMENTO, altNosso2026()) : ''].filter(Boolean);
         return `<p class="carr-dica" aria-hidden="true">👉 Arraste para o lado: são ${itens.length} mídias</p><div class="carr-box"><button type="button" class="carr-lado esq" data-carr="-1" aria-label="Mídia anterior">‹</button><div class="carr" id="carr" role="region" aria-roledescription="carrossel" aria-label="Vídeo e imagens para compartilhar" tabindex="0">${itens.map((x, i) => `<div class="carr-i" role="group" aria-roledescription="item" aria-label="${i + 1} de ${itens.length}">${x}</div>`).join('')}</div><button type="button" class="carr-lado dir" data-carr="1" aria-label="Próxima mídia">›</button></div>
         <div class="carr-nav"><button type="button" class="carr-seta" data-carr="-1" aria-label="Anterior">‹ Anterior</button><div class="carr-dots">${itens.map((_, i) => `<button type="button" data-dot="${i}" aria-label="Ver item ${i + 1} de ${itens.length}"${i ? '' : ' aria-current="true"'}></button>`).join('')}</div><button type="button" class="carr-seta prox" data-carr="1" aria-label="Próximo">Próximo ›</button></div><p class="carr-n small" aria-hidden="true">1 de ${itens.length}</p><p class="sr-only" id="carrVivo" aria-live="polite"></p>`; })()}
     </section>
@@ -2377,7 +2501,7 @@ function fimTela(semFesta){
     <button class="btn btn-main" id="concluir" style="width:100%">Concluir 🎉</button>
   </section>`;
   // imagens desenhadas sob demanda, uma de cada vez, quando chegam perto da tela (deixa a página e os pop-ups leves)
-  [['#rimg1', () => drawResumo(d)], ['#rimg3', () => drawTop10()], ['#rimg4', () => drawNosso2026()], ['#rimg5', () => drawCasal(d)], ['#rimg6', () => drawRecibo(d)]].forEach(([sel, fz]) => imgSobDemanda($(sel), fz));
+  [['#rimg1', () => drawResumo(d)], ['#rimg3', () => drawTop10()], ['#rimg4', () => drawNosso2026()], ['#rimg5', () => drawCasal(d)], ['#rimg6', () => drawRecibo(d)], ['#rimg7', () => drawPlacar(d)], ['#rimg9', () => drawNumero()]].forEach(([sel, fz]) => imgSobDemanda($(sel), fz));
   ligaVideo(d, casal, () => fimTela(true));
   ativaAnuncios();
   // carrossel: arrastar para o lado, bolinhas e setas mostram onde está
@@ -2394,7 +2518,7 @@ function fimTela(semFesta){
     car.addEventListener('keydown', e => { if (e.key === 'ArrowRight'){ e.preventDefault(); vai(atual() + 1); } if (e.key === 'ArrowLeft'){ e.preventDefault(); vai(atual() - 1); } });
     marca();
     // as imagens do carrossel já são desenhadas, uma de cada vez, sem esperar a pessoa arrastar
-    [['#rimg3', () => drawTop10()], ['#rimg1', () => drawResumo(d)], ['#rimg5', () => drawCasal(d)], ['#rimg6', () => drawRecibo(d)], ['#rimg4', () => drawNosso2026()]].forEach(([s, fz]) => { const el = $(s); if (el && !el.src){ FILA_IMG.push(() => { if (el.isConnected && !el.src) el.src = fz(); }); } });
+    [['#rimg6', () => drawRecibo(d)], ['#rimg7', () => drawPlacar(d)], ['#rimg3', () => drawTop10()], ['#rimg9', () => drawNumero()], ['#rimg1', () => drawResumo(d)], ['#rimg5', () => drawCasal(d)], ['#rimg4', () => drawNosso2026()]].forEach(([s, fz]) => { const el = $(s); if (el && !el.src){ FILA_IMG.push(() => { if (el.isConnected && !el.src) el.src = fz(); }); } });
     rodaFilaImg(); }
   // celular: abre direto as opções (galeria, WhatsApp...); computador: abre a imagem grande com baixar e copiar
   const liga = (id, fz, nome, alt) => { if (!$('#sv' + id)) return;
@@ -2407,6 +2531,8 @@ function fimTela(semFesta){
   liga(4, () => drawNosso2026(), `retrozap-${ANO_MOMENTO}.png`, so26 ? altNosso2026() : '');
   liga(5, () => drawCasal(d), 'retrozap-nos-dois.png', casal ? altCasal(d) : '');
   liga(6, () => drawRecibo(d), 'retrozap-recibo-do-amor.png', casal ? altRecibo(d) : '');
+  liga(7, () => drawPlacar(d), 'retrozap-placar-do-casal.png', casal ? altPlacar(d) : '');
+  liga(9, () => drawNumero(), 'retrozap-numero-do-grupo.png', casal ? '' : altNumero());
   const destrava = tipo => () => paywall(() => { const y = scrollY; fimTela(true); scrollTo(0, y); }, tipo);
   $('#livreLock')?.addEventListener('click', destrava('livre'));
   $('#persoLock')?.addEventListener('click', destrava('personagens'));
@@ -2522,7 +2648,7 @@ function maisPremios(){
 function podio(a, g){
   g.innerHTML = `<div class="podium" id="pd"></div>`;
   const order = [1,0,2], heights = {0:150,1:110,2:80};
-  $('#pd').innerHTML = order.filter(i => a.ranked[i]).map(i => `<div class="pod p${i+1}" data-i="${i}"><span class="who">${esc(a.ranked[i].name)}</span><span class="v">${vfmt(a,a.ranked[i].v)}</span><div class="blk" style="height:${heights[i]}px">${i+1}º</div></div>`).join('');
+  $('#pd').innerHTML = order.filter(i => a.ranked[i]).map(i => `<div class="pod p${i+1}" data-i="${i}"><span class="med" aria-hidden="true">${['🥇','🥈','🥉'][i]}</span><span class="who">${esc(a.ranked[i].name)}</span><span class="v">${vfmt(a,a.ranked[i].v)}</span><div class="blk" style="height:${heights[i]}px">${i+1}º</div></div>`).join('');
   return {txt:'🥁 Revelar o pódio', fn: async () => {
     for (const i of [2,1,0]){ const el = g.querySelector(`[data-i="${i}"]`); if (el){ el.classList.add('up'); await sleep(700); } }
     showResult(a);
@@ -2530,12 +2656,12 @@ function podio(a, g){
 }
 function palpite(a, g){
   const pool = a.ranked.slice(0,6).map(r=>r.name).sort(() => Math.random()-.5);
-  g.innerHTML = `<p class="ask">Quem você acha que levou?</p><div class="opts">${pool.map(n=>`<button class="opt">${esc(n)}</button>`).join('')}</div>`;
+  g.innerHTML = `<p class="ask">Quem você acha que levou?</p><div class="opts">${pool.map(n=>`<button class="opt${limpaTxt(n).split(' ').some(w => w.length > 10) || limpaTxt(n).length > 16 ? ' longo' : ''}">${esc(n)}</button>`).join('')}</div>`;
   const marca = b => {
     const certos = a.winner.empate || [a.winner.name], ok = b && certos.includes(b.textContent);
     g.querySelectorAll('.opt').forEach(o => { o.disabled = true; if (certos.includes(o.textContent)) o.classList.add('right'); });
     if (b && !ok) b.classList.add('wrong');
-    showResult(a, b ? `<p class="ask">${ok ? 'Acertou! Você conhece esse grupo. 🎯' : 'Errou! Ninguém esperava. Nem a gente. 😅'}</p>` : '');
+    showResult(a, b ? `<p class="ask">${ok ? (state.modo === 'casal' ? 'Acertou! Você conhece esse casal. 🎯' : 'Acertou! Você conhece esse grupo. 🎯') : 'Errou! Ninguém esperava. Nem a gente. 😅'}</p>` : '');
   };
   g.querySelectorAll('.opt').forEach(b => b.onclick = () => marca(b));
   return {txt:'🥁 Revelar sem palpitar', fn: () => marca(null)};
@@ -2581,16 +2707,23 @@ const vunid = (a, v) => `${vfmt(a, v)} ${a.u}`;
 const fatia = (a, v) => a.total ? Math.round(v/a.total*100) + '%' : '';
 function detalhe(a, r){ return a.det && r.p ? a.det(r.p) : a.fatia && a.total ? `${fatia(a, r.v)} dos ${a.u}` : ''; }
 function phrase(a){ return a.p.replaceAll('{w}', a.winner.name).replaceAll('{v}', vfmt(a, a.winner.v)).replaceAll('{s}', fatia(a, a.winner.v)); }
+// casal: os dois lado a lado (ouro e prata), com a diferença em destaque
+function duelo(a){
+  const r = a.ranked.slice(0, 2); if (r.length < 2 || a.mech === 'podio') return '';
+  const dif = Math.abs((r[0].v || 0) - (r[1].v || 0));
+  return `<div class="duelo">${r.map((x, i) => `<div class="du du${i+1}"><span class="med" aria-hidden="true">${['🥇','🥈'][i]}</span><b>${esc(x.name)}</b><span class="du-v">${vfmt(a, x.v)}</span><span class="du-u">${esc(a.u)}</span></div>`).join('')}</div>
+    ${dif && !a.pct && !a.rate ? `<p class="du-dif">Por <em>${fmt(dif)}</em>.</p>` : ''}`;
+}
 function showResult(a, extra=''){
   const res = $('#res'); res.hidden = false;
   res.closest('.award')?.classList.add('revelado');
-  res.innerHTML = `${extra}${a.empate ? '<p class="ask" style="margin:0">🤝 Empate técnico!</p>' : ''}<div class="selo">${esc(a.winner.name)}</div>
+  res.innerHTML = `${extra}${a.empate ? '<p class="ask" style="margin:0">🤝 Empate técnico!</p>' : ''}<div class="selo${limpaTxt(a.winner.name).length > 14 ? ' longo' : ''}">${esc(a.winner.name)}</div>
     <p class="frase">${esc(phrase(a))}</p>
-    <div class="top3"${a.mech === 'podio' ? ' hidden' : ''}>${a.ranked.slice(0,3).map((r,i)=>`<div><span>${['🥇','🥈','🥉'][i]} ${esc(r.name)}</span><span>${vunid(a, r.v)}${detalhe(a, r) ? `<small> · ${esc(detalhe(a, r))}</small>` : ''}</span></div>`).join('')}</div>
-    <button class="btn btn-main" id="card" style="width:100%">📲 Gerar card para o grupo</button>`;
+    <div class="top3"${a.mech === 'podio' || state.modo === 'casal' ? ' hidden' : ''}>${a.ranked.slice(0,3).map((r,i)=>`<div><span>${['🥇','🥈','🥉'][i]} ${esc(r.name)}</span><span>${vunid(a, r.v)}${detalhe(a, r) ? `<small> · ${esc(detalhe(a, r))}</small>` : ''}</span></div>`).join('')}</div>
+    ${state.modo === 'casal' ? duelo(a) : ''}<button class="btn btn-main" id="card" style="width:100%">📲 ${state.modo === 'casal' ? 'Gerar card do troféu' : 'Gerar card para o grupo'}</button>`;
   $('#card').onclick = () => openCard(() => cardAward(a), convite('premio', a), `Card do prêmio ${a.n}: ${a.winner.name}, com ${vunid(a, a.winner.v)}`);
   const nx = $('#next'), rv = $('#rvl'); if (rv) rv.remove();
-  if (nx){ nx.classList.replace('btn-ghost','btn-main'); nx.style.flex = '1'; nx.textContent = state.idx < state.awards.length-1 ? 'Próximo prêmio →' : 'Ir para o Gran Finale 🥁'; }
+  if (nx){ nx.classList.replace('btn-ghost','btn-main'); nx.style.flex = '1'; nx.style.maxWidth = 'none'; nx.textContent = state.idx < state.awards.length-1 ? 'Próximo prêmio →' : 'Ir para o Gran Finale 🥁'; }
   confetti();
   // o resultado e o botão do card ficam sempre à vista, sem a pessoa precisar rolar
   requestAnimationFrame(() => { const c = $('#card'); if (!c) return; const r = c.getBoundingClientRect(), barra = ($('.acao')?.getBoundingClientRect().height || 0) + 12;
@@ -2664,24 +2797,22 @@ function personagensTela(){
 }
 function altTop10(){ return `Troféus ${state.modo === 'casal' ? 'do casal' : 'do grupo'}${state.grupo ? ' ' + state.grupo : ''}: ${principais().map(a => `${gtit(a.n, a.winner.name)}: ${a.winner.name}`).join('; ')}.`; }
 function drawTop10(){
-  const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
-  const BR = '"Bricolage Grotesque", sans-serif', DM = '"DM Sans", sans-serif';
-  fundo(c, W, H, 1100);
-  c.textAlign = 'center';
-  marcaC(c, W/2, 100, 48, CV().ouro);
-  c.fillStyle = CV().sub; c.font = `700 30px ${DM}`; c.fillText(`${state.modo === 'casal' ? 'TROFÉUS DO CASAL' : 'TROFÉUS DO GRUPO'} · ${periodo()}`, W/2, 172, 980);
-  c.fillStyle = CV().txt; caber(c, limpaTxt(state.grupo || nomePadrao()), W/2, 250, 940, 800, 60, BR);
-  const ps = principais(), topo = 300, base = 1790, passo = (base - topo)/Math.max(ps.length, 1), alt = passo - 14;
+  const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d'), K = K2(), casal = state.modo === 'casal';
+  c.fillStyle = K.fundo; c.fillRect(0, 0, W, H);
+  c.textAlign = 'left'; marcaC(c, 70 + 128, 150, 44, casal ? K.txt : K.dest);
+  c.fillStyle = K.txt; c.font = `800 120px ${BR2}`; espaco(c, -4); c.fillText('Quadro de', 70, 330); c.fillText('troféus', 70, 448); espaco(c, 0);
+  c.fillStyle = K.dest; caber(c, `${limpaTxt(state.grupo || nomePadrao())} · ${state.compD ? ANO_MOMENTO : 'desde o início'}`, 70, 520, 940, 700, 40, DM2);
+  const ps = principais(), cols = 2, gap = 28, cw = (W - 140 - gap)/cols, rows = Math.ceil(ps.length/cols);
+  const ch = Math.min(250, (1700 - 590 - gap*(rows - 1))/Math.max(rows, 1)), y0 = 590;
   ps.forEach((a, i) => {
-    const y = topo + i*passo;
-    c.fillStyle = CV().caixa; c.beginPath(); c.roundRect(70, y, W-140, alt, 26); c.fill();
-    c.textAlign = 'left';
-    c.fillStyle = CV().ouro; c.font = `800 ${Math.round(alt*.34)}px ${BR}`; c.fillText(String(i + 1), 100, y + alt*.62);
-    emojiC(c, a.e, 168 + alt*.26, y + alt*.5, Math.round(alt*.46));
-    c.fillStyle = CV().sub; caber(c, gtit(a.n, a.winner.name).toUpperCase(), 270, y + alt*.42, 720, 700, Math.round(alt*.2), DM);
-    c.fillStyle = CV().ouro; caber(c, a.winner.name, 270, y + alt*.8, 720, 800, Math.round(alt*.34), BR);
+    const x = 70 + (i % cols)*(cw + gap), y = y0 + Math.floor(i/cols)*(ch + gap);
+    c.fillStyle = K.caixa; c.beginPath(); c.roundRect(x, y, cw, ch, 32); c.fill();
+    const ic = Math.min(ch*.62, 130); emojiC(c, a.e, x + 28 + ic/2, y + ch/2, ic*.84);
+    const tx = x + 28 + ic + 22, tw = cw - (tx - x) - 22;
+    c.textAlign = 'left'; c.fillStyle = K.sub; caber(c, gtit(a.n, a.winner.name), tx, y + ch*.42, tw, 700, Math.round(Math.min(32, ch*.16)), DM2);
+    c.fillStyle = K.txt; caber(c, nomeCurto(a.winner.name), tx, y + ch*.74, tw, 800, Math.round(Math.min(56, ch*.27)), BR2);
   });
-  c.textAlign = 'center'; c.fillStyle = CV().txt; c.font = `700 36px ${DM}`; c.fillText(TAGLINE(), W/2, 1868);
+  c.textAlign = 'center'; c.fillStyle = K.txt; c.font = `700 40px ${DM2}`; c.fillText(K.provoca, W/2, 1830, 980);
   return cv.toDataURL('image/png');
 }
 
@@ -2808,23 +2939,16 @@ function destaques(d){
 const corFundo = () => state.modo === 'casal' ? '#FFF3EC' : '#1A0B2E';
 // cores dos cards: noite + ouro no grupo; rosa claro + pink no casal
 const CV = () => state.modo === 'casal'
-  ? {txt:'#5E0B2B', ouro:'#CC1D59', sub:'#87445C', caixa:'rgba(255,255,255,.88)', brilho:a => `rgba(255,79,139,${a})`, A:'#E0245E', B:'#5E0B2B'}
-  : {txt:'#FFF4E0', ouro:'#FFC23C', sub:'#B9A8CC', caixa:'rgba(61,26,92,.88)', brilho:a => `rgba(255,194,60,${a})`, A:'#FFC23C', B:'#2EC4F1'};
+  ? {txt:'#5E0B2B', ouro:'#CC1D59', sub:'#87445C', caixa:'#FFD6E2', brilho:a => `rgba(255,79,139,${a})`, A:'#E0245E', B:'#5E0B2B'}
+  : {txt:'#FFF4E0', ouro:'#FFC23C', sub:'#B9A8CC', caixa:'#3D1A5C', brilho:a => `rgba(255,194,60,${a})`, A:'#FFC23C', B:'#2EC4F1'};
 function coracao(c, x, y, t){ c.beginPath(); c.moveTo(x, y + t*.35); c.bezierCurveTo(x, y - t*.3, x - t, y - t*.3, x - t, y + t*.25); c.bezierCurveTo(x - t, y + t*.75, x, y + t*1.1, x, y + t*1.35); c.bezierCurveTo(x, y + t*1.1, x + t, y + t*.75, x + t, y + t*.25); c.bezierCurveTo(x + t, y - t*.3, x, y - t*.3, x, y + t*.35); c.fill(); }
 // período que o card cobre: a conversa inteira ou só 2026
 const mesAno = t => `${MESES[t.getMonth()].slice(0,3)}/${t.getFullYear()}`;
 const periodo = () => { const d = state.data; return d ? `DESDE O INÍCIO · ${mesAno(d.start).toUpperCase()} → ${mesAno(d.end).toUpperCase()}` : ''; };
 const periodo26 = () => { const d = state.data; return d && d.end.getFullYear() === ANO_MOMENTO ? `SÓ ${ANO_MOMENTO} · JAN → ${MESES[d.end.getMonth()].slice(0,3).toUpperCase()}` : `SÓ ${ANO_MOMENTO}`; };
 function fundo(c, W, H, raio){
+  // identidade 2: cor chapada, sem degradê nem confete
   c.fillStyle = corFundo(); c.fillRect(0,0,W,H);
-  const g = c.createRadialGradient(W/2,0,60,W/2,0,raio); g.addColorStop(0,CV().brilho(.30)); g.addColorStop(1,CV().brilho(0)); c.fillStyle = g; c.fillRect(0,0,W,H);
-  const cols = ['#FFC23C','#FF4F8B','#FF7A59','#2EC4F1','#A98BFF']; let sd = 7;
-  const casal = state.modo === 'casal', rosas = ['#E8336D','#FF8FB1','#F06292','#C2185B','#FFB3C8'];
-  for (let i=0;i<Math.round(H/(casal ? 30 : 22));i++){ sd = (sd*9301+49297)%233280; const r = sd/233280; c.save(); c.translate(r*W, (i*211)%H);
-    if (casal){ if (i % 3) { c.restore(); continue; } c.globalAlpha = .16; c.fillStyle = rosas[i%5]; c.rotate((r-.5)*.8); coracao(c, 0, 0, 8 + (i%4)*4); }
-    else { c.fillStyle = cols[i%5]; c.globalAlpha = .5; c.rotate(r*6); c.fillRect(-8,-3,16,6); }
-    c.restore(); }
-  c.globalAlpha = 1; c.fillStyle = MODOS[state.modo].c; c.fillRect(0,0,W,16);
 }
 // texto que encolhe até caber na largura
 // remove marcas invisíveis de direção (vêm no nome do arquivo exportado pelo iPhone e desalinham o texto)
@@ -3060,21 +3184,23 @@ function drawNosso2026(){
   fundo(c, W, H, 1000); c.textAlign = 'center';
   marcaC(c, W/2, 96, 46, K.ouro);
   c.fillStyle = K.txt; caber(c, limpaTxt(state.grupo || nomePadrao()), W/2, 172, 960, 800, 54, BR);
-  c.fillStyle = K.ouro; c.font = `800 100px ${BR}`; c.fillText(casal ? `O NOSSO ${ANO_MOMENTO}` : `NOSSO ${ANO_MOMENTO}`, W/2, 290, 980);
+  c.fillStyle = K.txt; c.font = `800 112px ${BR}`; espaco(c, -4); c.fillText(casal ? `O nosso ${ANO_MOMENTO}` : `Nosso ${ANO_MOMENTO}`, W/2, 292, 980); espaco(c, 0);
   c.fillStyle = K.sub; caber(c, `${periodo26()} · VS ANOS ANTERIORES E ${casal ? 'OS CASAIS' : 'OS GRUPOS'} DO BRASIL`, W/2, 340, 980, 700, 26, DM);
   // números em grade 2 × 2 (sempre começa por mensagens)
   const tw = (W - 100 - 16)/2, th = 262, y0 = 380;
   nums.forEach((x, i) => {
     const tx = 50 + (i % 2)*(tw + 16), ty = y0 + Math.floor(i/2)*(th + 16);
-    c.fillStyle = K.caixa; c.beginPath(); c.roundRect(tx, ty, tw, th, 30); c.fill();
-    c.textAlign = 'left'; emojiC(c, x.e, tx + 26 + 30, ty + 56, 54);
-    c.fillStyle = K.ouro; caber(c, fmt(x.n), tx + 100, ty + 78, tw - 124, 800, 68, BR);
-    c.fillStyle = K.txt; caber(c, x.t, tx + 28, ty + 124, tw - 56, 700, 30, DM);
+    // identidade 2: cada número numa cor chapada da casa
+    const [bg, ink] = (casal ? [['#FF4F8B','#5E0B2B'],['#CC1D59','#FFF3EC'],['#FFD6E2','#5E0B2B'],['#FFB59A','#5E0B2B']] : [['#FF4F8B','#1A0B2E'],['#FFC23C','#1A0B2E'],['#2EC4F1','#1A0B2E'],['#A98BFF','#1A0B2E']])[i % 4];
+    c.fillStyle = bg; c.beginPath(); c.roundRect(tx, ty, tw, th, 30); c.fill();
+    c.textAlign = 'left';
+    c.fillStyle = ink; caber(c, fmt(x.n), tx + 28, ty + 86, tw - 56, 800, 84, BR);
+    caber(c, x.t, tx + 28, ty + 128, tw - 56, 700, 30, DM);
     let py = ty + 148;
     const selo = (t, fill, cor) => { let fs = 24; c.font = `800 ${fs}px ${DM}`; let w = c.measureText(t).width + 36; while (w > tw - 56 && fs > 16){ fs -= 2; c.font = `800 ${fs}px ${DM}`; w = c.measureText(t).width + 36; }
       c.fillStyle = fill; c.beginPath(); c.roundRect(tx + 28, py, w, 44, 22); c.fill(); c.fillStyle = cor; c.fillText(t, tx + 46, py + 30); py += 54; };
     if (x.vs) selo(x.vs, corTend(x), '#FFFFFF');
-    if (x.rank) selo(x.rank, K.txt, casal ? '#FFFFFF' : '#1A0B2E');
+    if (x.rank) selo(x.rank, ink, bg);
     c.textAlign = 'center';
   });
   let y = y0 + Math.ceil(nums.length/2)*(th + 16) + 4;
@@ -3120,14 +3246,14 @@ function drawRecibo(d){
   c.lineTo(px, py + ph); c.closePath(); c.fill(); c.shadowColor = 'transparent';
   const im = icImg('🏆', true); if (im) c.drawImage(im, W/2 - 50, py + 40, 100, 100);
   c.fillStyle = VINHO; caber(c, 'RECIBO DO AMOR', W/2, py + 210, pw - 100, 800, 84, BR);
-  caber(c, `${a.name} & ${b.name} · ${state.compD ? ANO_MOMENTO : 'desde o início'}`, W/2, py + 268, pw - 100, 500, 40, MO);
+  caber(c, `${nomeCurto(a.name)} & ${nomeCurto(b.name)} · ${state.compD ? ANO_MOMENTO : 'desde o início'}`, W/2, py + 268, pw - 100, 500, 40, MO);
   const linha = y => { c.fillStyle = VINHO; c.globalAlpha = .45; c.font = `500 34px ${MO}`; c.fillText('-'.repeat(34), W/2, y, pw - 80); c.globalAlpha = 1; };
   linha(py + 320);
   let y = py + 390; const L = px + 60, R = px + pw - 60, f = v => fmt(v || 0);
   const item = (rot, val) => { c.textAlign = 'left'; c.fillStyle = VINHO; caber(c, rot, L, y, pw - 420, 500, 40, MO); c.textAlign = 'right'; caber(c, val, R, y, 320, 600, 40, MO); y += 84; };
   for (const x of cats){ item(x.t.toLowerCase(), `${(x.fmt || f)(x.a)} × ${(x.fmt || f)(x.b)}`); }
   const tro = n => (state.awards || []).filter(w => !w.honra && w.winner && w.winner.name === n).length;
-  item(`troféus de ${a.name}`, f(tro(a.name))); item(`troféus de ${b.name}`, f(tro(b.name)));
+  item(`troféus de ${nomeCurto(a.name, 12)}`, f(tro(a.name))); item(`troféus de ${nomeCurto(b.name, 12)}`, f(tro(b.name)));
   y += 6; c.textAlign = 'center'; linha(y); y += 70;
   const top = state.comp?.top?.total;
   c.textAlign = 'left'; c.fillStyle = VINHO; caber(c, 'TOTAL', L, y, 300, 800, 48, MO);
@@ -3138,6 +3264,61 @@ function drawRecibo(d){
   while (bx < W/2 + 220){ sd = (sd*9301 + 49297) % 233280; const w = 3 + (sd % 4)*3; c.fillRect(bx, by, w, 110); bx += w + 6 + (sd % 3)*3; }
   c.restore();
   c.textAlign = 'center'; c.fillStyle = '#FFF3EC'; caber(c, 'e o de vocês? retrozap.com.br', W/2, 1800, 900, 700, 40, DM);
+  return cv.toDataURL('image/png');
+}
+// identidade 2: placar do casal ("Dani 4×1 Cris"), com cada disputa
+function placarCasal(d){ const [a, b] = d.people, {cats} = categoriasCasal(d); let pa = 0, pb = 0; for (const x of cats){ if (x.a > x.b) pa++; else if (x.b > x.a) pb++; } return {a, b, cats, pa, pb}; }
+function altPlacar(d){ const {a, b, cats, pa, pb} = placarCasal(d); return `Placar do casal: ${a.name} ${pa} a ${pb} ${b.name}. ` + cats.map(x => `${x.t}: ${fmt(x.a)} a ${fmt(x.b)}`).join('; ') + '.'; }
+function drawPlacar(d){
+  const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
+  const VINHO = '#5E0B2B', ROSA = '#FF4F8B', CREME = '#FFF3EC', {a, b, cats, pa, pb} = placarCasal(d);
+  c.fillStyle = VINHO; c.fillRect(0, 0, W, H); c.textAlign = 'center';
+  marcaC(c, W/2, 150, 46, CREME);
+  c.fillStyle = ROSA; c.font = `700 34px ${DM2}`; espaco(c, 8); c.fillText(`CAMPEONATO DO AMOR · ${state.compD ? ANO_MOMENTO : 'DESDE O INÍCIO'}`, W/2, 290, 980); espaco(c, 0);
+  c.fillStyle = ROSA; c.font = `800 300px ${BR2}`; espaco(c, -10); c.fillText(`${pa}×${pb}`, W/2, 640); espaco(c, 0);
+  const nm = n => limpaTxt(n).split(' ')[0];
+  c.fillStyle = CREME; caber(c, nm(a.name), W/2 - 270, 760, 400, 800, 80, BR2); caber(c, nm(b.name), W/2 + 270, 760, 400, 800, 80, BR2);
+  let y = 860; const rh = Math.min(150, 760/cats.length);
+  for (const x of cats){
+    c.fillStyle = 'rgba(255,243,236,.08)'; c.beginPath(); c.roundRect(70, y, W - 140, rh - 22, 26); c.fill();
+    const meio = y + (rh - 22)/2 + 16, ga = x.a > x.b, gb = x.b > x.a;
+    c.textAlign = 'left'; c.fillStyle = ga ? ROSA : CREME; caber(c, fmt(x.a), 110, meio, 260, 800, 52, BR2);
+    c.textAlign = 'right'; c.fillStyle = gb ? ROSA : CREME; caber(c, fmt(x.b), W - 110, meio, 260, 800, 52, BR2);
+    c.textAlign = 'center'; c.fillStyle = CREME; caber(c, x.t, W/2, meio - 4, 400, 700, 36, DM2);
+    y += rh;
+  }
+  const lider = pa === pb ? null : pa > pb ? b : a;
+  c.fillStyle = ROSA; c.textAlign = 'center'; caber(c, lider ? `${nm(lider.name)} pediu revanche em ${ANO_MOMENTO + 1}.` : 'Empate. Ninguém dorme hoje.', W/2, Math.min(y + 70, 1730), 940, 500, 44, DM2);
+  c.fillStyle = CREME; c.font = `700 40px ${DM2}`; c.fillText('e o de vocês? retrozap.com.br', W/2, 1830, 980);
+  return cv.toDataURL('image/png');
+}
+// identidade 2: número gigante do grupo, com o selo do ranking e uma provocação
+function numeroGrupo(){
+  const src = state.compD || state.data, so26 = !!state.compD, ps = [...src.people].sort((x, y) => y.count - x.count);
+  const tot = ps.reduce((t, p) => t + p.count, 0), top = state.comp?.top?.total;
+  return {tot, so26, top, dono: ps[0], pct: tot ? Math.round(ps[0].count/tot*100) : 0};
+}
+function altNumero(){ const x = numeroGrupo(); return `${state.grupo || 'O grupo'} mandou ${fmt(x.tot)} mensagens${x.so26 ? ' em ' + ANO_MOMENTO : ''}. ${x.dono ? `Só ${x.dono.name} mandou ${x.pct}% delas.` : ''}`; }
+function drawNumero(){
+  const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
+  const NOITE = '#1A0B2E', CHI = '#FF4F8B', AREIA = '#FFF4E0', x = numeroGrupo();
+  c.fillStyle = CHI; c.fillRect(0, 0, W, H);
+  c.textAlign = 'left'; marcaC(c, 70 + 128, 150, 44, NOITE);
+  c.fillStyle = NOITE; caber(c, `${limpaTxt(state.grupo || nomePadrao())} mandou`, 70, 330, 940, 700, 48, DM2);
+  const N = fmt(x.tot); let f = 400; c.font = `800 ${f}px ${BR2}`; espaco(c, -18);
+  while (c.measureText(N).width > 960 && f > 160){ f -= 10; c.font = `800 ${f}px ${BR2}`; }
+  c.fillText(N, 56, 360 + f*.86); espaco(c, 0);
+  const yy = 360 + f*.86 + 130;
+  c.fillStyle = AREIA; c.font = `800 96px ${BR2}`; c.fillText('mensagens', 70, yy); c.fillText(x.so26 ? `em ${ANO_MOMENTO}.` : 'no total.', 70, yy + 100);
+  if (x.dono){ c.fillStyle = NOITE; c.font = `500 46px ${DM2}`; const t = `Só ${limpaTxt(x.dono.name).split(' ')[0]} mandou ${x.pct}% delas. ${limpaTxt(x.dono.name).split(' ')[0]}, explica.`;
+    wrap(c, t, 70, yy + 260, 540, 60); }
+  if (x.top != null && x.top <= 50){
+    c.save(); c.translate(820, yy + 340); c.rotate(-.18);
+    c.fillStyle = '#FFC23C'; c.beginPath(); c.arc(0, 0, 190, 0, 7); c.fill(); c.lineWidth = 12; c.strokeStyle = NOITE; c.stroke();
+    c.fillStyle = NOITE; c.textAlign = 'center'; c.font = `800 44px ${DM2}`; c.fillText('TOP', 0, -60); c.font = `800 120px ${BR2}`; c.fillText(`${x.top}%`, 0, 52);
+    c.font = `800 34px ${DM2}`; c.fillText('DOS GRUPOS', 0, 108); c.restore();
+  }
+  c.textAlign = 'center'; c.fillStyle = NOITE; c.font = `700 40px ${DM2}`; c.fillText('e o seu grupo? retrozap.com.br', W/2, 1830, 980);
   return cv.toDataURL('image/png');
 }
 // card do casal: quem manda mais o quê (sem rótulo de gênero, só os nomes)
@@ -3702,7 +3883,7 @@ function wrap(c, text, x, y, maxW, lh){
     c.save(); c.direction = 'ltr'; c.textAlign = 'left'; c.fillText(l, x0, y + i*lh); c.restore(); });
   return lines.length;
 }
-function cardAward(a){ return drawCard({podio: (a.ranked || []).length > 1 ? a.ranked.slice(1,3).map((r,i) => `${['🥈','🥉'][i]} ${r.name} · ${vfmt(a, r.v)}`) : null, emoji:a.e, title:gtit(a.n, a.winner.name), winner:a.winner.name, line:`${vunid(a, a.winner.v)}${a.fatia && a.total ? ` · ${fatia(a, a.winner.v)} do grupo` : ''}${a.custom ? ' · categoria criada pelo grupo' : ''}`}); }
+function cardAward(a){ return drawCard({podio: (a.ranked || []).length > 1 ? a.ranked.slice(1,3).filter(r => r.v > 0).map((r,i) => `${['🥈','🥉'][i]} ${r.name} · ${vfmt(a, r.v)}`) : null, emoji:a.e, title:gtit(a.n, a.winner.name), winner:a.winner.name, line:`${vunid(a, a.winner.v)}${a.fatia && a.total ? ` · ${fatia(a, a.winner.v)} do grupo` : ''}${a.custom ? ' · categoria criada pelo grupo' : ''}`}); }
 
 /* ---------- Crie seu prêmio (grátis no lançamento) ---------- */
 const BLOCK = /feio|feia|burr|idiot|gord|nojent|lixo|retardad|imbecil|otari|macac|viad|bicha|piranha|vagabund|corno|baleia|aleijad|pobre|doente|religi|gay|lesbic/;
@@ -3771,46 +3952,53 @@ const custom = (texto = '') => {
   }
 };
 
+// identidade 2: paleta dos cards por casa (grupos à noite; casais em papel e vinho)
+const K2 = () => state.modo === 'casal'
+  ? {fundo:'#FFF3EC', txt:'#5E0B2B', dest:'#CC1D59', destTxt:'#FFF3EC', sub:'#87445C', caixa:'#FFD6E2', caixa2:'#FFE6EC', escuro:'#5E0B2B', claro:'#FFF3EC', provoca:'e o de vocês? retrozap.com.br'}
+  : {fundo:'#1A0B2E', txt:'#FFF4E0', dest:'#FFC23C', destTxt:'#1A0B2E', sub:'#B9A8CC', caixa:'#3D1A5C', caixa2:'#2A1242', escuro:'#1A0B2E', claro:'#FFF4E0', provoca:'e o seu grupo? retrozap.com.br'};
+const BR2 = '"Bricolage Grotesque", sans-serif', DM2 = '"DM Sans", sans-serif';
+// nome curto para caber em caixas pequenas: "Maria Eduarda Albuquerque" vira "Maria E. Albuquerque" ou "Maria A."
+function nomeCurto(n, max = 14){ const t = limpaTxt(n), p = t.split(' ').filter(w => /\p{L}|\d/u.test(w)); if (t.length <= max || p.length < 2) return p.length ? (t.length <= max ? t : p.join(' ')) : t;
+  const ab = p[0] + ' ' + p[p.length - 1]; if (ab.length <= max) return ab; return p[0] + ' ' + p[p.length - 1][0] + '.'; }
+function espaco(c, px){ try { c.letterSpacing = px + 'px'; } catch {} }
+// etiqueta inclinada com o nome (o "selo" do vencedor)
+function seloC(c, txt, cx, cy, maxW, tam, bg, fg, rot = -.05){
+  const T = limpaTxt(txt); let f = tam; c.font = `800 ${f}px ${BR2}`;
+  while (c.measureText(T).width > maxW && f > tam*.72){ f -= 4; c.font = `800 ${f}px ${BR2}`; }
+  if (c.measureText(T).width > maxW && T.includes(' ')){ // nome comprido: duas linhas, letra grande
+    const ws = T.split(' '); let best = null;
+    for (let k = 1; k < ws.length; k++){ const l1 = ws.slice(0, k).join(' '), l2 = ws.slice(k).join(' '), m = Math.max(c.measureText(l1).width, c.measureText(l2).width); if (!best || m < best.m) best = {l1, l2, m}; }
+    while (best.m > maxW && f > 40){ f -= 4; c.font = `800 ${f}px ${BR2}`; best.m = Math.max(c.measureText(best.l1).width, c.measureText(best.l2).width); }
+    const w = Math.min(maxW, best.m) + f*.9, h = f*2.3;
+    c.save(); c.translate(cx, cy); c.rotate(rot); c.fillStyle = bg; c.beginPath(); c.roundRect(-w/2, -h/2, w, h, f*.26); c.fill();
+    c.fillStyle = fg; c.textAlign = 'center'; caber(c, best.l1, 0, -f*.18, maxW, 800, f, BR2); caber(c, best.l2, 0, f*.86, maxW, 800, f, BR2); c.restore(); return;
+  }
+  const w = Math.min(maxW, c.measureText(T).width) + f*.9, h = f*1.32;
+  c.save(); c.translate(cx, cy); c.rotate(rot); c.fillStyle = bg; c.beginPath(); c.roundRect(-w/2, -h/2, w, h, f*.26); c.fill();
+  c.fillStyle = fg; c.textAlign = 'center'; caber(c, T, 0, f*.36, maxW, 800, f, BR2); c.restore();
+}
+// troféu em 9:16 para os stories: ícone, nome do troféu e o nome de quem ganhou, enorme
 function drawCard({emoji, title, winner, line, small, podio}){
-  const cv = document.createElement('canvas'); cv.width = cv.height = 1080; const c = cv.getContext('2d');
-  const modo = MODOS[state.modo].c;
-  c.fillStyle = corFundo(); c.fillRect(0,0,1080,1080);
-  const g = c.createRadialGradient(540,0,50,540,0,800); g.addColorStop(0,CV().brilho(.28)); g.addColorStop(1,CV().brilho(0));
-  c.fillStyle = g; c.fillRect(0,0,1080,1080);
-  const cols = ['#FFC23C','#FF4F8B','#FF7A59','#2EC4F1','#FFF4E0']; let s = 11;
-  const casal = state.modo === 'casal', rosas = ['#E8336D','#FF8FB1','#F06292','#C2185B','#FFB3C8'];
-  for (let i=0;i<(casal ? 40 : 70);i++){ s = (s*9301+49297)%233280; const r = s/233280; c.save(); c.translate(r*1080, ((i*137)%1080));
-    if (casal){ c.fillStyle = rosas[i%5]; c.globalAlpha = .3; c.rotate((r-.5)*.8); coracao(c, 0, 0, 9 + (i%4)*5); }
-    else { c.fillStyle = cols[i%5]; c.globalAlpha = .7; c.rotate(r*6); c.fillRect(-7,-3,14,6); }
-    c.restore(); }
-  c.globalAlpha = 1;
-  c.fillStyle = modo; c.fillRect(0,0,1080,16);
-  c.textAlign = 'center'; marcaC(c, 540, 100, 52, CV().ouro);
-  if (state.grupo){ c.fillStyle = CV().txt; caber(c, state.grupo, 540, 158, 900, 700, 38, '"DM Sans", sans-serif'); c.fillStyle = CV().ouro; }
-  // título em até 2 linhas: com 2, o emoji encolhe e sobe para nada encostar no nome
-  const TT = limpaTxt(title.toUpperCase()); let tf = 66; c.font = `800 ${tf}px "Bricolage Grotesque", sans-serif`;
-  while (linhasDe(c, TT, 900) > 2 && tf > 44){ tf -= 4; c.font = `800 ${tf}px "Bricolage Grotesque", sans-serif`; }
-  const duas = linhasDe(c, TT, 900) > 1;
-  emojiC(c, emoji, 540, duas ? 275 : 320, duas ? 180 : 230);
-  c.fillStyle = CV().txt; c.font = `800 ${tf}px "Bricolage Grotesque", sans-serif`; wrap(c, TT, 540, duas ? 445 : 510, 900, tf + 6);
-  // nome do vencedor: cabe na faixa e fica centralizado (posição calculada à mão, o centro automático falha no Safari)
-  const W0 = limpaTxt(winner); let wf = small ? 64 : 96; c.font = `800 ${wf}px "Bricolage Grotesque", sans-serif`;
-  while (c.measureText(W0).width > 820 && wf > 40){ wf -= 4; c.font = `800 ${wf}px "Bricolage Grotesque", sans-serif`; }
-  const w = Math.min(960, c.measureText(W0).width + 100), yb = duas ? 690 : 680;
-  c.save(); c.translate(540, yb); c.rotate(-0.07);
-  c.fillStyle = modo; c.fillRect(-w/2+14, -70+14, w, 140);
-  c.fillStyle = CV().ouro; c.fillRect(-w/2, -70, w, 140);
-  c.fillStyle = corFundo(); c.textAlign = 'center'; caber(c, W0, 0, wf*.36, 820, 800, wf, '"Bricolage Grotesque", sans-serif');
-  c.restore(); c.textAlign = 'center';
-  c.fillStyle = CV().sub; caber(c, line, 540, podio?.length ? 830 : 850, 960, 500, 44, '"DM Sans", sans-serif');
-  if (podio?.length){ c.fillStyle = CV().txt; const its = podio.map(t => { const ch = [...t]; return {e: ch[0], t: limpaTxt(ch.slice(1).join(''))}; });
-    let tam = 40, gap = 50, md = 48, larg; const mede = () => { c.font = `700 ${tam}px "DM Sans", sans-serif`; larg = its.reduce((s, x) => s + md + 12 + c.measureText(x.t).width, 0) + gap*(its.length - 1); };
-    mede(); while (larg > 960 && tam > 22){ tam -= 2; md = tam*1.2; mede(); }
-    let x = 540 - Math.min(larg, 960)/2; c.save(); c.textAlign = 'left';
-    for (const it of its){ emojiC(c, it.e, x + md/2, 900 - tam*.35, md); x += md + 12; const w = Math.min(c.measureText(it.t).width, 960); c.fillText(it.t, x, 900, 960); x += w + gap; }
-    c.restore(); }
-  if (periodo()){ c.fillStyle = CV().sub; c.font = '700 26px "DM Sans", sans-serif'; c.fillText(periodo(), 540, 962, 980); }
-  c.fillStyle = CV().txt; c.font = '700 34px "DM Sans", sans-serif'; c.fillText(TAGLINE(), 540, 1010);
+  const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d'), K = K2(), casal = state.modo === 'casal';
+  c.fillStyle = K.fundo; c.fillRect(0, 0, W, H); c.textAlign = 'center';
+  marcaC(c, W/2, 150, 46, casal ? K.txt : K.dest);
+  c.fillStyle = K.dest; c.font = `700 34px ${DM2}`; espaco(c, 7);
+  c.fillText(`${casal ? 'TROFÉU DO CASAL' : 'TROFÉU DO GRUPO'} · ${state.compD ? ANO_MOMENTO : 'DESDE O INÍCIO'}`, W/2, 270, 980); espaco(c, 0);
+  if (state.grupo && !casal){ c.fillStyle = K.sub; caber(c, state.grupo, W/2, 326, 900, 700, 36, DM2); }
+  emojiC(c, emoji, W/2, 610, 380);
+  const TT = limpaTxt(title); let tf = 110; c.font = `800 ${tf}px ${BR2}`;
+  while (linhasDe(c, TT, 940) > 2 && tf > 60){ tf -= 6; c.font = `800 ${tf}px ${BR2}`; }
+  c.fillStyle = K.txt; const nl = wrap(c, TT, W/2, 960, 940, tf*1.02);
+  const yb = 960 + (nl - 1)*tf*1.02 + 190;
+  seloC(c, winner, W/2, yb, 860, small ? 100 : 130, casal ? '#CC1D59' : '#FFC23C', casal ? '#FFF3EC' : '#1A0B2E');
+  c.fillStyle = K.txt; c.font = `500 46px ${DM2}`; let yl = yb + 170;
+  const nlin = wrap(c, limpaTxt(line), W/2, yl, 900, 58); yl += nlin*58 + 30;
+  if (podio?.length){
+    const its = podio.map(t => { const ch = [...t]; return {e: ch[0], t: limpaTxt(ch.slice(1).join(''))}; });
+    for (const it of its){ if (yl > 1700) break; c.font = `700 40px ${DM2}`; const w = Math.min(c.measureText(it.t).width, 820), x0 = W/2 - (w + 64)/2;
+      emojiC(c, it.e, x0 + 24, yl - 14, 46); c.save(); c.textAlign = 'left'; c.fillStyle = K.sub; c.fillText(it.t, x0 + 64, yl, 820); c.restore(); yl += 62; }
+  }
+  c.fillStyle = K.txt; c.font = `700 40px ${DM2}`; c.fillText(K.provoca, W/2, 1830, 980);
   return cv.toDataURL('image/png');
 }
 let DOWN = null;
