@@ -13,6 +13,61 @@ if(ad==='denied'){(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersonal
 </script>
 <!-- Google Tag Manager (pixels de mídia; respeita o Consent Mode acima) -->
 <script>window.RZ_GTM=1;(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s);j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-NMLZBBQS');</script>
+<script>/* Mensuração de mídia: só após novo aceite que menciona a Meta.
+   Nunca passar state, parâmetros de evento, nomes, mensagens ou dados da compra. */
+(function () {
+  'use strict';
+  var pixel = '1522604139713675';
+  var started = false;
+  var allowed = {
+    upload_ok: 'RetrospectivaIniciada',
+    final_visto: 'RetrospectivaConcluida',
+    compartilhou: 'MidiaCompartilhada',
+    pix_gerado: 'PixGerado',
+    cartao_aberto: 'CheckoutAberto'
+  };
+  function consent() {
+    try { return localStorage.getItem('rz_marketing_v1') === 'sim'; }
+    catch (_) { return false; }
+  }
+  function safePage() {
+    // O SDK envia a URL da página. Não carregar em retornos de pagamento,
+    // links com parâmetros, fragmentos ou rotas fora desta lista pública.
+    return /^(?:www\.)?retrozap\.com\.br$/.test(location.hostname) && !location.search && !location.hash &&
+      /^\/(?:|comecar|turma|conhecendo|categorias|premios\/\d+|resumo|fim|destaque|personagens|bonus|privacidade|termos|sobre|contato|como-funciona|como-exportar|perguntas-frequentes|blog\/(?:[a-z0-9-]+)?)$/.test(location.pathname);
+  }
+  function start() {
+    if (!consent() || !safePage()) return false;
+    if (started) return true;
+    if (window.fbq) return false; // Não sobrescrever nem duplicar outra instalação.
+    started = true;
+    // Sem coleta automática de cliques/formulários ou correspondência avançada.
+    var f = window.fbq = function () {
+      f.callMethod ? f.callMethod.apply(f, arguments) : f.queue.push(arguments);
+    };
+    f.push = f; f.loaded = true; f.version = '2.0'; f.queue = [];
+    window._fbq = f;
+    f('set', 'autoConfig', false, pixel);
+    f('consent', 'grant');
+    f('init', pixel);
+    f('track', 'PageView');
+    var script = document.createElement('script');
+    script.async = true;
+    script.src = 'https://connect.facebook.net/en_US/fbevents.js';
+    document.head.appendChild(script);
+    return true;
+  }
+  window.rzMetaEvent = function (name, example) {
+    if (!allowed[name] || example || !start()) return;
+    window.fbq('trackCustom', allowed[name]);
+  };
+  window.addEventListener('rz:marketing-consent', function () {
+    if (consent()) start();
+    else if (started) window.fbq('consent', 'revoke');
+  });
+  start();
+})();
+</script>
 <title>Política de Privacidade · Retrozap</title><meta name="description" content="Como o Retrozap trata seus dados: as mensagens do seu grupo nunca saem do seu aparelho. Cookies, anúncios e seus direitos pela LGPD.">
 <link rel="canonical" href="https://retrozap.com.br/privacidade"><meta name="theme-color" content="#1A0B2E">
 <meta property="og:title" content="Política de Privacidade"><meta property="og:description" content="Como o Retrozap trata seus dados: as mensagens do seu grupo nunca saem do seu aparelho. Cookies, anúncios e seus direitos pela LGPD."><meta property="og:image" content="https://retrozap.com.br/og-retrozap.png">
@@ -92,6 +147,8 @@ ol,ul{padding-left:22px}li{margin:4px 0}
 <li>Saiba como o Google usa dados de sites parceiros em <a href="https://policies.google.com/technologies/partner-sites" rel="noopener">policies.google.com/technologies/partner-sites</a>.</li>
 <li>Você pode bloquear ou apagar cookies a qualquer momento nas configurações do seu navegador. O site continua funcionando normalmente.</li></ul>
 <p>No primeiro acesso, o aviso de cookies pergunta a sua escolha. Com <b>"Aceitar"</b>, o Google pode mostrar anúncios personalizados. Com <b>"Só o essencial"</b>, os anúncios continuam, mas sem personalização e sem cookies de publicidade. Para mudar de ideia, limpe os dados do site no navegador e o aviso aparece de novo.</p>
+<h3>Pixel da Meta (opcional)</h3>
+<p>Somente após um novo aceite no aviso que menciona a Meta, usamos o Pixel da Meta para medir visitas e ações como iniciar e concluir uma retrospectiva, compartilhar uma mídia ou abrir o pagamento. Não enviamos mensagens, nomes, telefones, arquivos, resultados individuais, e-mails ou códigos de compra ao pixel. A coleta automática de cliques e formulários e a correspondência avançada não são habilitadas. O pixel pode tratar dados técnicos do navegador, como IP, cookies e a página visitada, para mensuração e personalização de anúncios, conforme a <a href="https://www.facebook.com/privacy/policy/" rel="noopener">política de privacidade da Meta</a>. Com "Só o essencial", o pixel não carrega. Não o carregamos em páginas com parâmetros ou fragmentos na URL, incluindo retornos de pagamento. Para revogar o aceite neste aparelho, limpe os dados do site no navegador e escolha "Só o essencial" no próximo acesso.</p>
 <h2>7. Links de parceiros</h2>
 <p>Alguns conteúdos têm links de parceiros, sempre sinalizados. Se você comprar por eles, o Retrozap pode receber uma comissão, sem custo extra para você. Ao sair do Retrozap, vale a política de privacidade do site de destino.</p>
 <h2>8. Bases legais (LGPD)</h2>

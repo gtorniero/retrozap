@@ -13,6 +13,61 @@ if(ad==='denied'){(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersonal
 </script>
 <!-- Google Tag Manager (pixels de mídia; respeita o Consent Mode acima) -->
 <script>window.RZ_GTM=1;(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s);j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-NMLZBBQS');</script>
+<script>/* Mensuração de mídia: só após novo aceite que menciona a Meta.
+   Nunca passar state, parâmetros de evento, nomes, mensagens ou dados da compra. */
+(function () {
+  'use strict';
+  var pixel = '1522604139713675';
+  var started = false;
+  var allowed = {
+    upload_ok: 'RetrospectivaIniciada',
+    final_visto: 'RetrospectivaConcluida',
+    compartilhou: 'MidiaCompartilhada',
+    pix_gerado: 'PixGerado',
+    cartao_aberto: 'CheckoutAberto'
+  };
+  function consent() {
+    try { return localStorage.getItem('rz_marketing_v1') === 'sim'; }
+    catch (_) { return false; }
+  }
+  function safePage() {
+    // O SDK envia a URL da página. Não carregar em retornos de pagamento,
+    // links com parâmetros, fragmentos ou rotas fora desta lista pública.
+    return /^(?:www\.)?retrozap\.com\.br$/.test(location.hostname) && !location.search && !location.hash &&
+      /^\/(?:|comecar|turma|conhecendo|categorias|premios\/\d+|resumo|fim|destaque|personagens|bonus|privacidade|termos|sobre|contato|como-funciona|como-exportar|perguntas-frequentes|blog\/(?:[a-z0-9-]+)?)$/.test(location.pathname);
+  }
+  function start() {
+    if (!consent() || !safePage()) return false;
+    if (started) return true;
+    if (window.fbq) return false; // Não sobrescrever nem duplicar outra instalação.
+    started = true;
+    // Sem coleta automática de cliques/formulários ou correspondência avançada.
+    var f = window.fbq = function () {
+      f.callMethod ? f.callMethod.apply(f, arguments) : f.queue.push(arguments);
+    };
+    f.push = f; f.loaded = true; f.version = '2.0'; f.queue = [];
+    window._fbq = f;
+    f('set', 'autoConfig', false, pixel);
+    f('consent', 'grant');
+    f('init', pixel);
+    f('track', 'PageView');
+    var script = document.createElement('script');
+    script.async = true;
+    script.src = 'https://connect.facebook.net/en_US/fbevents.js';
+    document.head.appendChild(script);
+    return true;
+  }
+  window.rzMetaEvent = function (name, example) {
+    if (!allowed[name] || example || !start()) return;
+    window.fbq('trackCustom', allowed[name]);
+  };
+  window.addEventListener('rz:marketing-consent', function () {
+    if (consent()) start();
+    else if (started) window.fbq('consent', 'revoke');
+  });
+  start();
+})();
+</script>
 <title>Como funciona o Retrozap · Retrozap</title><meta name="description" content="Do arquivo exportado do WhatsApp aos prêmios do grupo, em menos de um minuto, sem as mensagens saírem do celular.">
 <link rel="canonical" href="https://retrozap.com.br/como-funciona"><meta name="theme-color" content="#1A0B2E">
 <meta property="og:title" content="Como funciona o Retrozap"><meta property="og:description" content="Do arquivo exportado do WhatsApp aos prêmios do grupo, em menos de um minuto, sem as mensagens saírem do celular."><meta property="og:image" content="https://retrozap.com.br/og-retrozap.png">

@@ -15,6 +15,61 @@ if(ad==='denied'){(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersonal
 </script>
 <!-- Google Tag Manager (pixels de mídia; respeita o Consent Mode acima) -->
 <script>window.RZ_GTM=1;(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s);j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-NMLZBBQS');</script>
+<script>/* Mensuração de mídia: só após novo aceite que menciona a Meta.
+   Nunca passar state, parâmetros de evento, nomes, mensagens ou dados da compra. */
+(function () {
+  'use strict';
+  var pixel = '1522604139713675';
+  var started = false;
+  var allowed = {
+    upload_ok: 'RetrospectivaIniciada',
+    final_visto: 'RetrospectivaConcluida',
+    compartilhou: 'MidiaCompartilhada',
+    pix_gerado: 'PixGerado',
+    cartao_aberto: 'CheckoutAberto'
+  };
+  function consent() {
+    try { return localStorage.getItem('rz_marketing_v1') === 'sim'; }
+    catch (_) { return false; }
+  }
+  function safePage() {
+    // O SDK envia a URL da página. Não carregar em retornos de pagamento,
+    // links com parâmetros, fragmentos ou rotas fora desta lista pública.
+    return /^(?:www\.)?retrozap\.com\.br$/.test(location.hostname) && !location.search && !location.hash &&
+      /^\/(?:|comecar|turma|conhecendo|categorias|premios\/\d+|resumo|fim|destaque|personagens|bonus|privacidade|termos|sobre|contato|como-funciona|como-exportar|perguntas-frequentes|blog\/(?:[a-z0-9-]+)?)$/.test(location.pathname);
+  }
+  function start() {
+    if (!consent() || !safePage()) return false;
+    if (started) return true;
+    if (window.fbq) return false; // Não sobrescrever nem duplicar outra instalação.
+    started = true;
+    // Sem coleta automática de cliques/formulários ou correspondência avançada.
+    var f = window.fbq = function () {
+      f.callMethod ? f.callMethod.apply(f, arguments) : f.queue.push(arguments);
+    };
+    f.push = f; f.loaded = true; f.version = '2.0'; f.queue = [];
+    window._fbq = f;
+    f('set', 'autoConfig', false, pixel);
+    f('consent', 'grant');
+    f('init', pixel);
+    f('track', 'PageView');
+    var script = document.createElement('script');
+    script.async = true;
+    script.src = 'https://connect.facebook.net/en_US/fbevents.js';
+    document.head.appendChild(script);
+    return true;
+  }
+  window.rzMetaEvent = function (name, example) {
+    if (!allowed[name] || example || !start()) return;
+    window.fbq('trackCustom', allowed[name]);
+  };
+  window.addEventListener('rz:marketing-consent', function () {
+    if (consent()) start();
+    else if (started) window.fbq('consent', 'revoke');
+  });
+  start();
+})();
+</script>
 <title>Retrozap · Retrospectiva do grupo de WhatsApp</title>
 <meta name="description" content="Descubra a história do seu grupo de WhatsApp: quem fala mais, quem some, quem manda figurinha às 3 da manhã. Prêmios, números e cards para mandar no grupo. Grátis e suas mensagens não saem do celular.">
 <meta name="theme-color" content="#1A0B2E">
@@ -665,6 +720,7 @@ window.dataLayer = window.dataLayer || [];
 function gtag(){ dataLayer.push(arguments); }
 // a tag oficial do Google (gtag js + config) fica no <head>; cada tela nova vira page_view sozinha (medição otimizada: mudanças no histórico)
 function evento(nome, params = {}){
+  try { if (window.rzMetaEvent) window.rzMetaEvent(nome, !!params.exemplo || !!state.sample); } catch {}
   try { if (configurado(CONFIG.GA_ID)) gtag('event', nome, params); } catch {}
   try { if (window.RZ_GTM) dataLayer.push(Object.assign({event: 'rz_' + nome}, params)); } catch {} // Tag Manager: gatilhos de conversão (rz_upload_ok, rz_compartilhou...)
 }
@@ -681,11 +737,12 @@ window.addEventListener('popstate', () => {
 
 /* ---------- Aviso de cookies ---------- */
 function avisoCookies(){
-  try { if (localStorage.getItem('rz_cookies')) return; } catch {}
+  try { if (localStorage.getItem('rz_cookies') && localStorage.getItem('rz_marketing_v1')) return; } catch {}
   const b = document.createElement('div'); b.className = 'cookies';
-  b.innerHTML = 'Usamos cookies para contar visitas e, se você aceitar, mostrar anúncios personalizados do Google. Suas mensagens nunca saem do seu celular. <a href="/privacidade">Política de privacidade</a> <button class="btn btn-main mini" type="button" data-ck="sim">Aceitar</button> <button class="btn btn-ghost mini" type="button" data-ck="nao">Só o essencial</button>';
+  b.innerHTML = 'Usamos cookies para contar visitas. Se você aceitar, Google e Meta também poderão medir nossas campanhas e personalizar anúncios. Suas mensagens nunca saem do seu celular. <a href="/privacidade">Política de privacidade</a> <button class="btn btn-main mini" type="button" data-ck="sim">Aceitar</button> <button class="btn btn-ghost mini" type="button" data-ck="nao">Só o essencial</button>';
   b.querySelectorAll('[data-ck]').forEach(bt => bt.onclick = () => {
     const sim = bt.dataset.ck === 'sim'; try { localStorage.setItem('rz_cookies', bt.dataset.ck); } catch {}
+    try { localStorage.setItem('rz_marketing_v1', bt.dataset.ck); window.dispatchEvent(new Event('rz:marketing-consent')); } catch {}
     try { gtag('consent', 'update', {ad_storage: sim ? 'granted' : 'denied', ad_user_data: sim ? 'granted' : 'denied', ad_personalization: sim ? 'granted' : 'denied', analytics_storage: sim ? 'granted' : 'denied'}); } catch {}
     b.remove(); document.body.classList.remove('has-cookies'); });
   document.body.appendChild(b); document.body.classList.add('has-cookies'); // espaço extra para o aviso não cobrir nenhum botão

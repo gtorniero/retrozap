@@ -253,8 +253,10 @@ AD_SLOT_PAGINAS = ''
 
 def gtm_head(gtm_id):
     """Snippet do Google Tag Manager (vai logo depois do consentimento + gtag). Vazio = nada."""
-    if not gtm_id: return ''
+    import os
+    meta = '<script>' + open(os.path.join(os.path.dirname(__file__), 'meta_pixel.js'), encoding='utf-8').read() + '</script>\n'
+    if not gtm_id: return meta
     return ("<!-- Google Tag Manager (pixels de mídia; respeita o Consent Mode acima) -->\n"
             "<script>window.RZ_GTM=1;(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});"
             "var f=d.getElementsByTagName(s)[0],j=d.createElement(s);j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i;"
-            "f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','" + gtm_id + "');</script>\n")
+            "f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','" + gtm_id + "');</script>\n") + meta
