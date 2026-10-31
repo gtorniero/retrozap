@@ -47,7 +47,7 @@ HEAD = """<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- Consentimento (LGPD) + Google tag (gtag.js) -->
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+<script>window['ga-disable-G-R8R1EN0KQN']=!/(^|\.)retrozap\.com\.br$/.test(location.hostname);window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
 (function(){var ok=null;try{ok=localStorage.getItem('rz_cookies');}catch(e){}var ad=ok==='sim'?'granted':'denied';
 gtag('consent','default',{ad_storage:ad,ad_user_data:ad,ad_personalization:ad,analytics_storage:ok==='nao'?'denied':'granted'});
 if(ad==='denied'){(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersonalizedAds=1;}})();</script>
