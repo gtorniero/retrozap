@@ -156,7 +156,7 @@ LD = {"@context": "https://schema.org", "@graph": [
   {"@type": "WebSite", "@id": "https://retrozap.com.br/#site", "name": "Retrozap", "alternateName": ["Retrozap Brasil", "retrozap.com.br"], "url": "https://retrozap.com.br/", "inLanguage": "pt-BR"},
   {"@type": "Organization", "@id": "https://retrozap.com.br/#org", "name": "Retrozap", "url": "https://retrozap.com.br/", "logo": "https://retrozap.com.br/icon-512.png", "email": "contato@retrozap.com.br"},
   {"@type": "WebApplication", "name": "Retrozap", "url": "https://retrozap.com.br/", "description": "Retrospectiva do grupo de WhatsApp: prêmios, números e cards para mandar no grupo.", "applicationCategory": "EntertainmentApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "BRL"}, "inLanguage": "pt-BR", "publisher": {"@id": "https://retrozap.com.br/#org"}},
-  {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in _faq]}]}
+  ] + ([{"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in _faq]}] if _faq else [])}
 rep('<!--LD-->', '<script type="application/ld+json">' + json.dumps(LD, ensure_ascii=False) + '</script>')
 
 # sobras do artefato que não podem ir para produção

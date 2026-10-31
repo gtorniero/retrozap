@@ -847,7 +847,8 @@ function iconeSVG(e, {figurinha = true, casal = (typeof state !== 'undefined' &&
   if (it.medalha) return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">${medalhaSVG(it.medalha, casal)}</svg>`;
   if (it.marca) return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">${it.g(0, 0, casal)}</svg>`;
   const idx = [...k].reduce((s, ch) => s + ch.codePointAt(0), 0) % P.bgs.length;
-  if (!figurinha) return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -10 140 140" width="120" height="120">${it.g(cor || 'currentColor', casal ? '#FF4F8B' : '#FFC23C', casal)}</svg>`;
+  if (!figurinha){ const olho = icNorm(k) === icNorm('👀'); // olhos no meio do texto: brancos, com pupila escura (como o emoji)
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -10 140 140" width="120" height="120">${olho ? it.g('#1A0B2E', '#FFFFFF', casal) : it.g(cor || 'currentColor', casal ? '#FF4F8B' : '#FFC23C', casal)}</svg>`; }
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -10 140 140" width="120" height="120"><rect x="-10" y="-10" width="140" height="140" rx="34" fill="${P.bgs[idx]}"/>${it.g(P.ink, P.acc, casal)}</svg>`;
 }
 // imagens prontas para o canvas (cards e vídeo); carregadas uma vez por casa
@@ -1626,34 +1627,7 @@ function inicio(){
       <button type="button" class="esc esc-c" data-esc="casal" aria-pressed="${cs}"><i class="novo">Novo</i><span class="esc-ic" aria-hidden="true"><svg viewBox="0 0 120 120" focusable="false">${icHeart('#FFF3EC', '#5E0B2B', 1, 0, 0, 7)}</svg></span><b>Casais</b><span>vocês dois em troféus</span></button>
     </div>
     <div class="badge priv-l"><span class="ok-ic" aria-hidden="true">✓</span><span><b>Nada sai do seu celular. Sem cadastro.</b> Tudo é analisado aqui no navegador: a gente não recebe, não lê e não guarda nenhuma mensagem. <a href="/privacidade">Entenda</a></span></div>
-    <div class="panel oque">
-      <p class="ask">O que você vai encontrar</p>
-      ${cs ? `<ol class="oque-l">
-        <li><span class="em" aria-hidden="true">📈</span><div><b>A história de vocês em números</b><span>Mensagens ano a ano, áudios, a frase mais dita e há quanto tempo vocês conversam.</span></div></li>
-        <li><span class="em" aria-hidden="true">🏆</span><div><b>7 categorias com troféus</b><span>Do Tagarela ao Mais Romântico, com card para mandar um para o outro.</span></div></li>
-        <li><span class="em" aria-hidden="true">🎬</span><div><b>O nosso 2026 e um vídeo para os stories</b><span>Um contra o outro, e como vocês se comparam aos casais do Brasil.</span></div></li>
-      </ol>` : `<ol class="oque-l">
-        <li><span class="em" aria-hidden="true">📈</span><div><b>O grupo em números</b><span>Mensagens ano a ano, áudios, gíria oficial e como o grupo se compara aos grupos do Brasil.</span></div></li>
-        <li><span class="em" aria-hidden="true">🏆</span><div><b>As categorias com troféus</b><span>Do Tagarela ao Fantasma, com pódio e card para mandar no grupo.</span></div></li>
-        <li><span class="em" aria-hidden="true">🎬</span><div><b>O nosso 2026 e um vídeo</b><span>O ano comparado com 2025, os destaques e um vídeo pronto para os stories.</span></div></li>
-      </ol>`}
-    </div>
     <button class="btn btn-main" id="comecar">${cs ? 'Começar a retrospectiva do casal →' : 'Vamos começar →'}</button>
-    <section class="seo-home" aria-labelledby="seo-t">
-      <h2 id="seo-t">Como fazer a retrospectiva do seu grupo de WhatsApp</h2>
-      <p>O Retrozap é a retrospectiva do seu grupo de WhatsApp: transforma a conversa em números, prêmios e um resumo para mandar no grupo. Funciona com grupo de amigos, da família, do trabalho e do condomínio.</p>
-      <ol>
-        <li><b>Exporte a conversa.</b> No WhatsApp, abra o grupo, toque no nome dele e escolha Exportar conversa, Sem mídia. <a href="/blog/como-exportar-conversa-whatsapp">Passo a passo</a>.</li>
-        <li><b>Escolha o arquivo aqui.</b> A leitura acontece no seu navegador, em menos de um minuto, e as mensagens não saem do celular.</li>
-        <li><b>Revele os prêmios e mande o card no grupo.</b> Quem mais fala, quem some, a tia do bom dia e o coruja da madrugada levam o troféu.</li>
-      </ol>
-      <h2>Perguntas frequentes</h2>
-      <details><summary>O Retrozap é grátis?</summary><p>A retrospectiva do primeiro grupo é grátis. Para fazer quantos grupos quiser e a retrospectiva de casal, o acesso ilimitado custa R$ 6,99 no Pix ou R$ 8,99 no cartão, pago uma única vez.</p></details>
-      <details><summary>Minhas mensagens são enviadas para algum servidor?</summary><p>Não. A leitura do arquivo acontece no seu navegador. As mensagens, os nomes e os telefones não saem do seu celular ou computador.</p></details>
-      <details><summary>Funciona no iPhone e no Android?</summary><p>Sim. O site aceita o .zip ou o .txt que o WhatsApp gera nos dois sistemas, e também funciona no computador.</p></details>
-      <details><summary>Funciona com a conversa de um casal?</summary><p>Sim. No Retrozap Casais, a retrospectiva é de vocês dois: quem manda mais "te amo", quem puxa o papo do der, o card "Nós dois" e um vídeo para os stories.</p></details>
-      <details><summary>Quais prêmios o grupo pode ganhar?</summary><p>São de 7 a 10 categorias, escolhidas para o tipo de grupo, como O Tagarela, O Fantasma, Boca-Suja e Tio do Bom Dia, além do ranking do grupo comparado a outros grupos do Brasil.</p></details>
-    </section>
     ${anuncio('inicio')}
     <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a></nav>
     <p class="small" style="text-align:center;margin:0">© 2026 Retrozap · Beyond the Work Ideas · CNPJ 69.746.447/0001-00</p>
@@ -1690,13 +1664,13 @@ function home(){
         <li>Toque em <b>Mais</b> e depois em <b>Exportar conversa</b>.</li>
         <li>Escolha <b>Sem mídia</b>.</li>
         <li>Salve em <b>Downloads</b> (ou no Drive) e depois volte aqui.</li></ol>`}
-      <a class="btn btn-wa" id="abreWa" href="${linkAbreWhats()}" style="text-decoration:none"><i class="ic-wa" aria-hidden="true"></i>Abrir o WhatsApp</a>
       <p class="pb-veja">Veja como é:</p>
       ${tutorialHTML()}
       <details class="pb-video"><summary>▶️ Prefere vídeo? Assista em 45 segundos</summary>
         <video controls playsinline preload="none" poster="${VIDEO_EXPORTAR}.jpg" src="${VIDEO_EXPORTAR}.mp4" aria-label="Vídeo: como exportar a conversa do WhatsApp no iPhone e no Android"></video>
         <p class="small">Vídeo sem som. <a href="/como-exportar">Abrir a página do vídeo</a></p>
       </details>
+      <a class="btn btn-wa" id="abreWa" href="${linkAbreWhats()}" style="text-decoration:none"><i class="ic-wa" aria-hidden="true"></i>Abrir o WhatsApp</a>
     </section>
     <section class="pbloco" aria-labelledby="pb2">
       <div class="pb-cab"><span class="pb-num" aria-hidden="true">2</span><div><h2 id="pb2">${state.voltou ? 'Agora escolha o arquivo' : 'Escolha o arquivo aqui'}</h2><p>${state.how === 'iphone' ? 'Ele fica em <b>Arquivos › Recentes</b>, com o nome "WhatsApp Chat - ….zip".' : 'Ele fica em <b>Downloads</b> (ou no Drive), com o nome "Conversa do WhatsApp com ….txt".'}</p></div></div>
@@ -1871,6 +1845,8 @@ function roster(){
   }
   const todos = Object.values(info).sort((a,b) => b.c - a.c);
   for (const r of todos) r.ts.sort((a,b) => a - b);
+  // casal: o nome do casal já vem preenchido com os dois primeiros nomes ("Ana & Bruno"); dá para trocar
+  if (state.modo === 'casal' && !state.grupo && todos.length >= 2){ const pn = n => (limpaTxt(state.alias?.[n] || n).split(' ').find(w => /\p{L}/u.test(w)) || n); state.grupo = cortaNome(`${pn(todos[0].n)} & ${pn(todos[1].n)}`, 44); }
   const numeros = todos.filter(r => isFone(r.n)), pessoas = todos.filter(r => !isFone(r.n));
   const meses = r => Math.floor((end - r.last) / (30*864e5));
   const mmaa = t => t.toLocaleDateString('pt-BR', {month:'short', year:'numeric'});
@@ -1916,7 +1892,7 @@ function roster(){
     <p class="eyebrow">Antes de começar · ${state.modo === 'casal' ? 'Confira os nomes' : 'Confira a turma'}</p>
     <h1 style="font-size:36px">${dentro} pessoas na cerimônia</h1>
     <div class="panel"><label class="ask" for="gn">${state.modo === 'casal' ? 'Nome do casal' : 'Nome do grupo'} <span class="small">(aparece nos cards)</span></label>
-      <input id="gn" type="text" maxlength="44" value="${esc(state.grupo)}" placeholder="Ex.: Família Silva" autocomplete="off" style="width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid var(--linha);background:var(--noite);color:var(--areia);font:inherit;font-size:17px"></div>
+      <input id="gn" type="text" maxlength="44" value="${esc(state.grupo)}" placeholder="${state.modo === 'casal' ? 'Ex.: Eu e você' : 'Ex.: Família Silva'}" autocomplete="off" style="width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid var(--linha);background:var(--noite);color:var(--areia);font:inherit;font-size:17px"></div>
     ${state.modo === 'casal' ? '' : `<div class="panel"><p class="ask" id="tipoG">Que tipo de grupo é? <span class="small">(muda as categorias)</span></p>
       <div class="modes" role="group" aria-labelledby="tipoG">
         ${Object.entries(MODOS).filter(([k]) => k !== 'casal').map(([k,m]) => `<button type="button" class="mode" data-m="${k}" style="--c:${m.c}" aria-pressed="${state.modo===k}"><span class="em">${m.e}</span>${m.n}</button>`).join('')}
