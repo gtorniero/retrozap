@@ -3247,7 +3247,7 @@ const MO2 = 'ui-monospace, Menlo, Consolas, "Courier New", monospace';
 const primeiro = n => { const t = limpaTxt(n); return t.split(' ').find(w => /\p{L}/u.test(w)) || t; };
 const anoTxt = () => state.compD ? String(ANO_MOMENTO) : 'desde o início';
 const umaCasa = n => n.toLocaleString('pt-BR', {maximumFractionDigits: 1});
-function rodape3(c, txt, cor){ c.save(); c.textAlign = 'center'; c.fillStyle = cor; c.font = `700 40px ${DM2}`; c.fillText(txt, 540, 1840, 980); c.restore(); }
+function rodape3(c, txt, cor){ c.save(); c.textAlign = 'center'; c.fillStyle = cor; let f = 40; c.font = `700 ${f}px ${DM2}`; while (c.measureText(txt).width > 980 && f > 28){ f -= 2; c.font = `700 ${f}px ${DM2}`; } c.fillText(txt, 540, 1840, 980); c.restore(); }
 // os dois do casal, com os números do ano (ou da conversa toda, se não houver 2026)
 function parCasal(todo){
   const D = state.data, src = !todo && state.compD && state.compD.people.length >= 2 ? state.compD : D, ac = n => src.people.find(p => p.name === n) || {};
@@ -3286,7 +3286,7 @@ function drawRecibo(d){
   c.lineTo(px, py + ph); c.closePath(); c.fill(); c.shadowColor = 'transparent';
   const im = icImg('🏆', true); if (im) c.drawImage(im, W/2 - 45, py + 34, 90, 90);
   c.fillStyle = VINHO; caber(c, 'RECIBO DO AMOR', W/2, py + 200, pw - 100, 800, 80, BR2);
-  caber(c, `${P.na} & ${P.nb} · ${state.compD ? 'jan–' + MESES[(state.compD.end || state.data.end).getMonth()].slice(0, 3) + ' ' + ANO_MOMENTO : 'desde o início'}`, W/2, py + 256, pw - 100, 500, 34, MO2);
+  caber(c, `do WhatsApp de ${P.na} & ${P.nb} · ${state.compD ? 'jan–' + MESES[(state.compD.end || state.data.end).getMonth()].slice(0, 3) + ' ' + ANO_MOMENTO : 'desde o início'}`, W/2, py + 256, pw - 100, 700, 38, MO2);
   linhaTr(c, px + 40, px + pw - 40, py + 296, VINHO);
   const Lx = px + 48, R1 = px + pw - 250, R2 = px + pw - 48; let y = py + 360;
   c.textAlign = 'left'; c.font = `700 28px ${MO2}`; c.fillText('ITEM', Lx, y); c.textAlign = 'right';
@@ -3311,7 +3311,7 @@ function drawRecibo(d){
   c.fillStyle = VINHO; caber(c, 'via do casal · não tem devolução', W/2, y + 100, pw - 100, 500, 28, MO2);
   barrasC(c, W/2, y + 130, 440, 100, VINHO);
   c.restore();
-  rodape3(c, 'e o de vocês? retrozap.com.br', '#FFF3EC');
+  rodape3(c, 'e o WhatsApp de vocês? retrozap.com.br', '#FFF3EC');
   return cv.toDataURL('image/png');
 }
 
@@ -3333,7 +3333,7 @@ function drawBoletim(){
   const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
   const VINHO = '#5E0B2B', CEREJA = '#CC1D59', {P, M} = materiasCasal();
   c.fillStyle = '#FFD6E2'; c.fillRect(0, 0, W, H); c.textAlign = 'center';
-  c.fillStyle = CEREJA; c.font = `700 32px ${DM2}`; espaco(c, 6); c.fillText(`ESCOLA DO AMOR · ANO LETIVO ${state.compD ? ANO_MOMENTO : 'TODO'}`, W/2, 150, 980); espaco(c, 0);
+  c.fillStyle = CEREJA; c.font = `700 32px ${DM2}`; espaco(c, 6); c.fillText(`ESCOLA DO AMOR · WHATSAPP · ANO LETIVO ${state.compD ? ANO_MOMENTO : 'TODO'}`, W/2, 150, 980); espaco(c, 0);
   c.fillStyle = VINHO; c.font = `800 110px ${BR2}`; espaco(c, -3); c.fillText('Boletim do casal', W/2, 270, 1000); espaco(c, 0);
   const tx = 60, tw = W - 120, rh = 150, ty = 340, th = 110 + M.length*rh + 20;
   c.fillStyle = '#FFFDF8'; c.beginPath(); c.roundRect(tx, ty, tw, th, 48); c.fill();
@@ -3357,7 +3357,7 @@ function drawBoletim(){
     caber(c, `MÉDIA ${n.toUpperCase()}`, bx + bw/2, by + 66, bw - 60, 700, 30, DM2); c.font = `800 100px ${BR2}`; c.fillText(umaCasa(Math.round(v*10)/10), bx + bw/2, by + 172); });
   c.save(); c.translate(W/2, by + 330); c.rotate(-.035); c.strokeStyle = CEREJA; c.lineWidth = 9; c.beginPath(); c.roundRect(-400, -60, 800, 120, 30); c.stroke();
   c.fillStyle = CEREJA; c.textAlign = 'center'; caber(c, `APROVADOS PARA ${ANO_MOMENTO + 1}`, 0, 22, 740, 800, 62, BR2); c.restore();
-  rodape3(c, 'e o de vocês? retrozap.com.br', VINHO);
+  rodape3(c, 'e o WhatsApp de vocês? retrozap.com.br', VINHO);
   return cv.toDataURL('image/png');
 }
 
@@ -3390,7 +3390,7 @@ function drawContrato(){
     c.fillStyle = VINHO; c.fillRect(x - 190, sy + 34, 380, 4); c.textAlign = 'center'; c.font = `500 30px ${DM2}`; c.fillText('contratante', x, sy + 80); });
   c.save(); c.translate(860, Math.min(y + 120, 1330)); c.rotate(-.24); c.globalAlpha = .85; c.strokeStyle = CEREJA; c.lineWidth = 9; c.beginPath(); c.arc(0, 0, 140, 0, 7); c.stroke();
   c.fillStyle = CEREJA; c.textAlign = 'center'; c.font = `800 46px ${BR2}`; c.fillText('RENOVADO', 0, -4); c.fillText(String(ANO_MOMENTO + 1), 0, 50); c.restore();
-  rodape3(c, 'e o de vocês? retrozap.com.br', '#FFF3EC');
+  rodape3(c, 'e o WhatsApp de vocês? retrozap.com.br', '#FFF3EC');
   return cv.toDataURL('image/png');
 }
 
@@ -3444,7 +3444,7 @@ function drawAstral(){
   const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
   const CREME = '#FFF3EC', ROSA = '#FF8FB1', x = dadosAstral();
   c.fillStyle = '#5E0B2B'; c.fillRect(0, 0, W, H); c.textAlign = 'center';
-  c.fillStyle = ROSA; c.font = `700 32px ${DM2}`; espaco(c, 8); c.fillText('MAPA ASTRAL DO CASAL', W/2, 160); espaco(c, 0);
+  c.fillStyle = ROSA; c.font = `700 32px ${DM2}`; espaco(c, 8); c.fillText('MAPA ASTRAL DO WHATSAPP DO CASAL', W/2, 160, 980); espaco(c, 0);
   c.fillStyle = CREME; caber(c, `${x.P.na} & ${x.P.nb}`, W/2, 270, 960, 800, 100, BR2);
   // a roda
   const cx = W/2, cy = 670, R = 312; c.lineWidth = 4; c.strokeStyle = ROSA; c.beginPath(); c.arc(cx, cy, R, 0, 7); c.stroke();
@@ -3461,7 +3461,7 @@ function drawAstral(){
   if (x.f) item('#FF4F8B', `Ascendente em "${x.f.t}"`, `${x.f.n} vezes até aqui`);
   c.textAlign = 'center'; c.fillStyle = CREME; c.font = `500 38px ${DM2}`;
   wrap(c, `Sintonia: ${x.sint}%. ${x.sint >= 80 ? `Vocês mandam quase o mesmo tanto de mensagens (${fmt(x.sol.max)} a ${fmt(x.sol.min)}).` : x.sint >= 60 ? `${x.sol.w} fala um pouco mais (${fmt(x.sol.max)} a ${fmt(x.sol.min)}).` : `${x.sol.w} fala por dois (${fmt(x.sol.max)} a ${fmt(x.sol.min)}).`}`, W/2, Math.min(y + 30, 1660), 900, 52);
-  rodape3(c, 'e o mapa de vocês? retrozap.com.br', CREME);
+  rodape3(c, 'e o mapa do WhatsApp de vocês? retrozap.com.br', CREME);
   return cv.toDataURL('image/png');
 }
 
@@ -3485,7 +3485,7 @@ function drawDiario(){
   c.font = `800 110px ${BR2}`; espaco(c, -3); c.fillText('Diário da Turma', W/2, 170, 1000); espaco(c, 0);
   c.fillRect(54, 200, W - 108, 4); c.fillRect(54, 212, W - 108, 2);
   c.font = `500 28px ${MO2}`; c.textAlign = 'left'; c.fillText(`Edição ${anoTxt()}`, 54, 256); c.textAlign = 'right'; c.fillText('R$ 0,00', W - 54, 256);
-  c.textAlign = 'center'; caber(c, limpaTxt(state.grupo || nomePadrao()), W/2, 256, 520, 500, 28, MO2);
+  c.textAlign = 'center'; caber(c, state.grupo ? `grupo de WhatsApp ${limpaTxt(state.grupo)}` : 'o jornal do grupo de WhatsApp', W/2, 256, 520, 500, 28, MO2);
   c.textAlign = 'left'; let f = 92; const HL = g.tag2 ? `${g.quem.toUpperCase()} EMPATAM COM ${fmt(g.tag.count + g.tag2.count)} MENSAGENS E GRUPO PEDE SOCORRO` : `${nome.toUpperCase()} MANDA ${fmt(g.tag.count)} MENSAGENS E GRUPO PEDE SOCORRO`;
   c.font = `800 ${f}px ${BR2}`; while (linhasDe(c, HL, 972) > 3 && f > 60){ f -= 4; c.font = `800 ${f}px ${BR2}`; }
   let y = 360; y += wrap(c, HL, 54, y, 972, f*1.02)*f*1.02 + 10;
@@ -3502,7 +3502,7 @@ function drawDiario(){
   const cw = (W - 108 - 40)/2;
   secs.slice(0, 4).forEach(([t, txt], i) => { const x = 54 + (i % 2)*(cw + 40), yy = y + Math.floor(i/2)*250;
     c.textAlign = 'left'; c.fillStyle = NOITE; c.font = `800 38px ${BR2}`; c.fillText(t, x, yy); c.font = `500 32px ${DM2}`; wrap(c, txt, x, yy + 50, cw, 42); });
-  c.fillStyle = NOITE; c.beginPath(); c.roundRect(54, 1760, W - 108, 110, 28); c.fill(); c.fillStyle = '#FFF4E0'; c.textAlign = 'center'; c.font = `700 40px ${DM2}`; c.fillText('e o seu grupo? retrozap.com.br', W/2, 1830);
+  c.fillStyle = NOITE; c.beginPath(); c.roundRect(54, 1760, W - 108, 110, 28); c.fill(); c.fillStyle = '#FFF4E0'; c.textAlign = 'center'; c.font = `700 40px ${DM2}`; c.fillText('e o seu grupo de WhatsApp? retrozap.com.br', W/2, 1830);
   return cv.toDataURL('image/png');
 }
 
@@ -3515,7 +3515,7 @@ function drawProcurado(){
   c.save(); c.translate(W/2, 880); c.rotate(-.026); c.translate(-W/2, -880);
   c.fillStyle = '#FFF4E0'; c.fillRect(70, 90, W - 140, 1600); c.strokeStyle = NOITE; c.lineWidth = 9; c.strokeRect(70, 90, W - 140, 1600);
   c.fillStyle = NOITE; c.textAlign = 'center'; c.font = `800 150px ${BR2}`; espaco(c, -3); c.fillText('PROCURA-SE', W/2, 260, 900); espaco(c, 0);
-  c.font = `700 32px ${DM2}`; espaco(c, 6); c.fillText('VIVO OU ONLINE', W/2, 320); espaco(c, 0);
+  c.font = `700 32px ${DM2}`; espaco(c, 6); c.fillText('VIVO OU ONLINE NO GRUPO DO WHATSAPP', W/2, 320, 860); espaco(c, 0);
   c.fillRect(W/2 - 230, 370, 460, 460); emojiC(c, '👻', W/2, 600, 330);
   caber(c, fp ? nomeCurto(fp.name, 16).toUpperCase() : '—', W/2, 960, 880, 800, 120, BR2);
   c.font = `700 38px ${DM2}`; c.fillText('vulgo "O Fantasma"', W/2, 1020);
@@ -3527,7 +3527,7 @@ function drawProcurado(){
   c.fillStyle = NOITE; c.beginPath(); c.roundRect(150, 1420, W - 300, 150, 24); c.fill(); c.fillStyle = '#FFC23C'; c.textAlign = 'center';
   caber(c, `Recompensa: 1 áudio de 5 min do ${primeiro(g.tag.name)}`, W/2, 1512, W - 360, 800, 46, BR2);
   c.restore();
-  rodape3(c, 'quem é o fantasma do seu grupo? retrozap.com.br', NOITE);
+  rodape3(c, 'quem é o fantasma do seu grupo de WhatsApp? retrozap.com.br', NOITE);
   return cv.toDataURL('image/png');
 }
 
@@ -3547,7 +3547,7 @@ function drawRadio(){
   const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
   const NOITE = '#1A0B2E', AREIA = '#FFF4E0', h = hitsGrupo(), as = assunto26();
   c.fillStyle = '#FF7A59'; c.fillRect(0, 0, W, H);
-  c.textAlign = 'left'; c.fillStyle = NOITE; c.font = `700 32px ${DM2}`; espaco(c, 6); c.fillText(`RÁDIO TURMA FM · ${ANO_MOMENTO}`, 66, 150); espaco(c, 0);
+  c.textAlign = 'left'; c.fillStyle = NOITE; c.font = `700 32px ${DM2}`; espaco(c, 6); c.fillText(`RÁDIO TURMA FM · DIRETO DO WHATSAPP · ${ANO_MOMENTO}`, 66, 150, 950); espaco(c, 0);
   c.font = `800 104px ${BR2}`; espaco(c, -3); wrap(c, 'As mais tocadas do grupo', 66, 260, 950, 104); espaco(c, 0);
   if (h[0]){ const y = 450; c.fillStyle = NOITE; c.beginPath(); c.roundRect(60, y, W - 120, 270, 54); c.fill();
     c.fillStyle = '#FFC23C'; c.beginPath(); c.roundRect(100, y + 40, 190, 190, 36); c.fill(); c.fillStyle = NOITE; c.textAlign = 'center'; c.font = `800 72px ${BR2}`; c.fillText('#1', 195, y + 160);
@@ -3559,7 +3559,7 @@ function drawRadio(){
       c.fillStyle = NOITE; c.textAlign = 'left'; c.font = `800 54px ${BR2}`; c.fillText(String(i + 2), 104, y + 78);
       caber(c, `"${x.w}" · ${x.pessoas > 1 ? x.pessoas + ' pessoas' : x.quem}`, 190, y + 76, 640, 700, 40, DM2); c.textAlign = 'right'; c.font = `500 38px ${DM2}`; c.fillText(fmt(x.n), W - 104, y + 76); }); }
   if (as){ c.textAlign = 'center'; c.fillStyle = NOITE; caber(c, `Assunto do ano no ar: ${as.txt} · ${fmt(as.n)} mensagens`, W/2, ly + n*rh + 110, 940, 500, 36, DM2); }
-  rodape3(c, 'e o hit do seu grupo? retrozap.com.br', NOITE);
+  rodape3(c, 'e o hit do seu grupo de WhatsApp? retrozap.com.br', NOITE);
   return cv.toDataURL('image/png');
 }
 
@@ -3600,7 +3600,7 @@ function drawRanking(){
   const L = itensRanking(), h = L[0], resto = L.slice(1, 6), comp = state.comp || {};
   c.fillStyle = K.bg; c.fillRect(0, 0, W, H);
   bandeiraBR(c, 72, 108, 66);
-  c.textAlign = 'left'; c.fillStyle = K.ac; c.font = `700 32px ${DM2}`; espaco(c, 7); c.fillText(`RANKING ${casal ? 'DOS CASAIS' : 'DOS GRUPOS'} · ${ANO_MOMENTO}`, 160, 150); espaco(c, 0);
+  c.textAlign = 'left'; c.fillStyle = K.ac; c.font = `700 32px ${DM2}`; espaco(c, 7); c.fillText(`RANKING ${casal ? 'DOS CASAIS' : 'DOS GRUPOS'} DE WHATSAPP · ${ANO_MOMENTO}`, 160, 150, 850); espaco(c, 0);
   c.fillStyle = K.txt; caber(c, limpaTxt(state.grupo || nomePadrao()), 72, 236, 936, 600, 50, DM2);
   if (h){
     const [em, fr] = reacaoRk(h.pct, casal);
@@ -3625,7 +3625,7 @@ function drawRanking(){
   const base = `Comparado com os ${casal ? 'casais' : 'grupos'} do Retrozap no Brasil, só com as mensagens de ${ANO_MOMENTO}.`;
   wrap(c, base, 72, Math.max(y + 60, 1720), 936, 40);
   c.fillStyle = K.faixa; c.fillRect(0, H - 96, W, 96); c.fillStyle = K.faixaTxt; c.textAlign = 'center'; c.font = `700 36px ${DM2}`;
-  c.fillText(casal ? 'e vocês dois? retrozap.com.br' : 'e o seu grupo? retrozap.com.br', W/2, H - 36);
+  c.fillText(casal ? 'e o WhatsApp de vocês? retrozap.com.br' : 'e o seu grupo de WhatsApp? retrozap.com.br', W/2, H - 36);
   return cv.toDataURL('image/png');
 }
 
@@ -3637,7 +3637,7 @@ function drawPlantao(){
   const NOITE = '#1A0B2E', AREIA = '#FFF4E0', g = dadosGrupo(), p = plantaoInfo(), nome = limpaTxt(state.grupo || nomePadrao());
   c.fillStyle = NOITE; c.fillRect(0, 0, W, H);
   c.fillStyle = '#E0245E'; c.fillRect(0, 0, W, 330);
-  c.fillStyle = AREIA; c.beginPath(); c.arc(84, 132, 16, 0, 7); c.fill(); c.textAlign = 'left'; c.font = `700 36px ${DM2}`; espaco(c, 7); c.fillText('AO VIVO · PLANTÃO DO ZAP', 118, 145); espaco(c, 0);
+  c.fillStyle = AREIA; c.beginPath(); c.arc(84, 132, 16, 0, 7); c.fill(); c.textAlign = 'left'; c.font = `700 36px ${DM2}`; espaco(c, 7); c.fillText('AO VIVO · PLANTÃO DO WHATSAPP', 118, 145, 900); espaco(c, 0);
   c.font = `800 140px ${BR2}`; espaco(c, -5); c.fillText('URGENTE', 60, 286); espaco(c, 0);
   let f = 92; const HL = p ? `${nome} fecha ${ANO_MOMENTO} com ${p.num} e entra no top ${p.top}% do país` : `${nome} fecha ${ANO_MOMENTO} em alta`;
   c.font = `800 ${f}px ${BR2}`; while (linhasDe(c, HL, 960) > 5 && f > 56){ f -= 4; c.font = `800 ${f}px ${BR2}`; }
@@ -3650,7 +3650,7 @@ function drawPlantao(){
   if (g.rec) box(60 + bw + 24, fmt(g.rec[1]), 'no dia do recorde');
   const tk = [g.fp && `${primeiro(g.fp.name)} quase não aparece`, g.kkk && `${primeiro(g.kkk.winner.name)} ri ${vunid(g.kkk, g.kkk.winner.v)}`, g.pod && `${primeiro(g.pod.winner.name)} manda ${fmt(g.pod.winner.v)} ${g.pod.u}`].filter(Boolean).slice(0, 2).join(' · ');
   c.fillStyle = '#FFC23C'; c.fillRect(0, 1640, W, 110); c.fillStyle = NOITE; c.textAlign = 'left'; caber(c, tk, 60, 1710, 960, 700, 36, DM2);
-  rodape3(c, 'e as notícias do seu grupo? retrozap.com.br', AREIA);
+  rodape3(c, 'e as notícias do seu grupo de WhatsApp? retrozap.com.br', AREIA);
   return cv.toDataURL('image/png');
 }
 
@@ -3662,7 +3662,7 @@ function drawPlacar(d){
   const VINHO = '#5E0B2B', ROSA = '#FF4F8B', CREME = '#FFF3EC', {a, b, cats, pa, pb} = placarCasal(d);
   c.fillStyle = VINHO; c.fillRect(0, 0, W, H); c.textAlign = 'center';
   marcaC(c, W/2, 150, 46, CREME);
-  c.fillStyle = ROSA; c.font = `700 34px ${DM2}`; espaco(c, 8); c.fillText(`CAMPEONATO DO AMOR · ${state.compD ? ANO_MOMENTO : 'DESDE O INÍCIO'}`, W/2, 290, 980); espaco(c, 0);
+  c.fillStyle = ROSA; c.font = `700 34px ${DM2}`; espaco(c, 8); c.fillText(`CAMPEONATO DO AMOR NO WHATSAPP · ${state.compD ? ANO_MOMENTO : 'DESDE O INÍCIO'}`, W/2, 290, 980); espaco(c, 0);
   c.fillStyle = ROSA; c.font = `800 300px ${BR2}`; espaco(c, -10); c.fillText(`${pa}×${pb}`, W/2, 640); espaco(c, 0);
   const nm = n => limpaTxt(n).split(' ')[0];
   c.fillStyle = CREME; caber(c, nm(a.name), W/2 - 270, 760, 400, 800, 80, BR2); caber(c, nm(b.name), W/2 + 270, 760, 400, 800, 80, BR2);
@@ -3677,7 +3677,7 @@ function drawPlacar(d){
   }
   const lider = pa === pb ? null : pa > pb ? b : a;
   c.fillStyle = ROSA; c.textAlign = 'center'; caber(c, lider ? `${nm(lider.name)} pediu revanche em ${ANO_MOMENTO + 1}.` : 'Empate. Ninguém dorme hoje.', W/2, Math.min(y + 70, 1730), 940, 500, 44, DM2);
-  c.fillStyle = CREME; c.font = `700 40px ${DM2}`; c.fillText('e o de vocês? retrozap.com.br', W/2, 1830, 980);
+  c.fillStyle = CREME; c.font = `700 40px ${DM2}`; c.fillText('e o WhatsApp de vocês? retrozap.com.br', W/2, 1830, 980);
   return cv.toDataURL('image/png');
 }
 // identidade 2: número gigante do grupo, com o selo do ranking e uma provocação
