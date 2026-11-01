@@ -2658,8 +2658,8 @@ function fimTela(semFesta){
       <h1 id="cmpT" style="font-size:clamp(30px,9vw,40px);margin:0">📲 Mídias ${casal ? 'de vocês' : 'do grupo'}</h1>
       <p class="small">Para compartilhar onde quiser: ${casal ? 'um com o outro' : 'no grupo'}, nos stories, no status. Tudo é feito aqui no seu celular.</p>
       ${(() => { const per = so26 ? 'só ' + ANO_MOMENTO : 'desde o início', itens = casal
-          ? [videoHTML(casal), fig(6, '🧾 Recibo do amor', per, altRecibo(d), ESP), fig(10, '📋 Boletim do casal', per, altBoletim(), ESP), fig(13, '✨ Horóscopo do casal', 'desde o início', altAstral(), ESP), rankingOk() ? fig(18, '📊 Ranking dos casais', 'só ' + ANO_MOMENTO, altRanking(), 'Rara: só no Top 10%') : '', fig(7, '💞 Placar do casal', per, altPlacar(d)), fig(5, '💞 Nós dois: um contra o outro', per, altCasal(d)), fig(3, '🏆 Quadro de troféus', 'desde o início', altTop10()), fig(1, '📸 Resumo do casal', 'desde o início', altResumo(d)), so26 ? fig(4, `🗓️ O nosso ${ANO_MOMENTO}`, 'só ' + ANO_MOMENTO, altNosso2026()) : ''].filter(Boolean)
-          : [videoHTML(casal), fig(14, '📰 Diário da Turma', per, altDiario(), ESP), fig(15, '👻 Procura-se', 'desde o início', altProcurado(), ESP), plantaoInfo() ? fig(17, '🚨 Plantão do Zap', 'só ' + ANO_MOMENTO, altPlantao(), 'Rara: só no Top 10%') : '', rankingOk() ? fig(18, '📊 Ranking Brasil', 'só ' + ANO_MOMENTO, altRanking(), 'Rara: só no Top 10%') : '', hitsGrupo().length ? fig(16, '📻 Rádio Turma FM', 'desde o início', altRadio(), ESP) : '', fig(3, '🏆 Quadro de troféus', 'desde o início', altTop10()), fig(9, `💬 ${so26 ? 'O número de ' + ANO_MOMENTO : 'O número do grupo'}`, per, altNumero()), fig(1, '📸 Resumo do grupo', 'desde o início', altResumo(d)), so26 ? fig(4, `🗓️ Nosso ${ANO_MOMENTO}`, 'só ' + ANO_MOMENTO, altNosso2026()) : ''].filter(Boolean);
+          ? [videoHTML(casal), fig(6, '🧾 Recibo do amor', per, altRecibo(d), ESP), fig(10, '📋 Boletim do casal', per, altBoletim(), ESP), fig(13, '✨ Horóscopo do casal', 'desde o início', altAstral(), ESP), rankingOk() ? fig(18, '🇧🇷 Top Brasil dos casais', 'só ' + ANO_MOMENTO, altRanking(), 'Rara: só no Top 10%') : '', fig(7, '💞 Placar do casal', per, altPlacar(d)), fig(5, '💞 Nós dois: um contra o outro', per, altCasal(d)), fig(3, '🏆 Quadro de troféus', 'desde o início', altTop10()), fig(1, '📸 Resumo do casal', 'desde o início', altResumo(d)), so26 ? fig(4, `🗓️ O nosso ${ANO_MOMENTO}`, 'só ' + ANO_MOMENTO, altNosso2026()) : ''].filter(Boolean)
+          : [videoHTML(casal), fig(14, '📰 Diário da Turma', per, altDiario(), ESP), fig(15, '👻 Procura-se', 'desde o início', altProcurado(), ESP), plantaoInfo() ? fig(17, '🚨 Plantão do Zap', 'só ' + ANO_MOMENTO, altPlantao(), 'Rara: só no Top 10%') : '', rankingOk() ? fig(18, '🇧🇷 Top Brasil', 'só ' + ANO_MOMENTO, altRanking(), 'Rara: só no Top 10%') : '', hitsGrupo().length ? fig(16, '📻 Rádio Turma FM', 'desde o início', altRadio(), ESP) : '', fig(3, '🏆 Quadro de troféus', 'desde o início', altTop10()), fig(9, `💬 ${so26 ? 'O número de ' + ANO_MOMENTO : 'O número do grupo'}`, per, altNumero()), fig(1, '📸 Resumo do grupo', 'desde o início', altResumo(d)), so26 ? fig(4, `🗓️ Nosso ${ANO_MOMENTO}`, 'só ' + ANO_MOMENTO, altNosso2026()) : ''].filter(Boolean);
         return `<p class="carr-dica" aria-hidden="true">👉 Arraste para o lado: são ${itens.length} mídias</p><div class="carr-box"><button type="button" class="carr-lado esq" data-carr="-1" aria-label="Mídia anterior">‹</button><div class="carr" id="carr" role="region" aria-roledescription="carrossel" aria-label="Vídeo e imagens para compartilhar" tabindex="0">${itens.map((x, i) => `<div class="carr-i" role="group" aria-roledescription="item" aria-label="${i + 1} de ${itens.length}">${x}</div>`).join('')}</div><button type="button" class="carr-lado dir" data-carr="1" aria-label="Próxima mídia">›</button></div>
         <div class="carr-nav"><button type="button" class="carr-seta" data-carr="-1" aria-label="Anterior">‹ Anterior</button><div class="carr-dots">${itens.map((_, i) => `<button type="button" data-dot="${i}" aria-label="Ver item ${i + 1} de ${itens.length}"${i ? '' : ' aria-current="true"'}></button>`).join('')}</div><button type="button" class="carr-seta prox" data-carr="1" aria-label="Próximo">Próximo ›</button></div><p class="carr-n small" aria-hidden="true">1 de ${itens.length}</p><p class="sr-only" id="carrVivo" aria-live="polite"></p>`; })()}
     </section>
@@ -3771,32 +3771,58 @@ function itensRanking(){
     .filter((x, i, arr) => !(x.k === 'total' && arr.some(y => y.k === 'por_dia' && y.top <= x.top)) && !(x.k === 'por_dia' && arr.some(y => y.k === 'total' && y.top < x.top)));
 }
 function rankingOk(){ return itensRanking().some(x => x.k !== 'dias' && x.top <= 10); }
-function altRanking(){ const L = itensRanking().slice(0, 6); return L.length ? `Ranking ${state.modo === 'casal' ? 'dos casais' : 'Brasil'} ${ANO_MOMENTO}: ` + L.map(x => `${x.nome}, ${x.lado}`).join('; ') + '.' : ''; }
+function altRanking(){ const L = itensRanking().slice(0, 6); return L.length ? `Top Brasil${state.modo === 'casal' ? ' dos casais' : ''} ${ANO_MOMENTO}: ` + L.map(x => `${x.nome}, ${x.lado}`).join('; ') + '.' : ''; }
+// reação conforme a posição (frase do destaque e emoji de cada linha)
+function reacaoRk(pct, casal){
+  if (pct <= 1) return ['👑', casal ? 'Casal mais intenso do Brasil' : 'Recorde nacional'];
+  if (pct <= 3) return [casal ? '😍' : '🤯', casal ? 'Casal de novela' : 'Pódio do Brasil'];
+  if (pct <= 5) return ['😱', casal ? 'Ninguém segura vocês' : 'Elite do zap'];
+  if (pct <= 10) return ['👏', casal ? 'Nível casal de série' : 'Nível seleção'];
+  if (pct <= 25) return ['🙌', 'Acima da média'];
+  return ['🙂', 'No páreo'];
+}
+function bandeiraBR(c, x, y, w){
+  const h = w*.7; c.save(); c.beginPath(); c.roundRect(x, y, w, h, w*.12); c.clip();
+  c.fillStyle = '#009C3B'; c.fillRect(x, y, w, h);
+  c.fillStyle = '#FFDF00'; c.beginPath(); c.moveTo(x + w*.5, y + h*.1); c.lineTo(x + w*.92, y + h*.5); c.lineTo(x + w*.5, y + h*.9); c.lineTo(x + w*.08, y + h*.5); c.closePath(); c.fill();
+  c.fillStyle = '#002776'; c.beginPath(); c.arc(x + w*.5, y + h*.5, h*.25, 0, 7); c.fill();
+  c.strokeStyle = '#FFFFFF'; c.lineWidth = h*.05; c.beginPath(); c.arc(x + w*.5, y + h*.95, h*.52, Math.PI*1.32, Math.PI*1.68); c.stroke();
+  c.restore();
+}
 function drawRanking(){
   const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
-  const AZUL = '#1F3BFF', CREME = '#F5F1E8', LIMA = '#D8FF3E', casal = state.modo === 'casal';
+  const casal = state.modo === 'casal';
+  // grupo: verde Brasil fechado + amarelo; casal: creme, vinho e cereja (identidade do casal)
+  const K = casal ? {bg:'#FFF3EC', txt:'#5E0B2B', ac:'#E0245E', sub:'#8A3A55', linha:'#F2C6D3', pill:'#FFD6E2', faixa:'#E0245E', faixaTxt:'#FFF3EC'}
+                  : {bg:'#0E4D33', txt:'#F5F1E8', ac:'#FFD84D', sub:'#BFD8C8', linha:'#2E6B4F', pill:'#16613F', faixa:'#FFD84D', faixaTxt:'#0E4D33'};
   const L = itensRanking(), h = L[0], resto = L.slice(1, 6), comp = state.comp || {};
-  c.fillStyle = AZUL; c.fillRect(0, 0, W, H);
-  c.textAlign = 'left'; c.fillStyle = LIMA; c.font = `700 32px ${DM2}`; espaco(c, 7); c.fillText(`RANKING ${casal ? 'DOS CASAIS' : 'BRASIL'} · ${ANO_MOMENTO}`, 72, 150); espaco(c, 0);
-  c.fillStyle = CREME; caber(c, limpaTxt(state.grupo || nomePadrao()), 72, 222, 936, 600, 50, DM2);
+  c.fillStyle = K.bg; c.fillRect(0, 0, W, H);
+  bandeiraBR(c, 72, 108, 66);
+  c.textAlign = 'left'; c.fillStyle = K.ac; c.font = `700 32px ${DM2}`; espaco(c, 7); c.fillText(`TOP BRASIL${casal ? ' · CASAIS' : ''} · ${ANO_MOMENTO}`, 160, 150); espaco(c, 0);
+  c.fillStyle = K.txt; caber(c, limpaTxt(state.grupo || nomePadrao()), 72, 236, 936, 600, 50, DM2);
   if (h){
-    c.fillStyle = CREME; c.font = `800 120px ${BR2}`; espaco(c, -2); c.fillText(h.k === 'dias' ? 'MAIS QUE' : 'TOP', 66, 470); espaco(c, 0);
-    c.font = `800 400px ${BR2}`; espaco(c, -18); c.fillText(`${h.pct}%`, 52, 820); espaco(c, 0);
-    c.fillStyle = LIMA; caber(c, h.nome, 72, 920, 936, 800, 76, BR2);
-    c.fillStyle = CREME; c.globalAlpha = .75; caber(c, h.num || '', 72, 984, 936, 500, 38, DM2); c.globalAlpha = 1;
+    const [em, fr] = reacaoRk(h.pct, casal);
+    c.font = `700 40px ${DM2}`; const pw = c.measureText(fr).width + 130;
+    c.fillStyle = K.pill; c.beginPath(); c.roundRect(72, 300, pw, 84, 42); c.fill();
+    emojiC(c, em, 72 + 50, 342, 44); c.fillStyle = K.txt; c.fillText(fr, 72 + 90, 356);
+    c.fillStyle = K.txt; c.font = `800 120px ${BR2}`; espaco(c, -2); c.fillText(h.k === 'dias' ? 'MAIS QUE' : 'TOP', 66, 530); espaco(c, 0);
+    c.font = `800 360px ${BR2}`; espaco(c, -16); c.fillText(`${h.pct}%`, 52, 850); espaco(c, 0);
+    c.fillStyle = K.ac; caber(c, h.nome, 72, 950, 936, 800, 76, BR2);
+    c.fillStyle = K.sub; caber(c, h.num || '', 72, 1012, 936, 500, 38, DM2);
   }
   let y = 1090; const rh = 118;
-  resto.forEach((x, i) => {
-    c.fillStyle = CREME; c.globalAlpha = .28; c.fillRect(72, y, W - 144, 2); c.globalAlpha = 1;
-    c.textAlign = 'left'; c.fillStyle = CREME; caber(c, x.nome, 72, y + 64, 640, 700, 42, DM2);
-    c.globalAlpha = .65; caber(c, x.num || '', 72, y + 102, 640, 500, 28, DM2); c.globalAlpha = 1;
-    c.textAlign = 'right'; c.fillStyle = x.top <= 10 ? LIMA : CREME; c.font = `800 56px ${BR2}`; c.fillText(x.lado, W - 72, y + 80);
+  resto.forEach(x => {
+    c.fillStyle = K.linha; c.fillRect(72, y, W - 144, 2);
+    c.textAlign = 'left'; c.fillStyle = K.txt; caber(c, x.nome, 72, y + 64, 560, 700, 42, DM2);
+    c.fillStyle = K.sub; caber(c, x.num || '', 72, y + 102, 560, 500, 28, DM2);
+    c.textAlign = 'right'; c.fillStyle = x.top <= 10 ? K.ac : K.txt; c.font = `800 56px ${BR2}`; c.fillText(x.lado, W - 72, y + 80);
+    const lw = c.measureText(x.lado).width; emojiC(c, reacaoRk(x.pct, casal)[0], W - 72 - lw - 44, y + 62, 40);
     y += rh;
   });
-  c.textAlign = 'left'; c.fillStyle = CREME; c.globalAlpha = .7; c.font = `500 30px ${DM2}`;
-  const base = comp.n ? `Comparado com ${fmt(comp.n)} ${casal ? 'casais' : 'grupos'} do Retrozap, só com as mensagens de ${ANO_MOMENTO}.` : `Comparado com os ${casal ? 'casais' : 'grupos'} do Retrozap, só com as mensagens de ${ANO_MOMENTO}.`;
-  wrap(c, base, 72, Math.max(y + 60, 1720), 936, 40); c.globalAlpha = 1;
-  c.fillStyle = LIMA; c.fillRect(0, H - 96, W, 96); c.fillStyle = AZUL; c.textAlign = 'center'; c.font = `700 36px ${DM2}`;
+  c.textAlign = 'left'; c.fillStyle = K.sub; c.font = `500 30px ${DM2}`;
+  const base = `Comparado com ${comp.n ? fmt(comp.n) + ' ' : 'os '}${casal ? 'casais' : 'grupos'} do Retrozap no Brasil, só com as mensagens de ${ANO_MOMENTO}.`;
+  wrap(c, base, 72, Math.max(y + 60, 1720), 936, 40);
+  c.fillStyle = K.faixa; c.fillRect(0, H - 96, W, 96); c.fillStyle = K.faixaTxt; c.textAlign = 'center'; c.font = `700 36px ${DM2}`;
   c.fillText(casal ? 'e vocês dois? retrozap.com.br' : 'e o seu grupo? retrozap.com.br', W/2, H - 36);
   return cv.toDataURL('image/png');
 }
