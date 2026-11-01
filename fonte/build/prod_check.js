@@ -1000,7 +1000,7 @@ function inicio(){
   <section class="screen hero">
     ${ORIGEM ? `<div class="chegou" role="note"><span aria-hidden="true">👋</span><span>${cs ? 'Um casal te mandou a retrospectiva deles? <b>Agora é a vez de vocês.</b>' : 'Te mandaram a retrospectiva de um grupo? <b>Agora é a vez do seu.</b> Descubra quem é o tagarela, o fantasma e o boca-suja.'}</span></div>` : ''}
     <p class="eyebrow">${cs ? 'A retrospectiva dos casais do Brasil' : 'A retrospectiva oficial dos grupos do Brasil'}</p>
-    <h1 class="h-home">${cs ? 'O 2026 de vocês,' : 'Seu 2026,'} <em>premiado.</em></h1>
+    <h1 class="h-home">${cs ? 'Vocês dois em 2026.' : 'Seu grupo em 2026.'} <em>Com troféu pra cada um.</em></h1>
     <p class="lead">${cs ? 'Quem manda mais "te amo", quem puxa o papo do dia, quem pede desculpas: troféus, números e o resumo do ano de vocês dois.' : 'Quem fala demais, quem some, quem manda figurinha às 3 da manhã: troféus, números e o resumo do ano do seu grupo.'} Tudo no seu celular.</p>
     <div class="escolha" role="group" aria-label="O que você quer analisar?">
       <button type="button" class="esc esc-g" data-esc="grupo" aria-pressed="${!cs}"><span class="esc-ic" aria-hidden="true">${logoSVG('#1A0B2E', '#FFC23C')}</span><b>Grupos</b><span>amigos, família, trampo, condomínio</span></button>
