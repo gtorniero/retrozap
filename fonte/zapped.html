@@ -347,6 +347,11 @@ html.casal .vota .chip[aria-pressed="true"]{color:#fff}
 #todosD[open]>summary::after{content:'Fechar ▴'}
 .pwc{display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.25;text-align:center}
 .pwc small{font-size:13px;font-weight:600;opacity:.8;white-space:nowrap}
+.tres{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}.tres li{display:flex;align-items:center;gap:8px;background:var(--acai);border:1.5px solid var(--linha);border-radius:14px;padding:10px 8px;font-size:13px;line-height:1.2}.tres b{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--manga);color:var(--noite);font-weight:800}.tres strong{display:block;font-size:15px}.tres b{flex:none}
+.tres-v{margin:-4px 0 0;text-align:center;font-weight:700}.tres-v a{color:var(--manga)}
+.pb-dica{margin:0;font-size:15px;line-height:1.4;background:color-mix(in srgb,var(--manga) 14%,transparent);border-radius:14px;padding:10px 12px}
+.naoachei{border-top:1.5px solid var(--linha);padding-top:10px}.naoachei summary{cursor:pointer;font-weight:700;text-align:center;color:var(--manga);list-style:none;padding:6px}.naoachei summary::-webkit-details-marker{display:none}.naoachei[open]{display:flex;flex-direction:column;gap:10px}
+.pb-vt{text-align:center;font-weight:700;color:var(--manga);margin:0 0 4px}
 .pbloco{display:flex;flex-direction:column;gap:14px;width:100%;background:var(--acai);border:1.5px solid var(--linha);border-radius:22px;padding:20px 18px}
 .pb-cab{display:flex;gap:14px;align-items:flex-start}
 .pb-num{flex:none;width:42px;height:42px;border-radius:50%;background:var(--manga);color:var(--noite);font-family:var(--titulo);font-weight:800;font-size:24px;display:flex;align-items:center;justify-content:center}
@@ -357,7 +362,7 @@ html.casal .pb-num{color:#fff}
 .pb-video{border-top:1.5px solid var(--linha);padding-top:12px}
 .pb-video summary{cursor:pointer;font-weight:700;text-align:center;color:var(--manga);list-style:none;padding:6px}
 .pb-video summary::-webkit-details-marker{display:none}
-.pb-video video{display:block;width:100%;max-width:300px;margin:10px auto 0;border-radius:16px;aspect-ratio:9/16;background:#000}
+.pb-video video{display:block;width:100%;max-width:220px;margin:10px auto 0;border-radius:16px;aspect-ratio:9/16;background:#000}
 .pb-video p{text-align:center;margin:8px 0 0}
 .pb-veja{margin:4px 0 -6px;font-size:14px;font-weight:700;color:var(--neblina);text-align:center}
 .pbloco .drop{margin:0}
@@ -564,7 +569,7 @@ html.casal .logo{color:#5E0B2B}
 .logo span{width:1.15em;height:1.15em}
 /* início */
 .hero .h-home em{display:block}
-.hero .h-home{font-size:clamp(40px,11.5vw,72px);line-height:.94;letter-spacing:-.045em}
+.hero .h-home{font-size:clamp(36px,10.5vw,68px);line-height:.94;letter-spacing:-.045em}
 .hero h1 em{color:var(--manga)}
 .escolha{gap:12px}
 .esc{min-height:190px;justify-content:flex-end;gap:2px;border:0;border-radius:28px;padding:18px 16px}
@@ -1634,13 +1639,19 @@ function inicio(){
     ${ORIGEM ? `<div class="chegou" role="note"><span aria-hidden="true">👋</span><span>${cs ? 'Um casal te mandou a retrospectiva deles? <b>Agora é a vez de vocês.</b>' : 'Te mandaram a retrospectiva de um grupo? <b>Agora é a vez do seu.</b> Descubra quem é o tagarela, o fantasma e o boca-suja.'}</span></div>` : ''}
     <p class="eyebrow">${cs ? 'A retrospectiva dos casais do Brasil' : 'A retrospectiva oficial dos grupos do Brasil'}</p>
     <h1 class="h-home">${cs ? 'Vocês dois em 2026.' : 'Seu grupo em 2026.'} <em>Com troféu pra cada um.</em></h1>
-    <p class="lead">${cs ? 'Quem manda mais "te amo", quem puxa o papo do dia, quem pede desculpas: troféus, números e o resumo do ano de vocês dois.' : 'Quem fala demais, quem some, quem manda figurinha às 3 da manhã: troféus, números e o resumo do ano do seu grupo.'} Tudo no seu celular.</p>
+    <p class="lead">${cs ? 'Quem manda mais "te amo", quem puxa o papo, quem pede desculpas.' : 'Quem fala demais, quem some, quem manda figurinha às 3 da manhã.'} Tudo no seu celular.</p>
     <div class="escolha" role="group" aria-label="O que você quer analisar?">
       <button type="button" class="esc esc-g" data-esc="grupo" aria-pressed="${!cs}"><span class="esc-ic" aria-hidden="true">${logoSVG('#1A0B2E', '#FFC23C')}</span><b>Grupos</b><span>amigos, família, trampo, condomínio</span></button>
       <button type="button" class="esc esc-c" data-esc="casal" aria-pressed="${cs}"><i class="novo">Novo</i><span class="esc-ic" aria-hidden="true"><svg viewBox="0 0 120 120" focusable="false">${icHeart('#FFF3EC', '#5E0B2B', 1, 0, 0, 7)}</svg></span><b>Casais</b><span>vocês dois em troféus</span></button>
     </div>
-    <div class="badge priv-l"><span class="ok-ic" aria-hidden="true">✓</span><span><b>Nada sai do seu celular. Sem cadastro.</b> Tudo é analisado aqui no navegador: a gente não recebe, não lê e não guarda nenhuma mensagem. <a href="/privacidade">Entenda</a></span></div>
     <button class="btn btn-main" id="comecar">${cs ? 'Começar a retrospectiva do casal →' : 'Vamos começar →'}</button>
+    <ol class="tres" aria-label="Como funciona em 3 passos">
+      <li><b>1</b><span><strong>Exporte</strong> no WhatsApp</span></li>
+      <li><b>2</b><span><strong>Salve</strong> no celular</span></li>
+      <li><b>3</b><span><strong>Escolha</strong> aqui</span></li>
+    </ol>
+    <p class="tres-v"><a href="/como-exportar">▶️ Veja em 45 segundos como exportar</a></p>
+    <div class="badge priv-l"><span class="ok-ic" aria-hidden="true">✓</span><span><b>Nada sai do seu celular. Sem cadastro.</b> Tudo é analisado aqui no navegador: a gente não recebe, não lê e não guarda nenhuma mensagem. <a href="/privacidade">Entenda</a></span></div>
     ${anuncio('inicio')}
     <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a><button type="button" class="lk-ck" data-ckpref>Preferências de cookies</button></nav>
     <p class="small" style="text-align:center;margin:0">© 2026 Retrozap · Beyond the Work Ideas · CNPJ 69.746.447/0001-00</p>
@@ -1671,18 +1682,18 @@ function home(){
         <li>${state.modo === 'casal' ? 'Abra a conversa e toque no <b>nome da pessoa</b> lá em cima.' : 'Abra o grupo e toque no <b>nome do grupo</b> lá em cima.'}</li>
         <li>Role até o fim e toque em <b>Exportar conversa</b>.</li>
         <li>Escolha <b>Sem mídia</b>.</li>
-        <li>Toque em <b>Salvar em Arquivos</b> e depois volte aqui.</li></ol>`
+        <li><b>Salve no celular:</b> na tela de compartilhar, role e toque em <b>Salvar em Arquivos</b> → <b>Downloads</b> → <b>Salvar</b>. Não mande para ninguém.</li></ol>`
       : `<ol class="how">
         <li>Abra ${state.modo === 'casal' ? 'a conversa' : 'o grupo'} e toque nos <b>três pontinhos ⋮</b>.</li>
         <li>Toque em <b>Mais</b> e depois em <b>Exportar conversa</b>.</li>
         <li>Escolha <b>Sem mídia</b>.</li>
-        <li>Salve em <b>Downloads</b> (ou no Drive) e depois volte aqui.</li></ol>`}
+        <li><b>Salve no celular:</b> na tela de compartilhar, toque em <b>Arquivos</b> (ou <b>Meus arquivos</b>) e salve em <b>Downloads</b>. Se não aparecer, toque em <b>Drive</b> → <b>Salvar</b>. Não mande para ninguém.</li></ol>`}
       <p class="pb-veja">Veja como é:</p>
       ${tutorialHTML()}
-      <details class="pb-video"><summary>▶️ Prefere vídeo? Assista em 45 segundos</summary>
-        <video controls playsinline preload="none" poster="${VIDEO_EXPORTAR}.jpg" src="${VIDEO_EXPORTAR}.mp4" aria-label="Vídeo: como exportar a conversa do WhatsApp no iPhone e no Android"></video>
+      <div class="pb-video"><p class="pb-vt">▶️ Ou assista: 45 segundos, iPhone e Android</p>
+        <video controls playsinline muted preload="none" poster="${VIDEO_EXPORTAR}.jpg" src="${VIDEO_EXPORTAR}.mp4" aria-label="Vídeo: como exportar a conversa do WhatsApp no iPhone e no Android" id="vidExp"></video>
         <p class="small">Vídeo sem som. <a href="/como-exportar">Abrir a página do vídeo</a></p>
-      </details>
+      </div>
       <a class="btn btn-wa" id="abreWa" href="${linkAbreWhats()}" style="text-decoration:none"><i class="ic-wa" aria-hidden="true"></i>Abrir o WhatsApp</a>
     </section>
     <section class="pbloco" aria-labelledby="pb2">
@@ -1693,6 +1704,18 @@ function home(){
         <span class="small" id="fname">${state.arquivo ? esc(state.arquivo.name) : 'Aceita o .zip ou o .txt do WhatsApp'}</span>
         <input type="file" id="file" accept=".zip,.txt,application/zip,application/x-zip-compressed,text/plain">
       </label>
+      <p class="pb-dica">${state.how === 'iphone' ? '👉 Na tela que abrir, toque em <b>Recentes</b> (embaixo). O arquivo é o primeiro da lista: "WhatsApp Chat - ….zip".' : '👉 Na tela que abrir, toque em <b>Recentes</b> ou em <b>Downloads</b> (no menu ☰). Se salvou no Drive, toque em <b>Drive</b>. O arquivo se chama "Conversa do WhatsApp com ….txt" ou ".zip".'}</p>
+      <details class="naoachei" id="naoAchei"><summary>😵 Não achei o arquivo</summary>
+        ${state.how === 'iphone' ? `<ol class="how">
+          <li>Abra o app <b>Arquivos</b> do iPhone e toque em <b>Recentes</b>, ou procure por "WhatsApp Chat".</li>
+          <li>Não está lá? Exporte de novo e, na tela de compartilhar, role até o fim e escolha <b>Salvar em Arquivos</b> (não mande para ninguém).</li>
+          <li>Volte aqui, toque na caixa acima e escolha <b>Recentes</b>.</li></ol>`
+        : `<ol class="how">
+          <li>Abra o app <b>Arquivos</b> (ou <b>Meus arquivos</b>, no Samsung) e veja <b>Downloads</b> ou <b>Recentes</b>. Procure "Conversa do WhatsApp".</li>
+          <li>Não está lá? Exporte de novo e escolha <b>Drive</b> → <b>Salvar</b>. Aqui, toque na caixa acima e escolha <b>Drive</b> no menu ☰.</li>
+          <li>Abriu a câmera ou só fotos? Atualize a página: agora a caixa abre direto nos arquivos.</li></ol>`}
+        <p class="small" style="margin:0">Arquivo com poucas mensagens? O WhatsApp só exporta o que está guardado no celular. Se você trocou de aparelho ou entrou há pouco, peça para outra pessoa da conversa exportar.</p>
+      </details>
       <button class="btn btn-main" id="start"${state.arquivo ? '' : ' disabled'}>${state.modo === 'casal' ? '💕 Fazer a retrospectiva do casal' : '🏆 Fazer a retrospectiva'}</button>
     </section>
     <p class="err" role="alert" id="err" hidden></p>
@@ -1703,8 +1726,12 @@ function home(){
   // tocou em "Abrir o WhatsApp": quando voltar para o site, a tela já pede o arquivo
   $('#abreWa').addEventListener('click', () => { state.esperandoWhats = true; try { if (typeof evento === 'function') evento('abriu_whatsapp'); } catch {} });
   state.voltou = false;
+  const ev = n => { try { if (typeof evento === 'function') evento(n); } catch {} };
+  view.querySelector('.drop')?.addEventListener('click', () => ev('abriu_seletor'));
+  $('#naoAchei')?.addEventListener('toggle', e => { if (e.target.open) ev('nao_achei_arquivo'); });
+  $('#vidExp')?.addEventListener('play', () => ev('video_exportar'), {once: true});
   $('#file').onchange = e => {
-    const f = e.target.files[0]; if (!f) return;
+    const f = e.target.files[0]; if (!f) return; ev('escolheu_arquivo');
     state.arquivo = f; state.bytes = null; $('#err').hidden = true;
     const lb = view.querySelector('.drop'); lb.classList.add('ok'); lb.querySelector('.big').textContent = '✅'; $('#dropT').textContent = 'Arquivo escolhido'; $('#fname').textContent = f.name;
     try { if (typeof evento === 'function') evento('arquivo_escolhido'); } catch {}
@@ -1812,7 +1839,12 @@ async function run(text, sample, retomando){
   if (performance.now() - t0 < 900) await sleep(900 - (performance.now() - t0));
   if (msgs.length < 20 || new Set(msgs.map(m=>m.a)).size < 2){
     home(); const err = $('#err'); err.hidden = false;
-    err.textContent = 'Esse arquivo não parece um export de grupo. Confira o passo a passo e tente de novo.'; return;
+    const dc = t => t.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric'});
+    err.textContent = msgs.length
+      ? `Esse arquivo só tem ${msgs.length} ${msgs.length === 1 ? 'mensagem' : 'mensagens'} (de ${dc(msgs[0].t)} a ${dc(msgs[msgs.length - 1].t)}). O WhatsApp só exporta o que está guardado neste celular: se você trocou de aparelho sem backup ou entrou na conversa há pouco tempo, o histórico antigo não vem. Tente exportar do celular de outra pessoa da conversa.`
+      : 'Esse arquivo não parece um export de conversa do WhatsApp. Confira o passo a passo e tente de novo.';
+    try { evento('arquivo_curto', {n: msgs.length}); } catch {}
+    return;
   }
   if (sample) state.grupo = state.modo === 'casal' ? 'Nosso Cantinho 💕' : 'Turma do Churras'; else if (!state.grupo) state.grupo = nomeDaConversa(text);
   if (!retomando){ SESS.put('conversa', {text, dur: DUR, grupo: state.grupo, modo: state.modo, how: state.how, sample}); try { sessionStorage.removeItem('rz_esc'); } catch {} }
