@@ -2439,8 +2439,8 @@ function fimTela(semFesta){
       <h1 id="cmpT" style="font-size:clamp(30px,9vw,40px);margin:0">📲 Mídias ${casal ? 'de vocês' : 'do grupo'}</h1>
       <p class="small">Para compartilhar onde quiser: ${casal ? 'um com o outro' : 'no grupo'}, nos stories, no status. Tudo é feito aqui no seu celular.</p>
       ${(() => { const per = so26 ? 'só ' + ANO_MOMENTO : 'desde o início', itens = casal
-          ? [videoHTML(casal), fig(6, '🧾 Recibo do amor', per, altRecibo(d), ESP), fig(10, '📋 Boletim do casal', per, altBoletim(), ESP), fig(13, '✨ Horóscopo do casal', 'desde o início', altAstral(), ESP), fig(7, '💞 Placar do casal', per, altPlacar(d)), fig(5, '💞 Nós dois: um contra o outro', per, altCasal(d)), fig(3, '🏆 Quadro de troféus', 'desde o início', altTop10()), fig(1, '📸 Resumo do casal', 'desde o início', altResumo(d)), so26 ? fig(4, `🗓️ O nosso ${ANO_MOMENTO}`, 'só ' + ANO_MOMENTO, altNosso2026()) : '']
-          : [videoHTML(casal), fig(14, '📰 Diário da Turma', per, altDiario(), ESP), fig(15, '👻 Procura-se', 'desde o início', altProcurado(), ESP), plantaoInfo() ? fig(17, '🚨 Plantão do Zap', 'só ' + ANO_MOMENTO, altPlantao(), 'Rara: só no Top 10%') : '', hitsGrupo().length ? fig(16, '📻 Rádio Turma FM', 'desde o início', altRadio(), ESP) : '', fig(3, '🏆 Quadro de troféus', 'desde o início', altTop10()), fig(9, `💬 ${so26 ? 'O número de ' + ANO_MOMENTO : 'O número do grupo'}`, per, altNumero()), fig(1, '📸 Resumo do grupo', 'desde o início', altResumo(d)), so26 ? fig(4, `🗓️ Nosso ${ANO_MOMENTO}`, 'só ' + ANO_MOMENTO, altNosso2026()) : ''].filter(Boolean);
+          ? [videoHTML(casal), fig(6, '🧾 Recibo do amor', per, altRecibo(d), ESP), fig(10, '📋 Boletim do casal', per, altBoletim(), ESP), fig(13, '✨ Horóscopo do casal', 'desde o início', altAstral(), ESP), rankingOk() ? fig(18, '📊 Ranking dos casais', 'só ' + ANO_MOMENTO, altRanking(), 'Rara: só no Top 10%') : '', fig(7, '💞 Placar do casal', per, altPlacar(d)), fig(5, '💞 Nós dois: um contra o outro', per, altCasal(d)), fig(3, '🏆 Quadro de troféus', 'desde o início', altTop10()), fig(1, '📸 Resumo do casal', 'desde o início', altResumo(d)), so26 ? fig(4, `🗓️ O nosso ${ANO_MOMENTO}`, 'só ' + ANO_MOMENTO, altNosso2026()) : ''].filter(Boolean)
+          : [videoHTML(casal), fig(14, '📰 Diário da Turma', per, altDiario(), ESP), fig(15, '👻 Procura-se', 'desde o início', altProcurado(), ESP), plantaoInfo() ? fig(17, '🚨 Plantão do Zap', 'só ' + ANO_MOMENTO, altPlantao(), 'Rara: só no Top 10%') : '', rankingOk() ? fig(18, '📊 Ranking Brasil', 'só ' + ANO_MOMENTO, altRanking(), 'Rara: só no Top 10%') : '', hitsGrupo().length ? fig(16, '📻 Rádio Turma FM', 'desde o início', altRadio(), ESP) : '', fig(3, '🏆 Quadro de troféus', 'desde o início', altTop10()), fig(9, `💬 ${so26 ? 'O número de ' + ANO_MOMENTO : 'O número do grupo'}`, per, altNumero()), fig(1, '📸 Resumo do grupo', 'desde o início', altResumo(d)), so26 ? fig(4, `🗓️ Nosso ${ANO_MOMENTO}`, 'só ' + ANO_MOMENTO, altNosso2026()) : ''].filter(Boolean);
         return `<p class="carr-dica" aria-hidden="true">👉 Arraste para o lado: são ${itens.length} mídias</p><div class="carr-box"><button type="button" class="carr-lado esq" data-carr="-1" aria-label="Mídia anterior">‹</button><div class="carr" id="carr" role="region" aria-roledescription="carrossel" aria-label="Vídeo e imagens para compartilhar" tabindex="0">${itens.map((x, i) => `<div class="carr-i" role="group" aria-roledescription="item" aria-label="${i + 1} de ${itens.length}">${x}</div>`).join('')}</div><button type="button" class="carr-lado dir" data-carr="1" aria-label="Próxima mídia">›</button></div>
         <div class="carr-nav"><button type="button" class="carr-seta" data-carr="-1" aria-label="Anterior">‹ Anterior</button><div class="carr-dots">${itens.map((_, i) => `<button type="button" data-dot="${i}" aria-label="Ver item ${i + 1} de ${itens.length}"${i ? '' : ' aria-current="true"'}></button>`).join('')}</div><button type="button" class="carr-seta prox" data-carr="1" aria-label="Próximo">Próximo ›</button></div><p class="carr-n small" aria-hidden="true">1 de ${itens.length}</p><p class="sr-only" id="carrVivo" aria-live="polite"></p>`; })()}
     </section>
@@ -2484,7 +2484,7 @@ function fimTela(semFesta){
     <button class="btn btn-main" id="concluir" style="width:100%">Concluir 🎉</button>
   </section>`;
   // imagens desenhadas sob demanda, uma de cada vez, quando chegam perto da tela (deixa a página e os pop-ups leves)
-  [['#rimg10', () => drawBoletim()], ['#rimg13', () => drawAstral()], ['#rimg14', () => drawDiario()], ['#rimg15', () => drawProcurado()], ['#rimg16', () => drawRadio()], ['#rimg17', () => drawPlantao()], ['#rimg1', () => drawResumo(d)], ['#rimg3', () => drawTop10()], ['#rimg4', () => drawNosso2026()], ['#rimg5', () => drawCasal(d)], ['#rimg6', () => drawRecibo(d)], ['#rimg7', () => drawPlacar(d)], ['#rimg9', () => drawNumero()]].forEach(([sel, fz]) => imgSobDemanda($(sel), fz));
+  [['#rimg10', () => drawBoletim()], ['#rimg13', () => drawAstral()], ['#rimg14', () => drawDiario()], ['#rimg15', () => drawProcurado()], ['#rimg16', () => drawRadio()], ['#rimg17', () => drawPlantao()], ['#rimg18', () => drawRanking()], ['#rimg1', () => drawResumo(d)], ['#rimg3', () => drawTop10()], ['#rimg4', () => drawNosso2026()], ['#rimg5', () => drawCasal(d)], ['#rimg6', () => drawRecibo(d)], ['#rimg7', () => drawPlacar(d)], ['#rimg9', () => drawNumero()]].forEach(([sel, fz]) => imgSobDemanda($(sel), fz));
   ligaVideo(d, casal, () => fimTela(true));
   ativaAnuncios();
   // carrossel: arrastar para o lado, bolinhas e setas mostram onde está
@@ -2501,7 +2501,7 @@ function fimTela(semFesta){
     car.addEventListener('keydown', e => { if (e.key === 'ArrowRight'){ e.preventDefault(); vai(atual() + 1); } if (e.key === 'ArrowLeft'){ e.preventDefault(); vai(atual() - 1); } });
     marca();
     // as imagens do carrossel já são desenhadas, uma de cada vez, sem esperar a pessoa arrastar
-    [['#rimg6', () => drawRecibo(d)], ['#rimg10', () => drawBoletim()], ['#rimg13', () => drawAstral()], ['#rimg14', () => drawDiario()], ['#rimg15', () => drawProcurado()], ['#rimg16', () => drawRadio()], ['#rimg17', () => drawPlantao()], ['#rimg7', () => drawPlacar(d)], ['#rimg3', () => drawTop10()], ['#rimg9', () => drawNumero()], ['#rimg1', () => drawResumo(d)], ['#rimg5', () => drawCasal(d)], ['#rimg4', () => drawNosso2026()]].forEach(([s, fz]) => { const el = $(s); if (el && !el.src){ FILA_IMG.push(() => { if (el.isConnected && !el.src) el.src = fz(); }); } });
+    [['#rimg6', () => drawRecibo(d)], ['#rimg10', () => drawBoletim()], ['#rimg13', () => drawAstral()], ['#rimg14', () => drawDiario()], ['#rimg15', () => drawProcurado()], ['#rimg16', () => drawRadio()], ['#rimg17', () => drawPlantao()], ['#rimg18', () => drawRanking()], ['#rimg7', () => drawPlacar(d)], ['#rimg3', () => drawTop10()], ['#rimg9', () => drawNumero()], ['#rimg1', () => drawResumo(d)], ['#rimg5', () => drawCasal(d)], ['#rimg4', () => drawNosso2026()]].forEach(([s, fz]) => { const el = $(s); if (el && !el.src){ FILA_IMG.push(() => { if (el.isConnected && !el.src) el.src = fz(); }); } });
     rodaFilaImg(); }
   // celular: abre direto as opções (galeria, WhatsApp...); computador: abre a imagem grande com baixar e copiar
   const liga = (id, fz, nome, alt) => { if (!$('#sv' + id)) return;
@@ -2520,6 +2520,7 @@ function fimTela(semFesta){
   liga(15, () => drawProcurado(), 'retrozap-procura-se.png', casal ? '' : altProcurado());
   liga(16, () => drawRadio(), 'retrozap-radio.png', casal ? '' : altRadio());
   liga(17, () => drawPlantao(), 'retrozap-plantao.png', casal ? '' : altPlantao());
+  liga(18, () => drawRanking(), 'retrozap-ranking.png', rankingOk() ? altRanking() : '');
   liga(7, () => drawPlacar(d), 'retrozap-placar-do-casal.png', casal ? altPlacar(d) : '');
   liga(9, () => drawNumero(), 'retrozap-numero-do-grupo.png', casal ? '' : altNumero());
   const destrava = tipo => () => paywall(() => { const y = scrollY; fimTela(true); scrollTo(0, y); }, tipo);
@@ -3509,10 +3510,14 @@ function drawProcurado(){
 function hitsGrupo(){
   const D = state.data, tot = {};
   for (const p of D.people) for (const [w, n] of Object.entries(p.giria || {})) tot[w] = (tot[w] || 0) + n;
-  return Object.entries(tot).filter(x => x[1] >= 3).sort((a, b) => b[1] - a[1]).slice(0, 6)
-    .map(([w, n]) => ({w, n, quem: primeiro([...D.people].sort((a, b) => ((b.giria || {})[w] || 0) - ((a.giria || {})[w] || 0))[0].name)}));
+  // o que o grupo todo fala: em grupos de 3+ pessoas, só entra gíria dita por 2+ pessoas; a lista mostra quantas falam
+  const quem = w => D.people.filter(p => (p.giria || {})[w] > 0).sort((a, b) => b.giria[w] - a.giria[w]);
+  const minP = D.people.length >= 3 ? 2 : 1;
+  return Object.entries(tot).filter(x => x[1] >= 3 && quem(x[0]).length >= minP).sort((a, b) => quem(b[0]).length - quem(a[0]).length || b[1] - a[1]).slice(0, 6)
+    .sort((a, b) => b[1] - a[1])
+    .map(([w, n]) => { const q = quem(w); return {w, n, quem: primeiro(q[0].name), pessoas: q.length, feat: q.length > 1 ? `${primeiro(q[0].name)} e mais ${q.length - 1}` : primeiro(q[0].name)}; });
 }
-function altRadio(){ const h = hitsGrupo(); return h.length ? 'As mais tocadas do grupo: ' + h.map((x, i) => `${i + 1}º "${x.w}", ${x.quem}, ${x.n} vezes`).join('; ') + '.' : ''; }
+function altRadio(){ const h = hitsGrupo(); return h.length ? 'As mais tocadas do grupo: ' + h.map((x, i) => `${i + 1}º "${x.w}", ${x.pessoas > 1 ? x.pessoas + ' pessoas' : x.quem}, ${x.n} vezes`).join('; ') + '.' : ''; }
 function drawRadio(){
   const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
   const NOITE = '#1A0B2E', AREIA = '#FFF4E0', h = hitsGrupo(), as = assunto26();
@@ -3521,15 +3526,55 @@ function drawRadio(){
   c.font = `800 104px ${BR2}`; espaco(c, -3); wrap(c, 'As mais tocadas do grupo', 66, 260, 950, 104); espaco(c, 0);
   if (h[0]){ const y = 450; c.fillStyle = NOITE; c.beginPath(); c.roundRect(60, y, W - 120, 270, 54); c.fill();
     c.fillStyle = '#FFC23C'; c.beginPath(); c.roundRect(100, y + 40, 190, 190, 36); c.fill(); c.fillStyle = NOITE; c.textAlign = 'center'; c.font = `800 72px ${BR2}`; c.fillText('#1', 195, y + 160);
-    c.textAlign = 'left'; c.fillStyle = AREIA; caber(c, `"${h[0].w}"`, 330, y + 120, 630, 800, 84, BR2); c.font = `500 34px ${DM2}`; caber(c, `feat. ${h[0].quem} · ${fmt(h[0].n)} plays`, 330, y + 175, 630, 500, 34, DM2);
+    c.textAlign = 'left'; c.fillStyle = AREIA; caber(c, `"${h[0].w}"`, 330, y + 120, 630, 800, 84, BR2); c.font = `500 34px ${DM2}`; caber(c, `feat. ${h[0].feat} · ${fmt(h[0].n)} plays`, 330, y + 175, 630, 500, 34, DM2);
     c.fillStyle = NOITE; c.globalAlpha = 1; c.fillStyle = '#3D1A5C'; c.beginPath(); c.roundRect(330, y + 205, 620, 14, 7); c.fill(); c.fillStyle = '#FFC23C'; c.beginPath(); c.roundRect(330, y + 205, 450, 14, 7); c.fill(); }
   const ly = 770, rh = 120, n = Math.max(0, h.length - 1);
   if (n){ c.fillStyle = AREIA; c.beginPath(); c.roundRect(60, ly, W - 120, n*rh + 24, 48); c.fill();
     h.slice(1).forEach((x, i) => { const y = ly + 12 + i*rh; if (i){ c.fillStyle = '#F0D9C9'; c.fillRect(100, y, W - 200, 3); }
       c.fillStyle = NOITE; c.textAlign = 'left'; c.font = `800 54px ${BR2}`; c.fillText(String(i + 2), 104, y + 78);
-      caber(c, `"${x.w}" · ${x.quem}`, 190, y + 76, 640, 700, 40, DM2); c.textAlign = 'right'; c.font = `500 38px ${DM2}`; c.fillText(fmt(x.n), W - 104, y + 76); }); }
+      caber(c, `"${x.w}" · ${x.pessoas > 1 ? x.pessoas + ' pessoas' : x.quem}`, 190, y + 76, 640, 700, 40, DM2); c.textAlign = 'right'; c.font = `500 38px ${DM2}`; c.fillText(fmt(x.n), W - 104, y + 76); }); }
   if (as){ c.textAlign = 'center'; c.fillStyle = NOITE; caber(c, `Assunto do ano no ar: ${as.txt} · ${fmt(as.n)} mensagens`, W/2, ly + n*rh + 110, 940, 500, 36, DM2); }
   rodape3(c, 'e o hit do seu grupo? retrozap.com.br', NOITE);
+  return cv.toDataURL('image/png');
+}
+
+/* ===== Ranking Brasil (grupo e casal): minimalista, azul cobalto ===== */
+function itensRanking(){
+  const L = destaquesBrasil(); if (!L.length) return [];
+  const NOMES_RK = {risadas:'Risada', por_dia:'Mensagens por dia', madrugada:'Madrugada', palavrao:'Palavrão', furos:'Rolê cancelado', bomdia:'Bom dia', parabens:'Parabéns', fora:'Fora do expediente', textao:'Textão', audios:'Áudios', figurinhas:'Figurinhas', recorde:'Dia de caos', apagadas:'Mensagens apagadas', total:'Mensagens', amor:'Declarações de amor', coracoes:'Coraçõezinhos'};
+  const rot = x => x.k === 'dias' ? (state.modo === 'casal' ? 'Juntos há mais tempo que os outros casais' : 'Mais antigo que os outros grupos') : NOMES_RK[x.k] || x.rot;
+  return L.map(x => ({...x, pct: x.k === 'dias' ? 100 - x.top : x.top, nome: rot(x), lado: x.k === 'dias' ? `${100 - x.top}%` : `Top ${x.top}%`}))
+    .sort((a, b) => (a.k === 'dias') - (b.k === 'dias') || a.top - b.top || (state.modo === 'casal' ? ['amor','coracoes'].includes(b.k) - ['amor','coracoes'].includes(a.k) : 0))
+    .filter((x, i, arr) => !(x.k === 'total' && arr.some(y => y.k === 'por_dia' && y.top <= x.top)) && !(x.k === 'por_dia' && arr.some(y => y.k === 'total' && y.top < x.top)));
+}
+function rankingOk(){ return itensRanking().some(x => x.k !== 'dias' && x.top <= 10); }
+function altRanking(){ const L = itensRanking().slice(0, 6); return L.length ? `Ranking ${state.modo === 'casal' ? 'dos casais' : 'Brasil'} ${ANO_MOMENTO}: ` + L.map(x => `${x.nome}, ${x.lado}`).join('; ') + '.' : ''; }
+function drawRanking(){
+  const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
+  const AZUL = '#1F3BFF', CREME = '#F5F1E8', LIMA = '#D8FF3E', casal = state.modo === 'casal';
+  const L = itensRanking(), h = L[0], resto = L.slice(1, 6), comp = state.comp || {};
+  c.fillStyle = AZUL; c.fillRect(0, 0, W, H);
+  c.textAlign = 'left'; c.fillStyle = LIMA; c.font = `700 32px ${DM2}`; espaco(c, 7); c.fillText(`RANKING ${casal ? 'DOS CASAIS' : 'BRASIL'} · ${ANO_MOMENTO}`, 72, 150); espaco(c, 0);
+  c.fillStyle = CREME; caber(c, limpaTxt(state.grupo || nomePadrao()), 72, 222, 936, 600, 50, DM2);
+  if (h){
+    c.fillStyle = CREME; c.font = `800 120px ${BR2}`; espaco(c, -2); c.fillText(h.k === 'dias' ? 'MAIS QUE' : 'TOP', 66, 470); espaco(c, 0);
+    c.font = `800 400px ${BR2}`; espaco(c, -18); c.fillText(`${h.pct}%`, 52, 820); espaco(c, 0);
+    c.fillStyle = LIMA; caber(c, h.nome, 72, 920, 936, 800, 76, BR2);
+    c.fillStyle = CREME; c.globalAlpha = .75; caber(c, h.num || '', 72, 984, 936, 500, 38, DM2); c.globalAlpha = 1;
+  }
+  let y = 1090; const rh = 118;
+  resto.forEach((x, i) => {
+    c.fillStyle = CREME; c.globalAlpha = .28; c.fillRect(72, y, W - 144, 2); c.globalAlpha = 1;
+    c.textAlign = 'left'; c.fillStyle = CREME; caber(c, x.nome, 72, y + 64, 640, 700, 42, DM2);
+    c.globalAlpha = .65; caber(c, x.num || '', 72, y + 102, 640, 500, 28, DM2); c.globalAlpha = 1;
+    c.textAlign = 'right'; c.fillStyle = x.top <= 10 ? LIMA : CREME; c.font = `800 56px ${BR2}`; c.fillText(x.lado, W - 72, y + 80);
+    y += rh;
+  });
+  c.textAlign = 'left'; c.fillStyle = CREME; c.globalAlpha = .7; c.font = `500 30px ${DM2}`;
+  const base = comp.n ? `Comparado com ${fmt(comp.n)} ${casal ? 'casais' : 'grupos'} do Retrozap, só com as mensagens de ${ANO_MOMENTO}.` : `Comparado com os ${casal ? 'casais' : 'grupos'} do Retrozap, só com as mensagens de ${ANO_MOMENTO}.`;
+  wrap(c, base, 72, Math.max(y + 60, 1720), 936, 40); c.globalAlpha = 1;
+  c.fillStyle = LIMA; c.fillRect(0, H - 96, W, 96); c.fillStyle = AZUL; c.textAlign = 'center'; c.font = `700 36px ${DM2}`;
+  c.fillText(casal ? 'e vocês dois? retrozap.com.br' : 'e o seu grupo? retrozap.com.br', W/2, H - 36);
   return cv.toDataURL('image/png');
 }
 
