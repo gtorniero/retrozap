@@ -252,7 +252,7 @@ const LINKS = [['Cloudflare (Worker)', 'https://dash.cloudflare.com/?to=/:accoun
   ['Mercado Pago', 'https://www.mercadopago.com.br/activities'], ['GitHub', 'https://github.com/gtorniero/retrozap'], ['Instagram', 'https://www.instagram.com/'], ['TikTok Studio', 'https://www.tiktok.com/tiktokstudio'], ['Gmail', 'https://mail.google.com/']];
 
 // ---------- aba Negócio: investimentos (salvos no D1), payback, linha do tempo e plano ----------
-const PRECO = 6.99, PRECO_CARTAO = 8.99;
+const PRECO = 8.99, PRECO_CARTAO = 8.99;
 const NEG_PADRAO = {inicio: '2026-10-17', horasAntes: 0, valorHora: 0, taxa: 0.99, taxaCartao: 3.99, tarifaCartao: 0.39, imposto: 0, extraMes: 0, extraAcum: 0, custos: [
   {nome: 'Claude (assinatura)', valor: 500, freq: 'mensal', desde: '2026-10-01', obs: ''},
   {nome: 'Empresa (abertura e manutenção)', valor: 1000, freq: 'anual', desde: '2026-10-01', obs: 'estimativa: confirmar'},
@@ -274,7 +274,8 @@ const MARCOS = [
   ['21/10', 'Convites com link de origem e chegada personalizada; tela de Mídias com vídeo e imagens'],
   ['22/10', 'Empresa: CNPJ da Beyond the Work Ideas; termos de compra, arrependimento e registro de acessos (Marco Civil)'],
   ['23–24/10', 'Cartão, Apple Pay e Google Pay pelo Stripe (R$ 6,99), além do Pix'],
-  ['31/10', 'Novo preço: R$ 6,99 no Pix e R$ 8,99 no cartão; casal passa a ser Premium (cobrado ao ir para as categorias)']];
+  ['31/10', 'Novo preço: R$ 6,99 no Pix e R$ 8,99 no cartão; casal passa a ser Premium (cobrado ao ir para as categorias)'],
+  ['01/11', 'Preço único: R$ 8,99 no Pix ou no cartão; Pix passa para a conta PJ da Beyond the Work']];
 let NEG = null, DADOS = null;
 const num = v => Number(String(v ?? '').replace(',', '.')) || 0;
 const meses = desde => { const a = new Date(desde + 'T12:00:00'), b = new Date(); return isNaN(a) || a > b ? (isNaN(a) ? 1 : 0) : (b.getFullYear() - a.getFullYear()) * 12 + b.getMonth() - a.getMonth() + 1; };
@@ -313,11 +314,11 @@ function calcNegocio(){
     '<div class="card" style="margin-top:12px"><b>Linha do tempo</b>' + tabela([['Quando'], ['O que entrou']], MARCOS.map(([q, t]) => ['<span style="white-space:nowrap">' + q + '</span>', t])) + '</div></section>';
   // plano de negócio
   const meta = Math.max(0, Math.ceil((-Math.min(0, k.saldo) + 3 * k.custoMes) / k.liq));
-  const P = [['Resumo', 'O Retrozap transforma o export de um grupo de WhatsApp numa retrospectiva estilo Wrapped (personagens, prêmios, ranking, cards e vídeo), lida 100% no navegador. 1º grupo grátis; casais e demais grupos no Premium: R$ 6,99 no Pix ou R$ 8,99 no cartão (Apple Pay e Google Pay), pagamento único.'],
+  const P = [['Resumo', 'O Retrozap transforma o export de um grupo de WhatsApp numa retrospectiva estilo Wrapped (personagens, prêmios, ranking, cards e vídeo), lida 100% no navegador. 1º grupo grátis; casais e demais grupos no Premium: R$ 8,99 no Pix ou no cartão (Apple Pay e Google Pay), pagamento único.'],
     ['Oportunidade', 'O Brasil tem mais de 140 milhões de pessoas no WhatsApp e a vida social acontece nos grupos. Retrospectivas viralizam no fim do ano (Spotify Wrapped) e não existe uma para grupos de WhatsApp, em português e com privacidade.'],
     ['Público', 'Grupos de amigos (18–35 anos), famílias, trabalho e comunidades. Casais como segundo produto: presente e datas comemorativas.'],
     ['Diferencial', 'Nenhuma mensagem sai do celular; humor brasileiro; cards e vídeo prontos para stories. Cada grupo tem vários membros que veem o resultado, então um uso puxa outros.'],
-    ['Receita', 'Premium por pagamento único: R$ 6,99 no Pix ou R$ 8,99 no cartão (Stripe); casal cobrado depois do Ato I · AdSense para quem não é Premium · parceria Party Games (7% das vendas, desligada) · próximas: pacote Casais no Dia dos Namorados (12/06) e preço por temporada.'],
+    ['Receita', 'Premium por pagamento único: R$ 8,99 no Pix ou no cartão (Stripe); casal cobrado depois do Ato I · AdSense para quem não é Premium · parceria Party Games (7% das vendas, desligada) · próximas: pacote Casais no Dia dos Namorados (12/06) e preço por temporada.'],
     ['Aquisição', 'Cards e vídeo compartilhados levam o endereço do site · Reels e TikTok com exemplos · SEO (blog, “WhatsApp Wrapped”) · datas: dezembro/janeiro (retrospectiva), Dia dos Namorados, aniversários de grupo.'],
     ['Metas', 'Empatar: ' + fmt(k.equilibrio) + ' vendas/mês. Temporada dez–jan: ' + fmt(meta) + ' vendas pagam todo o investimento e 3 meses de custo fixo. Acompanhar: grupos/dia, Pix gerado → pago, vendas por grupo.'],
     ['Riscos', 'WhatsApp mudar o formato do export · venda concentrada no fim do ano · pagamento único (pouca recorrência) · cópia da ideia · custo fixo alto para a receita atual (a assinatura do Claude é o maior custo: dá para baixar o plano fora da temporada).'],

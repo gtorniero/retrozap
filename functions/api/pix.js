@@ -1,9 +1,9 @@
-// Cobrança do Retrozap: R$ 6,99 por Pix (Mercado Pago, API de Orders) libera grupos ilimitados naquele navegador.
+// Cobrança do Retrozap: R$ 8,99 por Pix (Mercado Pago, API de Orders) libera grupos ilimitados naquele navegador.
 // Nenhuma mensagem passa por aqui: só e-mail do pagador, identificador da compra e o código de acesso.
 // Segredo MP_TOKEN (Access Token) fica em Cloudflare > Worker > Settings > Variables and Secrets.
 // Variável COBRANCA (wrangler.jsonc): "teste" = só aparece com ?teste_cobranca=1 e aprova sozinho (APRO); "ligada" = vale para todos.
 // Ver compras: Cloudflare > D1 > retrozap > Console:  SELECT * FROM compras ORDER BY criado DESC;
-const PRECO = '6.99';
+const PRECO = '8.99';
 const MP_PADRAO = 'https://api.mercadopago.com/v1/orders';
 const json = (obj, status = 200) => new Response(JSON.stringify(obj), {status, headers: {'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store'}});
 const modo = env => (env.COBRANCA === 'ligada' ? 'ligada' : env.COBRANCA === 'desligada' ? 'desligada' : 'teste');
@@ -69,7 +69,7 @@ async function enviaCodigo(env, email, codigo){
 
 // GET /api/cobranca: o site pergunta se a cobrança está valendo
 export async function config({env}){
-  return json({modo: modo(env), pronto: !!(env.MP_TOKEN && env.DB), preco: '6,99', cartao: !!(stripeKey(env) && env.DB), cartaoTeste: stripeTeste(env), precoCartao: precoCartao(env).replace('.', ',')});
+  return json({modo: modo(env), pronto: !!(env.MP_TOKEN && env.DB), preco: '8,99', cartao: !!(stripeKey(env) && env.DB), cartaoTeste: stripeTeste(env), precoCartao: precoCartao(env).replace('.', ',')});
 }
 
 // POST /api/pix {email}: cria o Pix e devolve o QR
@@ -100,7 +100,7 @@ export async function criar({request, env}){
   else {
     erros.push('orders: ' + motivo(r.status, o));
     // 2) API clássica de pagamentos
-    const classico = {transaction_amount: 6.99, description: corpo.description, payment_method_id: 'pix', external_reference: ref, payer,
+    const classico = {transaction_amount: 8.99, description: corpo.description, payment_method_id: 'pix', external_reference: ref, payer,
       date_of_expiration: new Date(Date.now() + 30*60e3).toISOString().replace('Z', '-00:00')};
     r = await fetch(env.MP_PAY_API || MP_PAY, {method: 'POST', headers: {...cab, 'X-Idempotency-Key': ref + '-p'}, body: JSON.stringify(classico)});
     o = await r.json().catch(() => null);
