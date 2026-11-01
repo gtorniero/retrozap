@@ -409,6 +409,7 @@ html.casal .pb-num{color:#fff}
 .video-fim canvas{display:block;width:100%;height:auto;border-radius:18px;background:var(--acai)}
 .rodape{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:center;font-size:16px;color:var(--neblina);padding-top:28px;border-top:1px solid var(--linha);margin-top:16px;width:100%}
 .rodape a{color:var(--areia);text-underline-offset:3px}
+.rodape .lk-ck{background:none;border:0;padding:0;font:inherit;color:var(--areia);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .rodape a.seguro{font-weight:700;color:var(--manga);flex-basis:100%;text-align:center;font-size:17px}
 .livre-f{display:flex;gap:8px;flex-wrap:wrap}
 .livre-f input{flex:1 1 160px;min-width:0;font:inherit;font-size:17px;padding:12px 14px;border-radius:14px;border:1px solid var(--linha);background:var(--acai-2);color:var(--areia)}
@@ -1632,7 +1633,7 @@ function inicio(){
     <div class="badge priv-l"><span class="ok-ic" aria-hidden="true">✓</span><span><b>Nada sai do seu celular. Sem cadastro.</b> Tudo é analisado aqui no navegador: a gente não recebe, não lê e não guarda nenhuma mensagem. <a href="/privacidade">Entenda</a></span></div>
     <button class="btn btn-main" id="comecar">${cs ? 'Começar a retrospectiva do casal →' : 'Vamos começar →'}</button>
     ${anuncio('inicio')}
-    <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a></nav>
+    <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a><button type="button" class="lk-ck" data-ckpref>Preferências de cookies</button></nav>
     <p class="small" style="text-align:center;margin:0">© 2026 Retrozap · Beyond the Work Ideas · CNPJ 69.746.447/0001-00</p>
   </section>`;
   $('#comecar').onclick = () => home(); ativaAnuncios();

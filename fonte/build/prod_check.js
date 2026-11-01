@@ -64,11 +64,8 @@ function avisoCookies(forcar = false){
 }
 
 // Permite mudar/revogar a escolha sem apagar todo o site ou o código Premium.
-window.addEventListener('DOMContentLoaded', () => {
-  const b = document.createElement('button'); b.type = 'button'; b.className = 'btn btn-ghost mini';
-  b.textContent = 'Preferências de cookies'; b.onclick = () => avisoCookies(true);
-  document.body.appendChild(b);
-});
+// Fica como link discreto no rodapé do início (data-ckpref), não solto em todas as telas.
+document.addEventListener('click', e => { if (e.target.closest && e.target.closest('[data-ckpref]')) avisoCookies(true); });
 
 /* ---------- utilidades ---------- */
 const $ = s => document.querySelector(s);
@@ -1012,7 +1009,7 @@ function inicio(){
     <div class="badge priv-l"><span class="ok-ic" aria-hidden="true">✓</span><span><b>Nada sai do seu celular. Sem cadastro.</b> Tudo é analisado aqui no navegador: a gente não recebe, não lê e não guarda nenhuma mensagem. <a href="/privacidade">Entenda</a></span></div>
     <button class="btn btn-main" id="comecar">${cs ? 'Começar a retrospectiva do casal →' : 'Vamos começar →'}</button>
     ${anuncio('inicio')}
-    <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a></nav>
+    <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a><button type="button" class="lk-ck" data-ckpref>Preferências de cookies</button></nav>
     <p class="small" style="text-align:center;margin:0">© 2026 Retrozap · Beyond the Work Ideas · CNPJ 69.746.447/0001-00</p>
   </section>`;
   $('#comecar').onclick = () => home(); ativaAnuncios();
@@ -1069,7 +1066,7 @@ function home(){
     <p class="err" role="alert" id="err" hidden></p>
     <div class="btn-row"><button class="btn btn-ghost" id="demo">${state.modo === 'casal' ? '👀 Ver com um casal de exemplo' : '👀 Ver com um grupo de exemplo'}</button></div>
     <p class="small">O grupo de exemplo é inventado, para você ver como funciona antes de usar o seu.</p>
-    <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a></nav>
+    <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a><button type="button" class="lk-ck" data-ckpref>Preferências de cookies</button></nav>
     <p class="small" style="text-align:center;margin:0">© 2026 Retrozap · Beyond the Work Ideas · CNPJ 69.746.447/0001-00</p>
   </section>`;
   view.querySelectorAll('[data-h]').forEach(b => b.onclick = () => { const y = scrollY, k = b.dataset.h; state.how = k; home(); scrollTo(0, y); view.querySelector(`[data-h="${k}"]`)?.focus({preventScroll:true}); });

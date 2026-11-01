@@ -90,6 +90,7 @@ s = s.rstrip() + '\n</body>\n</html>\n'
 rep("*{box-sizing:border-box}", "*{box-sizing:border-box}\nhtml{-webkit-text-size-adjust:100%}\nbody{margin:0}\nimg{max-width:100%}\n[hidden]{display:none!important}")
 rep("@media (prefers-reduced-motion:reduce)", """.cookies{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--acai);border-top:1px solid var(--linha);padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));font-size:14px;color:var(--neblina);display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
 .cookies a,.rodape a{color:var(--areia)}
+.rodape .lk-ck{background:none;border:0;padding:0;font:inherit;color:var(--areia);text-decoration:underline;cursor:pointer}
 body.has-cookies{padding-bottom:calc(170px + env(safe-area-inset-bottom,0px))}
 .rodape{display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:center;font-size:13px;color:var(--neblina);padding-top:24px;border-top:1px solid var(--linha);margin-top:12px}
 @media (prefers-reduced-motion:reduce)""")
@@ -138,7 +139,7 @@ rep("async function openCard(fazer, texto = convite('resumo'), alt = 'Card para 
 
 # rodapé e textos de protótipo
 rep('    <p class="small">Protótipo do Retrozap. Nos testes, o grupo de exemplo é inventado.</p>',
-    '    <p class="small">O grupo de exemplo é inventado, para você ver como funciona antes de usar o seu.</p>\n    <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a></nav>\n    <p class="small" style="text-align:center;margin:0">© 2026 Retrozap · Beyond the Work Ideas · CNPJ 69.746.447/0001-00</p>')
+    '    <p class="small">O grupo de exemplo é inventado, para você ver como funciona antes de usar o seu.</p>\n    <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a><button type="button" class="lk-ck" data-ckpref>Preferências de cookies</button></nav>\n    <p class="small" style="text-align:center;margin:0">© 2026 Retrozap · Beyond the Work Ideas · CNPJ 69.746.447/0001-00</p>')
 rep("$('#voltar').onclick = () => voltar();\nsetModo('amigos'); inicio();", "$('#voltar').onclick = () => voltar();\nsetModo('amigos');\nif (location.pathname !== '/') history.replaceState({}, '', '/');\ninicio(); avisoCookies();")
 rep("<p>No site final, este botão abre o WhatsApp direto com a imagem. Aqui no protótipo, toque e segure a imagem para salvar.</p>", "") if "No site final, este botão" in s else None
 

@@ -63,8 +63,5 @@ function avisoCookies(forcar = false){
 }
 
 // Permite mudar/revogar a escolha sem apagar todo o site ou o código Premium.
-window.addEventListener('DOMContentLoaded', () => {
-  const b = document.createElement('button'); b.type = 'button'; b.className = 'btn btn-ghost mini';
-  b.textContent = 'Preferências de cookies'; b.onclick = () => avisoCookies(true);
-  document.body.appendChild(b);
-});
+// Fica como link discreto no rodapé do início (data-ckpref), não solto em todas as telas.
+document.addEventListener('click', e => { if (e.target.closest && e.target.closest('[data-ckpref]')) avisoCookies(true); });

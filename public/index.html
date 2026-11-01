@@ -527,6 +527,7 @@ html.casal .pb-num{color:#fff}
 .video-fim canvas{display:block;width:100%;height:auto;border-radius:18px;background:var(--acai)}
 .rodape{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:center;font-size:16px;color:var(--neblina);padding-top:28px;border-top:1px solid var(--linha);margin-top:16px;width:100%}
 .rodape a{color:var(--areia);text-underline-offset:3px}
+.rodape .lk-ck{background:none;border:0;padding:0;font:inherit;color:var(--areia);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .rodape a.seguro{font-weight:700;color:var(--manga);flex-basis:100%;text-align:center;font-size:17px}
 .livre-f{display:flex;gap:8px;flex-wrap:wrap}
 .livre-f input{flex:1 1 160px;min-width:0;font:inherit;font-size:17px;padding:12px 14px;border-radius:14px;border:1px solid var(--linha);background:var(--acai-2);color:var(--areia)}
@@ -608,6 +609,7 @@ button.pw-cod{border:2px dashed var(--manga);cursor:pointer;width:100%}
 .patro-img img{width:100%;border-radius:16px;display:block}
 .cookies{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--acai);border-top:1px solid var(--linha);padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));font-size:14px;color:var(--neblina);display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
 .cookies a,.rodape a{color:var(--areia)}
+.rodape .lk-ck{background:none;border:0;padding:0;font:inherit;color:var(--areia);text-decoration:underline;cursor:pointer}
 body.has-cookies{padding-bottom:calc(170px + env(safe-area-inset-bottom,0px))}
 .rodape{display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:center;font-size:13px;color:var(--neblina);padding-top:24px;border-top:1px solid var(--linha);margin-top:12px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -820,7 +822,7 @@ html.casal .opts .opt.longo{font-size:clamp(16px,4.6vw,22px)}
     <div class="badge priv-l"><span class="ok-ic" aria-hidden="true">✓</span><span><b>Nada sai do seu celular. Sem cadastro.</b> Tudo é analisado aqui no navegador: a gente não recebe, não lê e não guarda nenhuma mensagem. <a href="/privacidade">Entenda</a></span></div>
     <button class="btn btn-main" id="comecar">Vamos começar →</button>
     
-    <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a></nav>
+    <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a><button type="button" class="lk-ck" data-ckpref>Preferências de cookies</button></nav>
     <p class="small" style="text-align:center;margin:0">© 2026 Retrozap · Beyond the Work Ideas · CNPJ 69.746.447/0001-00</p>
   </section></main>
 </div>
@@ -895,11 +897,8 @@ function avisoCookies(forcar = false){
 }
 
 // Permite mudar/revogar a escolha sem apagar todo o site ou o código Premium.
-window.addEventListener('DOMContentLoaded', () => {
-  const b = document.createElement('button'); b.type = 'button'; b.className = 'btn btn-ghost mini';
-  b.textContent = 'Preferências de cookies'; b.onclick = () => avisoCookies(true);
-  document.body.appendChild(b);
-});
+// Fica como link discreto no rodapé do início (data-ckpref), não solto em todas as telas.
+document.addEventListener('click', e => { if (e.target.closest && e.target.closest('[data-ckpref]')) avisoCookies(true); });
 
 /* ---------- utilidades ---------- */
 const $ = s => document.querySelector(s);
@@ -1843,7 +1842,7 @@ function inicio(){
     <div class="badge priv-l"><span class="ok-ic" aria-hidden="true">✓</span><span><b>Nada sai do seu celular. Sem cadastro.</b> Tudo é analisado aqui no navegador: a gente não recebe, não lê e não guarda nenhuma mensagem. <a href="/privacidade">Entenda</a></span></div>
     <button class="btn btn-main" id="comecar">${cs ? 'Começar a retrospectiva do casal →' : 'Vamos começar →'}</button>
     ${anuncio('inicio')}
-    <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a></nav>
+    <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a><button type="button" class="lk-ck" data-ckpref>Preferências de cookies</button></nav>
     <p class="small" style="text-align:center;margin:0">© 2026 Retrozap · Beyond the Work Ideas · CNPJ 69.746.447/0001-00</p>
   </section>`;
   $('#comecar').onclick = () => home(); ativaAnuncios();
@@ -1900,7 +1899,7 @@ function home(){
     <p class="err" role="alert" id="err" hidden></p>
     <div class="btn-row"><button class="btn btn-ghost" id="demo">${state.modo === 'casal' ? '👀 Ver com um casal de exemplo' : '👀 Ver com um grupo de exemplo'}</button></div>
     <p class="small">O grupo de exemplo é inventado, para você ver como funciona antes de usar o seu.</p>
-    <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a></nav>
+    <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a><button type="button" class="lk-ck" data-ckpref>Preferências de cookies</button></nav>
     <p class="small" style="text-align:center;margin:0">© 2026 Retrozap · Beyond the Work Ideas · CNPJ 69.746.447/0001-00</p>
   </section>`;
   view.querySelectorAll('[data-h]').forEach(b => b.onclick = () => { const y = scrollY, k = b.dataset.h; state.how = k; home(); scrollTo(0, y); view.querySelector(`[data-h="${k}"]`)?.focus({preventScroll:true}); });
