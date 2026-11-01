@@ -2661,8 +2661,8 @@ function fimTela(semFesta){
       <h1 id="cmpT" style="font-size:clamp(30px,9vw,40px);margin:0">📲 Mídias ${casal ? 'de vocês' : 'do grupo'}</h1>
       <p class="small">Para compartilhar onde quiser: ${casal ? 'um com o outro' : 'no grupo'}, nos stories, no status. Tudo é feito aqui no seu celular.</p>
       ${(() => { const per = so26 ? 'só ' + ANO_MOMENTO : 'desde o início', itens = casal
-          ? [videoHTML(casal), fig(6, '🧾 Recibo do amor', per, altRecibo(d), ESP), fig(10, '📋 Boletim do casal', per, altBoletim(), ESP), fig(13, '✨ Horóscopo do casal', 'desde o início', altAstral(), ESP), fig(7, '💞 Placar do casal', per, altPlacar(d)), fig(5, '💞 Nós dois: um contra o outro', per, altCasal(d)), fig(3, '🏆 Quadro de troféus', 'desde o início', altTop10()), fig(1, '📸 Resumo do casal', 'desde o início', altResumo(d)), so26 ? fig(4, `🗓️ O nosso ${ANO_MOMENTO}`, 'só ' + ANO_MOMENTO, altNosso2026()) : '', rankingOk() ? fig(18, 'Top Brasil dos casais', 'só ' + ANO_MOMENTO, altRanking(), 'TOP BRASIL') : ''].filter(Boolean)
-          : [videoHTML(casal), fig(14, '📰 Diário da Turma', per, altDiario(), ESP), fig(15, '👻 Procura-se', 'desde o início', altProcurado(), ESP), plantaoInfo() ? fig(17, '🚨 Plantão do Zap', 'só ' + ANO_MOMENTO, altPlantao(), 'Rara: só no Top 10%') : '', hitsGrupo().length ? fig(16, '📻 Rádio Turma FM', 'desde o início', altRadio(), ESP) : '', fig(3, '🏆 Quadro de troféus', 'desde o início', altTop10()), fig(9, `💬 ${so26 ? 'O número de ' + ANO_MOMENTO : 'O número do grupo'}`, per, altNumero()), fig(1, '📸 Resumo do grupo', 'desde o início', altResumo(d)), so26 ? fig(4, `🗓️ Nosso ${ANO_MOMENTO}`, 'só ' + ANO_MOMENTO, altNosso2026()) : '', rankingOk() ? fig(18, 'Top Brasil', 'só ' + ANO_MOMENTO, altRanking(), 'TOP BRASIL') : ''].filter(Boolean);
+          ? [videoHTML(casal), fig(6, '🧾 Recibo do amor', 'desde o início', altRecibo(d), ESP), fig(10, '📋 Boletim do casal', 'desde o início', altBoletim(), ESP), fig(13, '✨ Horóscopo do casal', 'desde o início', altAstral(), ESP), fig(7, '💞 Placar do casal', 'desde o início', altPlacar(d)), fig(5, '💞 Nós dois: um contra o outro', per, altCasal(d)), fig(3, '🏆 Quadro de troféus', 'desde o início', altTop10()), fig(1, '📸 Resumo do casal', 'desde o início', altResumo(d)), so26 ? fig(4, `🗓️ O nosso ${ANO_MOMENTO}`, 'só ' + ANO_MOMENTO, altNosso2026()) : '', rankingOk() ? fig(18, 'Top Brasil dos casais', 'só ' + ANO_MOMENTO, altRanking(), 'TOP BRASIL') : ''].filter(Boolean)
+          : [videoHTML(casal), fig(14, '📰 Diário da Turma', 'desde o início', altDiario(), ESP), fig(15, '👻 Procura-se', 'desde o início', altProcurado(), ESP), plantaoInfo() ? fig(17, '🚨 Plantão do Zap', 'só ' + ANO_MOMENTO, altPlantao(), 'Rara: só no Top 10%') : '', hitsGrupo().length ? fig(16, '📻 Rádio Turma FM', 'desde o início', altRadio(), ESP) : '', fig(3, '🏆 Quadro de troféus', 'desde o início', altTop10()), fig(9, `💬 ${so26 ? 'O número de ' + ANO_MOMENTO : 'O número do grupo'}`, per, altNumero()), fig(1, '📸 Resumo do grupo', 'desde o início', altResumo(d)), so26 ? fig(4, `🗓️ Nosso ${ANO_MOMENTO}`, 'só ' + ANO_MOMENTO, altNosso2026()) : '', rankingOk() ? fig(18, 'Top Brasil', 'só ' + ANO_MOMENTO, altRanking(), 'TOP BRASIL') : ''].filter(Boolean);
         return `<p class="carr-dica" aria-hidden="true">👉 Arraste para o lado: são ${itens.length} mídias</p><div class="carr-box"><button type="button" class="carr-lado esq" data-carr="-1" aria-label="Mídia anterior">‹</button><div class="carr" id="carr" role="region" aria-roledescription="carrossel" aria-label="Vídeo e imagens para compartilhar" tabindex="0">${itens.map((x, i) => `<div class="carr-i" role="group" aria-roledescription="item" aria-label="${i + 1} de ${itens.length}">${x}</div>`).join('')}</div><button type="button" class="carr-lado dir" data-carr="1" aria-label="Próxima mídia">›</button></div>
         <div class="carr-nav"><button type="button" class="carr-seta" data-carr="-1" aria-label="Anterior">‹ Anterior</button><div class="carr-dots">${itens.map((_, i) => `<button type="button" data-dot="${i}" aria-label="Ver item ${i + 1} de ${itens.length}"${i ? '' : ' aria-current="true"'}></button>`).join('')}</div><button type="button" class="carr-seta prox" data-carr="1" aria-label="Próximo">Próximo ›</button></div><p class="carr-n small" aria-hidden="true">1 de ${itens.length}</p><p class="sr-only" id="carrVivo" aria-live="polite"></p>`; })()}
     </section>
@@ -3017,7 +3017,7 @@ function drawTop10(){
   c.fillStyle = K.fundo; c.fillRect(0, 0, W, H);
   c.textAlign = 'left'; marcaC(c, 70 + 128, 150, 44, casal ? K.txt : K.dest);
   c.fillStyle = K.txt; c.font = `800 120px ${BR2}`; espaco(c, -4); c.fillText('Quadro de', 70, 330); c.fillText('troféus', 70, 448); espaco(c, 0);
-  c.fillStyle = K.dest; caber(c, `${limpaTxt(state.grupo || nomePadrao())} · ${state.compD ? ANO_MOMENTO : 'desde o início'}`, 70, 520, 940, 700, 40, DM2);
+  c.fillStyle = K.dest; caber(c, `${limpaTxt(state.grupo || nomePadrao())} · desde o início`, 70, 520, 940, 700, 40, DM2);
   const ps = principais(), cols = 2, gap = 28, cw = (W - 140 - gap)/cols, rows = Math.ceil(ps.length/cols);
   const ch = Math.min(250, (1700 - 590 - gap*(rows - 1))/Math.max(rows, 1)), y0 = 590;
   ps.forEach((a, i) => {
@@ -3430,7 +3430,7 @@ function drawNosso2026(){
   }
   if (ds.length){
     const bw = (W - 100 - (ds.length - 1)*16)/ds.length;
-    c.textAlign = 'center'; c.fillStyle = K.sub; c.font = `700 28px ${DM}`; c.fillText(`TOP ${ds.length} DESTAQUES DE ${ANO_MOMENTO}`, W/2, 1610);
+    c.textAlign = 'center'; c.fillStyle = K.sub; c.font = `700 28px ${DM}`; c.fillText(ds.length > 1 ? `TOP ${ds.length} DESTAQUES DE ${ANO_MOMENTO}` : `DESTAQUE DE ${ANO_MOMENTO}`, W/2, 1610);
     ds.forEach((x, i) => {
       const bx = 50 + i*(bw + 16), cx = bx + bw/2;
       c.fillStyle = K.brilho(.14); c.beginPath(); c.roundRect(bx, 1630, bw, 196, 26); c.fill();
@@ -3677,6 +3677,9 @@ function dadosGrupo(){
   return {D, src, ps, tag: ps[0], tot: Math.max(1, src.total), kkk: aw('Rei(nha) do Kkkk'), boca: aw('Boca-Suja'), pod: aw('Podcaster do Grupo') || aw('Inimigo do Texto'), fp, fp26, rec: src.recorde || D.recorde, top: state.comp?.top || {}};
 }
 
+// cards que dão nome a quem ganhou alguma coisa seguem a mesma base dos troféus (a conversa toda),
+// para não contradizer a cerimônia; os cards de números de 2026 (Nosso 2026, Número, Top Brasil) continuam só com 2026
+function hist(fn){ return (...a) => { const k = state.compD; state.compD = null; try { return fn(...a); } finally { state.compD = k; } }; }
 /* ===== grupo 1: Diário da Turma ===== */
 function altDiario(){ const g = dadosGrupo(); return `Diário da Turma: ${g.tag.name} manda ${fmt(g.tag.count)} mensagens e grupo pede socorro.`; }
 function drawDiario(){
@@ -3698,7 +3701,7 @@ function drawDiario(){
   if (g.kkk) secs.push(['ESPORTES', `${primeiro(g.kkk.winner.name)} leva o Kkkk: ${vunid(g.kkk, g.kkk.winner.v)}.`]);
   else if (g.boca) secs.push(['ESPORTES', `${primeiro(g.boca.winner.name)} é o Boca-Suja do ano.`]);
   if (g.fp) secs.push(['POLÍCIA', `${primeiro(g.fp.name)} quase não aparece: ${fmt((state.compD ? g.fp26?.count : g.fp.count) || 0)} mensagens ${state.compD ? 'em ' + ANO_MOMENTO : 'no total'}.`]);
-  secs.push(['ECONOMIA', `O grupo mandou ${fmt(g.src.total)} mensagens${g.top.total != null && g.top.total <= 50 ? ` e está no top ${g.top.total}% do Brasil` : ''}.`]);
+  secs.push(['ECONOMIA', `O grupo mandou ${fmt(g.src.total)} mensagens ${state.compD ? 'em ' + ANO_MOMENTO : 'desde o início'}${g.top.total != null && g.top.total <= 50 ? `. Em ${ANO_MOMENTO}, top ${g.top.total}% do Brasil` : ''}.`]);
   if (g.rec) secs.push(['CLIMA', `${dataBR(g.rec[0])} teve tempestade: ${fmt(g.rec[1])} mensagens num só dia.`]);
   const cw = (W - 108 - 40)/2;
   secs.slice(0, 4).forEach(([t, txt], i) => { const x = 54 + (i % 2)*(cw + 40), yy = y + Math.floor(i/2)*250;
@@ -3844,7 +3847,7 @@ function drawPlantao(){
   c.font = `800 ${f}px ${BR2}`; while (linhasDe(c, HL, 960) > 5 && f > 56){ f -= 4; c.font = `800 ${f}px ${BR2}`; }
   let y = 450; y += wrap(c, HL, 60, y, 960, f*1.02)*f*1.02 + 20;
   c.font = `500 40px ${DM2}`; c.globalAlpha = .9;
-  y += wrap(c, `Especialistas apontam ${primeiro(g.tag.name)} como principal responsável: foram ${fmt(g.tag.count)} mensagens, ${Math.round(g.tag.count/g.tot*100)}% do total.`, 60, y, 960, 56)*56 + 40; c.globalAlpha = 1;
+  const gh = hist(dadosGrupo)(); y += wrap(c, `Especialistas apontam ${primeiro(gh.tag.name)} como principal responsável: desde o início, foram ${fmt(gh.tag.count)} mensagens, ${Math.round(gh.tag.count/gh.tot*100)}% do total.`, 60, y, 960, 56)*56 + 40; c.globalAlpha = 1;
   const n1 = (typeof nums26 === 'function' && state.compD) ? nums26(1)[0] : null, bw = (W - 120 - 24)/2;
   const box = (x, big, sub) => { c.fillStyle = '#3D1A5C'; c.beginPath(); c.roundRect(x, y, bw, 200, 36); c.fill(); c.textAlign = 'left'; c.fillStyle = '#FFC23C'; caber(c, big, x + 36, y + 100, bw - 72, 800, 72, BR2); c.fillStyle = AREIA; c.font = `500 32px ${DM2}`; caber(c, sub, x + 36, y + 160, bw - 72, 500, 32, DM2); };
   const vs0 = n1 && n1.vs ? n1.vs.split(' ')[0] : ''; box(60, /^[+−-]/.test(vs0) ? vs0 : fmt(g.src.total), /^[+−-]/.test(vs0) ? 'mensagens vs ' + (ANO_MOMENTO - 1) : `mensagens em ${ANO_MOMENTO}`);
@@ -3885,9 +3888,13 @@ function drawPlacar(d){
 function numeroGrupo(){
   const src = state.compD || state.data, so26 = !!state.compD, ps = [...src.people].sort((x, y) => y.count - x.count);
   const tot = ps.reduce((t, p) => t + p.count, 0), top = state.comp?.top?.total;
-  return {tot, so26, top, dono: ps[0], pct: tot ? Math.round(ps[0].count/tot*100) : 0};
+  // quase empate (diferença de até 10%) vira dupla, para não contradizer o Tagarela da cerimônia
+  const dupla = ps[1] && ps[0].count && (ps[0].count - ps[1].count)/ps[0].count <= .1 ? ps[1] : null;
+  return {tot, so26, top, dono: ps[0], dupla, pct: tot ? Math.round(ps[0].count/tot*100) : 0, pct2: dupla && tot ? Math.round(dupla.count/tot*100) : 0};
 }
-function altNumero(){ const x = numeroGrupo(); return `${state.grupo || 'O grupo'} mandou ${fmt(x.tot)} mensagens${x.so26 ? ' em ' + ANO_MOMENTO : ''}. ${x.dono ? `Só ${x.dono.name} mandou ${x.pct}% delas.` : ''}`; }
+function fraseNumero(x){ const n = p => limpaTxt(p.name).split(' ')[0];
+  return x.dupla ? `${n(x.dono)} e ${n(x.dupla)} mandaram ${x.pct + x.pct2}% delas. Empate técnico no microfone.` : `Só ${n(x.dono)} mandou ${x.pct}% delas. ${n(x.dono)}, explica.`; }
+function altNumero(){ const x = numeroGrupo(); return `${state.grupo || 'O grupo'} mandou ${fmt(x.tot)} mensagens${x.so26 ? ' em ' + ANO_MOMENTO : ''}. ${x.dono ? fraseNumero(x) : ''}`; }
 function drawNumero(){
   const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
   const NOITE = '#1A0B2E', CHI = '#FF4F8B', AREIA = '#FFF4E0', x = numeroGrupo();
@@ -3899,7 +3906,7 @@ function drawNumero(){
   c.fillText(N, 56, 360 + f*.86); espaco(c, 0);
   const yy = 360 + f*.86 + 130;
   c.fillStyle = AREIA; c.font = `800 96px ${BR2}`; c.fillText('mensagens', 70, yy); c.fillText(x.so26 ? `em ${ANO_MOMENTO}.` : 'no total.', 70, yy + 100);
-  if (x.dono){ c.fillStyle = NOITE; c.font = `500 46px ${DM2}`; const t = `Só ${limpaTxt(x.dono.name).split(' ')[0]} mandou ${x.pct}% delas. ${limpaTxt(x.dono.name).split(' ')[0]}, explica.`;
+  if (x.dono){ c.fillStyle = NOITE; c.font = `500 46px ${DM2}`; const t = fraseNumero(x);
     wrap(c, t, 70, yy + 260, 540, 60); }
   if (x.top != null && x.top <= 50){
     c.save(); c.translate(820, yy + 340); c.rotate(-.18);
@@ -4005,7 +4012,7 @@ function assunto26(){
 function destaques26(ultimo){
   const D = state.data, d = state.compD; if (!d || state.modo === 'casal' || d.people.length < 3) return [];
   const A = ANO_MOMENTO, B = A - 1, pct = x => `${Math.round(x*100)}%`, out = [], tag = d.people[0];
-  out.push({e:'🗣️', t:'Tagarela de 2026', n: tag.name, v: `${fmt(tag.count)} mensagens · ${pct(tag.count/Math.max(1, d.total))} do grupo`});
+  out.push({e:'🗣️', t:'Mais falou em 2026', n: tag.name, v: `${fmt(tag.count)} mensagens · ${pct(tag.count/Math.max(1, d.total))} do grupo`});
   const m26 = d.total, m25 = D.msgs.filter(m => m.t.getFullYear() === B).length;
   const s = D.people.map(p => ({n: p.name, a: (p.y[A]||0)/Math.max(1, m26), b: (p.y[B]||0)/Math.max(1, m25), c: p.y[A]||0}));
   if (m25 >= 100 && D.people.length > 5){ const rev = s.filter(x => x.n !== tag.name && x.c >= 20).sort((x, y) => (y.a - y.b) - (x.a - x.b))[0];
@@ -4015,7 +4022,8 @@ function destaques26(ultimo){
   // Fantasma de 2026: entre quem já estava no grupo antes de 2026 (inclui quem não mandou nada no ano), menos mensagens em 2026
   const fant = D.people.filter(p => p.name !== tag.name && !out.some(o => o.n === p.name) && !isFone(p.name) && p.ini && p.ini < new Date(A, 0, 1))
     .map(p => ({n: p.name, c: p.y[A] || 0})).sort((x, y) => x.c - y.c)[0];
-  if (fant) out.push({e:'👻', t: ultimo === 'sumico' ? 'Sumiço de 2026' : 'Fantasma de 2026', n: fant.n, v: fant.c ? `só ${fmt(fant.c)} ${fant.c === 1 ? 'mensagem' : 'mensagens'} em 2026` : 'nenhuma mensagem em 2026'});
+  // só é fantasma quem mandou pouco de verdade (até 8% das mensagens do ano)
+  if (fant && fant.c/Math.max(1, m26) <= .08) out.push({e:'👻', t: ultimo === 'sumico' ? 'Sumiço de 2026' : 'Fantasma de 2026', n: fant.n, v: fant.c ? `só ${fmt(fant.c)} ${fant.c === 1 ? 'mensagem' : 'mensagens'} em 2026` : 'nenhuma mensagem em 2026'});
   return out;
 }
 const ate26 = () => { const d = state.compD; return d ? `até ${d.end.getDate()} de ${MESES[d.end.getMonth()]}` : ''; };
@@ -4757,6 +4765,7 @@ if (location.pathname !== '/') history.replaceState({}, '', '/');
 inicio(); avisoCookies();
 retomar(TELA_SALVA);
 if (VOLTA_CARTAO) confereCartao(VOLTA_CARTAO);
+for (const n of ['drawDiario','altDiario','drawProcurado','altProcurado','drawRecibo','altRecibo','drawBoletim','altBoletim','drawPlacar','altPlacar','drawAstral','altAstral']) if (typeof window[n] === 'function') window[n] = hist(window[n]);
 // prévia: alternar o plano para ver como fica grátis x premium
 function marcaPlano(){ document.querySelectorAll('#planoTeste button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.plano === state.planoTeste))); }
 if (AMBIENTE_TESTE){
