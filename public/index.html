@@ -724,8 +724,8 @@ html.casal .esc[aria-pressed="true"]::after{background:#5E0B2B;color:#FFF3EC}
 .opt.wrong{border-color:var(--goiaba);opacity:.6}
 .opt[disabled]:not(.right):not(.wrong){opacity:.5}
 html.casal .opts .opt{border:0;min-height:96px;font-size:clamp(22px,7vw,30px);border-radius:24px;background:#FFD6E2;color:#5E0B2B;padding:16px 12px}
-html.casal .opts .opt:nth-child(2){background:#E0245E;color:#FFF3EC}
-html.casal .opts .opt.right{box-shadow:0 0 0 3px var(--noite),0 0 0 6px #5E0B2B;opacity:1}
+html.casal .opts .opt:not([disabled]):hover{box-shadow:inset 0 0 0 3px #E0245E}
+html.casal .opts .opt.right{background:#E0245E;color:#FFF3EC;box-shadow:0 0 0 3px var(--noite),0 0 0 6px #5E0B2B;opacity:1}
 html.casal .opts .opt.wrong{opacity:.45}
 .podium{min-height:250px;gap:10px;overflow:visible}
 .pod{gap:4px}
