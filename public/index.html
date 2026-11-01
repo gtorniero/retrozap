@@ -1901,7 +1901,7 @@ function home(){
         <span class="big" aria-hidden="true">${state.arquivo ? '✅' : '📂'}</span>
         <b id="dropT">${state.arquivo ? 'Arquivo escolhido' : 'Toque para escolher o arquivo'}</b>
         <span class="small" id="fname">${state.arquivo ? esc(state.arquivo.name) : 'Aceita o .zip ou o .txt do WhatsApp'}</span>
-        <input type="file" id="file">
+        <input type="file" id="file" accept=".zip,.txt,application/zip,application/x-zip-compressed,text/plain">
       </label>
       <button class="btn btn-main" id="start"${state.arquivo ? '' : ' disabled'}>${state.modo === 'casal' ? '💕 Fazer a retrospectiva do casal' : '🏆 Fazer a retrospectiva'}</button>
     </section>
