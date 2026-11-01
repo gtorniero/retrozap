@@ -3798,17 +3798,17 @@ function drawRanking(){
   const L = itensRanking(), h = L[0], resto = L.slice(1, 6), comp = state.comp || {};
   c.fillStyle = K.bg; c.fillRect(0, 0, W, H);
   bandeiraBR(c, 72, 108, 66);
-  c.textAlign = 'left'; c.fillStyle = K.ac; c.font = `700 32px ${DM2}`; espaco(c, 7); c.fillText(`TOP BRASIL${casal ? ' · CASAIS' : ''} · ${ANO_MOMENTO}`, 160, 150); espaco(c, 0);
+  c.textAlign = 'left'; c.fillStyle = K.ac; c.font = `700 32px ${DM2}`; espaco(c, 7); c.fillText(`RANKING ${casal ? 'DOS CASAIS' : 'DOS GRUPOS'} · ${ANO_MOMENTO}`, 160, 150); espaco(c, 0);
   c.fillStyle = K.txt; caber(c, limpaTxt(state.grupo || nomePadrao()), 72, 236, 936, 600, 50, DM2);
   if (h){
     const [em, fr] = reacaoRk(h.pct, casal);
     c.font = `700 40px ${DM2}`; const pw = c.measureText(fr).width + 130;
     c.fillStyle = K.pill; c.beginPath(); c.roundRect(72, 300, pw, 84, 42); c.fill();
     emojiC(c, em, 72 + 50, 342, 44); c.fillStyle = K.txt; c.fillText(fr, 72 + 90, 356);
-    c.fillStyle = K.txt; c.font = `800 120px ${BR2}`; espaco(c, -2); c.fillText(h.k === 'dias' ? 'MAIS QUE' : 'TOP', 66, 530); espaco(c, 0);
+    c.fillStyle = K.txt; c.font = `800 120px ${BR2}`; espaco(c, -2); c.fillText(h.k === 'dias' ? 'MAIS QUE' : 'TOP BRASIL', 66, 530); espaco(c, 0);
     c.font = `800 360px ${BR2}`; espaco(c, -16); c.fillText(`${h.pct}%`, 52, 850); espaco(c, 0);
     c.fillStyle = K.ac; caber(c, h.nome, 72, 950, 936, 800, 76, BR2);
-    c.fillStyle = K.sub; caber(c, h.num || '', 72, 1012, 936, 500, 38, DM2);
+    c.fillStyle = K.sub; caber(c, [h.num, `entre todos os ${casal ? 'casais' : 'grupos'} enviados no Brasil`].filter(Boolean).join(' · '), 72, 1012, 936, 500, 36, DM2);
   }
   let y = 1090; const rh = 118;
   resto.forEach(x => {
