@@ -17,6 +17,8 @@ async def main():
     await pg.wait_for_timeout(500); t0=time.time()
     for sel in ['#lbOk','#lbSim','#lbGo']:
       if await pg.query_selector(sel): await pg.click(sel); break
+    await pg.wait_for_selector('#pcSim, #go', timeout=20000)
+    if await pg.query_selector('#pcSim'): print('pergunta dupla:', await pg.text_content('#pcT')); await pg.click('#pcSim')
     await pg.wait_for_selector('#go',timeout=20000); print('analise s', round(time.time()-t0,2)); await pg.wait_for_timeout(400)
     await pg.screenshot(path=O+'/2-turma.png',full_page=True)
     await pg.click('#go'); await pg.wait_for_selector('.persona',timeout=30000); await pg.wait_for_timeout(1500)
