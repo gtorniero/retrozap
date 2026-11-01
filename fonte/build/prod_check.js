@@ -2984,7 +2984,7 @@ function drawRanking(){
     y += rh;
   });
   c.textAlign = 'left'; c.fillStyle = K.sub; c.font = `500 30px ${DM2}`;
-  const base = `Comparado com ${comp.n ? fmt(comp.n) + ' ' : 'os '}${casal ? 'casais' : 'grupos'} do Retrozap no Brasil, só com as mensagens de ${ANO_MOMENTO}.`;
+  const base = `Comparado com os ${casal ? 'casais' : 'grupos'} do Retrozap no Brasil, só com as mensagens de ${ANO_MOMENTO}.`;
   wrap(c, base, 72, Math.max(y + 60, 1720), 936, 40);
   c.fillStyle = K.faixa; c.fillRect(0, H - 96, W, 96); c.fillStyle = K.faixaTxt; c.textAlign = 'center'; c.font = `700 36px ${DM2}`;
   c.fillText(casal ? 'e vocês dois? retrozap.com.br' : 'e o seu grupo? retrozap.com.br', W/2, H - 36);
