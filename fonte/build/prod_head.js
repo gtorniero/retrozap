@@ -20,6 +20,13 @@ function evento(nome, params = {}){
   if (['amigos','familia','trabalho','comunidade','casal'].includes(params.modo)) p.modo = params.modo;
   if (['image','video'].includes(params.tipo)) p.tipo = params.tipo;
   if (['trofeu','spoiler','resumo','video','convite'].includes(params.origem)) p.origem = params.origem;
+  // funil do onboarding (ob2_*): só valores de uma lista fechada, nunca texto livre
+  if (['iphone','android'].includes(params.aparelho)) p.aparelho = params.aparelho;
+  if (['ok','pouca_conversa','formato_invalido','zip_sem_conversa','nao_abriu','erro_leitura'].includes(params.resultado)) p.resultado = params.resultado;
+  if (['inicio','ja_tenho','caixa','sem_exportar','problema'].includes(params.de)) p.de = params.de;
+  if (['ate_300','300_3000','mais_3000'].includes(params.faixa_msgs)) p.faixa_msgs = params.faixa_msgs;
+  if (['zip','txt','outro'].includes(params.tipo)) p.tipo = params.tipo;
+  if (typeof params.recarregou === 'boolean') p.recarregou = params.recarregou;
   if (exemplo) p.exemplo = true;
   try { if (window.rzMetaEvent && marketing) window.rzMetaEvent(nome, exemplo); } catch {}
   try { if (analytics && configurado(CONFIG.GA_ID)) gtag('event', nome, p); } catch {}
@@ -44,7 +51,6 @@ function ir(rota){
 }
 window.addEventListener('popstate', () => {
   if (location.pathname === '/') return inicio();
-  if (!state.data) return home();
   voltarPilha();
 });
 

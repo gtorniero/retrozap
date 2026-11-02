@@ -18,10 +18,11 @@ async def main():
         await pg.goto('http://localhost:8765/'); await pg.wait_for_timeout(600)
         await pg.click('.cookies button')
         await pg.screenshot(path=f'{SHOTS}/0-inicio.png', full_page=True)
-        await pg.click('#comecar'); await pg.wait_for_selector('#demo'); print('rota comecar:', pg.url)
+        await pg.click('#comecar'); await pg.wait_for_selector('#v2Tenho'); print('rota comecar:', pg.url)
         await pg.screenshot(path=f'{SHOTS}/1-home.png', full_page=True)
-        await pg.click('#voltar'); await pg.wait_for_selector('#comecar'); print('voltar do comecar ->', pg.url)
-        await pg.click('#comecar'); await pg.wait_for_selector('#demo')
+        await pg.click('#v2Exportar'); await pg.wait_for_selector('#v2Prox'); print('rota exportar:', pg.url)
+        await pg.click('#v2Prox'); await pg.wait_for_timeout(200); await pg.click('#voltar'); await pg.wait_for_timeout(300); print('voltar 1 passo ->', await pg.text_content('.v2-pn'))
+        await pg.click('#voltar'); await pg.wait_for_selector('#v2Tenho'); await pg.click('#voltar'); await pg.wait_for_selector('#comecar'); print('voltar até o início ->', pg.url)
         await pg.click('#demo'); await pg.wait_for_selector('#go', timeout=15000); await pg.wait_for_timeout(300)
         print('rota turma:', pg.url); await pg.screenshot(path=f'{SHOTS}/2-turma.png', full_page=True)
         await pg.click('[data-open]'); await pg.wait_for_timeout(200)
@@ -61,7 +62,7 @@ async def main():
         await pg.wait_for_selector('#concluir'); await pg.click('#concluir'); await pg.wait_for_selector('#obNovo')
         await pg.screenshot(path=f'{SHOTS}/9-obrigado.png')
         print('presente no pop-up?', await pg.query_selector('#obPres') is not None)
-        await pg.click('#obNovo'); await pg.wait_for_selector('#demo')
+        await pg.click('#obNovo'); await pg.wait_for_selector('#v2Tenho')
         print('fazer de novo ->', pg.url)
         # páginas legais e blog
         for u in ['/privacidade.html','/blog/index.html','/blog/como-exportar-conversa-whatsapp.html']:

@@ -101,7 +101,7 @@ rep('<script>\n/* ---------- utilidades ---------- */', '<script>\n' + open(os.p
 
 
 # rotas por tela
-ROTAS = {"function inicio(){\n  anchor(true);": "ir('/');", "function home(){\n  anchor(true);": "ir('/comecar');", "function story(){\n  anchor(true);": "ir('/conhecendo'); evento('prologo_visto');",
+ROTAS = {"function inicio(){\n  anchor(true);": "ir('/');", "function home(){\n  anchor(true);": "ir('/arquivo');", "function story(){\n  anchor(true);": "ir('/conhecendo'); evento('prologo_visto');",
          "function fimTela(semFesta){\n  anchor(false);": "ir('/fim'); if (!semFesta) evento('final_visto', {modo: state.modo});",
          "function lineup(){\n  anchor(true);": "ir('/categorias');",
          "function award(){\n  anchor(true);": "ir('/premios/' + (state.idx + 1));", "function maisPremios(){\n  anchor(true);": "ir('/bonus');",
@@ -115,7 +115,7 @@ rep("function voltar(){ voltarPilha(); }", "function voltar(){ history.back(); }
 # eventos
 rep("  state.raw = msgs; state.alias = {};", "  if (!retomando) evento('upload_ok', {mensagens: msgs.length, modo: state.modo, exemplo: !!sample});\n  state.raw = msgs; state.alias = {};")
 rep("    home(); const err = $('#err'); err.hidden = false;", "    evento('upload_erro'); home(); const err = $('#err'); err.hidden = false;")
-rep("  }catch(e){ err.hidden = false;", "  }catch(e){ evento('upload_erro'); err.hidden = false;")
+rep("  }catch(e){ V2.lendo = false;", "  }catch(e){ evento('upload_erro'); V2.lendo = false;")
 rep("view.querySelectorAll('.mode').forEach(b => b.onclick = () => { const k = b.dataset.m;", "view.querySelectorAll('.mode').forEach(b => b.onclick = () => { const k = b.dataset.m; evento('modo_escolhido', {modo: k});")
 rep("function showResult(a, extra=''){", "function showResult(a, extra=''){\n  evento('premio_revelado', {premio: a.n});")
 rep("    $('#next').onclick = () => custom();\n    $('#back2').onclick = final;", "    evento('premio_criado');\n    $('#next').onclick = () => custom();\n    $('#back2').onclick = final;")
@@ -138,8 +138,7 @@ rep("msg.textContent = 'Imagem copiada! Cole no WhatsApp com Ctrl+V (ou Cmd+V).'
 rep("async function openCard(fazer, texto = convite('resumo'), alt = 'Card para compartilhar no grupo'){", "async function openCard(fazer, texto = convite('resumo'), alt = 'Card para compartilhar no grupo'){\n  evento('card_gerado');")
 
 # rodapé e textos de protótipo
-rep('    <p class="small">Protótipo do Retrozap. Nos testes, o grupo de exemplo é inventado.</p>',
-    '    <p class="small">O grupo de exemplo é inventado, para você ver como funciona antes de usar o seu.</p>\n    <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a><button type="button" class="lk-ck" data-ckpref>Preferências de cookies</button></nav>\n    <p class="small" style="text-align:center;margin:0">© 2026 Retrozap · Beyond the Work Ideas · CNPJ 69.746.447/0001-00</p>')
+# (o rodapé do antigo /comecar saiu com o onboarding v2; o início já tem o rodapé)
 rep("$('#voltar').onclick = () => voltar();\nsetModo('amigos'); inicio();", "$('#voltar').onclick = () => voltar();\nsetModo('amigos');\nif (location.pathname !== '/') history.replaceState({}, '', '/');\ninicio(); avisoCookies();")
 rep("<p>No site final, este botão abre o WhatsApp direto com a imagem. Aqui no protótipo, toque e segure a imagem para salvar.</p>", "") if "No site final, este botão" in s else None
 

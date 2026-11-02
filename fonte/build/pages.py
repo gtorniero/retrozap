@@ -281,17 +281,9 @@ open(os.path.join(PUB, '_headers'), 'w').write("""/*
 /teste/*
   X-Robots-Tag: noindex, nofollow
 """)
-# página de teste do onboarding v2: fora do sitemap e dos menus, noindex, Pix simulado e sem gravar no ranking
-_t = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'testes', 'onboarding-v2.html'), encoding='utf-8').read()
-_t = _t.replace('<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>', '<script src="/assets/jszip.min.js"></script>')
-_t = __import__('re').sub(r"const AMBIENTE_TESTE = [^\n]*", "const AMBIENTE_TESTE = true; // página de teste: Pix simulado, nada vai para o ranking", _t, count=1)
-assert 'const AMBIENTE_TESTE = true;' in _t
-_t = '<!doctype html>\n<html lang="pt-BR">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n' + _t
-os.makedirs(os.path.join(PUB, 'teste'), exist_ok=True)
-open(os.path.join(PUB, 'teste', 'onboarding-v2.html'), 'w', encoding='utf-8').write(_t)
 # páginas: o navegador sempre confere se há versão nova (no-cache); arquivos de /assets: guardados por 1 dia
 # rotas da cerimônia caem no index (as páginas legais e o blog são arquivos próprios)
-open(os.path.join(PUB, '_redirects'), 'w').write('\n'.join(f'{r} /index.html 200' for r in ['/comecar','/turma','/conhecendo','/prologo','/numeros','/categorias','/premios/*','/bonus','/resumo','/fim','/destaque','/crie-seu-premio']) + '\n')
+open(os.path.join(PUB, '_redirects'), 'w').write('\n'.join(f'{r} /index.html 200' for r in ['/comecar','/exportar','/arquivo','/conferir','/turma','/conhecendo','/prologo','/numeros','/categorias','/premios/*','/bonus','/resumo','/fim','/destaque','/crie-seu-premio']) + '\n')
 
 # ---------- ícones e imagem de compartilhamento ----------
 open(os.path.join(PUB, 'icon.svg'), 'w').write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#1A0B2E"/><path d="M20 14h24v6h6v6c0 7-5 12-11 13-2 4-4 6-5 7v5h7v5H23v-5h7v-5c-1-1-3-3-5-7-6-1-11-6-11-13v-6h6zm-1 10v2c0 3 2 6 4 7-1-3-1-6-1-9zm26 0c0 3 0 6-1 9 2-1 4-4 4-7v-2z" fill="#FFC23C"/></svg>')

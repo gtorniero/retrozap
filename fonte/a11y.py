@@ -11,7 +11,11 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(); pg = await b.new_page(viewport={'width':390,'height':844})
         await pg.goto('http://localhost:8767/'); await pg.click('.cookies button'); await audit(pg,'inicio')
-        await pg.click('#comecar'); await pg.wait_for_selector('#demo'); await audit(pg,'home')
+        await pg.click('#comecar'); await pg.wait_for_selector('#v2Tenho'); await audit(pg,'caminho')
+        await pg.click('#v2Exportar'); await pg.wait_for_selector('#v2Prox'); await pg.wait_for_timeout(700); await audit(pg,'exportar')
+        while await pg.query_selector('#v2Prox'): await pg.click('#v2Prox'); await pg.wait_for_timeout(200)
+        await audit(pg,'exportar-whatsapp'); await pg.click('#v2JaSalvei'); await pg.wait_for_selector('#v2Drop'); await audit(pg,'arquivo')
+        await pg.evaluate('sessionStorage.clear()'); await pg.goto('http://localhost:8767/'); await pg.wait_for_selector('#demo')
         await pg.click('#demo'); await pg.wait_for_selector('#go'); await audit(pg,'turma')
         await pg.click('#go'); await pg.wait_for_selector('.persona', timeout=20000); await pg.wait_for_timeout(1500); await audit(pg,'conhecendo')
         await pg.click('#go'); await pg.wait_for_selector('#spNao'); await audit(pg,'spoiler-popup'); await pg.click('#spX'); await pg.wait_for_timeout(300); await audit(pg,'categorias')
