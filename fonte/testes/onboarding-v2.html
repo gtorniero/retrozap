@@ -689,6 +689,12 @@ html.casal .selo-esp.br{background:#5E0B2B;color:#FFF3EC}
 .card-fim.esp{box-shadow:inset 0 0 0 2px var(--manga)}
 html.casal .selo-esp{background:#B5174D;color:#FFF3EC}html.casal .card-fim.esp{box-shadow:inset 0 0 0 2px #E0245E}
 /* TESTE · onboarding v2 */
+.v2-tt .tt-dedo{transition:none!important}
+.v2-tt .tt-acs div,.v2-tt .az,.v2-tt .tt-ac b{color:#0047b3!important}.v2-tt small{color:#4f4f52!important;opacity:1!important}
+.v2-log{position:fixed;left:calc(8px + env(safe-area-inset-left,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px));z-index:70;max-width:min(360px,calc(100vw - 16px));font-size:12px}.v2-log button{min-height:36px;padding:6px 10px;border-radius:10px;border:1px dashed var(--linha);background:var(--noite);color:var(--neblina);font:inherit;font-size:12px;cursor:pointer}.v2-log ol{list-style:none;margin:6px 0 0;padding:8px;max-height:45vh;overflow:auto;background:var(--noite);border:1px solid var(--linha);border-radius:10px;display:flex;flex-direction:column;gap:6px}.v2-log li{display:flex;flex-direction:column}.v2-log code{font-size:11px;color:var(--neblina);overflow-wrap:anywhere}
+body{padding-bottom:56px}
+.v2-telas{display:flex;gap:14px;justify-content:center;width:100%}.v2-telas.duo .tt-phone{zoom:.78}.v2-tt{position:relative}.v2-k{position:absolute;top:-6px;left:-6px;z-index:2;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--manga);color:var(--noite);font-weight:800;font-size:14px}
+@media (prefers-reduced-motion: reduce){.v2-tt *{transition:none!important;animation:none!important}}
 .v2-achou{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0;width:100%}.v2-achou div{background:var(--acai);border:1.5px solid var(--linha);border-radius:16px;padding:12px 14px}.v2-achou .v2-l{grid-column:1/-1}.v2-achou dt{font-size:13px;color:var(--neblina);font-weight:700}.v2-achou dd{margin:2px 0 0;font-family:var(--titulo);font-size:28px;font-variant-numeric:tabular-nums}.v2-achou .v2-l dd{font-size:20px}
 .v2-nome{display:flex;flex-direction:column;gap:6px;width:100%;font-weight:700;font-size:14px}.v2-nome input{font:inherit;font-weight:500;font-size:16px;padding:12px 14px;border-radius:14px;border:1.5px solid var(--linha);background:var(--acai);color:var(--areia)}
 .v2-status{margin:0;min-height:1.2em}.v2-sims{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;width:100%}.v2-sims .v2-sim{font-size:12px}
@@ -1840,7 +1846,7 @@ async function readFile(f){
     }
     text = text.replace(/^\uFEFF/, '');
     await run(text, false);
-  }catch(e){ if (typeof V2 !== 'undefined') V2.lendo = false; if (!document.getElementById('v2Drop')) home(); const er = $('#err'); if (er){ er.hidden = false; er.textContent = e && e.amigavel ? e.message : 'Não consegui abrir esse arquivo. Ele precisa ser o arquivo que o WhatsApp gera em Exportar conversa (.zip ou .txt). Exporte de novo e escolha esse arquivo.'; } typeof v2Destrava === 'function' && v2Destrava(); }
+  }catch(e){ if (typeof V2 !== 'undefined'){ V2.lendo = false; v2Ev('ob2_leitura', {resultado: e && e.amigavel ? (/zip/.test(e.message) ? 'zip_sem_conversa' : 'nao_abriu') : 'erro_leitura'}); } if (!document.getElementById('v2Drop')) home(); const er = $('#err'); if (er){ er.hidden = false; er.textContent = e && e.amigavel ? e.message : 'Não consegui abrir esse arquivo. Ele precisa ser o arquivo que o WhatsApp gera em Exportar conversa (.zip ou .txt). Exporte de novo e escolha esse arquivo.'; } typeof v2Destrava === 'function' && v2Destrava(); }
 }
 function carregando(titulo){
   { const vb = document.getElementById('voltar'); if (vb) vb.hidden = true; }
@@ -4622,24 +4628,34 @@ const TELA_SALVA = (() => { try { return sessionStorage.getItem('rz_tela'); } ca
 const VOLTA_CARTAO = (() => { try { const q = new URLSearchParams(location.search); return q.get('cartao') === 'ok' ? (q.get('ref') || lsGet('rz_cartao_ref')) : null; } catch { return null; } })();
 $('#voltar').onclick = () => voltar();
 /* ===================== TESTE · onboarding v2 (só nesta página de teste) ===================== */
+document.documentElement.lang = 'pt-BR';
 const V2 = {etapa: 'resultado', passo: 0};
+// funil do teste: só fica neste navegador (painel 🧪), nada é transmitido. Sem nomes, textos, datas ou nome de arquivo.
+const V2LOG = [];
+function v2Ev(nome, params = {}){
+  const p = {...params, ambiente: 'preview', origem: state.sample || V2.ficticio ? 'demo' : 'real'};
+  V2LOG.push({t: new Date().toLocaleTimeString('pt-BR'), nome, p});
+  const b = document.getElementById('v2LogBt'); if (b) b.textContent = `🧪 Eventos (${V2LOG.length})`;
+  const l = document.getElementById('v2LogL'); if (l && !l.hidden) v2LogPinta();
+}
+function v2LogPinta(){ const l = document.getElementById('v2LogL'); l.innerHTML = V2LOG.slice().reverse().map(e => `<li><b>${e.nome}</b> <span>${e.t}</span><code>${esc(JSON.stringify(e.p))}</code></li>`).join('') || '<li>Nenhum evento ainda.</li>'; }
+if (typeof evento !== 'function') window.evento = (n, p) => v2Ev(n, p); // eventos que o app já dispara também caem no painel local
+(() => { const w = document.createElement('div'); w.className = 'v2-log'; w.innerHTML = '<button type="button" id="v2LogBt" aria-expanded="false" aria-controls="v2LogL">🧪 Eventos (0)</button><ol id="v2LogL" hidden></ol>';
+  document.body.appendChild(w); const b = w.querySelector('button'), l = w.querySelector('ol');
+  b.onclick = () => { l.hidden = !l.hidden; b.setAttribute('aria-expanded', String(!l.hidden)); if (!l.hidden) v2LogPinta(); }; })();
 const V2_SALVO = (() => { try { return JSON.parse(sessionStorage.getItem('rz_v2') || 'null'); } catch { return null; } })();
 const V2_PASSOS = {
   iphone: [
-    {t: () => state.modo === 'casal' ? 'Abra a conversa e toque no <b>nome da pessoa</b>, lá em cima.' : 'Abra o grupo e toque no <b>nome do grupo</b>, lá em cima.', cena: 0},
-    {t: () => 'Role até o fim e toque em <b>Exportar conversa</b>.', cena: 1},
-    {t: () => 'Escolha <b>Sem mídia</b>. Só o texto já basta, e o arquivo fica pequeno.', cena: 2},
-    {t: () => 'Na tela de compartilhar, toque em <b>Salvar em Arquivos</b>. Não mande para ninguém.', cena: 3},
-    {t: () => 'Escolha <b>Downloads</b> e toque em <b>Salvar</b>.', cena: 4}
+    {t: () => state.modo === 'casal' ? 'Abra a conversa e toque no <b>nome da pessoa</b>, lá em cima.' : 'Abra o grupo e toque no <b>nome do grupo</b>, lá em cima.', cenas: [0]},
+    {t: () => 'Role até o fim, toque em <b>Exportar conversa</b> e escolha <b>Sem mídia</b>.', cenas: [1, 2]},
+    {t: () => 'Toque em <b>Salvar em Arquivos</b>, escolha <b>Downloads</b> e toque em <b>Salvar</b>. Não mande para ninguém.', cenas: [3, 4]}
   ],
   android: [
-    {t: () => `Abra ${state.modo === 'casal' ? 'a conversa' : 'o grupo'} e toque nos <b>três pontinhos ⋮</b>.`, cena: 0},
-    {t: () => 'Toque em <b>Mais</b> e depois em <b>Exportar conversa</b>.', cena: 2},
-    {t: () => 'Escolha <b>Sem mídia</b>. Só o texto já basta, e o arquivo fica pequeno.', cena: 3},
-    {t: () => 'Na tela de compartilhar, toque em <b>Arquivos</b> (ou <b>Meus arquivos</b>) e salve em <b>Downloads</b>. Se não aparecer, toque em <b>Drive</b>. Não mande para ninguém.', cena: 4}
+    {t: () => `Abra ${state.modo === 'casal' ? 'a conversa' : 'o grupo'} e toque em <b>⋮</b> › <b>Mais</b> › <b>Exportar conversa</b>.`, cenas: [0, 2]},
+    {t: () => 'Escolha <b>Sem mídia</b> e, na tela de compartilhar, salve em <b>Arquivos</b> (Downloads). Se não aparecer, use o <b>Drive</b>. Não mande para ninguém.', cenas: [3, 4]}
   ]
 };
-function v2Selo(){ return '<p class="v2-selo">Versão de teste · onboarding v2</p>'; }
+function v2Selo(){ return '<p class="v2-selo">Teste · onboarding v2</p>'; }
 function v2Prog(i, n){ return `<div class="v2-prog" role="img" aria-label="Passo ${i} de ${n}"><span style="width:${Math.round(i/n*100)}%"></span></div><p class="v2-pn">Passo ${i} de ${n}</p>`; }
 function v2Tipo(){ return `<div class="tipo-conversa" role="group" aria-label="É de um grupo ou de um casal?">
   <button type="button" data-tipo="grupo" aria-pressed="${state.modo !== 'casal'}">🏆 Grupo</button>
@@ -4648,7 +4664,7 @@ function v2LigaTipo(volta){ view.querySelectorAll('[data-tipo]').forEach(b => b.
 
 // ETAPA 1 — entender o resultado (prévia com dados fictícios)
 inicio = function(){
-  anchor(false); PILHA.length = 0; pilha(inicio, 'inicio'); setSteps(0); state.data = null; V2.etapa = 'resultado'; V2.saiu = false; v2Salva();
+  anchor(false); PILHA.length = 0; pilha(inicio, 'inicio'); setSteps(0); state.data = null; V2.etapa = 'resultado'; V2.saiu = false; V2.ficticio = false; v2Salva(); if (!V2.entrou){ V2.entrou = true; v2Ev('ob2_entrada', {modo: state.modo}); }
   const cs = state.modo === 'casal';
   view.innerHTML = `<section class="screen hero">
     ${v2Selo()}
@@ -4669,7 +4685,7 @@ inicio = function(){
   </section>`;
   v2LigaTipo(inicio);
   $('#v2Minha').onclick = v2Caminho;
-  $('#v2Exemplo').onclick = () => { DUR = {}; run(state.modo === 'casal' ? demoCasal() : demoChat(), true); };
+  $('#v2Exemplo').onclick = () => { v2Ev('ob2_demo', {de: 'inicio'}); DUR = {}; run(state.modo === 'casal' ? demoCasal() : demoChat(), true); };
   window.scrollTo(0, 0);
 };
 
@@ -4686,16 +4702,16 @@ function v2Caminho(){
     </div>
   </section>`;
   // já tem: vai para a etapa do arquivo e abre o seletor no mesmo toque
-  $('#v2Tenho').onclick = () => { home(); $('#file')?.click(); };
-  $('#v2Exportar').onclick = () => { V2.passo = 0; v2Exportar(); };
+  $('#v2Tenho').onclick = () => { v2Ev('ob2_ja_tenho'); home(); V2.viaTenho = true; $('#file')?.click(); V2.viaTenho = false; };
+  $('#v2Exportar').onclick = () => { v2Ev('ob2_preciso_exportar'); v2Ev('ob2_aparelho', {aparelho: state.how, detectado: true}); V2.passo = 0; v2Exportar(); };
   window.scrollTo(0, 0);
 }
 
 // ETAPA 3 — exportar com orientação, um passo por vez
 function v2Exportar(){
-  anchor(true); pilha(v2Exportar, 'exportar'); setSteps(0); V2.etapa = 'exportar'; v2Salva();
+  const passoAqui = V2.passo; anchor(true); pilha(() => { V2.passo = passoAqui; v2Exportar(); }, 'exportar' + passoAqui); setSteps(0); V2.etapa = 'exportar'; v2Salva();
   const how = state.how, L = V2_PASSOS[how], n = L.length + 1, i = V2.passo, ultimo = i === L.length;
-  const cena = !ultimo && TT_CENAS[how][L[i].cena];
+  const cenas = ultimo ? [] : L[i].cenas.map(k => TT_CENAS[how][k]);
   view.innerHTML = `<section class="screen">
     ${v2Selo()}
     <div class="tabs" role="group" aria-label="Seu celular">
@@ -4705,13 +4721,13 @@ function v2Exportar(){
     ${v2Prog(i + 1, n)}
     ${ultimo ? `<h1 style="font-size:clamp(26px,7.5vw,34px)">Agora é no WhatsApp</h1>
       <p class="v2-aviso">Depois de salvar o arquivo, <b>volte para esta página</b>. Ela vai estar te esperando no passo de escolher o arquivo.</p>
-      <ol class="how v2-resumo">${L.map(p => `<li>${p.t()}</li>`).join('')}</ol>
+      <details class="naoachei"><summary>Rever os passos</summary><ol class="how v2-resumo">${L.map(p => `<li>${p.t()}</li>`).join('')}</ol></details>
       <a class="btn btn-wa" id="abreWa" href="${linkAbreWhats()}" style="text-decoration:none"><i class="ic-wa" aria-hidden="true"></i>Abrir o WhatsApp</a>
       <button type="button" class="btn btn-ghost" id="v2JaSalvei">Já salvei, escolher o arquivo</button>
       <button type="button" class="v2-sim" id="v2Simula">🧪 Simular a volta do WhatsApp (só no teste)</button>`
     : `<h1 style="font-size:clamp(24px,7vw,32px)">Vamos te mostrar onde tocar</h1>
       <p class="v2-passo">${L[i].t()}</p>
-      <div class="tt v2-tt" aria-hidden="true"><div class="tt-phone"><div class="tt-scr" id="v2Scr">${casalTxt(cena.h)}</div><i class="tt-dedo" id="v2Dedo"></i></div></div>
+      <div class="v2-telas${cenas.length > 1 ? ' duo' : ''}" aria-hidden="true">${cenas.map((c, k) => `<div class="tt v2-tt">${cenas.length > 1 ? `<span class="v2-k">${k + 1}</span>` : ''}<div class="tt-phone"><div class="tt-scr">${casalTxt(c.h)}</div><i class="tt-dedo"></i></div></div>`).join('')}</div>
       ${/Exportar conversa/.test(L[i].t()) ? `<details class="naoachei" id="v2SemExportar"><summary>🤔 Não encontrei Exportar conversa</summary>
         <p class="small" style="margin:0">O caminho muda um pouco conforme o aparelho e a versão do WhatsApp. ${how === 'iphone' ? 'No iPhone, a opção costuma ficar no fim da tela de dados da conversa (toque no nome lá em cima e role até o fim).' : 'No Android, costuma ficar em ⋮ › Mais.'} Atualizar o WhatsApp pode ajudar.</p>
         <p class="small" style="margin:0">Algumas conversas têm a exportação bloqueada por configurações de privacidade definidas no próprio WhatsApp. Nesse caso, essa conversa não pode ser exportada: escolha outra conversa ou veja como fica com um exemplo.</p>
@@ -4723,18 +4739,18 @@ function v2Exportar(){
       ${ultimo ? '' : `<button type="button" class="btn btn-main" id="v2Prox">Próximo →</button>`}
     </div>
   </section>`;
-  if (!ultimo) requestAnimationFrame(() => { const scr = $('#v2Scr'), d = $('#v2Dedo'), a = scr?.querySelector('.alvo'); if (!a) return; const ph = scr.parentNode.getBoundingClientRect(), r = a.getBoundingClientRect(); d.style.left = (r.left + r.width/2 - ph.left) + 'px'; d.style.top = (r.top + r.height/2 - ph.top) + 'px'; d.style.opacity = 1; a.classList.add('apertou'); });
-  view.querySelectorAll('[data-h]').forEach(b => b.onclick = () => { state.how = b.dataset.h; V2.passo = Math.min(V2.passo, V2_PASSOS[state.how].length); v2Exportar(); });
-  $('#v2Volta').onclick = () => { if (V2.passo > 0){ V2.passo--; v2Exportar(); } else v2Caminho(); };
+  if (!ultimo) setTimeout(() => view.querySelectorAll('.v2-tt .tt-phone').forEach(ph => { const scr = ph.querySelector('.tt-scr'), d = ph.querySelector('.tt-dedo'), a = scr.querySelector('.alvo'); if (!a) return; let x = a.offsetWidth/2, y = a.offsetHeight/2, el = a; while (el && el !== ph){ x += el.offsetLeft - (el.scrollLeft || 0); y += el.offsetTop - (el.parentElement && el.parentElement !== ph ? 0 : 0); const pai = el.offsetParent; if (pai && pai !== ph) { x -= pai.scrollLeft || 0; y -= pai.scrollTop || 0; } el = pai; } d.style.left = x + 'px'; d.style.top = y + 'px'; d.style.opacity = 1; a.classList.add('apertou'); }), TT_CALMO() ? 0 : 500);
+  view.querySelectorAll('[data-h]').forEach(b => b.onclick = () => { if (state.how === b.dataset.h) return; state.how = b.dataset.h; v2Ev('ob2_aparelho', {aparelho: state.how}); while (PILHA.length && /^exportar/.test(PILHA[PILHA.length-1].k)) PILHA.pop(); V2.passo = 0; v2Exportar(); view.querySelector(`[data-h="${state.how}"]`)?.focus(); });
+  $('#v2Volta').onclick = () => voltarPilha();
   $('#v2Prox')?.addEventListener('click', () => { V2.passo++; v2Exportar(); });
-  $('#v2ExDeNovo')?.addEventListener('click', () => { DUR = {}; run(state.modo === 'casal' ? demoCasal() : demoChat(), true); });
-  $('#abreWa')?.addEventListener('click', () => { state.esperandoWhats = true; V2.saiu = true; v2Salva(); });
+  $('#v2ExDeNovo')?.addEventListener('click', () => { v2Ev('ob2_demo', {de: 'sem_exportar'}); DUR = {}; run(state.modo === 'casal' ? demoCasal() : demoChat(), true); });
+  $('#abreWa')?.addEventListener('click', () => { state.esperandoWhats = true; V2.saiu = true; v2Salva(); v2Ev('ob2_abriu_whatsapp', {aparelho: state.how}); });
   $('#v2JaSalvei')?.addEventListener('click', () => { state.voltou = true; home(); });
   $('#v2Simula')?.addEventListener('click', () => { state.esperandoWhats = true; V2.saiu = true; document.dispatchEvent(new Event('v2volta')); });
   window.scrollTo(0, 0);
 }
 // a volta do WhatsApp cai direto na etapa do arquivo (sem reiniciar a jornada)
-function v2Voltou(){ if (!state.esperandoWhats || state.arquivo) return; state.esperandoWhats = false; state.voltou = true; home(); const d = view.querySelector('.drop'); d?.scrollIntoView({block: 'center'}); d?.focus?.(); }
+function v2Voltou(){ if (!state.esperandoWhats || state.arquivo) return; v2Ev('ob2_voltou', {recarregou: false}); state.esperandoWhats = false; state.voltou = true; home(); const d = view.querySelector('.drop'); d?.scrollIntoView({block: 'center'}); d?.focus?.(); }
 document.addEventListener('visibilitychange', () => { if (!document.hidden && V2.etapa === 'exportar') v2Voltou(); });
 document.addEventListener('v2volta', v2Voltou);
 
@@ -4770,17 +4786,18 @@ home = function(){
   state.voltou = false; state.arquivo = null; V2.lendo = false;
   const escolhe = f => {
     if (!f || V2.lendo) return;
-    V2.lendo = true; state.arquivo = f; state.bytes = null; $('#err').hidden = true;
+    V2.lendo = true; state.arquivo = f; state.bytes = null; $('#err').hidden = true; v2Ev('ob2_arquivo', {tipo: /\.zip$/i.test(f.name) ? 'zip' : /\.txt$/i.test(f.name) ? 'txt' : 'outro'});
     const lb = $('#v2Drop'); lb.classList.add('ok'); lb.setAttribute('aria-disabled', 'true'); $('#file').disabled = true;
     lb.querySelector('.big').textContent = '⏳'; $('#dropT').textContent = 'Verificando o arquivo…'; $('#fname').textContent = f.name;
     $('#v2Status').textContent = 'Lendo o arquivo aqui no seu celular.'; $('#start').disabled = true; $('#v2Troca').hidden = false;
     lembrete(() => readFile(f));
   };
-  $('#file').onchange = e => escolhe(e.target.files[0]);
+  $('#file').onchange = e => { V2.ficticio = false; escolhe(e.target.files[0]); };
+  $('#v2Drop').addEventListener('click', () => v2Ev('ob2_abriu_seletor', {de: V2.viaTenho ? 'ja_tenho' : 'caixa'}));
   $('#start').onclick = () => state.arquivo && !V2.lendo && escolhe(state.arquivo);
   $('#v2Troca').onclick = () => { state.arquivo = null; home(); setTimeout(() => $('#file')?.click(), 0); };
   $('#v2Rever').onclick = () => { V2.passo = 0; v2Exportar(); };
-  const fict = (nome, conteudo) => { const f = new File([conteudo], nome, {type: nome.endsWith('.zip') ? 'application/zip' : 'text/plain'}); const dt = new DataTransfer(); dt.items.add(f); $('#file').files = dt.files; escolhe(f); };
+  const fict = (nome, conteudo) => { V2.ficticio = true; const f = new File([conteudo], nome, {type: nome.endsWith('.zip') ? 'application/zip' : 'text/plain'}); const dt = new DataTransfer(); dt.items.add(f); $('#file').files = dt.files; escolhe(f); };
   $('#v2Ficticio').onclick = () => fict('Conversa fictícia (demonstração).txt', state.modo === 'casal' ? demoCasal() : demoChat());
   view.querySelectorAll('[data-sim]').forEach(b => b.onclick = async () => {
     const k = b.dataset.sim;
@@ -4801,7 +4818,7 @@ const v2Data = t => t.toLocaleDateString('pt-BR', {day: '2-digit', month: '2-dig
 
 // confirmação do que foi encontrado (só na tela, nada é enviado)
 function v2Confirma(msgs, autores, segue){
-  V2.lendo = false; anchor(true); pilha(() => v2Confirma(msgs, autores, segue), 'confirma'); setSteps(0); V2.etapa = 'confirma'; v2Salva();
+  V2.lendo = false; anchor(true); pilha(() => v2Confirma(msgs, autores, segue), 'confirma'); setSteps(0); V2.etapa = 'confirma'; v2Salva(); v2Ev('ob2_leitura', {resultado: 'ok'});
   const ini = msgs[0].t, fim = msgs[msgs.length - 1].t, ano = ANO_MOMENTO, m26 = msgs.filter(m => m.t.getFullYear() === ano).length;
   const nomeOk = !!state.grupo, part = [...autores].filter(n => !state.hidden.has(n)).length;
   const aviso26 = m26 === 0 ? `Esse arquivo não tem mensagens de ${ano}. Os troféus vão contar o histórico que está no arquivo, desde ${v2Data(ini)}.`
@@ -4822,14 +4839,14 @@ function v2Confirma(msgs, autores, segue){
     <button class="btn btn-main" id="v2Segue">Continuar para minha retrospectiva →</button>
     <button class="btn btn-ghost" id="v2Outro">Escolher outro arquivo</button>
   </section>`;
-  $('#v2Segue').onclick = () => { const n = $('#v2Nome').value.trim(); state.grupo = n ? cortaNome(limpaTxt(n)) : ''; segue(); };
+  $('#v2Segue').onclick = () => { v2Ev('ob2_confirmou', {faixa_msgs: msgs.length < 300 ? 'ate_300' : msgs.length < 3000 ? '300_3000' : 'mais_3000', com_nome: !!$('#v2Nome').value.trim()}); const n = $('#v2Nome').value.trim(); state.grupo = n ? cortaNome(limpaTxt(n)) : ''; segue(); };
   $('#v2Outro').onclick = () => { state.arquivo = null; home(); };
   window.scrollTo(0, 0);
 }
 
 // poucas mensagens ou participantes: mostra o que foi encontrado, sem cravar a causa
 function v2Problema(msgs){
-  V2.lendo = false; anchor(true); pilha(() => v2Problema(msgs), 'problema'); setSteps(0); V2.etapa = 'problema';
+  V2.lendo = false; anchor(true); pilha(() => v2Problema(msgs), 'problema'); setSteps(0); V2.etapa = 'problema'; v2Ev('ob2_leitura', {resultado: msgs.length ? 'pouca_conversa' : 'formato_invalido'});
   const pessoas = new Set(msgs.map(m => m.a)).size;
   view.innerHTML = `<section class="screen">
     ${v2Selo()}
@@ -4847,12 +4864,13 @@ function v2Problema(msgs){
   </section>`;
   $('#v2Outro').onclick = () => { state.arquivo = null; home(); setTimeout(() => $('#file')?.click(), 0); };
   $('#v2Rever2').onclick = () => { V2.passo = 0; v2Exportar(); };
-  $('#v2Ex2').onclick = () => { DUR = {}; run(state.modo === 'casal' ? demoCasal() : demoChat(), true); };
+  $('#v2Ex2').onclick = () => { v2Ev('ob2_demo', {de: 'problema'}); DUR = {}; run(state.modo === 'casal' ? demoCasal() : demoChat(), true); };
   window.scrollTo(0, 0);
 }
 
 // retomada: guarda só a etapa, o aparelho, o tipo de conversa e se a pessoa saiu para o WhatsApp (nunca o arquivo nem o texto)
 function v2Salva(){ try { sessionStorage.setItem('rz_v2', JSON.stringify({etapa: V2.etapa, passo: V2.passo, how: state.how, modo: state.modo, saiu: !!V2.saiu})); } catch {} }
+{ const _story = story; story = function(){ if (!V2.naRetro){ V2.naRetro = true; v2Ev('ob2_retrospectiva', {modo: state.modo}); } return _story.apply(this, arguments); }; }
 function v2Restaura(){
   const r = V2_SALVO;
   if (!r || !['caminho', 'exportar', 'arquivo', 'confirma'].includes(r.etapa)) return;
@@ -4860,7 +4878,7 @@ function v2Restaura(){
   if (r.etapa === 'caminho') return v2Caminho();
   if (r.etapa === 'exportar' && !r.saiu) return v2Exportar();
   // voltou do WhatsApp com a página recarregada, ou estava escolhendo/confirmando o arquivo: o arquivo precisa ser escolhido de novo
-  state.voltou = !!r.saiu; V2.recarregou = true; V2.saiu = false; home();
+  if (r.saiu) v2Ev('ob2_voltou', {recarregou: true}); state.voltou = !!r.saiu; V2.recarregou = true; V2.saiu = false; home();
 }
 
 setModo('amigos'); inicio();
