@@ -1821,12 +1821,12 @@ function paywall(seguir, ctx){
   const codigoTela = () => {
     caixa.innerHTML = `<button type="button" class="pw-x" id="pwX" aria-label="Fechar">✕</button>
       <h2 id="pwT" style="font-size:22px;margin:0">Recuperar acesso</h2>
-      <label class="pw-lb" for="pwCod">Digite o código (RZ-XXXX-XXXX) ou o e-mail que você usou no Pix</label>
+      <label class="pw-lb" for="pwCod">Digite seu código ou o e-mail usado na compra</label>
       <input id="pwCod" class="pw-in" placeholder="RZ-XXXX-XXXX ou voce@email.com" autocapitalize="none" autocomplete="off">
       <p class="err" role="alert" id="pwErr" hidden></p>
       <button type="button" class="btn btn-main" id="pwOk">Liberar</button>
       <button type="button" class="pw-lk" id="pwVolta">← Voltar</button>
-      <p class="small" style="margin:0">Não lembra o e-mail? Escreva para <a href="mailto:contato@retrozap.com.br" style="color:var(--areia)">contato@retrozap.com.br</a>.</p>`;
+      <p class="small" style="margin:0">Não lembra o e-mail? Escreva para <a href="mailto:oi@retrozap.com.br" style="color:var(--areia)">oi@retrozap.com.br</a>.</p>`;
     caixa.querySelector('#pwX').onclick = fecha;
     caixa.querySelector('#pwVolta').onclick = inicio;
     const inp = caixa.querySelector('#pwCod'), err = caixa.querySelector('#pwErr'), bt = caixa.querySelector('#pwOk');
@@ -1834,10 +1834,14 @@ function paywall(seguir, ctx){
       const v = inp.value.trim(), porEmail = v.includes('@'), codigo = v.toUpperCase();
       bt.disabled = true; err.hidden = true;
       try {
-        const r = await fetch('/api/acesso', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify(porEmail ? {email: v} : {codigo})});
+        const r = await fetch(porEmail ? '/api/recuperar' : '/api/acesso', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify(porEmail ? {email: v} : {codigo})});
         const s = await r.json();
-        if (s.ok) return libera(porEmail ? s.codigo : codigo);
-        err.hidden = false; err.textContent = porEmail ? 'Não achei uma compra paga com esse e-mail. Confira e tente de novo.' : 'Código não encontrado. Confira e tente de novo.';
+        if (!porEmail && s.ok) return libera(codigo);
+        err.hidden = false;
+        if (porEmail && r.ok && s.ok) {
+          err.textContent = 'Se houver uma compra aprovada com esse e-mail, enviaremos seu código. Confira a caixa de entrada e o spam; depois digite o código aqui.';
+          inp.value = ''; inp.placeholder = 'RZ-XXXX-XXXX'; inp.focus();
+        } else err.textContent = porEmail ? 'Confira o e-mail e tente novamente.' : 'Código não encontrado. Confira e tente de novo.';
       } catch { err.hidden = false; err.textContent = 'Sem conexão. Tente de novo.'; }
       bt.disabled = false;
     };
