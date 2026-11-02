@@ -689,6 +689,7 @@ html.casal .selo-esp.br{background:#5E0B2B;color:#FFF3EC}
 .card-fim.esp{box-shadow:inset 0 0 0 2px var(--manga)}
 html.casal .selo-esp{background:#B5174D;color:#FFF3EC}html.casal .card-fim.esp{box-shadow:inset 0 0 0 2px #E0245E}
 /* TESTE · onboarding v2 */
+.v2-priv{width:100%}
 .v2-tt .tt-dedo{transition:none!important}
 .v2-tt .tt-acs div,.v2-tt .az,.v2-tt .tt-ac b{color:#0047b3!important}.v2-tt small{color:#4f4f52!important;opacity:1!important}
 .v2-log{position:fixed;left:calc(8px + env(safe-area-inset-left,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px));z-index:70;max-width:min(360px,calc(100vw - 16px));font-size:12px}.v2-log button{min-height:36px;padding:6px 10px;border-radius:10px;border:1px dashed var(--linha);background:var(--noite);color:var(--neblina);font:inherit;font-size:12px;cursor:pointer}.v2-log ol{list-style:none;margin:6px 0 0;padding:8px;max-height:45vh;overflow:auto;background:var(--noite);border:1px solid var(--linha);border-radius:10px;display:flex;flex-direction:column;gap:6px}.v2-log li{display:flex;flex-direction:column}.v2-log code{font-size:11px;color:var(--neblina);overflow-wrap:anywhere}
@@ -4681,7 +4682,7 @@ inicio = function(){
     </div>
     <button class="btn btn-main" id="v2Minha">${cs ? 'Fazer com a nossa conversa →' : 'Fazer com minha conversa →'}</button>
     <button class="btn btn-ghost" id="v2Exemplo">👀 Experimentar com um exemplo</button>
-    <div class="badge priv-l"><span class="ok-ic" aria-hidden="true">✓</span><span><b>O arquivo e as mensagens ficam no seu celular.</b> A análise é feita aqui no navegador. Só vão para o nosso servidor números gerais da conversa, para o ranking (dá para desligar), e os dados de pagamento, se você comprar. <a href="https://retrozap.com.br/privacidade" target="_blank" rel="noopener">Entenda</a></span></div>
+    <div class="badge priv-l"><span class="ok-ic" aria-hidden="true">✓</span><span><b>O arquivo e as mensagens ficam no seu celular.</b> A análise é feita aqui no navegador. Só vão para o nosso servidor números gerais da conversa, para o ranking (dá para desligar), e os dados de pagamento, se você comprar. <a href="/privacidade" target="_blank" rel="noopener">Entenda</a></span></div>
   </section>`;
   v2LigaTipo(inicio);
   $('#v2Minha').onclick = v2Caminho;
@@ -4700,6 +4701,7 @@ function v2Caminho(){
       <button type="button" class="v2-op" id="v2Tenho"><span aria-hidden="true">📂</span><b>Já tenho o arquivo</b><small>Escolher agora</small></button>
       <button type="button" class="v2-op" id="v2Exportar"><span aria-hidden="true">📲</span><b>Preciso exportar</b><small>A gente mostra onde tocar</small></button>
     </div>
+    <div class="badge priv-l v2-priv"><span class="ok-ic" aria-hidden="true">🔒</span><span><b>Pode ficar tranquilo.</b> O arquivo é aberto aqui no seu celular: a gente não recebe, não lê e não guarda suas mensagens. <a href="/privacidade" target="_blank" rel="noopener">Entenda a privacidade</a></span></div>
   </section>`;
   // já tem: vai para a etapa do arquivo e abre o seletor no mesmo toque
   $('#v2Tenho').onclick = () => { v2Ev('ob2_ja_tenho'); home(); V2.viaTenho = true; $('#file')?.click(); V2.viaTenho = false; };
@@ -4775,6 +4777,7 @@ home = function(){
     <button class="btn btn-main" id="start" disabled>${state.modo === 'casal' ? '💕 Continuar com este arquivo' : '🏆 Continuar com este arquivo'}</button>
     <button type="button" class="btn btn-ghost" id="v2Troca" hidden>Trocar arquivo</button>
     <p class="err" role="alert" id="err" hidden></p>
+    <div class="badge priv-l v2-priv"><span class="ok-ic" aria-hidden="true">🔒</span><span><b>Pode ficar tranquilo.</b> O arquivo é aberto aqui no seu celular: a gente não recebe, não lê e não guarda suas mensagens. <a href="/privacidade" target="_blank" rel="noopener">Entenda a privacidade</a></span></div>
     <details class="naoachei" id="naoAchei"><summary>😵 Não achei o arquivo</summary>
       ${ip ? `<ol class="how"><li>Abra o app <b>Arquivos</b> e veja <b>Recentes</b>. Também dá para buscar por "WhatsApp Chat".</li><li>Se escolheu outro lugar na hora de salvar (como iCloud Drive ou No meu iPhone), procure lá.</li><li>Não está em nenhum lugar? Exporte de novo e, na tela de compartilhar, procure a opção de salvar em Arquivos.</li></ol>`
            : `<ol class="how"><li>Abra o gerenciador de arquivos do celular (o nome muda: <b>Arquivos</b>, <b>Meus arquivos</b>…) e veja <b>Downloads</b> ou <b>Recentes</b>. Busque por "Conversa do WhatsApp".</li><li>Se salvou no Drive ou em outro app, procure lá.</li><li>Não está em nenhum lugar? Exporte de novo. As opções de salvar mudam de aparelho para aparelho: escolha uma que guarde o arquivo no celular ou no Drive.</li></ol>`}
