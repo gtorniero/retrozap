@@ -1015,7 +1015,7 @@ function inicio(){
       <button type="button" class="esc esc-g" data-esc="grupo" aria-pressed="${!cs}"><span class="esc-ic" aria-hidden="true">${logoSVG('#1A0B2E', '#FFC23C')}</span><b>Grupos</b><span>amigos, família, trampo, condomínio</span></button>
       <button type="button" class="esc esc-c" data-esc="casal" aria-pressed="${cs}"><i class="novo">Novo</i><span class="esc-ic" aria-hidden="true"><svg viewBox="0 0 120 120" focusable="false">${icHeart('#FFF3EC', '#5E0B2B', 1, 0, 0, 7)}</svg></span><b>Casais</b><span>vocês dois em troféus</span></button>
     </div>
-    <button class="btn btn-main" id="comecar">${cs ? 'Fazer com a nossa conversa →' : 'Fazer com minha conversa →'}</button>
+    <button class="btn btn-main" id="comecar">Começar →</button>
     <div class="v2-prev" aria-label="Exemplo de resultado com conversa fictícia">
       <p class="v2-ex">Exemplo com conversa fictícia</p>
       <div class="v2-trofeu"><span class="v2-ic" aria-hidden="true">🗣️</span><div><small>${cs ? 'Tagarela do Casal' : 'O Tagarela'}</small><b>${cs ? 'Bruno' : 'Pedrão'}</b><span>${cs ? '5.625 mensagens · 54% da conversa' : '1.284 mensagens · 27% do grupo'}</span></div></div>
