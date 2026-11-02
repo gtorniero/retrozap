@@ -64,5 +64,8 @@ Consultas úteis no D1: `SELECT * FROM compras WHERE modo='ligada' ORDER BY cria
 - Cache: páginas `no-cache`; `/assets/*` 1 dia. Se mudar um arquivo de /assets, trocar o nome.
 - Gui prefere: mudanças aplicadas direto, sem explicar cada detalhe; testar antes de publicar; avisar o que ele precisa fazer no painel (Cloudflare/Mercado Pago) em passos curtos.
 
+## Identidade visual
+Guia completo (cores, logo, fontes, ícones, formatos de redes, regras para mudar o site): `fonte/marca/GUIA-IDENTIDADE.md` + `fonte/marca/design-tokens.json` + logos em `fonte/marca/v2/logo-*.svg`. Cópia no Drive (pasta de identidade, Google Doc "Retrozap · Guia de identidade visual"). Ler antes de criar arte ou mexer em cor/tipografia/ícone.
+
 ## Histórico e estado
 Resumo de tudo que foi feito, decisões e pendências: doc `claude/estado-atual-retrozap.md` no Projeto Retrozap (claude.ai). Playbook de lançamento e escala: `claude/playbook-lancamento-escala.md`.

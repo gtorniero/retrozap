@@ -1,0 +1,163 @@
+{
+  "nome": "Retrozap · Identidade 2",
+  "versao": "2026-11",
+  "fontes": {
+    "titulo": {
+      "familia": "Bricolage Grotesque",
+      "peso": 800,
+      "letterSpacing": "-0.02em a -0.035em",
+      "google": "Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800"
+    },
+    "texto": {
+      "familia": "DM Sans",
+      "pesos": [
+        400,
+        500,
+        700
+      ],
+      "google": "DM+Sans:wght@400;500;700"
+    },
+    "mono": {
+      "familia": "DM Mono (redes) / ui-monospace, Menlo, Consolas (site)",
+      "uso": "recibos, boletins, fichas"
+    }
+  },
+  "grupo": {
+    "noite": "#1A0B2E",
+    "acai": "#3D1A5C",
+    "acai2": "#2A1242",
+    "linha": "#4E2E6E",
+    "manga": "#FFC23C",
+    "chiclete": "#FF4F8B",
+    "goiaba": "#FF7A59",
+    "piscina": "#2EC4F1",
+    "uva": "#A98BFF",
+    "areia": "#FFF4E0",
+    "neblina": "#B9A8CC",
+    "papeis": {
+      "fundo": "#1A0B2E",
+      "texto": "#FFF4E0",
+      "destaque": "#FFC23C",
+      "textoSobreDestaque": "#1A0B2E",
+      "secundario": "#B9A8CC",
+      "caixa": "#3D1A5C",
+      "caixa2": "#2A1242"
+    }
+  },
+  "casal": {
+    "creme": "#FFF3EC",
+    "rosaClaro": "#FFD6E2",
+    "rosaClarissimo": "#FFE6EC",
+    "linha": "#F4C3D1",
+    "rosa": "#FF4F8B",
+    "cereja": "#E0245E",
+    "cerejaAcessivel": "#CC1D59",
+    "cerejaEscuro": "#B5174D",
+    "vinho": "#5E0B2B",
+    "vinhoSuave": "#87445C",
+    "pessego": [
+      "#FFB59A",
+      "#FFE3D3",
+      "#FFC9D6"
+    ],
+    "papeis": {
+      "fundo": "#FFF3EC",
+      "texto": "#5E0B2B",
+      "destaque": "#CC1D59",
+      "textoSobreDestaque": "#FFF3EC",
+      "secundario": "#87445C",
+      "caixa": "#FFD6E2",
+      "caixa2": "#FFE6EC"
+    }
+  },
+  "topBrasil": {
+    "grupo": {
+      "verde": "#0E4D33",
+      "verde2": "#16613F",
+      "verde3": "#2E6B4F",
+      "amarelo": "#FFD84D",
+      "papel": "#F5F1E8",
+      "verdeClaro": "#BFD8C8"
+    },
+    "casal": {
+      "creme": "#FFF3EC",
+      "vinho": "#5E0B2B",
+      "cereja": "#E0245E",
+      "rosa": "#FFD6E2"
+    }
+  },
+  "logo": {
+    "viewBox": "0 0 120 120",
+    "combinacoes": [
+      {
+        "uso": "grupo",
+        "taca": "#FFC23C",
+        "pontos": "#1A0B2E",
+        "fundo": "#1A0B2E"
+      },
+      {
+        "uso": "grupo invertido",
+        "taca": "#1A0B2E",
+        "pontos": "#FFC23C",
+        "fundo": "#FFC23C"
+      },
+      {
+        "uso": "casal",
+        "taca": "#E0245E",
+        "pontos": "#FFF3EC",
+        "fundo": "#FFF3EC"
+      },
+      {
+        "uso": "casal sobre rosa",
+        "taca": "#5E0B2B",
+        "pontos": "#FF4F8B",
+        "fundo": "#FF4F8B"
+      }
+    ]
+  },
+  "raios": {
+    "cartao": "20-40px",
+    "botao": "999px",
+    "icone": "34 em viewBox de 140"
+  },
+  "formatos": {
+    "feed": [
+      1080,
+      1350
+    ],
+    "story": [
+      1080,
+      1920
+    ],
+    "reels": [
+      1080,
+      1920
+    ],
+    "perfil": [
+      1080,
+      1080
+    ],
+    "cardSite": [
+      1080,
+      1920
+    ],
+    "areaSegura": {
+      "story": {
+        "topo": 220,
+        "base": 300
+      },
+      "reels": {
+        "topo": 250,
+        "base": 350
+      }
+    }
+  },
+  "regras": [
+    "cor chapada, sem degradê, sem confete de fundo",
+    "sem emoji desenhado nas artes: usar os ícones próprios",
+    "casal sem roxo",
+    "nunca chamar de Wrapped",
+    "nunca usar dados reais de conversas",
+    "nunca usar logo ou verde do WhatsApp"
+  ]
+}
