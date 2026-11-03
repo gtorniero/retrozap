@@ -68,7 +68,7 @@ async function google(env, url, corpo){
 }
 const linhas = o => (o.rows || []).map(r => [...(r.dimensionValues || []).map(v => v.value), ...(r.metricValues || []).map(v => Number(v.value))]);
 
-async function analytics(env){
+export async function analytics(env){
   if (!env.GOOGLE_SA || !env.GA4_PROPERTY) return {erro: 'nao_configurado'};
   const url = `https://analyticsdata.googleapis.com/v1beta/properties/${encodeURIComponent(env.GA4_PROPERTY)}:runReport`;
   const periodo = [{startDate: '29daysAgo', endDate: 'today'}];
@@ -84,7 +84,7 @@ async function analytics(env){
   return {uploads: up ? linhas(up).map(([d, n]) => [data(d), n]) : null, total: linhas(tot)[0] || [0, 0, 0], dia: linhas(dia).map(([d, ...m]) => [`${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6)}`, ...m]), paginas: linhas(paginas), canais: linhas(canais)};
 }
 
-async function busca(env){
+export async function busca(env){
   if (!env.GOOGLE_SA) return {erro: 'nao_configurado'};
   const url = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(env.GSC_SITE || 'sc-domain:retrozap.com.br')}/searchAnalytics/query`;
   const d = n => new Date(Date.now() - n * 864e5).toISOString().slice(0, 10);
