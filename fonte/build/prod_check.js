@@ -868,6 +868,7 @@ function paywall(seguir, ctx){
       <button type="button" class="btn btn-main" id="pwPix">🔓 Liberar no Pix por R$ 8,99</button>
       <div id="pwCartaoBox" hidden><button type="button" class="btn btn-ghost" id="pwCartao" style="width:100%"><span class="pwc"><b>💳 No cartão por R$&nbsp;<span id="pwPc">8,99</span></b><small>Apple Pay, Google Pay ou cartão</small></span></button></div>
       <p class="small" style="margin:0">Ao pagar, você concorda com os <a href="/termos" target="_blank" rel="noopener">Termos de uso</a>. Vendido por Beyond the Work Ideas · CNPJ 69.746.447/0001-00.</p>
+      <label class="pw-lb" for="pwPromo">Código promocional</label><input class="pw-in" id="pwPromo" maxlength="80" autocomplete="off"><button type="button" class="btn btn-ghost" id="pwPromoAplicar">Aplicar código e liberar grátis</button>
       <button type="button" class="pw-lk" id="pwTenho">Já paguei, tenho um código</button>
       <p class="small" style="margin:0">Continua igual: suas mensagens não saem do seu celular. O Pix é processado pelo Mercado Pago e o cartão pelo Stripe.</p>`;
     if (ctx === 'casal'){ const l = caixa.querySelector('.pw-lista'), c = [...l.children].find(li => /Casais/.test(li.textContent)); if (c) l.prepend(c); }
@@ -875,6 +876,13 @@ function paywall(seguir, ctx){
     caixa.querySelector('#pwTenho').onclick = codigoTela;
     const em = caixa.querySelector('#pwEm'), err = caixa.querySelector('#pwErr'), bt = caixa.querySelector('#pwPix');
     em.value = lsGet('rz_email') || '';
+    caixa.querySelector('#pwPromoAplicar').onclick=async e=>{
+      const bt=e.currentTarget,email=em.value.trim(),codigo=caixa.querySelector('#pwPromo').value;
+      if(!email||!em.checkValidity()){err.hidden=false;err.textContent='Informe seu e-mail acima.';em.focus();return}
+      bt.disabled=true;err.hidden=true;
+      try{const r=await fetch('/api/promo',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email,codigo})});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Código não confirmado.');lsSet('rz_email',email);libera(d.codigo)}catch(e){err.hidden=false;err.textContent=e.message}finally{bt.disabled=false}
+    };
+
     bt.onclick = async () => {
       const email = em.value.trim();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){ err.hidden = false; err.textContent = 'Confira o e-mail.'; em.focus(); return; }

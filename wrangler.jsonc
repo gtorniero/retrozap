@@ -16,7 +16,7 @@
     "run_worker_first": ["/api/*", "/admin"]
   },
   // banco da comparação entre grupos. Na primeira publicação a Cloudflare cria o banco "retrozap" sozinha.
-  "d1_databases": [{ "binding": "DB", "database_name": "retrozap" }],
+  "d1_databases": [{ "binding": "DB", "database_name": "retrozap" }, {"binding":"PROMOS","database_name":"btw-promocoes","database_id":"84c12b97-d46d-4ba6-abe5-f6e8e7bcf84c"}],
   // cobrança de R$ 4,99: "teste" (só com ?teste_cobranca=1), "ligada" (para todos) ou "desligada"
   "vars": { "COBRANCA": "ligada", "GA4_PROPERTY": "559410482" },
   // mantém variáveis criadas no painel; o Access Token do Mercado Pago é o segredo MP_TOKEN
