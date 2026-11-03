@@ -62,7 +62,7 @@ function avisoCookies(forcar = false){
   if (document.querySelector('.cookies')) return;
   try { if (!forcar && localStorage.getItem('rz_cookies') && localStorage.getItem('rz_marketing_v1')) return; } catch {}
   const b = document.createElement('div'); b.className = 'cookies';
-  b.innerHTML = 'Usamos cookies para contar visitas. Se você aceitar, Google e Meta também poderão medir nossas campanhas e personalizar anúncios. Suas mensagens nunca saem do seu celular. <a href="/privacidade">Política de privacidade</a> <button class="btn btn-main mini" type="button" data-ck="sim">Aceitar</button> <button class="btn btn-ghost mini" type="button" data-ck="nao">Só o essencial</button>';
+  b.innerHTML = '<span>Usamos cookies para medir visitas e anúncios. Suas mensagens nunca saem do celular. <a href="/privacidade">Privacidade</a></span> <button class="btn btn-ghost mini" type="button" data-ck="nao">Recusar</button> <button class="btn btn-main mini" type="button" data-ck="sim">Aceitar</button>';
   b.querySelectorAll('[data-ck]').forEach(bt => bt.onclick = () => {
     const sim = bt.dataset.ck === 'sim'; try { localStorage.setItem('rz_cookies', bt.dataset.ck); } catch {}
     try { localStorage.setItem('rz_marketing_v1', bt.dataset.ck); window.dispatchEvent(new Event('rz:marketing-consent')); } catch {}
