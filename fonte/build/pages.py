@@ -1,4 +1,4 @@
-import os, json
+import os, json, html as htmlmod
 from PIL import Image, ImageDraw, ImageFont
 
 SCR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -37,6 +37,26 @@ CSS += conteudo.CSS_EXTRA
 
 def page(path, title, desc, body, ad=True):
     url = SITE + '/' + path.replace('index.html', '').replace('.html', '')
+    blog = path.startswith('blog/'); artigo = blog and path != 'blog/index.html'
+    slug = path[5:-5] if artigo else ''
+    at = lambda v: htmlmod.escape(v, quote=True)
+    ld = ''
+    if blog:
+        trilha = [('Início', SITE + '/'), ('Blog', SITE + '/blog/')] + ([(title, url)] if artigo else [])
+        dados = [{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+            {"@type": "ListItem", "position": i + 1, "name": n, "item": u} for i, (n, u) in enumerate(trilha)]}]
+        if artigo:
+            data = conteudo.PUBLICADO.get(slug, HOJE)
+            org = {"@type": "Organization", "name": "Retrozap", "url": SITE + '/', "logo": {"@type": "ImageObject", "url": SITE + '/icon-512.png'}}
+            dados.append({"@context": "https://schema.org", "@type": "Article", "headline": title, "description": desc,
+                "inLanguage": "pt-BR", "datePublished": data, "dateModified": data, "url": url,
+                "mainEntityOfPage": {"@type": "WebPage", "@id": url}, "image": SITE + '/og-retrozap.png',
+                "author": org, "publisher": org})
+        ld = ''.join('<script type="application/ld+json">' + json.dumps(d, ensure_ascii=False).replace('</', '<\\/') + '</script>' for d in dados)
+        nav = '<nav class="trilha small" aria-label="Você está em"><ol>' + ''.join(
+            (f'<li><a href="{u.replace(SITE, "")}">{htmlmod.escape(n)}</a></li>' if i < len(trilha) - 1 else f'<li aria-current="page">{htmlmod.escape(n)}</li>')
+            for i, (n, u) in enumerate(trilha)) + '</ol></nav>'
+        body = nav + body
     slot = getattr(conteudo, 'AD_SLOT_PAGINAS', '')
     adhtml = f'<div class="anuncio"><p class="small" style="margin:0">Publicidade</p><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4039247360984618" data-ad-slot="{slot}" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(window.adsbygoogle=window.adsbygoogle||[]).push({{}});</script></div>' if (ad and slot) else ''
     html = f"""<!doctype html>
@@ -52,9 +72,11 @@ if(ad==='denied'){{(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersona
   gtag('js', new Date());
   gtag('config', 'G-R8R1EN0KQN', {{page_title:'Retrozap',page_location:(function(){{var u=new URL(location.href);u.hash='';for(var pair of Array.from(u.searchParams)){{var k=pair[0],v=pair[1];if(/^utm_(source|medium|campaign|content|term)$/.test(k)&&/^[a-z0-9_.-]{{1,100}}$/i.test(v))continue;if(/^(gclid|fbclid|gbraid|wbraid)$/.test(k)&&/^[a-z0-9_.-]{{1,300}}$/i.test(v))continue;u.searchParams.delete(k)}}return u.origin+u.pathname+u.search}})(),page_referrer:''}});
 </script>
-{conteudo.gtm_head(getattr(conteudo, 'GTM_ID', ''))}<title>{title} · Retrozap</title><meta name="description" content="{desc}">
+{conteudo.gtm_head(getattr(conteudo, 'GTM_ID', ''))}<title>{htmlmod.escape(title, quote=False)} · Retrozap</title><meta name="description" content="{at(desc)}">
 <link rel="canonical" href="{url}"><meta name="theme-color" content="#1A0B2E">
-<meta property="og:title" content="{title}"><meta property="og:description" content="{desc}"><meta property="og:image" content="{SITE}/og-retrozap.png">
+<meta property="og:type" content="{'article' if artigo else 'website'}"><meta property="og:url" content="{url}"><meta property="og:site_name" content="Retrozap"><meta property="og:locale" content="pt_BR">
+<meta property="og:title" content="{at(title)}"><meta property="og:description" content="{at(desc)}"><meta property="og:image" content="{SITE}/og-retrozap.png">
+<meta name="twitter:card" content="summary_large_image">{ld}
 <link rel="icon" href="/favicon.png" type="image/png">
 <meta name="google-adsense-account" content="ca-pub-4039247360984618">
 <!-- AdSense: não carrega para quem tem o Premium -->
@@ -255,10 +277,16 @@ ARTIGOS = ARTIGOS + conteudo.NOVOS
 urls.append(page(*conteudo.COMO_FUNCIONA))
 urls.append(page('perguntas-frequentes.html', 'Perguntas frequentes', 'Dúvidas sobre o Retrozap: privacidade, como exportar a conversa, iPhone e Android, prêmios e mais.', conteudo.faq_html()))
 urls.append(page(*conteudo.IDEIAS))
-lista = ''.join(f'<a class="card" href="/blog/{slug}"><b>{t}</b><span class="small">{d}</span></a>' for slug, t, d, _ in ARTIGOS)
-urls.append(page('blog/index.html', 'Blog do Retrozap', 'Dicas para grupos de WhatsApp: retrospectiva do grupo, ideias de prêmios, brincadeiras, gírias, jogos e privacidade.', f'<h1>Blog do Retrozap</h1><div class="cards">{lista}</div><!--AD-->'))
+POR_SLUG = {a[0]: a for a in ARTIGOS}
+_secoes = [s for _, sl in conteudo.SECOES_BLOG for s in sl]
+assert sorted(_secoes) == sorted(POR_SLUG), 'SECOES_BLOG precisa ter cada artigo exatamente uma vez'
+assert all(len(v) == 3 and all(x in POR_SLUG and x != k for x in v) for k, v in conteudo.LEIA_TAMBEM.items()) and set(conteudo.LEIA_TAMBEM) == set(POR_SLUG), 'LEIA_TAMBEM incompleto'
+cartao = lambda s: f'<a class="card" href="/blog/{s}"><b>{POR_SLUG[s][1]}</b><span class="small">{POR_SLUG[s][2]}</span></a>'
+lista = ''.join(f'<h2>{nome}</h2><div class="cards">' + ''.join(cartao(s) for s in sl) + '</div>' + ('<!--AD-->' if i == 0 else '') for i, (nome, sl) in enumerate(conteudo.SECOES_BLOG))
+urls.append(page('blog/index.html', 'Blog do Retrozap', 'Dicas para grupos de WhatsApp: retrospectiva do grupo, ideias de prêmios, brincadeiras, mensagens prontas, casais, exportar a conversa e privacidade.', f'<h1>Blog do Retrozap</h1>{lista}'))
 for slug, t, d, body in ARTIGOS:
-    urls.append(page(f'blog/{slug}.html', t, d, body))
+    leia = '<section class="leia" aria-labelledby="leia-t"><h2 id="leia-t">Leia também</h2><div class="cards">' + ''.join(cartao(s) for s in conteudo.LEIA_TAMBEM[slug]) + '</div></section>'
+    urls.append(page(f'blog/{slug}.html', t, d, body + leia))
 
 # ---------- arquivos técnicos ----------
 open(os.path.join(PUB, 'ads.txt'), 'w').write('google.com, pub-4039247360984618, DIRECT, f08c47fec0942fa0\n')
