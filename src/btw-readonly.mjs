@@ -1,4 +1,5 @@
 // GET /api/btw/metrics: aggregate-only integration; disabled until BTW_READ_TOKEN is configured.
+export function acceptableToken(s){return typeof s==='string'&&!/\s/.test(s)&&new Set(s).size>=10&&((s.length>=32)||(s.length>=15&&/[a-z]/.test(s)&&/[A-Z]/.test(s)&&/\d/.test(s)&&/[^a-zA-Z0-9]/.test(s)));}
 const reply=(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store','X-Robots-Tag':'noindex'}});
 const number=v=>typeof v==='number'&&Number.isFinite(v)&&v>=0?v:null;
 const digest=s=>crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)).then(x=>new Uint8Array(x));
@@ -7,7 +8,7 @@ const safe=async(fn)=>{try{return {status:'available',data:await fn()};}catch{re
 export function createMetricsHandler({analytics,busca}){
  return async({request,env})=>{
   if(request.method!=='GET')return reply({error:'method_not_allowed'},405);
-  if(!env.BTW_READ_TOKEN || env.BTW_READ_TOKEN.length<32)return reply({error:'integration_not_configured'},503);
+  if(!acceptableToken(env.BTW_READ_TOKEN))return reply({error:'integration_not_configured'},503);
   const auth=request.headers.get('Authorization')||'';
   if(!auth.startsWith('Bearer ')||!await equal(auth.slice(7),env.BTW_READ_TOKEN))return reply({error:'unauthorized'},401);
   // Fixed Retrozap resources, no arbitrary URLs/property selectors and no admin writes.
