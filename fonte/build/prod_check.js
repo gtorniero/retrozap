@@ -24,7 +24,7 @@ function evento(nome, params = {}){
   // funil do onboarding (ob2_*): só valores de uma lista fechada, nunca texto livre
   if (['iphone','android'].includes(params.aparelho)) p.aparelho = params.aparelho;
   if (['ok','pouca_conversa','formato_invalido','zip_sem_conversa','nao_abriu','erro_leitura'].includes(params.resultado)) p.resultado = params.resultado;
-  if (['inicio','ja_tenho','caixa','sem_exportar','problema','nao_achei','conferir'].includes(params.de)) p.de = params.de;
+  if (['inicio','ja_tenho','caixa','sem_exportar','problema','nao_achei'].includes(params.de)) p.de = params.de;
   if (['sem_exportar','nao_achei'].includes(params.qual)) p.qual = params.qual;
   if (Number.isInteger(params.passo) && params.passo > 0 && params.passo < 10) p.passo = params.passo;
   if (['ate_300','300_3000','mais_3000'].includes(params.faixa_msgs)) p.faixa_msgs = params.faixa_msgs;
@@ -1187,34 +1187,6 @@ function v2Destrava(){
 }
 const v2Data = t => t.toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit', year: 'numeric'});
 
-// confirmação do que foi encontrado (só na tela, nada é enviado)
-function v2Confirma(msgs, autores, segue){
-  V2.lendo = false; anchor(true); v2Rota('/conferir'); pilha(() => v2Confirma(msgs, autores, segue), 'confirma'); setSteps(0); V2.etapa = 'confirma'; v2Salva(); v2Ev('ob2_leitura', {resultado: 'ok'});
-  const ini = msgs[0].t, fim = msgs[msgs.length - 1].t, ano = ANO_MOMENTO, m26 = msgs.filter(m => m.t.getFullYear() === ano).length;
-  const nomeOk = !!state.grupo, part = [...autores].filter(n => !state.hidden.has(n)).length;
-  const aviso26 = m26 === 0 ? `Esse arquivo não tem mensagens de ${ano}. Os troféus vão contar o histórico que está no arquivo, desde ${v2Data(ini)}.`
-    : m26 < MIN_2026 ? `Esse arquivo tem ${fmt(m26)} mensagens de ${ano}. Com tão pouco, os troféus vão contar o histórico todo do arquivo, desde ${v2Data(ini)}.`
-    : ini.getFullYear() === ano && (ini.getMonth() > 0 || ini.getDate() > 7) ? `O arquivo começa em ${v2Data(ini)}. A retrospectiva de ${ano} vai de ${v2Data(ini)} até ${v2Data(fim)}, não o ano inteiro.` : '';
-  view.innerHTML = `<section class="screen">
-    ${v2Selo()}
-    <h1 style="font-size:clamp(28px,8vw,38px)">Encontramos sua conversa</h1>
-    <dl class="v2-achou">
-      <div><dt>Mensagens</dt><dd>${fmt(msgs.length)}</dd></div>
-      <div><dt>${state.modo === 'casal' ? 'Pessoas' : 'Participantes'}</dt><dd>${fmt(part)}</dd></div>
-      <div class="v2-l"><dt>Período</dt><dd>${v2Data(ini)} a ${v2Data(fim)}</dd></div>
-    </dl>
-    <label class="v2-nome" for="v2Nome">${nomeOk ? 'Nome da conversa' : 'Nome da conversa (opcional)'}
-      <input id="v2Nome" type="text" maxlength="60" value="${esc(state.grupo || '')}" placeholder="${state.modo === 'casal' ? 'Ex.: Ana & Bruno' : 'Ex.: Turma do churras'}"></label>
-    <p class="v2-aviso">Vamos usar o histórico disponível neste arquivo.${aviso26 ? ' ' + aviso26 : ''}</p>
-    <p class="small" style="margin:0">Essas informações aparecem só aqui na sua tela.</p>
-    <button class="btn btn-main" id="v2Segue">Continuar para minha retrospectiva →</button>
-    <button class="btn btn-ghost" id="v2Outro">Escolher outro arquivo</button>
-  </section>`;
-  $('#v2Segue').onclick = () => { v2Ev('ob2_confirmou', {faixa_msgs: msgs.length < 300 ? 'ate_300' : msgs.length < 3000 ? '300_3000' : 'mais_3000', com_nome: !!$('#v2Nome').value.trim()}); const n = $('#v2Nome').value.trim(); state.grupo = n ? cortaNome(limpaTxt(n)) : ''; segue(); };
-  $('#v2Outro').onclick = () => { v2Ev('ob2_outro_arquivo', {de: 'conferir'}); state.arquivo = null; home(); };
-  window.scrollTo(0, 0);
-}
-
 // poucas mensagens ou participantes: mostra o que foi encontrado, sem cravar a causa
 function v2Problema(msgs){
   V2.lendo = false; anchor(true); v2Rota('/arquivo'); pilha(() => v2Problema(msgs), 'problema'); setSteps(0); V2.etapa = 'problema'; v2Ev('ob2_leitura', {resultado: msgs.length ? 'pouca_conversa' : 'formato_invalido'});
@@ -1246,11 +1218,11 @@ function v2Salva(){ try { sessionStorage.setItem('rz_v2', JSON.stringify({etapa:
 { const _story = story; story = function(){ if (!V2.naRetro){ V2.naRetro = true; v2Ev('ob2_retrospectiva', {modo: state.modo}); } return _story.apply(this, arguments); }; }
 function v2Restaura(){
   const r = V2_SALVO;
-  if (!r || !['caminho', 'exportar', 'arquivo', 'confirma'].includes(r.etapa)) return;
+  if (!r || !['caminho', 'exportar', 'arquivo', 'lido'].includes(r.etapa)) return;
   if (r.how) state.how = r.how; if (r.modo) setModo(r.modo); V2.passo = r.passo || 0; V2.saiu = r.saiu;
   if (r.etapa === 'caminho') return v2Caminho();
   if (r.etapa === 'exportar' && !r.saiu) return v2Exportar();
-  // voltou do WhatsApp com a página recarregada, ou estava escolhendo/confirmando o arquivo: o arquivo precisa ser escolhido de novo
+  // voltou do WhatsApp com a página recarregada, ou estava escolhendo o arquivo: o arquivo precisa ser escolhido de novo
   if (r.saiu) v2Ev('ob2_voltou', {recarregou: true}); state.voltou = !!r.saiu; V2.recarregou = true; V2.saiu = false; home();
 }
 
@@ -1366,7 +1338,7 @@ async function run(text, sample, retomando){
   // conversa de 2 pessoas (em qualquer modo): pergunta se é um casal ou amigos/outra conversa
   if (retomando) return;
   const segue = () => { if (!sample && [...autores].filter(n => !state.hidden.has(n)).length === 2) return perguntaCasal([...autores].filter(n => !state.hidden.has(n)), roster); roster(); };
-  if (!sample) return v2Confirma(msgs, autores, segue);
+  if (!sample){ V2.lendo = false; V2.etapa = 'lido'; v2Salva(); v2Ev('ob2_leitura', {resultado: 'ok'}); }
   segue();
 }
 function perguntaCasal(nomes, seguir){

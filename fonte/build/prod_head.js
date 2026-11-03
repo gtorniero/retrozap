@@ -23,7 +23,7 @@ function evento(nome, params = {}){
   // funil do onboarding (ob2_*): só valores de uma lista fechada, nunca texto livre
   if (['iphone','android'].includes(params.aparelho)) p.aparelho = params.aparelho;
   if (['ok','pouca_conversa','formato_invalido','zip_sem_conversa','nao_abriu','erro_leitura'].includes(params.resultado)) p.resultado = params.resultado;
-  if (['inicio','ja_tenho','caixa','sem_exportar','problema','nao_achei','conferir'].includes(params.de)) p.de = params.de;
+  if (['inicio','ja_tenho','caixa','sem_exportar','problema','nao_achei'].includes(params.de)) p.de = params.de;
   if (['sem_exportar','nao_achei'].includes(params.qual)) p.qual = params.qual;
   if (Number.isInteger(params.passo) && params.passo > 0 && params.passo < 10) p.passo = params.passo;
   if (['ate_300','300_3000','mais_3000'].includes(params.faixa_msgs)) p.faixa_msgs = params.faixa_msgs;

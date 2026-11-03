@@ -17,7 +17,7 @@ async def main():
     await pg.wait_for_timeout(500); t0=time.time()
     for sel in ['#lbOk','#lbSim','#lbGo']:
       if await pg.query_selector(sel): await pg.click(sel); break
-    await pg.wait_for_selector('#v2Segue', timeout=20000); print('confirmação:', ' '.join((await pg.text_content('.v2-achou')).split())); await pg.screenshot(path=O+'/1b-confirma.png',full_page=True); await pg.click('#v2Segue')
+    if await pg.query_selector('#v2Segue'): er.append('tela /conferir ainda aparece')
     await pg.wait_for_selector('#pcSim, #go', timeout=20000)
     if await pg.query_selector('#pcSim'): print('pergunta dupla:', await pg.text_content('#pcT')); await pg.click('#pcSim')
     await pg.wait_for_selector('#go',timeout=20000); print('analise s', round(time.time()-t0,2)); await pg.wait_for_timeout(400)
