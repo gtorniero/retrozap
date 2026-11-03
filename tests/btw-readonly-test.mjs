@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {createMetricsHandler} from '../src/btw-readonly.mjs';
+const token='test-fixture-only-not-a-real-key-000000';
+const env={BTW_READ_TOKEN:token,DB:{prepare:()=>({first:async()=>({count:3,customers:2,gross_brl:16.97,email:'should-not-leak@example.invalid'})})}};
+const analytics=async()=>({total:[171,254,2724],canais:[['Direct',230]],secret:'do not export'});
+const busca=async()=>({total:{cliques:4,impressoes:170,ctr:4/170,posicao:11.6},termos:[{query:'private'}]});
+const handler=createMetricsHandler({analytics,busca});
+const req=(headers={},method='GET')=>new Request('https://retrozap.com.br/api/btw/metrics',{headers,method});
+assert.equal((await handler({request:req(),env})).status,401);
+assert.equal((await handler({request:req(),env:{}})).status,503);
+assert.equal((await handler({request:req({},'POST'),env})).status,405);
+const response=await handler({request:req({Authorization:'Bearer '+token}),env});const body=await response.json();
+assert.equal(body.payments.data.gross_brl,16.97);assert.equal(body.payments.data.fees_brl,null);
+assert.equal(JSON.stringify(body).includes('should-not-leak'),false);assert.equal(JSON.stringify(body).includes('do not export'),false);assert.equal(JSON.stringify(body).includes('private'),false);
+const failed=await createMetricsHandler({analytics:async()=>{throw Error('secret failure');},busca})({request:req({Authorization:'Bearer '+token}),env});
+const partial=await failed.json();assert.equal(partial.analytics.status,'error');assert.equal(partial.analytics.data,null);assert.equal(partial.search.status,'available');
+console.log('Readonly integration draft: authentication, allowed method, source isolation, unknown fees and sensitive-field exclusion passed');
