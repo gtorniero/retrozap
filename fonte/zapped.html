@@ -687,6 +687,8 @@ html.casal .selo-esp.br{background:#5E0B2B;color:#FFF3EC}
 .card-fim.esp{box-shadow:inset 0 0 0 2px var(--manga)}
 html.casal .selo-esp{background:#B5174D;color:#FFF3EC}html.casal .card-fim.esp{box-shadow:inset 0 0 0 2px #E0245E}
 /* onboarding v2 */
+.v2-tt .tt-scr *{animation:none!important}
+.v2-causas{display:flex;flex-direction:column;gap:6px}.v2-causas ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
 .v2-priv{width:100%}
 .v2-tt .tt-dedo{transition:none!important}
 .v2-tt .tt-acs div,.v2-tt .az,.v2-tt .tt-ac b{color:#0047b3!important}.v2-tt small{color:#4f4f52!important;opacity:1!important}
@@ -1759,7 +1761,7 @@ function v2Exportar(){
       <div class="v2-telas${cenas.length > 1 ? ' duo' : ''}" aria-hidden="true">${cenas.map((c, k) => `<div class="tt v2-tt">${cenas.length > 1 ? `<span class="v2-k">${k + 1}</span>` : ''}<div class="tt-phone"><div class="tt-scr">${casalTxt(c.h)}</div><i class="tt-dedo"></i></div></div>`).join('')}</div>
       ${/Exportar conversa/.test(L[i].t()) ? `<details class="naoachei" id="v2SemExportar"><summary>🤔 Não encontrei Exportar conversa</summary>
         <p class="small" style="margin:0">O caminho muda um pouco conforme o aparelho e a versão do WhatsApp. ${how === 'iphone' ? 'No iPhone, a opção costuma ficar no fim da tela de dados da conversa (toque no nome lá em cima e role até o fim).' : 'No Android, costuma ficar em ⋮ › Mais.'} Atualizar o WhatsApp pode ajudar.</p>
-        <p class="small" style="margin:0">Algumas conversas têm a exportação bloqueada por configurações de privacidade definidas no próprio WhatsApp. Nesse caso, essa conversa não pode ser exportada: escolha outra conversa ou veja como fica com um exemplo.</p>
+        <p class="small" style="margin:0"><b>Não aparece de jeito nenhum?</b> Se ${state.modo === 'casal' ? 'a conversa' : 'o grupo'} estiver com a <b>Privacidade avançada da conversa</b> ligada, o WhatsApp esconde a opção de exportar. Ela fica em ${state.modo === 'casal' ? 'Dados do contato' : 'Dados do grupo'} › Privacidade avançada da conversa${state.modo === 'casal' ? '' : ', e só um admin do grupo pode mudar'}. Se preferir não mexer, dá para fazer com outra conversa ou ver como fica com um exemplo.</p>
         <button type="button" class="btn btn-ghost" id="v2ExDeNovo">👀 Experimentar com um exemplo</button></details>` : ''}`}
     <details class="pb-video"><summary>▶️ Prefiro assistir (45 segundos)</summary>
       <video controls playsinline muted preload="none" poster="${VIDEO_EXPORTAR}.jpg" src="${VIDEO_EXPORTAR}.mp4" aria-label="Vídeo: como exportar a conversa do WhatsApp"></video></details>
@@ -1768,7 +1770,7 @@ function v2Exportar(){
       ${ultimo ? '' : `<button type="button" class="btn btn-main" id="v2Prox">Próximo →</button>`}
     </div>
   </section>`;
-  if (!ultimo) setTimeout(() => view.querySelectorAll('.v2-tt .tt-phone').forEach(ph => { const scr = ph.querySelector('.tt-scr'), d = ph.querySelector('.tt-dedo'), a = scr.querySelector('.alvo'); if (!a) return; let x = a.offsetWidth/2, y = a.offsetHeight/2, el = a; while (el && el !== ph){ x += el.offsetLeft - (el.scrollLeft || 0); y += el.offsetTop - (el.parentElement && el.parentElement !== ph ? 0 : 0); const pai = el.offsetParent; if (pai && pai !== ph) { x -= pai.scrollLeft || 0; y -= pai.scrollTop || 0; } el = pai; } d.style.left = x + 'px'; d.style.top = y + 'px'; d.style.opacity = 1; a.classList.add('apertou'); }), TT_CALMO() ? 0 : 500);
+  if (!ultimo) setTimeout(() => view.querySelectorAll('.v2-tt .tt-phone').forEach(ph => { const scr = ph.querySelector('.tt-scr'), d = ph.querySelector('.tt-dedo'), a = scr.querySelector('.alvo'); if (!a) return; const z = parseFloat(getComputedStyle(ph).zoom) || 1, b = ph.getBoundingClientRect(), r = a.getBoundingClientRect(), k = (b.width / ph.offsetWidth) || z; d.style.left = (r.left + r.width/2 - b.left)/k + 'px'; d.style.top = (r.top + r.height/2 - b.top)/k + 'px'; d.style.opacity = 1; a.classList.add('apertou'); }), TT_CALMO() ? 0 : 500);
   view.querySelectorAll('[data-h]').forEach(b => b.onclick = () => { if (state.how === b.dataset.h) return; state.how = b.dataset.h; v2Ev('ob2_aparelho', {aparelho: state.how}); while (PILHA.length && /^exportar/.test(PILHA[PILHA.length-1].k)) PILHA.pop(); V2.passo = 0; v2Exportar(); view.querySelector(`[data-h="${state.how}"]`)?.focus(); });
   $('#v2Volta').onclick = () => voltar();
   $('#v2Prox')?.addEventListener('click', () => { V2.passo++; v2Exportar(); });
@@ -1874,7 +1876,9 @@ function v2Problema(msgs){
       <div><dt>Participantes</dt><dd>${fmt(pessoas)}</dd></div>
       <div class="v2-l"><dt>Período</dt><dd>${v2Data(msgs[0].t)} a ${v2Data(msgs[msgs.length - 1].t)}</dd></div></dl>
       <p class="v2-aviso">Para montar a retrospectiva, precisamos de pelo menos 20 mensagens e 2 participantes.</p>
-      <p class="small" style="margin:0">Isso pode acontecer quando o celular guarda só uma parte do histórico. Se outra pessoa da conversa tiver o histórico completo, o arquivo exportado por ela pode ter mais mensagens.</p>`
+      <div class="v2-causas"><p class="small" style="margin:0"><b>Por que isso acontece?</b> O WhatsApp só exporta o que está guardado no celular onde você exportou. Algumas causas comuns:</p>
+      <ul class="small"><li><b>Celular novo:</b> se você trocou de aparelho sem restaurar o backup, o histórico antigo não veio junto.</li><li><b>${state.modo === 'casal' ? 'Conversa recente' : 'Grupo novo'}:</b> se ${state.modo === 'casal' ? 'a conversa começou' : 'o grupo foi criado ou você entrou'} há pouco tempo, ainda não tem muita coisa.</li><li><b>Conversa apagada:</b> se alguém usou "Limpar conversa" neste celular, as mensagens antigas não estão mais nele.</li></ul>
+      <p class="small" style="margin:0">Se outra pessoa ${state.modo === 'casal' ? 'da conversa' : 'do grupo'} tiver o histórico completo, peça para ela exportar, ou espere a conversa crescer.</p></div>`
     : `<p class="v2-aviso">Não encontramos mensagens no formato do WhatsApp. Use o arquivo gerado em <b>Exportar conversa</b> (.zip ou .txt), sem editar.</p>`}
     <button class="btn btn-main" id="v2Outro">Escolher outro arquivo</button>
     <button class="btn btn-ghost" id="v2Rever2">Rever como exportar</button>
