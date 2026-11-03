@@ -389,7 +389,7 @@ function desenhaFunil(f){
       '<span class="trilho"><span class="barra-f" style="width:' + w + '%"></span></span><span class="val">' + fmt(v) + ' <small>' + pctN(v, n0).toLocaleString('pt-BR') + '%</small></span></div>';
   });
   h += '</div>' + (f.aproximado ? '<p class="aviso">O relatório de funil do Google não respondeu' + (f.erroFunil ? ' (' + esc(f.erroFunil) + ')' : '') + '. Mostrando quantas pessoas viram cada etapa, sem exigir a ordem.</p>' : '') +
-    '<p class="aviso">Pessoas únicas em cada etapa, na ordem. “Metade dos prêmios” = 4º prêmio. Quem escolhe “Só o essencial” no aviso de cookies pode não ser contado.</p></div>';
+    '<p class="aviso">Pessoas únicas em cada etapa, na ordem. “Metade dos prêmios” = 4º prêmio. Quem escolhe “Recusar” no aviso de cookies pode não ser contado.</p></div>';
   if (f.ver){
     h += '<div class="card" style="margin-top:12px"><b>Comparando por ' + esc(NOMES_DIM[f.ver]) + '</b>';
     if (f.erroQuebra) h += '<p class="aviso"><b>Erro:</b> ' + esc(f.erroQuebra) + '</p>';
