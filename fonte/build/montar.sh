@@ -6,6 +6,7 @@ python3 "$D/build/build.py"
 python3 "$D/build/pages.py" > /dev/null
 cp "$D/build/stats.js" "$D/retrozap-site/functions/api/stats.js"
 cp "$D/build/ideias.js" "$D/retrozap-site/functions/api/ideias.js"
+cp "$D/build/promos.mjs" "$D/retrozap-site/functions/api/promos.mjs"
 cp "$D/build/pix.js" "$D/retrozap-site/functions/api/pix.js"
 cp "$D/build/README.md" "$D/retrozap-site/README.md"
 cp "$D/build/gitignore" "$D/retrozap-site/.gitignore"

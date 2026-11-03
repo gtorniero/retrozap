@@ -1,3 +1,4 @@
+import {redeemPromo} from './promos.mjs';
 // Cobrança do Retrozap: R$ 8,99 por Pix (Mercado Pago, API de Orders) libera grupos ilimitados naquele navegador.
 // Nenhuma mensagem passa por aqui: só e-mail do pagador, identificador da compra e o código de acesso.
 // Segredo MP_TOKEN (Access Token) fica em Cloudflare > Worker > Settings > Variables and Secrets.
@@ -196,6 +197,7 @@ export async function acesso({request, env}){
     return json({ok: AMIGOS_HASH.includes(h) || extras.includes(codigo)});
   }
   if (!/^RZ-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(codigo)) return json({ok: false});
+  try {if(await env.DB.prepare('SELECT grant_id FROM promo_acessos WHERE codigo=?').bind(codigo).first())return json({ok:true});} catch {}
   // com a cobrança ligada, códigos gerados no modo teste não valem
   const linha = modo(env) === 'ligada'
     ? await env.DB.prepare("SELECT ref FROM compras WHERE codigo = ? AND status = 'pago' AND modo = 'ligada'").bind(codigo).first()
@@ -215,9 +217,26 @@ export async function recuperar({request, env}){
   if (ult && Date.now() - ult.quando < 2*60e3) return json({ok: true}); // no máximo 1 reenvio a cada 2 minutos
   const filtro = modo(env) === 'ligada' ? " AND modo = 'ligada'" : '';
   const linha = await env.DB.prepare(`SELECT codigo FROM compras WHERE email = ? AND status = 'pago'${filtro} ORDER BY pago DESC LIMIT 1`).bind(email).first();
-  if (linha?.codigo){
+  let promocional=null;
+  if(!linha?.codigo)try{promocional=await env.DB.prepare('SELECT codigo FROM promo_acessos WHERE email=? ORDER BY criado DESC LIMIT 1').bind(email).first();}catch{}
+  if (linha?.codigo || promocional?.codigo){
     await env.DB.prepare('INSERT OR REPLACE INTO envios (email, quando) VALUES (?, ?)').bind(email, Date.now()).run();
-    await enviaCodigo(env, email, linha.codigo);
+    await enviaCodigo(env, email, linha?.codigo || promocional.codigo);
   }
   return json({ok: true});
+}
+
+// Promotional access is recorded separately from paid transactions.
+export async function promo({request,env}){
+ if(!env.DB)return json({error:'Indisponível.'},503);
+ if(request.headers.get('Origin')!==new URL(request.url).origin)return json({error:'Origem inválida.'},403);
+ try{
+ const text=await request.text();if(text.length>2048)return json({error:'Pedido muito grande.'},413);
+ const b=JSON.parse(text),email=String(b.email||'').trim().toLowerCase();
+ const g=await redeemPromo(env.PROMOS,request,'retrozap','premium',b.codigo,email);
+ await env.DB.prepare('CREATE TABLE IF NOT EXISTS promo_acessos (grant_id TEXT PRIMARY KEY,email TEXT NOT NULL,codigo TEXT NOT NULL UNIQUE,criado TEXT NOT NULL)').run();
+ await env.DB.prepare('INSERT OR IGNORE INTO promo_acessos(grant_id,email,codigo,criado) VALUES (?,?,?,?)').bind(g.id,email,'RZ-'+aleatorio(4)+'-'+aleatorio(4),new Date(g.created).toISOString()).run();
+ const a=await env.DB.prepare('SELECT codigo FROM promo_acessos WHERE grant_id=?').bind(g.id).first();
+ return json({ok:true,codigo:a.codigo});
+ }catch(e){return json({error:e.status?e.message:'Não foi possível aplicar o código.'},e.status||503)}
 }
