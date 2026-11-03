@@ -24,7 +24,9 @@ function evento(nome, params = {}){
   // funil do onboarding (ob2_*): só valores de uma lista fechada, nunca texto livre
   if (['iphone','android'].includes(params.aparelho)) p.aparelho = params.aparelho;
   if (['ok','pouca_conversa','formato_invalido','zip_sem_conversa','nao_abriu','erro_leitura'].includes(params.resultado)) p.resultado = params.resultado;
-  if (['inicio','ja_tenho','caixa','sem_exportar','problema'].includes(params.de)) p.de = params.de;
+  if (['inicio','ja_tenho','caixa','sem_exportar','problema','nao_achei','conferir'].includes(params.de)) p.de = params.de;
+  if (['sem_exportar','nao_achei'].includes(params.qual)) p.qual = params.qual;
+  if (Number.isInteger(params.passo) && params.passo > 0 && params.passo < 10) p.passo = params.passo;
   if (['ate_300','300_3000','mais_3000'].includes(params.faixa_msgs)) p.faixa_msgs = params.faixa_msgs;
   if (['zip','txt','outro'].includes(params.tipo)) p.tipo = params.tipo;
   if (typeof params.recarregou === 'boolean') p.recarregou = params.recarregou;
@@ -1044,6 +1046,7 @@ const V2 = {etapa: 'resultado', passo: 0};
 // funil: eventos ob2_* pelo evento() oficial (GA4 com o consentimento do aviso de cookies). Nunca nomes, textos, datas ou nome de arquivo.
 const v2Rota = (r, sempre) => { try { if (typeof ir !== 'function') return; if (sempre && location.pathname === r) history.pushState({rota: r}, '', r); ir(r); } catch {} }; // cada passo do exportar vira uma entrada no histórico, para o Voltar do navegador voltar 1 passo
 function v2Ev(nome, params = {}){ try { if (typeof evento === 'function') evento(nome, {...params, origem: state.sample ? 'demo' : 'real'}); } catch {} }
+let VOLTANDO_V2 = false;
 const V2_SALVO = (() => { try { return JSON.parse(sessionStorage.getItem('rz_v2') || 'null'); } catch { return null; } })();
 const V2_PASSOS = {
   iphone: [
@@ -1084,7 +1087,7 @@ function v2Caminho(){
 
 // ETAPA 3 — exportar com orientação, um passo por vez
 function v2Exportar(){
-  const passoAqui = V2.passo; anchor(true); if (!VOLTANDO) v2Rota('/exportar', true); pilha(() => { V2.passo = passoAqui; v2Exportar(); }, 'exportar' + passoAqui); setSteps(0); V2.etapa = 'exportar'; v2Salva();
+  const passoAqui = V2.passo; VOLTANDO_V2 = VOLTANDO; anchor(true); if (!VOLTANDO) v2Rota('/exportar', true); pilha(() => { V2.passo = passoAqui; v2Exportar(); }, 'exportar' + passoAqui); setSteps(0); V2.etapa = 'exportar'; v2Salva();
   const how = state.how, L = V2_PASSOS[how], n = L.length + 1, i = V2.passo, ultimo = i === L.length;
   const cenas = ultimo ? [] : L[i].cenas.map(k => TT_CENAS[how][k]);
   view.innerHTML = `<section class="screen">
@@ -1119,7 +1122,10 @@ function v2Exportar(){
   $('#v2Prox')?.addEventListener('click', () => { V2.passo++; v2Exportar(); });
   $('#v2ExDeNovo')?.addEventListener('click', () => { v2Ev('ob2_demo', {de: 'sem_exportar'}); DUR = {}; run(state.modo === 'casal' ? demoCasal() : demoChat(), true); });
   $('#abreWa')?.addEventListener('click', () => { state.esperandoWhats = true; V2.saiu = true; v2Salva(); v2Ev('ob2_abriu_whatsapp', {aparelho: state.how}); });
-  $('#v2JaSalvei')?.addEventListener('click', () => { state.voltou = true; home(); });
+  $('#v2JaSalvei')?.addEventListener('click', () => { v2Ev('ob2_ja_salvei'); state.voltou = true; home(); });
+  if (!VOLTANDO_V2) v2Ev('ob2_passo', {passo: i + 1, aparelho: how}); VOLTANDO_V2 = false;
+  $('#v2SemExportar')?.addEventListener('toggle', e => { if (e.target.open) v2Ev('ob2_ajuda', {qual: 'sem_exportar', aparelho: how}); });
+  view.querySelector('.pb-video')?.addEventListener('toggle', e => { if (e.target.open) v2Ev('ob2_video', {aparelho: how}); });
   window.scrollTo(0, 0);
 }
 // a volta do WhatsApp cai direto na etapa do arquivo (sem reiniciar a jornada)
@@ -1167,8 +1173,9 @@ function home(){
   $('#file').onchange = e => { V2.ficticio = false; escolhe(e.target.files[0]); };
   $('#v2Drop').addEventListener('click', () => v2Ev('ob2_abriu_seletor', {de: V2.viaTenho ? 'ja_tenho' : 'caixa'}));
   $('#start').onclick = () => state.arquivo && !V2.lendo && escolhe(state.arquivo);
-  $('#v2Troca').onclick = () => { state.arquivo = null; home(); setTimeout(() => $('#file')?.click(), 0); };
-  $('#v2Rever').onclick = () => { V2.passo = 0; v2Exportar(); };
+  $('#v2Troca').onclick = () => { v2Ev('ob2_trocou_arquivo'); state.arquivo = null; home(); setTimeout(() => $('#file')?.click(), 0); };
+  $('#v2Rever').onclick = () => { v2Ev('ob2_rever_exportar', {de: 'nao_achei'}); V2.passo = 0; v2Exportar(); };
+  $('#naoAchei')?.addEventListener('toggle', e => { if (e.target.open) v2Ev('ob2_ajuda', {qual: 'nao_achei', aparelho: state.how}); });
   window.scrollTo(0, 0);
 }
 // depois de um erro, a caixa volta a aceitar outro arquivo (aparelho e tipo de conversa continuam os mesmos)
@@ -1204,7 +1211,7 @@ function v2Confirma(msgs, autores, segue){
     <button class="btn btn-ghost" id="v2Outro">Escolher outro arquivo</button>
   </section>`;
   $('#v2Segue').onclick = () => { v2Ev('ob2_confirmou', {faixa_msgs: msgs.length < 300 ? 'ate_300' : msgs.length < 3000 ? '300_3000' : 'mais_3000', com_nome: !!$('#v2Nome').value.trim()}); const n = $('#v2Nome').value.trim(); state.grupo = n ? cortaNome(limpaTxt(n)) : ''; segue(); };
-  $('#v2Outro').onclick = () => { state.arquivo = null; home(); };
+  $('#v2Outro').onclick = () => { v2Ev('ob2_outro_arquivo', {de: 'conferir'}); state.arquivo = null; home(); };
   window.scrollTo(0, 0);
 }
 
@@ -1228,8 +1235,8 @@ function v2Problema(msgs){
     <button class="btn btn-ghost" id="v2Rever2">Rever como exportar</button>
     <button class="btn btn-ghost" id="v2Ex2">👀 Experimentar com um exemplo</button>
   </section>`;
-  $('#v2Outro').onclick = () => { state.arquivo = null; home(); setTimeout(() => $('#file')?.click(), 0); };
-  $('#v2Rever2').onclick = () => { V2.passo = 0; v2Exportar(); };
+  $('#v2Outro').onclick = () => { v2Ev('ob2_outro_arquivo', {de: 'problema'}); state.arquivo = null; home(); setTimeout(() => $('#file')?.click(), 0); };
+  $('#v2Rever2').onclick = () => { v2Ev('ob2_rever_exportar', {de: 'problema'}); V2.passo = 0; v2Exportar(); };
   $('#v2Ex2').onclick = () => { v2Ev('ob2_demo', {de: 'problema'}); DUR = {}; run(state.modo === 'casal' ? demoCasal() : demoChat(), true); };
   window.scrollTo(0, 0);
 }
@@ -1320,7 +1327,7 @@ function carregando(titulo){
   view.innerHTML = `<section class="loader"><div class="trofinho" aria-hidden="true">${state.modo === 'casal' ? logoSVG('#E0245E', '#FFF3EC') : logoSVG('#FFC23C', '#1A0B2E')}</div><h2 id="lf">${titulo}</h2>
     <div class="pbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="pb"></i></div>
     <p class="cd" id="cd">calculando o tempo...</p><p class="small" id="pt"></p><p class="small">Tudo acontecendo no seu celular 🔒</p>${V2.etapa === 'arquivo' ? '<button type="button" class="btn btn-ghost" id="v2Cancela">Cancelar e escolher outro arquivo</button>' : ''}</section>`;
-  document.getElementById('v2Cancela')?.addEventListener('click', () => { V2.cancelado = true; V2.lendo = false; state.arquivo = null; home(); });
+  document.getElementById('v2Cancela')?.addEventListener('click', () => { v2Ev('ob2_cancelou_leitura'); V2.cancelado = true; V2.lendo = false; state.arquivo = null; home(); });
   const t0 = performance.now();
   return (frac, txt) => {
     const pb = $('#pb'); if (!pb) return;
