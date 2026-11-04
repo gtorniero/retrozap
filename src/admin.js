@@ -569,19 +569,19 @@ async function collectBtwInsights(env){
 const BTW_GA_PRODUCTS=[['Quiddo','562055723'],['SPORT DNA','562098147']];
 let btwProductCache;
 export async function btwProductAnalytics(env){
- if(btwProductCache?.until>Date.now())return btwProductCache.value;
+ const end=btwDay();if(btwProductCache?.end===end&&btwProductCache.until>Date.now())return btwProductCache.value;
  const value=Promise.all(BTW_GA_PRODUCTS.map(async([product,property])=>{
   if(!env.GOOGLE_SA)return [product,{status:'not_configured',property_id:property}];
   try{
-   const url=`https://analyticsdata.googleapis.com/v1beta/properties/${property}:runReport`,dateRanges=[{startDate:'29daysAgo',endDate:'today'}],metrics=[{name:'activeUsers'},{name:'sessions'},{name:'screenPageViews'}];
+   const url=`https://analyticsdata.googleapis.com/v1beta/properties/${property}:runReport`,dateRanges=[{startDate:btwOffset(end,-29),endDate:end}],metrics=[{name:'activeUsers'},{name:'sessions'},{name:'screenPageViews'}];
    const run=dimensions=>google(env,url,{dateRanges,metrics,...(dimensions?{dimensions:dimensions.map(name=>({name})),limit:1000}:{}),...(dimensions?.includes('date')?{orderBys:[{dimension:{dimensionName:'date'}}]}:{})});
    const [tot,daily,channels,devices]=await Promise.all([run(),run(['date']),run(['date','sessionDefaultChannelGroup']),run(['date','deviceCategory'])]);
    const rows=linhas(tot)[0];if(!rows)throw Error('empty_totals');
    const date=d=>d.slice(0,4)+'-'+d.slice(4,6)+'-'+d.slice(6),segments=r=>({status:'available',thresholded:!!r.metadata?.subjectToThresholding,rows:linhas(r).map(([d,segment,users,sessions,pageviews])=>({date:date(d),segment:String(segment).slice(0,100),users,sessions,pageviews}))});
-   return [product,{status:'available',property_id:property,observed_at:new Date().toISOString(),analytics:{users:rows[0],sessions:rows[1],pageviews:rows[2],days:linhas(daily).map(([d,users,sessions,pageviews])=>({date:date(d),users,sessions,pageviews}))},insights:{status:'available',channels:segments(channels),devices:segments(devices),funnels:[]}}];
+   return [product,{status:'available',property_id:property,observed_at:new Date().toISOString(),time_zone:String(tot.metadata?.timeZone||'unknown'),start_date:btwOffset(end,-29),end_date:end,daily_thresholded:!!daily.metadata?.subjectToThresholding,analytics:{users:rows[0],sessions:rows[1],pageviews:rows[2],days:linhas(daily).map(([d,users,sessions,pageviews])=>({date:date(d),users,sessions,pageviews}))},insights:{status:'available',channels:segments(channels),devices:segments(devices),funnels:[]}}];
   }catch(e){const message=String(e?.message||'');const code=/permission|access|forbidden/i.test(message)?'GA_ACCESS_DENIED':/quota|exhausted/i.test(message)?'GA_QUOTA':/empty_totals/.test(message)?'GA_EMPTY_REPORT':'GA_REPORT_FAILED';return [product,{status:'error',property_id:property,error_code:code}];}
  })).then(Object.fromEntries);
- btwProductCache={until:Date.now()+300000,value};return value;
+ btwProductCache={until:Date.now()+300000,end,value};return value;
 }
 
 const BTW_PERIOD_PROPERTIES=[['Retrozap','559410482'],['Quiddo','562055723'],['SPORT DNA','562098147']];
@@ -628,6 +628,40 @@ async function btwAlignedReports(env,id,zone,end){
    const metric=(name)=>{if(!(r.rows||[]).length)return null;const at=names.indexOf(name);if(at<0)throw Error('METRIC');const raw=values[at]?.value;if(raw===undefined)return null;const v=Number(raw);if(!Number.isFinite(v)||v<0)throw Error('METRIC');return v;};
    return {...q,start_at:req.start_at,end_at_exclusive:req.end_at_exclusive,metrics:{users:metric('activeUsers'),sessions:metric('sessions'),pageviews:metric('screenPageViews')},thresholded:!!r.metadata?.subjectToThresholding};
   }));
-  return {status:'available',reporting_time_zone:BTW_REPORT_ZONE,source_time_zone:zone,method:'dateHour_filter',observed_at:new Date().toISOString(),thresholded:results.some(x=>x.thresholded),ranges:[7,30].map(days=>{const a=results.find(x=>x.days===days&&x.part==='current'),b=results.find(x=>x.days===days&&x.part==='previous');return {days,start_date:a.start,end_date:a.end,start_at:a.start_at,end_at_exclusive:a.end_at_exclusive,previous_start:b.start,previous_end:b.end,previous_start_at:b.start_at,previous_end_at_exclusive:b.end_at_exclusive,metrics:a.metrics,previous:b.metrics};})};
+  const [daily,funnels]=await Promise.all([btwCanonicalDaily(env,id,zone,end),id==='559410482'?Promise.all([7,30].map(days=>btwCanonicalFunnel(env,id,zone,end,days))):Promise.resolve([])]);
+  return {status:'available',daily,funnels,reporting_time_zone:BTW_REPORT_ZONE,source_time_zone:zone,method:'dateHour_filter',observed_at:new Date().toISOString(),thresholded:results.some(x=>x.thresholded),ranges:[7,30].map(days=>{const a=results.find(x=>x.days===days&&x.part==='current'),b=results.find(x=>x.days===days&&x.part==='previous');return {days,start_date:a.start,end_date:a.end,start_at:a.start_at,end_at_exclusive:a.end_at_exclusive,previous_start:b.start,previous_end:b.end,previous_start_at:b.start_at,previous_end_at_exclusive:b.end_at_exclusive,metrics:a.metrics,previous:b.metrics};})};
  }catch(e){const message=String(e?.message||'');return {status:'error',error_code:/permission|access|forbidden/i.test(message)?'GA_ACCESS_DENIED':/quota|exhausted/i.test(message)?'GA_QUOTA':'GA_ALIGNED_REPORT_FAILED',diagnostic_hints:['dateHour','betweenFilter','stringFilter','FULL_REGEXP','TIME_ZONE','METRIC','not supported','not a valid','INVALID_ARGUMENT'].filter(x=>message.toLowerCase().includes(x.toLowerCase()))};}
+}
+
+// Direct daily unique aggregates; never resample/sum hourly users.
+const btwCleanMetrics=r=>{const names=(r.metricHeaders||[]).map(x=>x.name),values=r.rows?.[0]?.metricValues||[];if((r.rows||[]).length>1)throw Error('DAILY_ROWS');return Object.fromEntries([['users','activeUsers'],['sessions','sessions'],['pageviews','screenPageViews']].map(([key,name])=>{if(!r.rows?.length)return [key,null];const at=names.indexOf(name);if(at<0)throw Error('METRIC');const raw=values[at]?.value;if(raw===undefined||raw===null||raw==='')return [key,null];const value=Number(raw);if(!Number.isFinite(value)||value<0)throw Error('METRIC');return [key,value];}));};
+const btwSeriesError=(error,code)=>{const message=String(error?.message||'');return {status:'error',error_code:code,diagnostic_hints:['dateHour','batchRunReports','REPORTS','DAILY_ROWS','TIME_ZONE','METRIC','missing_funnel','missing_metric','not supported','not a valid','permission','quota','exhausted','INVALID_ARGUMENT'].filter(x=>message.toLowerCase().includes(x.toLowerCase()))};};
+async function btwCanonicalDaily(env,id,zone,end){
+ try{
+  const start=btwOffset(end,-29),bounds=btwAlignedRequest(start,end,zone),dates=Array.from({length:30},(_,i)=>btwOffset(start,i));let days,thresholded=false,method;
+  if(zone===BTW_REPORT_ZONE){
+   const product=BTW_GA_PRODUCTS.find(([,property])=>property===id)?.[0],native=(await btwProductAnalytics(env))[product];
+   if(native?.status!=='available'||native.time_zone!==zone||native.start_date!==start||native.end_date!==end)throw Error('TIME_ZONE');
+   const byDate=new Map(native.analytics.days.map(d=>[d.date,d]));
+   days=dates.map(date=>{const req=btwAlignedRequest(date,date,zone),row=byDate.get(date);return {date,start_at:req.start_at,end_at_exclusive:req.end_at_exclusive,users:row?.users??null,sessions:row?.sessions??null,pageviews:row?.pageviews??null};});thresholded=!!native.daily_thresholded;method='native_same_zone';
+  }else{
+   days=[];method='direct_daily_queries';
+   for(let i=0;i<dates.length;i+=5){const batch=dates.slice(i,i+5),requests=batch.map(date=>btwAlignedRequest(date,date,zone));
+    const r=await google(env,`https://analyticsdata.googleapis.com/v1beta/properties/${id}:batchRunReports`,{requests:requests.map(x=>x.body)});
+    if(!Array.isArray(r.reports)||r.reports.length!==batch.length)throw Error('REPORTS');
+    for(let j=0;j<batch.length;j++){const report=r.reports[j];if(report.metadata?.timeZone!==zone)throw Error('TIME_ZONE');thresholded ||=!!report.metadata?.subjectToThresholding;days.push({date:batch[j],start_at:requests[j].start_at,end_at_exclusive:requests[j].end_at_exclusive,...btwCleanMetrics(report)});}
+   }
+  }
+  return {status:'available',property_id:id,reporting_time_zone:BTW_REPORT_ZONE,source_time_zone:zone,observed_at:new Date().toISOString(),method,thresholded,start_date:start,end_date:end,start_at:bounds.start_at,end_at_exclusive:bounds.end_at_exclusive,days};
+ }catch(e){return btwSeriesError(e,'GA_ALIGNED_DAILY_FAILED');}
+}
+async function btwCanonicalFunnel(env,id,zone,end,days){
+ try{
+  if(id!=='559410482')throw Error('FIXED_PROPERTY');const start=btwOffset(end,1-days),req=btwAlignedRequest(start,end,zone),chosen=[0,1,2,3,5,8,9,10].map(i=>ETAPAS[i]);
+  const steps=chosen.map(([name,filterExpression,key])=>({name,filterExpression:typeof key==='string'&&key.startsWith('/')?{funnelEventFilter:{eventName:'page_view',funnelParameterFilterExpression:{funnelParameterFilter:{eventParameterName:'page_location',stringFilter:{matchType:'FULL_REGEXP',value:'^https?://(www\\.)?retrozap\\.com\\.br'+(key==='/'?'/':key+'/?')+'([?#].*)?$',caseSensitive:false}}}}}:filterExpression}));
+  const r=await google(env,`https://analyticsdata.googleapis.com/v1alpha/properties/${id}:runFunnelReport`,{dateRanges:req.body.dateRanges,dimensionFilter:req.body.dimensionFilter,funnel:{isOpenFunnel:false,steps}}),t=r.funnelTable;
+  if(!t||!Array.isArray(t.rows))throw Error('missing_funnel');const at=(t.metricHeaders||[]).findIndex(x=>x.name==='activeUsers');if(at<0&&t.rows.length)throw Error('missing_metric');const values=new Map();
+  for(const row of t.rows){const i=parseInt(row.dimensionValues?.[0]?.value)-1,raw=row.metricValues?.[at]?.value;if(i<0||i>=chosen.length||values.has(i))throw Error('METRIC');if(raw===undefined||raw===null||raw===''){values.set(i,null);continue;}const value=Number(raw);if(!Number.isFinite(value)||value<0)throw Error('METRIC');values.set(i,value);}
+  return {status:'available',property_id:id,reporting_time_zone:BTW_REPORT_ZONE,source_time_zone:zone,observed_at:new Date().toISOString(),days,start_date:start,end_date:end,start_at:req.start_at,end_at_exclusive:req.end_at_exclusive,mode:'closed',sequential:true,thresholded:!!t.metadata?.subjectToThresholding,steps:chosen.map(([name],i)=>({name,users:values.has(i)?values.get(i):null}))};
+ }catch(e){return {...btwSeriesError(e,'GA_ALIGNED_FUNNEL_FAILED'),days};}
 }
