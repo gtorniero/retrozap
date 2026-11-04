@@ -554,7 +554,7 @@ async function collectBtwInsights(env){
  };
  const funnel=async days=>{
   const chosen=[0,1,2,3,5,8,9,10].map(i=>ETAPAS[i]);
-  const r=await google(env,`https://analyticsdata.googleapis.com/v1alpha/properties/${encodeURIComponent(env.GA4_PROPERTY)}:runFunnelReport`,{dateRanges:[{startDate:(days-1)+'daysAgo',endDate:'today'}],funnel:{isOpenFunnel:false,steps:chosen.map(([name,filterExpression])=>({name,filterExpression}))}});
+  const r=await google(env,`https://analyticsdata.googleapis.com/v1alpha/properties/${encodeURIComponent(env.GA4_PROPERTY)}:runFunnelReport`,{dateRanges:[{startDate:(days-1)+'daysAgo',endDate:'today'}],funnel:{isOpenFunnel:false,steps:chosen.map(([name,filterExpression,key])=>({name,filterExpression:typeof key==='string'&&key.startsWith('/')?{funnelEventFilter:{eventName:'page_view',funnelParameterFilterExpression:{funnelParameterFilter:{eventParameterName:'page_location',stringFilter:{matchType:'FULL_REGEXP',value:'^https?://(www\\.)?retrozap\\.com\\.br'+(key==='/'?'/':key+'/?')+'([?#].*)?$',caseSensitive:false}}}}}:filterExpression}))}});
   const t=r.funnelTable;if(!t||!Array.isArray(t.rows))throw Error('missing_funnel');
   const at=(t.metricHeaders||[]).findIndex(x=>x.name==='activeUsers');if(at<0)throw Error('missing_metric');
   const counts=new Map(t.rows.map(row=>[parseInt(row.dimensionValues?.[0]?.value)-1,Number(row.metricValues?.[at]?.value)]));
