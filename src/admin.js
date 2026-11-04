@@ -598,8 +598,31 @@ export async function btwPeriodReports(env){
    const idx=(r.dimensionHeaders||[]).findIndex(h=>h.name==='dateRange');if(idx<0)throw Error();
    const values=new Map((r.rows||[]).map(row=>[row.dimensionValues?.[idx]?.value,(row.metricValues||[]).map(x=>Number(x.value))]));
    const metric=name=>{const a=values.get(name);return Object.fromEntries(['users','sessions','pageviews'].map((k,i)=>[k,a&&Number.isFinite(a[i])&&a[i]>=0?a[i]:null]));};
-   return [product,{status:'available',property_id:id,observed_at:new Date().toISOString(),time_zone:String(r.metadata?.timeZone||'unknown').slice(0,80),thresholded:!!r.metadata?.subjectToThresholding,ranges:[7,30].map(days=>({days,start_date:btwOffset(end,1-days),end_date:end,previous_start:btwOffset(end,1-2*days),previous_end:btwOffset(end,-days),metrics:metric('current_'+days),previous:metric('previous_'+days)}))}];
+   return [product,{status:'available',property_id:id,observed_at:new Date().toISOString(),time_zone:String(r.metadata?.timeZone||'unknown').slice(0,80),aligned:await btwAlignedReports(env,id,String(r.metadata?.timeZone||'unknown'),end),thresholded:!!r.metadata?.subjectToThresholding,ranges:[7,30].map(days=>({days,start_date:btwOffset(end,1-days),end_date:end,previous_start:btwOffset(end,1-2*days),previous_end:btwOffset(end,-days),metrics:metric('current_'+days),previous:metric('previous_'+days)}))}];
   }catch{return [product,{status:'error',property_id:id}];}
  })).then(Object.fromEntries);
  btwPeriodCache={until:Date.now()+300000,end,value};return value;
+}
+
+// Fixed known properties are supplied only by BTW_PERIOD_PROPERTIES. No arbitrary resources or credentials.
+const BTW_REPORT_ZONE='America/Sao_Paulo';
+function btwHour(instant,zone){const parts=new Intl.DateTimeFormat('en-CA',{timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',hourCycle:'h23'}).formatToParts(new Date(instant));const p=Object.fromEntries(parts.map(x=>[x.type,x.value]));return p.year+p.month+p.day+p.hour;}
+function btwMidnight(day){const nominal=Date.parse(day+'T00:00:00Z');let value=nominal;for(let i=0;i<3;i++){const p=btwHour(value,BTW_REPORT_ZONE),wall=Date.UTC(+p.slice(0,4),+p.slice(4,6)-1,+p.slice(6,8),+p.slice(8,10));value+=nominal-wall;}if(btwHour(value,BTW_REPORT_ZONE)!==day.replace(/-/g,'')+'00')throw Error('CLOCK');return value;}
+function btwAlignedRequest(start,end,zone){
+ if(!['America/Rio_Branco','America/Sao_Paulo'].includes(zone))throw Error('TIME_ZONE');
+ const startAt=btwMidnight(start),endAt=btwMidnight(btwOffset(end,1)),from=btwHour(startAt,zone),to=btwHour(endAt-3600000,zone);
+ return {start_at:new Date(startAt).toISOString(),end_at_exclusive:new Date(endAt).toISOString(),body:{dateRanges:[{startDate:from.slice(0,4)+'-'+from.slice(4,6)+'-'+from.slice(6,8),endDate:to.slice(0,4)+'-'+to.slice(4,6)+'-'+to.slice(6,8)}],metrics:[{name:'activeUsers'},{name:'sessions'},{name:'screenPageViews'}],dimensionFilter:{filter:{fieldName:'dateHour',betweenFilter:{fromValue:{int64Value:from},toValue:{int64Value:to}}}}}};
+}
+async function btwAlignedReports(env,id,zone,end){
+ try{
+  const queries=[7,30].flatMap(days=>[{days,part:'current',start:btwOffset(end,1-days),end},{days,part:'previous',start:btwOffset(end,1-2*days),end:btwOffset(end,-days)}]);
+  const results=await Promise.all(queries.map(async q=>{
+   const req=btwAlignedRequest(q.start,q.end,zone),r=await google(env,`https://analyticsdata.googleapis.com/v1beta/properties/${id}:runReport`,req.body);
+   if(r.metadata?.timeZone!==zone||(r.rows||[]).length>1)throw Error('TIME_ZONE');
+   const names=(r.metricHeaders||[]).map(x=>x.name),values=r.rows?.[0]?.metricValues||[];
+   const metric=(name)=>{const at=names.indexOf(name);if(at<0)throw Error('METRIC');const raw=values[at]?.value;if(raw===undefined)return null;const v=Number(raw);if(!Number.isFinite(v)||v<0)throw Error('METRIC');return v;};
+   return {...q,start_at:req.start_at,end_at_exclusive:req.end_at_exclusive,metrics:{users:metric('activeUsers'),sessions:metric('sessions'),pageviews:metric('screenPageViews')},thresholded:!!r.metadata?.subjectToThresholding};
+  }));
+  return {status:'available',reporting_time_zone:BTW_REPORT_ZONE,source_time_zone:zone,method:'dateHour_filter',observed_at:new Date().toISOString(),thresholded:results.some(x=>x.thresholded),ranges:[7,30].map(days=>{const a=results.find(x=>x.days===days&&x.part==='current'),b=results.find(x=>x.days===days&&x.part==='previous');return {days,start_date:a.start,end_date:a.end,start_at:a.start_at,end_at_exclusive:a.end_at_exclusive,previous_start:b.start,previous_end:b.end,previous_start_at:b.start_at,previous_end_at_exclusive:b.end_at_exclusive,metrics:a.metrics,previous:b.metrics};})};
+ }catch(e){const message=String(e?.message||'');return {status:'error',error_code:/permission|access|forbidden/i.test(message)?'GA_ACCESS_DENIED':/quota|exhausted/i.test(message)?'GA_QUOTA':'GA_ALIGNED_REPORT_FAILED',diagnostic_hints:['dateHour','betweenFilter','TIME_ZONE','METRIC','not supported','not a valid','INVALID_ARGUMENT'].filter(x=>message.toLowerCase().includes(x.toLowerCase()))};}
 }
