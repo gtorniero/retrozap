@@ -554,7 +554,35 @@ async function collectBtwInsights(env){
  };
  const funnel=async days=>{
   const chosen=[0,1,2,3,5,8,9,10].map(i=>ETAPAS[i]);
-  const r=await google(env,`https://analyticsdata.googleapis.com/v1alpha/properties/${encodeURIComponent(env.GA4_PROPERTY)}:runFunnelReport`,{dateRanges:[{startDate:(days-1)+'daysAgo',endDate:'today'}],funnel:{isOpenFunnel:false,steps:chosen.map(([name,filterExpression])=>({name,filterExpression}))}});
+  const r=await google(env,`https://analyticsdata.googleapis.com/v1alpha/properties/${encodeURIComponent(env.GA4_PROPERTY)}:runFunnelReport`,{dateRanges:[{startDate:(days-1)+'daysAgo',endDate:'today'}],funnel:{isOpenFunnel:false,steps:chosen.map(([name,filterExpression,key])=>({name,filterExpression:typeof key==='string'&&key.startsWith('/')?{funnelEventFilter:{eventName:'page_view',funnelParameterFilterExpression:{funnelParameterFilter:{eventParameterName:'page_location',stringFilter:{matchType:'FULL_REGEXP',value:'^https?://(www\\.)?retrozap\\.com\\.br'+(key==='/'?'/':key+'/?')+'([?#].*)?}});
+  const t=r.funnelTable;if(!t||!Array.isArray(t.rows))throw Error('missing_funnel');
+  const at=(t.metricHeaders||[]).findIndex(x=>x.name==='activeUsers');if(at<0)throw Error('missing_metric');
+  const counts=new Map(t.rows.map(row=>[parseInt(row.dimensionValues?.[0]?.value)-1,Number(row.metricValues?.[at]?.value)]));
+  return {status:'available',days,mode:'closed',sequential:true,steps:chosen.map(([name],i)=>({name,users:counts.has(i)&&Number.isFinite(counts.get(i))?counts.get(i):null})),thresholded:!!t.metadata?.subjectToThresholding};
+ };
+ const safePart=async p=>{try{return await p;}catch(e){const m=String(e?.message||'');const hints=['pagePath','page_location','activeUsers','funnelStepName','funnelEventFilter','filterExpression','isOpenFunnel','missing_funnel','missing_metric','Unknown name','not supported','not a valid','permission','quota','exhausted','limit','INVALID_ARGUMENT'].filter(x=>m.toLowerCase().includes(x.toLowerCase()));return {status:'error',error_code:'GA_FUNNEL_REPORT_FAILED',diagnostic_hints:hints};}};
+ const [channels,devices,funnel7,funnel30]=await Promise.all([safePart(segment('sessionDefaultChannelGroup')),safePart(segment('deviceCategory')),safePart(funnel(7)).then(x=>({...x,days:7})),safePart(funnel(30)).then(x=>({...x,days:30}))]);
+ return {status:'available',channels,devices,funnels:[funnel7,funnel30],period:'29daysAgo..today',collected_at:new Date().toISOString()};
+}
+
+const BTW_GA_PRODUCTS=[['Quiddo','562055723'],['SPORT DNA','562098147']];
+let btwProductCache;
+export async function btwProductAnalytics(env){
+ if(btwProductCache?.until>Date.now())return btwProductCache.value;
+ const value=Promise.all(BTW_GA_PRODUCTS.map(async([product,property])=>{
+  if(!env.GOOGLE_SA)return [product,{status:'not_configured',property_id:property}];
+  try{
+   const url=`https://analyticsdata.googleapis.com/v1beta/properties/${property}:runReport`,dateRanges=[{startDate:'29daysAgo',endDate:'today'}],metrics=[{name:'activeUsers'},{name:'sessions'},{name:'screenPageViews'}];
+   const run=dimensions=>google(env,url,{dateRanges,metrics,...(dimensions?{dimensions:dimensions.map(name=>({name})),limit:1000}:{}),...(dimensions?.includes('date')?{orderBys:[{dimension:{dimensionName:'date'}}]}:{})});
+   const [tot,daily,channels,devices]=await Promise.all([run(),run(['date']),run(['date','sessionDefaultChannelGroup']),run(['date','deviceCategory'])]);
+   const rows=linhas(tot)[0];if(!rows)throw Error('empty_totals');
+   const date=d=>d.slice(0,4)+'-'+d.slice(4,6)+'-'+d.slice(6),segments=r=>({status:'available',thresholded:!!r.metadata?.subjectToThresholding,rows:linhas(r).map(([d,segment,users,sessions,pageviews])=>({date:date(d),segment:String(segment).slice(0,100),users,sessions,pageviews}))});
+   return [product,{status:'available',property_id:property,observed_at:new Date().toISOString(),analytics:{users:rows[0],sessions:rows[1],pageviews:rows[2],days:linhas(daily).map(([d,users,sessions,pageviews])=>({date:date(d),users,sessions,pageviews}))},insights:{status:'available',channels:segments(channels),devices:segments(devices),funnels:[]}}];
+  }catch(e){const message=String(e?.message||'');const code=/permission|access|forbidden/i.test(message)?'GA_ACCESS_DENIED':/quota|exhausted/i.test(message)?'GA_QUOTA':/empty_totals/.test(message)?'GA_EMPTY_REPORT':'GA_REPORT_FAILED';return [product,{status:'error',property_id:property,error_code:code}];}
+ })).then(Object.fromEntries);
+ btwProductCache={until:Date.now()+300000,value};return value;
+}
+,caseSensitive:false}}}}}:filterExpression}))}});
   const t=r.funnelTable;if(!t||!Array.isArray(t.rows))throw Error('missing_funnel');
   const at=(t.metricHeaders||[]).findIndex(x=>x.name==='activeUsers');if(at<0)throw Error('missing_metric');
   const counts=new Map(t.rows.map(row=>[parseInt(row.dimensionValues?.[0]?.value)-1,Number(row.metricValues?.[at]?.value)]));
