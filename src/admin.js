@@ -536,3 +536,31 @@ document.addEventListener('mousemove', e => { const t = e.target.closest?.('[dat
   tip.textContent = t.dataset.t; tip.style.display = 'block'; tip.style.left = Math.min(e.pageX + 12, innerWidth - tip.offsetWidth - 8) + 'px'; tip.style.top = (e.pageY - 34) + 'px'; });
 carrega();
 </script></body></html>`;
+
+// BTW: fixed read-only aggregate reports. Existing Google scopes/property only.
+let btwInsightsCache;
+export async function btwInsights(env){
+ if(btwInsightsCache?.until>Date.now())return btwInsightsCache.value;
+ const value=collectBtwInsights(env).catch(()=>({status:'error'}));
+ btwInsightsCache={until:Date.now()+300000,value};return value;
+}
+async function collectBtwInsights(env){
+ if(!env.GOOGLE_SA||!env.GA4_PROPERTY)throw Error('not_configured');
+ const rep=`https://analyticsdata.googleapis.com/v1beta/properties/${encodeURIComponent(env.GA4_PROPERTY)}:runReport`;
+ const dates=[{startDate:'29daysAgo',endDate:'today'}];
+ const segment=async dim=>{
+  const r=await google(env,rep,{dateRanges:dates,dimensions:[{name:'date'},{name:dim}],metrics:[{name:'activeUsers'},{name:'sessions'},{name:'screenPageViews'}],limit:1000,orderBys:[{dimension:{dimensionName:'date'}}]});
+  return {status:'available',rows:linhas(r).map(([d,segment,users,sessions,pageviews])=>({date:d.slice(0,4)+'-'+d.slice(4,6)+'-'+d.slice(6),segment:String(segment).slice(0,100),users,sessions,pageviews})),thresholded:!!r.metadata?.subjectToThresholding};
+ };
+ const funnel=async days=>{
+  const chosen=[0,1,2,3,5,8,9,10].map(i=>ETAPAS[i]);
+  const r=await google(env,`https://analyticsdata.googleapis.com/v1alpha/properties/${encodeURIComponent(env.GA4_PROPERTY)}:runFunnelReport`,{dateRanges:[{startDate:(days-1)+'daysAgo',endDate:'today'}],funnel:{isOpenFunnel:false,steps:chosen.map(([name,filterExpression])=>({name,filterExpression}))}});
+  const t=r.funnelTable;if(!t||!Array.isArray(t.rows))throw Error('missing_funnel');
+  const at=(t.metricHeaders||[]).findIndex(x=>x.name==='activeUsers');if(at<0)throw Error('missing_metric');
+  const counts=new Map(t.rows.map(row=>[parseInt(row.dimensionValues?.[0]?.value)-1,Number(row.metricValues?.[at]?.value)]));
+  return {status:'available',days,mode:'closed',sequential:true,steps:chosen.map(([name],i)=>({name,users:counts.has(i)&&Number.isFinite(counts.get(i))?counts.get(i):null})),thresholded:!!t.metadata?.subjectToThresholding};
+ };
+ const safePart=async p=>{try{return await p;}catch{return {status:'error'};}};
+ const [channels,devices,funnel7,funnel30]=await Promise.all([safePart(segment('sessionDefaultChannelGroup')),safePart(segment('deviceCategory')),safePart(funnel(7)),safePart(funnel(30))]);
+ return {status:'available',channels,devices,funnels:[funnel7,funnel30],period:'29daysAgo..today',collected_at:new Date().toISOString()};
+}
