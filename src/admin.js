@@ -560,8 +560,8 @@ async function collectBtwInsights(env){
   const counts=new Map(t.rows.map(row=>[parseInt(row.dimensionValues?.[0]?.value)-1,Number(row.metricValues?.[at]?.value)]));
   return {status:'available',days,mode:'closed',sequential:true,steps:chosen.map(([name],i)=>({name,users:counts.has(i)&&Number.isFinite(counts.get(i))?counts.get(i):null})),thresholded:!!t.metadata?.subjectToThresholding};
  };
- const safePart=async p=>{try{return await p;}catch{return {status:'error'};}};
- const [channels,devices,funnel7,funnel30]=await Promise.all([safePart(segment('sessionDefaultChannelGroup')),safePart(segment('deviceCategory')),safePart(funnel(7)),safePart(funnel(30))]);
+ const safePart=async p=>{try{return await p;}catch(e){const m=String(e?.message||'');const hints=['pagePath','page_location','activeUsers','funnelStepName','funnelEventFilter','filterExpression','isOpenFunnel','missing_funnel','missing_metric','Unknown name','not supported','not a valid','permission','quota','exhausted','limit','INVALID_ARGUMENT'].filter(x=>m.toLowerCase().includes(x.toLowerCase()));return {status:'error',error_code:'GA_FUNNEL_REPORT_FAILED',diagnostic_hints:hints};}};
+ const [channels,devices,funnel7,funnel30]=await Promise.all([safePart(segment('sessionDefaultChannelGroup')),safePart(segment('deviceCategory')),safePart(funnel(7)).then(x=>({...x,days:7})),safePart(funnel(30)).then(x=>({...x,days:30}))]);
  return {status:'available',channels,devices,funnels:[funnel7,funnel30],period:'29daysAgo..today',collected_at:new Date().toISOString()};
 }
 
