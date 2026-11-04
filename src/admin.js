@@ -564,3 +564,21 @@ async function collectBtwInsights(env){
  const [channels,devices,funnel7,funnel30]=await Promise.all([safePart(segment('sessionDefaultChannelGroup')),safePart(segment('deviceCategory')),safePart(funnel(7)),safePart(funnel(30))]);
  return {status:'available',channels,devices,funnels:[funnel7,funnel30],period:'29daysAgo..today',collected_at:new Date().toISOString()};
 }
+
+const BTW_GA_PRODUCTS=[['Quiddo','562055723'],['SPORT DNA','562098147']];
+let btwProductCache;
+export async function btwProductAnalytics(env){
+ if(btwProductCache?.until>Date.now())return btwProductCache.value;
+ const value=Promise.all(BTW_GA_PRODUCTS.map(async([product,property])=>{
+  if(!env.GOOGLE_SA)return [product,{status:'not_configured',property_id:property}];
+  try{
+   const url=`https://analyticsdata.googleapis.com/v1beta/properties/${property}:runReport`,dateRanges=[{startDate:'29daysAgo',endDate:'today'}],metrics=[{name:'activeUsers'},{name:'sessions'},{name:'screenPageViews'}];
+   const run=dimensions=>google(env,url,{dateRanges,metrics,...(dimensions?{dimensions:dimensions.map(name=>({name})),limit:1000}:{}),...(dimensions?.includes('date')?{orderBys:[{dimension:{dimensionName:'date'}}]}:{})});
+   const [tot,daily,channels,devices]=await Promise.all([run(),run(['date']),run(['date','sessionDefaultChannelGroup']),run(['date','deviceCategory'])]);
+   const rows=linhas(tot)[0];if(!rows)throw Error('empty_totals');
+   const date=d=>d.slice(0,4)+'-'+d.slice(4,6)+'-'+d.slice(6),segments=r=>({status:'available',thresholded:!!r.metadata?.subjectToThresholding,rows:linhas(r).map(([d,segment,users,sessions,pageviews])=>({date:date(d),segment:String(segment).slice(0,100),users,sessions,pageviews}))});
+   return [product,{status:'available',property_id:property,observed_at:new Date().toISOString(),analytics:{users:rows[0],sessions:rows[1],pageviews:rows[2],days:linhas(daily).map(([d,users,sessions,pageviews])=>({date:date(d),users,sessions,pageviews}))},insights:{status:'available',channels:segments(channels),devices:segments(devices),funnels:[]}}];
+  }catch(e){const message=String(e?.message||'');const code=/permission|access|forbidden/i.test(message)?'GA_ACCESS_DENIED':/quota|exhausted/i.test(message)?'GA_QUOTA':/empty_totals/.test(message)?'GA_EMPTY_REPORT':'GA_REPORT_FAILED';return [product,{status:'error',property_id:property,error_code:code}];}
+ })).then(Object.fromEntries);
+ btwProductCache={until:Date.now()+300000,value};return value;
+}
