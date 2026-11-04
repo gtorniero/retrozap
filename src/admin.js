@@ -553,12 +553,13 @@ async function collectBtwInsights(env){
   return {status:'available',rows:linhas(r).map(([d,segment,users,sessions,pageviews])=>({date:d.slice(0,4)+'-'+d.slice(4,6)+'-'+d.slice(6),segment:String(segment).slice(0,100),users,sessions,pageviews})),thresholded:!!r.metadata?.subjectToThresholding};
  };
  const funnel=async days=>{
+  const end=btwDay(),start=btwOffset(end,1-days);
   const chosen=[0,1,2,3,5,8,9,10].map(i=>ETAPAS[i]);
-  const r=await google(env,`https://analyticsdata.googleapis.com/v1alpha/properties/${encodeURIComponent(env.GA4_PROPERTY)}:runFunnelReport`,{dateRanges:[{startDate:(days-1)+'daysAgo',endDate:'today'}],funnel:{isOpenFunnel:false,steps:chosen.map(([name,filterExpression,key])=>({name,filterExpression:typeof key==='string'&&key.startsWith('/')?{funnelEventFilter:{eventName:'page_view',funnelParameterFilterExpression:{funnelParameterFilter:{eventParameterName:'page_location',stringFilter:{matchType:'FULL_REGEXP',value:'^https?://(www\\.)?retrozap\\.com\\.br'+(key==='/'?'/':key+'/?')+'([?#].*)?$',caseSensitive:false}}}}}:filterExpression}))}});
+  const r=await google(env,`https://analyticsdata.googleapis.com/v1alpha/properties/${encodeURIComponent(env.GA4_PROPERTY)}:runFunnelReport`,{dateRanges:[{startDate:start,endDate:end}],funnel:{isOpenFunnel:false,steps:chosen.map(([name,filterExpression,key])=>({name,filterExpression:typeof key==='string'&&key.startsWith('/')?{funnelEventFilter:{eventName:'page_view',funnelParameterFilterExpression:{funnelParameterFilter:{eventParameterName:'page_location',stringFilter:{matchType:'FULL_REGEXP',value:'^https?://(www\\.)?retrozap\\.com\\.br'+(key==='/'?'/':key+'/?')+'([?#].*)?$',caseSensitive:false}}}}}:filterExpression}))}});
   const t=r.funnelTable;if(!t||!Array.isArray(t.rows))throw Error('missing_funnel');
   const at=(t.metricHeaders||[]).findIndex(x=>x.name==='activeUsers');if(at<0)throw Error('missing_metric');
   const counts=new Map(t.rows.map(row=>[parseInt(row.dimensionValues?.[0]?.value)-1,Number(row.metricValues?.[at]?.value)]));
-  return {status:'available',days,mode:'closed',sequential:true,steps:chosen.map(([name],i)=>({name,users:counts.has(i)&&Number.isFinite(counts.get(i))?counts.get(i):null})),thresholded:!!t.metadata?.subjectToThresholding};
+  return {status:'available',days,start_date:start,end_date:end,mode:'closed',sequential:true,steps:chosen.map(([name],i)=>({name,users:counts.has(i)&&Number.isFinite(counts.get(i))?counts.get(i):null})),thresholded:!!t.metadata?.subjectToThresholding};
  };
  const safePart=async p=>{try{return await p;}catch(e){const m=String(e?.message||'');const hints=['pagePath','page_location','activeUsers','funnelStepName','funnelEventFilter','filterExpression','isOpenFunnel','missing_funnel','missing_metric','Unknown name','not supported','not a valid','permission','quota','exhausted','limit','INVALID_ARGUMENT'].filter(x=>m.toLowerCase().includes(x.toLowerCase()));return {status:'error',error_code:'GA_FUNNEL_REPORT_FAILED',diagnostic_hints:hints};}};
  const [channels,devices,funnel7,funnel30]=await Promise.all([safePart(segment('sessionDefaultChannelGroup')),safePart(segment('deviceCategory')),safePart(funnel(7)).then(x=>({...x,days:7})),safePart(funnel(30)).then(x=>({...x,days:30}))]);
@@ -581,4 +582,24 @@ export async function btwProductAnalytics(env){
   }catch(e){const message=String(e?.message||'');const code=/permission|access|forbidden/i.test(message)?'GA_ACCESS_DENIED':/quota|exhausted/i.test(message)?'GA_QUOTA':/empty_totals/.test(message)?'GA_EMPTY_REPORT':'GA_REPORT_FAILED';return [product,{status:'error',property_id:property,error_code:code}];}
  })).then(Object.fromEntries);
  btwProductCache={until:Date.now()+300000,value};return value;
+}
+
+const BTW_PERIOD_PROPERTIES=[['Retrozap','559410482'],['Quiddo','562055723'],['SPORT DNA','562098147']];
+const btwDay=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'America/Sao_Paulo'}).format(new Date());
+const btwOffset=(day,n)=>new Date(Date.parse(day+'T00:00:00Z')+n*86400000).toISOString().slice(0,10);
+let btwPeriodCache;
+export async function btwPeriodReports(env){
+ const end=btwDay();if(btwPeriodCache?.end===end&&btwPeriodCache.until>Date.now())return btwPeriodCache.value;
+ const ranges=[7,30].flatMap(n=>[{name:'current_'+n,startDate:btwOffset(end,1-n),endDate:end},{name:'previous_'+n,startDate:btwOffset(end,1-2*n),endDate:btwOffset(end,-n)}]);
+ const value=Promise.all(BTW_PERIOD_PROPERTIES.map(async([product,id])=>{
+  try{
+   if(!env.GOOGLE_SA)throw Error();
+   const r=await google(env,`https://analyticsdata.googleapis.com/v1beta/properties/${id}:runReport`,{dateRanges:ranges,metrics:[{name:'activeUsers'},{name:'sessions'},{name:'screenPageViews'}]});
+   const idx=(r.dimensionHeaders||[]).findIndex(h=>h.name==='dateRange');if(idx<0)throw Error();
+   const values=new Map((r.rows||[]).map(row=>[row.dimensionValues?.[idx]?.value,(row.metricValues||[]).map(x=>Number(x.value))]));
+   const metric=name=>{const a=values.get(name);return Object.fromEntries(['users','sessions','pageviews'].map((k,i)=>[k,a&&Number.isFinite(a[i])&&a[i]>=0?a[i]:null]));};
+   return [product,{status:'available',property_id:id,observed_at:new Date().toISOString(),time_zone:String(r.metadata?.timeZone||'unknown').slice(0,80),thresholded:!!r.metadata?.subjectToThresholding,ranges:[7,30].map(days=>({days,start_date:btwOffset(end,1-days),end_date:end,previous_start:btwOffset(end,1-2*days),previous_end:btwOffset(end,-days),metrics:metric('current_'+days),previous:metric('previous_'+days)}))}];
+  }catch{return [product,{status:'error',property_id:id}];}
+ })).then(Object.fromEntries);
+ btwPeriodCache={until:Date.now()+300000,end,value};return value;
 }
