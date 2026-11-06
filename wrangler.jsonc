@@ -1,5 +1,6 @@
 // Configuração do Worker "retrozap-v2" (Cloudflare Workers Builds roda `npx wrangler deploy` a cada push).
 {
+ "triggers": {"crons":["*/5 * * * *"]},
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "retrozap-v2",
   "main": "src/index.js",
