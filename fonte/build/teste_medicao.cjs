@@ -5,7 +5,7 @@ const crypto = require('node:crypto').webcrypto;
 const head = fs.readFileSync(__dirname + '/prod_head.js','utf8').split('/* ---------- Uma página')[0];
 function client(choice='sim', safe=true){
  const storage = new Map([['rz_cookies',choice],['rz_marketing_v1',choice]]), hits=[], meta=[];
- const context={state:{sample:false},localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},location:{origin:'https://retrozap.com.br',pathname:'/'},window:{rzSafeMeasurementPage:()=>safe,rzMetaPurchase:(...x)=>meta.push(x),rzMetaEvent:(...x)=>meta.push(x)},dataLayer:hits};
+ const context={state:{sample:false},localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},location:{origin:'https://retrozap.com.br',pathname:'/'},window:{addEventListener(){},rzSafeMeasurementPage:()=>safe,rzMetaPurchase:(...x)=>meta.push(x),rzMetaEvent:(...x)=>meta.push(x)},dataLayer:hits};
  vm.createContext(context);vm.runInContext(head,context);return {context,hits,meta,storage};
 }
 const id='a'.repeat(64);
@@ -19,7 +19,7 @@ for(const x of [client('nao'),client('sim',false)]){x.context.compraConfirmada({
 c=client();for(const m of [null,{id:'RZ-SEGREDO',valor:6.99,moeda:'BRL'},{id,valor:-1,moeda:'BRL'},{id,valor:6.99,moeda:'USD'}])c.context.compraConfirmada(m);assert.equal(c.hits.length,0);
 (async()=>{
  const source=fs.readFileSync(__dirname+'/pix.js','utf8');
- const module=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+ const module=await import(require('node:url').pathToFileURL(__dirname+'/pix.js').href);
  global.crypto=crypto;
  for(const [mode,paid,amount] of [['ligada',true,'6.99'],['teste',true,'6.99'],['ligada',false,'6.99'],['ligada',true,'-1']]){
   const row={status:paid?'pago':'pendente',codigo:paid?'RZ-TEST-ONLY':null,valor:amount,modo:mode,ordem:'stripe:cs_test_only'};

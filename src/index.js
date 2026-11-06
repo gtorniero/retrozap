@@ -1,3 +1,4 @@
+import {runMeta,metaRoute} from '../meta-adapter.mjs';
 // Worker do Retrozap V2: serve o site (pasta public) e responde às rotas /api/*.
 import { onRequestPost as stats } from '../functions/api/stats.js';
 import { onRequestPost as ideias } from '../functions/api/ideias.js';
@@ -22,7 +23,7 @@ async function registraAcesso(env, request, rota){
   } catch {}
 }
 
-export default {
+const app = {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname.startsWith('/api/') && url.pathname !== '/api/mp-webhook' && url.pathname !== '/api/stripe-webhook') ctx?.waitUntil?.(registraAcesso(env, request, request.method + ' ' + url.pathname));
@@ -32,3 +33,5 @@ export default {
     return env.ASSETS.fetch(request);
   }
 };
+
+export default {...app,async fetch(request,env,ctx){const route=await metaRoute(request,env);if(route)return route;const response=await app.fetch(request,env,ctx);ctx?.waitUntil(runMeta(env));return response},async scheduled(_event,env,ctx){ctx.waitUntil(runMeta(env))}};

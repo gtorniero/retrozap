@@ -1,3 +1,4 @@
+import {captureCheckout} from './meta-adapter.mjs';
 import {redeemPromo} from './promos.mjs';
 // Cobrança do Retrozap: R$ 8,99 por Pix (Mercado Pago, API de Orders) libera grupos ilimitados naquele navegador.
 // Nenhuma mensagem passa por aqui: só e-mail do pagador, identificador da compra e o código de acesso.
@@ -81,7 +82,7 @@ export async function criar({request, env}){
   const email = String(c?.email || '').trim().toLowerCase().slice(0, 120);
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return json({error: 'email'}, 400);
   await tabela(env);
-  const ref = crypto.randomUUID();
+  const ref = crypto.randomUUID(); await captureCheckout(env,ref,c?.meta);
   const teste = modo(env) === 'teste';
   // credencial de teste: comprador de teste e APRO (aprova sozinho)
   const payer = teste ? {email: 'test@testuser.com', first_name: 'APRO'} : {email};
@@ -139,7 +140,7 @@ export async function cartao({request, env}){
   const email = String(c?.email || '').trim().toLowerCase().slice(0, 120);
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return json({error: 'email'}, 400);
   await tabela(env);
-  const ref = crypto.randomUUID(), origem = new URL(request.url).origin, valor = precoCartao(env);
+  const ref = crypto.randomUUID(); await captureCheckout(env,ref,c?.meta); const origem = new URL(request.url).origin, valor = precoCartao(env);
   const f = new URLSearchParams({
     mode: 'payment', locale: 'pt-BR', customer_email: email, client_reference_id: ref, 'metadata[ref]': ref,
     'line_items[0][quantity]': '1', 'line_items[0][price_data][currency]': 'brl',
