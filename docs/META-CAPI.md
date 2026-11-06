@@ -18,7 +18,7 @@ Revocation cancels queued events once received; it cannot withdraw a request alr
 
 ## Reliability and tests
 
-A D1 outbox and delivery lease prevent concurrent duplicates; retries retain the event ID. Every five minutes, the server reconciles eligible records and retries transient failures. Permanent API errors stop the affected event as rejected, rather than claiming success. Only events_received=1 marks sent. Refunded/revoked pending rows cancel before delivery. Payload is scrubbed on success, cancellation or after seven days; consent/matching data expires after seven days. Sent IDs/status remain for deduplication.
+A D1 outbox and delivery lease prevent concurrent duplicates; retries retain the event ID and stop after 24 hours from payment or queue creation, whichever comes first. Every five minutes, the server reconciles eligible records and retries transient failures. Permanent API errors stop the affected event as rejected, rather than claiming success. Only events_received=1 marks sent. Refunded/revoked pending rows cancel before delivery. Payload is scrubbed on success, cancellation or after seven days; consent/matching data expires after seven days. Sent IDs/status remain for deduplication.
 
 No token is configured by these files. Unit/integration tests use fake providers and in-memory SQLite, not production purchases. Node 24 (node:sqlite) is used for the queue tests. The local test-connection script requires --test-only, an explicit Meta TEST code, and a private temporary token file; it only sends to the Meta test channel and removes the token file. It never reads production orders or D1. Production delivery ignores test-event configuration.
 

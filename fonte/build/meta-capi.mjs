@@ -27,7 +27,7 @@ export async function enqueue(db,brand,sale){await schema(db);const row=await db
 export async function drain(db,env,brand,fetcher=fetch){
  const b=BRANDS[brand];if(!b||env.META_CAPI_ENABLED!=='true'||!env.META_CAPI_TOKEN||!/^v\d+\.\d+$/.test(env.META_GRAPH_VERSION||''))return;
  await schema(db);const now=Date.now();
- await db.prepare("UPDATE btw_meta_outbox SET state='expired',payload='{}' WHERE state='pending' AND created<?").bind(now-7*86400000).run();
+ await db.prepare("UPDATE btw_meta_outbox SET state='expired',payload='{}' WHERE state='pending' AND (created<? OR json_extract(payload,'$.event_time')<?)").bind(now-86400000,Math.floor((now-86400000)/1000)).run();
  const rows=await db.prepare("SELECT o.* FROM btw_meta_outbox o JOIN btw_meta_consent c ON c.id=o.id AND c.brand=o.brand WHERE o.brand=? AND o.state='pending' AND o.next_try<=? AND o.lease<? AND c.revoked=0 ORDER BY o.next_try,o.created LIMIT 2").bind(brand,now,now).all();
  for(const row of rows.results||[]){
   const lock=await db.prepare("UPDATE btw_meta_outbox SET lease=?,attempts=attempts+1 WHERE id=? AND state='pending' AND lease<?").bind(now+60000,row.id,now).run();if(!lock.meta?.changes)continue;
@@ -39,7 +39,7 @@ export async function drain(db,env,brand,fetcher=fetch){
    const result=await response.json().catch(()=>null);
    if(response.ok&&result?.events_received===1){await db.prepare("UPDATE btw_meta_outbox SET state='sent',payload='{}',lease=0,last_status=200,error_code=NULL WHERE id=?").bind(row.id).run()}
    else{const terminal=response.status>=400&&response.status<500&&![408,429].includes(response.status);await db.prepare('UPDATE btw_meta_outbox SET state=?,next_try=?,lease=0,last_status=?,error_code=? WHERE id=?').bind(terminal?'rejected':'pending',now+Math.min(3600000,30000*2**Math.min(row.attempts,7)),response.status,Number.isInteger(result?.error?.code)?result.error.code:null,row.id).run()}
-  }catch{await db.prepare('UPDATE btw_meta_outbox SET next_try=?,lease=0 WHERE id=?').bind(now+Math.min(3600000,30000*2**Math.min(row.attempts,7)),response.status,Number.isInteger(result?.error?.code)?result.error.code:null,row.id).run()}
+  }catch{await db.prepare('UPDATE btw_meta_outbox SET next_try=?,lease=0 WHERE id=?').bind(now+Math.min(3600000,30000*2**Math.min(row.attempts,7)),row.id).run()}
  }
  await db.prepare("UPDATE btw_meta_outbox SET payload='{}' WHERE created<?").bind(now-7*86400000).run();
  await db.prepare('DELETE FROM btw_meta_consent WHERE created<?').bind(now-7*86400000).run();
