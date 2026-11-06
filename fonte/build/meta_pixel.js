@@ -32,7 +32,7 @@
     // O SDK envia a URL da página. Não carregar em retornos de pagamento,
     // links com parâmetros, fragmentos ou rotas fora desta lista pública.
     return /^(?:www\.)?retrozap\.com\.br$/.test(location.hostname) && safeQuery() && !location.hash &&
-      /^\/(?:|comecar|turma|conhecendo|categorias|premios\/\d+|resumo|fim|destaque|personagens|bonus|privacidade|termos|sobre|contato|como-funciona|como-exportar|perguntas-frequentes|blog\/(?:[a-z0-9-]+)?)$/.test(location.pathname);
+      /^\/(?:|comecar|exportar|arquivo|crie-seu-premio|ideias|turma|conhecendo|categorias|premios\/\d+|resumo|fim|destaque|personagens|bonus|privacidade|termos|sobre|contato|como-funciona|como-exportar|perguntas-frequentes|blog\/(?:[a-z0-9-]+)?)$/.test(location.pathname);
   }
   function start() {
     if (!consent() || !safePage()) return false;

@@ -2,14 +2,14 @@ const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const fs = require('node:fs');
 const source = fs.readFileSync(__dirname + '/meta_pixel.js', 'utf8');
-function browser(choice, search = '', hash = '', existing = false, hostname = 'retrozap.com.br') {
+function browser(choice, search = '', hash = '', existing = false, hostname = 'retrozap.com.br', pathname = '/') {
   const storage = new Map(choice ? [['rz_marketing_v1', choice]] : [['rz_cookies', 'sim']]);
   const scripts = [], listeners = {};
   const window = {addEventListener: (n, f) => listeners[n] = f};
   if (existing) window.fbq = () => {};
   vm.runInNewContext(source, {
     URLSearchParams, window, localStorage: {getItem: k => storage.get(k)},
-    location: {hostname, pathname: '/', search, hash},
+    location: {hostname, pathname, search, hash},
     document: {createElement: () => ({}), head: {appendChild: s => scripts.push(s)}}
   });
   return {window, storage, scripts, listeners};
@@ -40,3 +40,14 @@ const count = b.window.fbq.queue.length;
 b.window.rzMetaEvent('final_visto');
 assert.equal(b.window.fbq.queue.length, count);
 console.log('OK: novo consentimento, recusa, URL sensível, duplicação, exemplo, parâmetros privados e revogação.');
+
+// O onboarding atual envia upload_ok ainda em /arquivo. Rotas públicas não podem bloquear esse evento.
+for (const path of ['/comecar','/exportar','/arquivo','/crie-seu-premio','/ideias']) {
+ const x=browser('sim','','',false,'retrozap.com.br',path);
+ assert.equal(x.window.rzSafeMeasurementPage(),true,path);
+ x.window.rzMetaEvent('upload_ok',false);
+ assert.equal(x.window.fbq.queue.filter(a=>a[0]==='trackCustom'&&a[1]==='RetrospectivaIniciada').length,1,path);
+ assert.equal(browser('sim','?email=private%40example.invalid','',false,'retrozap.com.br',path).scripts.length,0);
+ assert.equal(browser('nao','','',false,'retrozap.com.br',path).scripts.length,0);
+}
+for (const path of ['/admin','/private','/arquivo/private-name']) assert.equal(browser('sim','','',false,'retrozap.com.br',path).scripts.length,0);
