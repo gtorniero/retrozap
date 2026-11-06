@@ -1,3 +1,4 @@
+import {probeMeta} from '../meta-probe.mjs';
 import {runMeta,metaRoute} from '../meta-adapter.mjs';
 // Worker do Retrozap V2: serve o site (pasta public) e responde às rotas /api/*.
 import { onRequestPost as stats } from '../functions/api/stats.js';
@@ -32,4 +33,4 @@ const app = {
   }
 };
 
-export default {...app,async fetch(request,env,ctx){const route=await metaRoute(request,env);if(route)return route;const response=await app.fetch(request,env,ctx);ctx?.waitUntil(runMeta(env));return response},async scheduled(_event,env,ctx){ctx.waitUntil(runMeta(env))}};
+export default {...app,async fetch(request,env,ctx){const route=await metaRoute(request,env);if(route)return route;const response=await app.fetch(request,env,ctx);ctx?.waitUntil(runMeta(env));return response},async scheduled(_event,env,ctx){ctx.waitUntil(Promise.all([runMeta(env),probeMeta(env,'retrozap')]))}};

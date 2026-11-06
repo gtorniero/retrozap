@@ -22,4 +22,4 @@ python3 "$D/build/historia.py" "$D/retrozap-site/src/historia.js"
 cp "$D/build/worker/wrangler.jsonc" "$D/retrozap-site/wrangler.jsonc"
 rm -f "$D/retrozap-site/public/_redirects"
 
-for f in meta-capi.mjs meta-adapter.mjs; do cp "$D/build/$f" "$D/retrozap-site/$f"; cp "$D/build/$f" "$D/retrozap-site/functions/api/$f"; done
+for f in meta-capi.mjs meta-adapter.mjs meta-probe.mjs; do cp "$D/build/$f" "$D/retrozap-site/$f"; cp "$D/build/$f" "$D/retrozap-site/functions/api/$f"; done
