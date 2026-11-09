@@ -9,3 +9,7 @@ Esta branch recupera trabalho publicado enquanto o GitHub estava indisponível; 
 ## Consulta ao Claude
 
 Históricos originais consultados em 09/11/2026: Quiddo (links institucionais já entregues), Retrozap Admin (remoção da etapa conferir já entregue), RACKET (rodada 13 e correção preservadas) e SURF (maroleira e quiver já incorporados). Ausência de um commit no GitHub não significa ausência da mudança em produção.
+
+## Worker publicado preservado integralmente
+
+A comparação encontrou funções de funil e correções de pagamento no Worker publicado que não estavam no código modular remoto. Para não descartá-las, src/index.js e fonte/build/worker/index.js preservam o bundle integral da versão 051b9c26, com btw-acquisition.mjs adjacente. A desagregação desses módulos é trabalho posterior: não regenerar o Worker a partir dos módulos remotos antigos. As fontes antigas continuam preservadas no histórico.
