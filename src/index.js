@@ -1,3 +1,5 @@
+import {createAcquisitionCollector} from './btw-acquisition.mjs';
+import {google,googleToken} from './admin.js';
 import {probeMeta} from '../meta-probe.mjs';
 import {runMeta,metaRoute} from '../meta-adapter.mjs';
 // Worker do Retrozap V2: serve o site (pasta public) e responde às rotas /api/*.
@@ -6,7 +8,14 @@ import { onRequestPost as ideias } from '../functions/api/ideias.js';
 import { config, criar, status, webhook, acesso, recuperar, cartao, stripeWebhook, promo } from '../functions/api/pix.js';
 import { painel, dados, salvar, funil, analytics, busca, btwInsights, btwProductAnalytics, btwPeriodReports } from './admin.js';
 import { createMetricsHandler } from './btw-readonly.mjs';
-const btwMetrics = createMetricsHandler({analytics, busca, insights:btwInsights, products:btwProductAnalytics, periods:btwPeriodReports});
+const btwAcquisition = createAcquisitionCollector(google, async env => {
+  if(env.__btwAcquisitionDiagnostics)env.__btwAcquisitionDiagnostics.external_requests++;
+  const r = await fetch('https://www.googleapis.com/webmasters/v3/sites', {headers:{Authorization:'Bearer '+await googleToken(env)}});
+  if (!r.ok) throw Error(String(r.status));
+  return await r.json();
+});
+
+const btwMetrics = createMetricsHandler({analytics, busca, insights:btwInsights, products:btwProductAnalytics, periods:btwPeriodReports, acquisition:btwAcquisition});
 
 const POST = { '/api/promo': promo, '/api/stats': stats, '/api/ideias': ideias, '/api/pix': criar, '/api/pix/status': status, '/api/mp-webhook': webhook, '/api/acesso': acesso, '/api/recuperar': recuperar, '/api/cartao': cartao, '/api/stripe-webhook': stripeWebhook, '/api/admin/negocio': salvar };
 const GET = { '/api/btw/metrics': btwMetrics, '/api/cobranca': config, '/api/admin/dados': dados, '/api/admin/funil': funil, '/admin': painel };

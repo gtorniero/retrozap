@@ -23,3 +23,6 @@ cp "$D/build/worker/wrangler.jsonc" "$D/retrozap-site/wrangler.jsonc"
 rm -f "$D/retrozap-site/public/_redirects"
 
 for f in meta-capi.mjs meta-adapter.mjs meta-probe.mjs; do cp "$D/build/$f" "$D/retrozap-site/$f"; cp "$D/build/$f" "$D/retrozap-site/functions/api/$f"; done
+
+# Preserve the authenticated dashboard collectors on rebuild.
+for f in btw-readonly.mjs btw-acquisition.mjs; do cp "$D/build/worker/$f" "$D/retrozap-site/src/$f"; done
