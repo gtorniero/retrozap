@@ -41,7 +41,7 @@ async function site(env){
 
 // token do Google pela conta de serviço (JWT RS256 assinado aqui mesmo)
 let tokenGoogle = null;
-function googleToken(env){
+export function googleToken(env){
   if (!tokenGoogle || tokenGoogle.ate < Date.now()) tokenGoogle = {ate: Date.now() + 50 * 60e3, t: novoToken(env).catch(e => { tokenGoogle = null; throw e; })};
   return tokenGoogle.t;
 }
@@ -60,7 +60,7 @@ async function novoToken(env){
   if (!o.access_token) throw new Error('google_token: ' + (o.error_description || o.error || r.status));
   return o.access_token;
 }
-async function google(env, url, corpo){
+export async function google(env, url, corpo){
   const r = await fetch(url, {method: 'POST', headers: {'content-type': 'application/json', Authorization: 'Bearer ' + await googleToken(env)}, body: JSON.stringify(corpo)});
   const o = await r.json();
   if (!r.ok) throw new Error(o?.error?.message || String(r.status));

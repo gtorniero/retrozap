@@ -1,0 +1,67 @@
+// GET /api/btw/metrics: aggregate-only integration; disabled until BTW_READ_TOKEN is configured.
+export function acceptableToken(s){return typeof s==='string'&&!/\s/.test(s)&&new Set(s).size>=10&&((s.length>=32)||(s.length>=15&&/[a-z]/.test(s)&&/[A-Z]/.test(s)&&/\d/.test(s)&&/[^a-zA-Z0-9]/.test(s)));}
+const reply=(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store','X-Robots-Tag':'noindex'}});
+const number=v=>typeof v==='number'&&Number.isFinite(v)&&v>=0?v:null;
+const digest=s=>crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)).then(x=>new Uint8Array(x));
+async function equal(a,b){const [x,y]=await Promise.all([digest(a),digest(b)]);let diff=0;for(let i=0;i<x.length;i++)diff|=x[i]^y[i];return diff===0;}
+const safe=async(fn)=>{try{return {status:'available',data:await fn()};}catch{return {status:'error',data:null};}};
+export function createMetricsHandler({ analytics: analytics2, busca: busca2, insights, products, periods, acquisition }) {
+  return async ({ request, env }) => {
+    if (request.method !== "GET") return reply({ error: "method_not_allowed" }, 405);
+    if (!acceptableToken(env.BTW_READ_TOKEN)) return reply({ error: "integration_not_configured" }, 503);
+    const auth = request.headers.get("Authorization") || "";
+    if (!auth.startsWith("Bearer ") || !await equal(auth.slice(7), env.BTW_READ_TOKEN)) return reply({ error: "unauthorized" }, 401);
+    const reportQuery=new URL(request.url).searchParams;
+    if (reportQuery.get('section') === 'acquisition' || reportQuery.get('scope') === 'acquisition') {
+      const started=Date.now(), diagnostics={external_requests:0};
+      const acquisitionData=await safe(()=>acquisition({...env,__btwAcquisitionDiagnostics:diagnostics}));
+      return reply({product:'Retrozap',observed_at:new Date().toISOString(),acquisition:acquisitionData,diagnostics:{duration_ms:Date.now()-started,...diagnostics}});
+    }
+    const [ga, search, payments, insightData, productData, periodData] = await Promise.all([
+      safe(async () => {
+        const x = await analytics2(env);
+        if (x.erro || !Array.isArray(x.total)) throw Error();
+        return { period: "29daysAgo..today", users: number(x.total[0]), sessions: number(x.total[1]), pageviews: number(x.total[2]), days: (x.dia || []).slice(-30).map((r) => ({ date: r[0], users: number(r[1]), sessions: number(r[2]), pageviews: number(r[3]) })), channels: (x.canais || []).slice(0, 8).filter((x2) => Array.isArray(x2) && typeof x2[0] === "string").map((x2) => [x2[0].slice(0, 100), number(x2[1])]) };
+      }),
+      safe(async () => {
+        const x = await busca2(env);
+        if (x.erro || !x.total) throw Error();
+        return { period: "30daysAgo..yesterday", clicks: number(x.total.cliques), impressions: number(x.total.impressoes), ctr: number(x.total.ctr), position: number(x.total.posicao), days: (x.dia || []).slice(-30).map((r) => ({ date: r.dia, clicks: number(r.cliques), impressions: number(r.impressoes) })) };
+      }),
+      safe(async () => {
+        if (!env.DB) throw Error();
+        const r = await env.DB.prepare("SELECT COUNT(*) AS count, COUNT(DISTINCT email) AS customers, SUM(CAST(valor AS REAL)) AS gross_brl FROM compras WHERE modo = 'ligada' AND status = 'pago'").first();
+        if (!r) throw Error();
+        return { source: "Retrozap D1 compras", period: "accumulated", count: number(r.count), customers: number(r.customers), gross_brl: number(r.gross_brl), fees_brl: null, bank_payout_brl: null, daily: await safe(() => readCommerceSeries(env)) };
+      }),
+      safe(async () => {
+        if (!insights) throw Error();
+        return await insights(env);
+      }),
+      safe(async () => {
+        if (!products) throw Error();
+        return await products(env);
+      }),
+      safe(async () => {
+        if (!periods) throw Error();
+        return await periods(env);
+      })
+    ]);
+    const existingAcquisition = acquisition?.peek?.();
+    const acquisitionData = existingAcquisition ? await safe(() => existingAcquisition) : {status:'error',error_code:'ACQUISITION_SEPARATE_REQUEST',data:null};
+    return reply({ product: "Retrozap", observed_at: (/* @__PURE__ */ new Date()).toISOString(), analytics: ga, search, payments, insights: insightData, products: productData, period_reports: periodData, acquisition: acquisitionData });
+  };
+}
+
+export async function readCommerceSeries(env,now=Date.now()){
+ const end=new Intl.DateTimeFormat('sv-SE',{timeZone:'America/Sao_Paulo'}).format(new Date(now)),start=new Date(Date.parse(end)-59*86400000).toISOString().slice(0,10);
+ const [sales,checkouts,unknown]=await Promise.all([
+  env.DB.prepare("SELECT date(pago, '-3 hours') AS date, COUNT(*) AS purchases, SUM(CAST(valor AS REAL)) AS gross_brl, SUM(CASE WHEN ordem LIKE 'stripe:%' THEN 1 ELSE 0 END) AS card, SUM(CASE WHEN ordem NOT LIKE 'stripe:%' THEN 1 ELSE 0 END) AS pix FROM compras WHERE modo = 'ligada' AND status = 'pago' AND date(pago, '-3 hours') BETWEEN ? AND ? GROUP BY date(pago, '-3 hours') ORDER BY date").bind(start,end).all(),
+  env.DB.prepare("SELECT date(criado, '-3 hours') AS date, COUNT(*) AS checkouts FROM compras WHERE modo = 'ligada' AND date(criado, '-3 hours') BETWEEN ? AND ? GROUP BY date(criado, '-3 hours') ORDER BY date").bind(start,end).all(),
+  env.DB.prepare("SELECT COUNT(*) AS undated FROM compras WHERE modo = 'ligada' AND status = 'pago' AND (pago IS NULL OR date(pago, '-3 hours') IS NULL)").first()
+ ]);
+ if(sales.success===false||checkouts.success===false||!Array.isArray(sales.results)||!Array.isArray(checkouts.results)||!unknown||!Number.isInteger(unknown.undated))throw Error('commerce_unavailable');
+ const byDay=new Map(sales.results.map(r=>[r.date,r])),byCheckout=new Map(checkouts.results.map(r=>[r.date,r]));
+ const days=Array.from({length:60},(_,i)=>{const date=new Date(Date.parse(start)+i*86400000).toISOString().slice(0,10),v=byDay.get(date),c=byCheckout.get(date);const row={date,purchases:v?number(v.purchases):0,gross_brl:v?number(v.gross_brl):0,card:v?number(v.card):0,pix:v?number(v.pix):0,checkouts:c?number(c.checkouts):0};if(Object.values(row).slice(1).some(x=>x===null))throw Error('commerce_invalid');return row;});
+ return {time_zone:'America/Sao_Paulo',currency:'BRL',start_date:start,end_date:end,partial_current_day:true,undated_count:unknown.undated,days};
+}
