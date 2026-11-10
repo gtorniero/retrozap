@@ -577,7 +577,7 @@ export async function btwProductAnalytics(env){
    const run=dimensions=>google(env,url,{dateRanges,metrics,...(dimensions?{dimensions:dimensions.map(name=>({name})),limit:1000}:{}),...(dimensions?.includes('date')?{orderBys:[{dimension:{dimensionName:'date'}}]}:{})});
    const [tot,daily,channels,devices]=await Promise.all([run(),run(['date']),run(['date','sessionDefaultChannelGroup']),run(['date','deviceCategory'])]);
    const rows=linhas(tot)[0];if(!rows)throw Error('empty_totals');
-   const date=d=>d.slice(0,4)+'-'+d.slice(4,6)+'-'+d.slice(6),segments=r=>({status:'available',thresholded:!!r.metadata?.subjectToThresholding,rows:linhas(r).map(([d,segment,users,sessions,pageviews])=>({date:date(d),segment:String(segment).slice(0,100),users,sessions,pageviews}))});
+   const date=d=>d.slice(0,4)+'-'+d.slice(4,6)+'-'+d.slice(6),segments=r=>({status:r.metadata?.timeZone===tot.metadata?.timeZone&&Number(r.rowCount||0)<=(r.rows||[]).length?'available':'error',thresholded:!!r.metadata?.subjectToThresholding,rows:linhas(r).map(([d,segment,users,sessions,pageviews])=>({date:date(d),segment:String(segment).slice(0,100),users,sessions,pageviews}))});
    return [product,{status:'available',property_id:property,observed_at:new Date().toISOString(),time_zone:String(tot.metadata?.timeZone||'unknown'),start_date:btwOffset(end,-29),end_date:end,daily_thresholded:!!daily.metadata?.subjectToThresholding,analytics:{users:rows[0],sessions:rows[1],pageviews:rows[2],days:linhas(daily).map(([d,users,sessions,pageviews])=>({date:date(d),users,sessions,pageviews}))},insights:{status:'available',channels:segments(channels),devices:segments(devices),funnels:[]}}];
   }catch(e){const message=String(e?.message||'');const code=/permission|access|forbidden/i.test(message)?'GA_ACCESS_DENIED':/quota|exhausted/i.test(message)?'GA_QUOTA':/empty_totals/.test(message)?'GA_EMPTY_REPORT':'GA_REPORT_FAILED';return [product,{status:'error',property_id:property,error_code:code}];}
  })).then(Object.fromEntries);
@@ -631,7 +631,8 @@ async function btwAlignedReports(env,id,zone,end,native){
     for(const values of [r.metrics,r.previous])if(!values||['users','sessions','pageviews'].some(k=>!(values[k]===null||typeof values[k]==='number'&&Number.isFinite(values[k])&&values[k]>=0)))throw Error('METRIC');
     return {...r,start_at:current.start_at,end_at_exclusive:current.end_at_exclusive,previous_start_at:previous.start_at,previous_end_at_exclusive:previous.end_at_exclusive};
    });
-   return {status:'available',daily:await btwCanonicalDaily(env,id,zone,end),funnels:[],reporting_time_zone:BTW_REPORT_ZONE,source_time_zone:zone,method:'native_same_zone',observed_at:native.observed_at,thresholded:!!native.thresholded,ranges};
+   const [daily,segments]=await Promise.all([btwCanonicalDaily(env,id,zone,end),btwCanonicalSegments(env,id,zone,end)]);
+   return {status:'available',daily,segments,funnels:[],reporting_time_zone:BTW_REPORT_ZONE,source_time_zone:zone,method:'native_same_zone',observed_at:native.observed_at,thresholded:!!native.thresholded,ranges};
   }
   const results=await Promise.all(queries.map(async q=>{
    const req=btwAlignedRequest(q.start,q.end,zone),r=await google(env,`https://analyticsdata.googleapis.com/v1beta/properties/${id}:runReport`,req.body);
@@ -640,14 +641,14 @@ async function btwAlignedReports(env,id,zone,end,native){
    const metric=(name)=>{if(!(r.rows||[]).length)return null;const at=names.indexOf(name);if(at<0)throw Error('METRIC');const raw=values[at]?.value;if(raw===undefined)return null;const v=Number(raw);if(!Number.isFinite(v)||v<0)throw Error('METRIC');return v;};
    return {...q,start_at:req.start_at,end_at_exclusive:req.end_at_exclusive,metrics:{users:metric('activeUsers'),sessions:metric('sessions'),pageviews:metric('screenPageViews')},thresholded:!!r.metadata?.subjectToThresholding};
   }));
-  const daily=await btwCanonicalDaily(env,id,zone,end);
-  return {status:'available',daily,funnels:[],funnel_alignment:{status:'blocked',reason:'population_not_reconciled'},reporting_time_zone:BTW_REPORT_ZONE,source_time_zone:zone,method:'dateHour_filter',observed_at:new Date().toISOString(),thresholded:results.some(x=>x.thresholded),ranges:[7,30].map(days=>{const a=results.find(x=>x.days===days&&x.part==='current'),b=results.find(x=>x.days===days&&x.part==='previous');return {days,start_date:a.start,end_date:a.end,start_at:a.start_at,end_at_exclusive:a.end_at_exclusive,previous_start:b.start,previous_end:b.end,previous_start_at:b.start_at,previous_end_at_exclusive:b.end_at_exclusive,metrics:a.metrics,previous:b.metrics};})};
+  const [daily,segments]=await Promise.all([btwCanonicalDaily(env,id,zone,end),btwCanonicalSegments(env,id,zone,end)]);
+  return {status:'available',daily,segments,funnels:[],funnel_alignment:{status:'blocked',reason:'population_not_reconciled'},reporting_time_zone:BTW_REPORT_ZONE,source_time_zone:zone,method:'dateHour_filter',observed_at:new Date().toISOString(),thresholded:results.some(x=>x.thresholded),ranges:[7,30].map(days=>{const a=results.find(x=>x.days===days&&x.part==='current'),b=results.find(x=>x.days===days&&x.part==='previous');return {days,start_date:a.start,end_date:a.end,start_at:a.start_at,end_at_exclusive:a.end_at_exclusive,previous_start:b.start,previous_end:b.end,previous_start_at:b.start_at,previous_end_at_exclusive:b.end_at_exclusive,metrics:a.metrics,previous:b.metrics};})};
  }catch(e){const message=String(e?.message||'');return {status:'error',error_code:/permission|access|forbidden/i.test(message)?'GA_ACCESS_DENIED':/quota|exhausted/i.test(message)?'GA_QUOTA':'GA_ALIGNED_REPORT_FAILED',diagnostic_hints:['dateHour','betweenFilter','stringFilter','FULL_REGEXP','TIME_ZONE','METRIC','not supported','not a valid','INVALID_ARGUMENT'].filter(x=>message.toLowerCase().includes(x.toLowerCase()))};}
 }
 
 // Direct daily unique aggregates; never resample/sum hourly users.
 const btwCleanMetrics=r=>{const names=(r.metricHeaders||[]).map(x=>x.name),values=r.rows?.[0]?.metricValues||[];if((r.rows||[]).length>1)throw Error('DAILY_ROWS');return Object.fromEntries([['users','activeUsers'],['sessions','sessions'],['pageviews','screenPageViews']].map(([key,name])=>{if(!r.rows?.length)return [key,null];const at=names.indexOf(name);if(at<0)throw Error('METRIC');const raw=values[at]?.value;if(raw===undefined||raw===null||raw==='')return [key,null];const value=Number(raw);if(!Number.isFinite(value)||value<0)throw Error('METRIC');return [key,value];}));};
-const btwSeriesError=(error,code)=>{const message=String(error?.message||'');return {status:'error',error_code:code,diagnostic_hints:['dateHour','batchRunReports','REPORTS','DAILY_ROWS','TIME_ZONE','METRIC','missing_funnel','missing_metric','not supported','not a valid','permission','quota','exhausted','INVALID_ARGUMENT'].filter(x=>message.toLowerCase().includes(x.toLowerCase()))};};
+const btwSeriesError=(error,code)=>{const message=String(error?.message||'');return {status:'error',error_code:code,diagnostic_hints:['dateHour','batchRunReports','REPORTS','DAILY_ROWS','SEGMENT_ROWS','TIME_ZONE','METRIC','missing_funnel','missing_metric','not supported','not a valid','permission','quota','exhausted','INVALID_ARGUMENT'].filter(x=>message.toLowerCase().includes(x.toLowerCase()))};};
 async function btwCanonicalDaily(env,id,zone,end){
  try{
   const start=btwOffset(end,-29),bounds=btwAlignedRequest(start,end,zone),dates=Array.from({length:30},(_,i)=>btwOffset(start,i));let days,thresholded=false,method;
@@ -676,4 +677,45 @@ async function btwCanonicalFunnel(env,id,zone,end,days){
   for(const row of t.rows){const i=parseInt(row.dimensionValues?.[0]?.value)-1,raw=row.metricValues?.[at]?.value;if(i<0||i>=chosen.length||values.has(i))throw Error('METRIC');if(raw===undefined||raw===null||raw===''){values.set(i,null);continue;}const value=Number(raw);if(!Number.isFinite(value)||value<0)throw Error('METRIC');values.set(i,value);}
   return {status:'available',property_id:id,reporting_time_zone:BTW_REPORT_ZONE,source_time_zone:zone,observed_at:new Date().toISOString(),days,filter_scope:'each_step',start_date:start,end_date:end,start_at:req.start_at,end_at_exclusive:req.end_at_exclusive,mode:'closed',sequential:true,thresholded:!!t.metadata?.subjectToThresholding,steps:chosen.map(([name],i)=>({name,users:values.has(i)?values.get(i):null}))};
  }catch(e){return {...btwSeriesError(e,'GA_ALIGNED_FUNNEL_FAILED'),days};}
+}
+
+// Canonical daily segments. Query each day/segment directly; no hourly unique-user sum.
+async function btwCanonicalSegments(env,id,zone,end){
+ try{
+  const start=btwOffset(end,-29),bounds=btwAlignedRequest(start,end,zone),parts={channels:{status:'available',rows:[],thresholded:false},devices:{status:'available',rows:[],thresholded:false}};
+  let method,observedAt;
+  if(zone===BTW_REPORT_ZONE){
+   const product=BTW_GA_PRODUCTS.find(([,property])=>property===id)?.[0],native=(await btwProductAnalytics(env))[product];
+   if(native?.status!=='available'||native.time_zone!==zone||native.start_date!==start||native.end_date!==end)throw Error('TIME_ZONE');
+   for(const key of ['channels','devices']){const p=native.insights?.[key];if(p?.status!=='available'||p.truncated)throw Error('SEGMENT_ROWS');parts[key]={status:'available',rows:p.rows,thresholded:!!p.thresholded};}
+   method='native_same_zone';observedAt=native.observed_at;
+  }else{
+   if(id!=='559410482'||zone!=='America/Rio_Branco')throw Error('TIME_ZONE');
+   const jobs=Array.from({length:30},(_,i)=>btwOffset(start,i)).flatMap(date=>[['channels','sessionDefaultChannelGroup'],['devices','deviceCategory']].map(([key,dimension])=>({date,key,dimension,req:btwAlignedRequest(date,date,zone)})));
+   const batches=Array.from({length:Math.ceil(jobs.length/5)},(_,i)=>jobs.slice(i*5,i*5+5));
+   // At most two batch HTTP requests in flight; daily totals use their own single batch stream.
+   for(let i=0;i<batches.length;i+=2){
+    const results=await Promise.all(batches.slice(i,i+2).map(async batch=>{
+     const r=await google(env,`https://analyticsdata.googleapis.com/v1beta/properties/${id}:batchRunReports`,{requests:batch.map(j=>({...j.req.body,dimensions:[{name:j.dimension}],limit:1000}))});
+     if(!Array.isArray(r.reports)||r.reports.length!==batch.length)throw Error('REPORTS');
+     return batch.map((j,at)=>({job:j,report:r.reports[at]}));
+    }));
+    for(const {job:j,report:r} of results.flat()){
+     if(r.metadata?.timeZone!==zone)throw Error('TIME_ZONE');
+     const rows=r.rows||[];if(rows.length>=1000||Number(r.rowCount||0)>rows.length)throw Error('SEGMENT_ROWS');
+     if(rows.length&&r.dimensionHeaders?.[0]?.name!==j.dimension)throw Error('SEGMENT_ROWS');
+     const names=(r.metricHeaders||[]).map(x=>x.name);
+     for(const row of rows){
+      const segment=row.dimensionValues?.[0]?.value;if(typeof segment!=='string'||segment.length>100)throw Error('SEGMENT_ROWS');
+      const values=Object.fromEntries([['users','activeUsers'],['sessions','sessions'],['pageviews','screenPageViews']].map(([key,name])=>{const index=names.indexOf(name),raw=row.metricValues?.[index]?.value;if(index<0||raw===undefined)throw Error('METRIC');const v=raw===null||raw===''?null:Number(raw);if(v!==null&&(!Number.isFinite(v)||v<0))throw Error('METRIC');return [key,v];}));
+      parts[j.key].rows.push({date:j.date,segment,...values});
+     }
+     parts[j.key].thresholded ||=!!r.metadata?.subjectToThresholding;
+    }
+   }
+   method='direct_daily_segment_queries';
+  }
+  for(const p of Object.values(parts)){if(!Array.isArray(p.rows)||p.rows.length>1000)throw Error('SEGMENT_ROWS');p.rows.sort((a,b)=>a.date.localeCompare(b.date)||a.segment.localeCompare(b.segment));}
+  return {status:'available',property_id:id,reporting_time_zone:BTW_REPORT_ZONE,source_time_zone:zone,method,observed_at:observedAt||new Date().toISOString(),start_date:start,end_date:end,start_at:bounds.start_at,end_at_exclusive:bounds.end_at_exclusive,...parts};
+ }catch(e){return btwSeriesError(e,'GA_ALIGNED_SEGMENTS_FAILED');}
 }
