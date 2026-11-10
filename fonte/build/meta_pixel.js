@@ -11,7 +11,10 @@
     card_compartilhado: 'MidiaCompartilhada',
     card_salvo: 'MidiaSalva',
     pix_gerado: 'PixGerado',
-    cartao_aberto: 'CheckoutAberto'
+    cartao_aberto: 'CheckoutAberto',
+    view_offer: 'OfertaVista',
+    checkout_attempt: 'TentativaCheckout',
+    checkout_error: 'ErroCheckout'
   };
   function consent() {
     try { return localStorage.getItem('rz_marketing_v1') === 'sim'; }

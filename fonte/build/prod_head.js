@@ -30,6 +30,9 @@ function evento(nome, params = {}){
   if (['ate_300','300_3000','mais_3000'].includes(params.faixa_msgs)) p.faixa_msgs = params.faixa_msgs;
   if (['zip','txt','outro'].includes(params.tipo)) p.tipo = params.tipo;
   if (typeof params.recarregou === 'boolean') p.recarregou = params.recarregou;
+  if (['video','personagens','livre','destaques','second_group','casal'].includes(params.offer_context)) p.offer_context = params.offer_context;
+  if (['pix','card'].includes(params.payment_type)) p.payment_type = params.payment_type;
+  if (['invalid_email','network','unavailable','rejected','invalid_response'].includes(params.error_category)) p.error_category = params.error_category;
   if (exemplo) p.exemplo = true;
   try { if (window.rzMetaEvent && marketing) window.rzMetaEvent(nome, exemplo); } catch {}
   try { if (analytics && configurado(CONFIG.GA_ID)) gtag('event', nome, p); } catch {}

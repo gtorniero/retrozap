@@ -26,7 +26,10 @@ if(ad==='denied'){(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersonal
     card_compartilhado: 'MidiaCompartilhada',
     card_salvo: 'MidiaSalva',
     pix_gerado: 'PixGerado',
-    cartao_aberto: 'CheckoutAberto'
+    cartao_aberto: 'CheckoutAberto',
+    view_offer: 'OfertaVista',
+    checkout_attempt: 'TentativaCheckout',
+    checkout_error: 'ErroCheckout'
   };
   function consent() {
     try { return localStorage.getItem('rz_marketing_v1') === 'sim'; }
@@ -910,6 +913,9 @@ function evento(nome, params = {}){
   if (['ate_300','300_3000','mais_3000'].includes(params.faixa_msgs)) p.faixa_msgs = params.faixa_msgs;
   if (['zip','txt','outro'].includes(params.tipo)) p.tipo = params.tipo;
   if (typeof params.recarregou === 'boolean') p.recarregou = params.recarregou;
+  if (['video','personagens','livre','destaques','second_group','casal'].includes(params.offer_context)) p.offer_context = params.offer_context;
+  if (['pix','card'].includes(params.payment_type)) p.payment_type = params.payment_type;
+  if (['invalid_email','network','unavailable','rejected','invalid_response'].includes(params.error_category)) p.error_category = params.error_category;
   if (exemplo) p.exemplo = true;
   try { if (window.rzMetaEvent && marketing) window.rzMetaEvent(nome, exemplo); } catch {}
   try { if (analytics && configurado(CONFIG.GA_ID)) gtag('event', nome, p); } catch {}
@@ -1708,6 +1714,9 @@ let QR_LIB = null;
 const carregaQR = () => QR_LIB || (QR_LIB = new Promise((ok, falha) => { const s = document.createElement('script'); s.src = '/assets/qrcode.js'; s.onload = () => ok(window.qrcode); s.onerror = falha; document.head.appendChild(s); }));
 function paywall(seguir, ctx){
   const antes = document.activeElement, m = document.createElement('div');
+  const offerContext = ['video','personagens','livre','destaques','casal'].includes(ctx) ? ctx : 'second_group';
+  // Só categorias fechadas; exemplos e simulações nunca entram no funil real.
+  const mede = (nome, params = {}) => { if (!AMBIENTE_TESTE && !TESTE_COBRANCA && !/[?&]teste_cartao=1/.test(location.search) && !state.sample && typeof evento === 'function') evento(nome, {...params, offer_context: offerContext}); };
   let vivo = true, tm = null;
   m.className = 'patro'; m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true'); m.setAttribute('aria-labelledby','pwT');
   const fecha = () => { vivo = false; clearTimeout(tm); m.remove(); try { antes?.focus(); } catch {} };
@@ -1751,7 +1760,13 @@ function paywall(seguir, ctx){
       <label class="pw-lb" for="pwPromo">Código promocional</label><input class="pw-in" id="pwPromo" maxlength="80" autocomplete="off"><button type="button" class="btn btn-ghost" id="pwPromoAplicar">Aplicar código e liberar grátis</button>
       <button type="button" class="pw-lk" id="pwTenho">Já paguei, tenho um código</button>
       <p class="small" style="margin:0">Continua igual: suas mensagens não saem do seu celular. O Pix é processado pelo Mercado Pago e o cartão pelo Stripe.</p>`;
-    if (ctx === 'casal'){ const l = caixa.querySelector('.pw-lista'), c = [...l.children].find(li => /Casais/.test(li.textContent)); if (c) l.prepend(c); }
+    const lista = caixa.querySelector('.pw-lista');
+    const principal = document.createElement('ul'); principal.className = 'pw-lista';
+    principal.append(lista.children[{personagens:1,video:3,livre:4,casal:5}[offerContext] ?? 0]);
+    lista.before(principal);
+    const detalhes = document.createElement('details'); detalhes.className = 'pw-beneficios';
+    detalhes.innerHTML = '<summary style="cursor:pointer;min-height:44px;padding:12px 0;font-weight:700">Veja tudo o que está incluído</summary>';
+    detalhes.append(lista); caixa.querySelector('#pwCartaoBox').after(detalhes);
     caixa.querySelector('#pwX').onclick = fecha;
     caixa.querySelector('#pwTenho').onclick = codigoTela;
     const em = caixa.querySelector('#pwEm'), err = caixa.querySelector('#pwErr'), bt = caixa.querySelector('#pwPix');
@@ -1769,13 +1784,16 @@ function paywall(seguir, ctx){
       lsSet('rz_email', email);
       if (AMBIENTE_TESTE){ state.planoTeste = 'premium'; marcaPlano(); return libera('RZ-TEST-TEST'); } // prévia: pagamento simulado
       bt.disabled = true; bt.textContent = 'Gerando o Pix...'; err.hidden = true;
+      mede('checkout_attempt', {payment_type:'pix'}); let errorCategory = 'network';
       try {
         const r = await fetch('/api/pix', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({email,meta:window.BTWMetaConsent?.context()})});
+        errorCategory = r.status >= 500 ? 'unavailable' : 'invalid_response';
         const j = await r.json();
+        if (!r.ok) errorCategory = j.error === 'email' ? 'invalid_email' : r.status >= 500 ? 'unavailable' : 'rejected';
         if (!r.ok || !j.ref) throw new Error(j.error === 'email' ? 'Confira o e-mail.' : 'Não consegui gerar o Pix agora. Tente de novo em instantes.' + (TESTE_COBRANCA ? ` [${r.status}${j.detalhe ? ': ' + j.detalhe : ''}]` : ''));
         try { if (typeof evento === 'function') evento('pix_gerado'); } catch {}
         pixTela(j);
-      } catch (e) { bt.disabled = false; bt.textContent = '🔓 Liberar no Pix por R$ 8,99'; err.hidden = false; err.textContent = e.message || 'Sem conexão. Tente de novo.'; }
+      } catch (e) { mede('checkout_error', {payment_type:'pix',error_category:errorCategory}); bt.disabled = false; bt.textContent = '🔓 Liberar no Pix por R$ 8,99'; err.hidden = false; err.textContent = e.message || 'Sem conexão. Tente de novo.'; }
     };
     // cartão, Apple Pay e Google Pay (Stripe): só aparece quando o servidor tem a chave; chave de teste só com ?teste_cartao=1
     const btc = caixa.querySelector('#pwCartao');
@@ -1790,14 +1808,17 @@ function paywall(seguir, ctx){
       lsSet('rz_email', email);
       if (AMBIENTE_TESTE){ state.planoTeste = 'premium'; marcaPlano(); return libera('RZ-TEST-TEST'); }
       btc.disabled = true; const txt = btc.innerHTML; btc.textContent = 'Abrindo o pagamento...'; err.hidden = true;
+      mede('checkout_attempt', {payment_type:'card'}); let errorCategory = 'network';
       try {
         const r = await fetch('/api/cartao', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({email,meta:window.BTWMetaConsent?.context()})});
+        errorCategory = r.status >= 500 ? 'unavailable' : 'invalid_response';
         const j = await r.json();
+        if (!r.ok) errorCategory = j.error === 'email' ? 'invalid_email' : r.status >= 500 ? 'unavailable' : 'rejected';
         if (!r.ok || !j.url) throw new Error(j.error === 'email' ? 'Confira o e-mail.' : 'Não consegui abrir o pagamento agora. Tente de novo ou use o Pix.' + (j.detalhe ? ` [${j.detalhe}]` : ''));
         try { if (typeof evento === 'function') evento('cartao_aberto'); } catch {}
         lsSet('rz_cartao_ref', j.ref);
         location.href = j.url; // volta para o site e a cerimônia continua de onde parou
-      } catch (e) { btc.disabled = false; btc.innerHTML = txt; err.hidden = false; err.textContent = e.message || 'Sem conexão. Tente de novo.'; }
+      } catch (e) { mede('checkout_error', {payment_type:'card',error_category:errorCategory}); btc.disabled = false; btc.innerHTML = txt; err.hidden = false; err.textContent = e.message || 'Sem conexão. Tente de novo.'; }
     };
     caixa.querySelector('#pwX').focus({preventScroll:true}); requestAnimationFrame(() => { m.scrollTop = 0; });
   };
@@ -1862,6 +1883,7 @@ function paywall(seguir, ctx){
   document.body.appendChild(m);
   m.addEventListener('keydown', e => { if (e.key === 'Escape') fecha(); });
   inicio();
+  mede('view_offer');
 }
 // volta do pagamento no cartão (Stripe): confere e libera o acesso, mostrando o código
 async function confereCartao(ref){
