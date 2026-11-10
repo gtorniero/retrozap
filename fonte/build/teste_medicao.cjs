@@ -17,6 +17,16 @@ c.context.compraConfirmada({id,valor:6.99,moeda:'BRL'});c.context.compraConfirma
 assert.equal(c.hits.filter(x=>x[1]==='purchase').length,1);assert.equal(c.meta.length,1);
 for(const x of [client('nao'),client('sim',false)]){x.context.compraConfirmada({id,valor:8.99,moeda:'BRL'});assert.equal(x.hits.length,0);assert.equal(x.meta.length,0);}
 c=client();for(const m of [null,{id:'RZ-SEGREDO',valor:6.99,moeda:'BRL'},{id,valor:-1,moeda:'BRL'},{id,valor:6.99,moeda:'USD'}])c.context.compraConfirmada(m);assert.equal(c.hits.length,0);
+c=client();
+for(const event of ['view_offer','checkout_attempt','checkout_error'])c.context.evento(event,{offer_context:'video',payment_type:'pix',error_category:'network',email:'PRIVATE',ref:'PRIVATE',message:'PRIVATE',nomes:['PRIVATE']});
+assert.deepEqual(Array.from(c.hits,x=>x[1]),['view_offer','checkout_attempt','checkout_error']);
+assert(!JSON.stringify(c.hits).includes('PRIVATE'));
+assert.equal(c.hits[2][2].error_category,'network');
+c.context.evento('checkout_error',{offer_context:'PRIVATE',payment_type:'PRIVATE',error_category:'PRIVATE'});
+assert.deepEqual(Object.keys(c.hits.at(-1)[2]),[]);
+c.storage.set('rz_cookies','nao');c.storage.set('rz_marketing_v1','nao');
+const before=c.hits.length;c.context.evento('checkout_attempt',{offer_context:'casal',payment_type:'card'});assert.equal(c.hits.length,before);
+console.log('OK: oferta, tentativa e erro distintos de compra; parâmetros limitados e revogação respeitada.');
 (async()=>{
  const source=fs.readFileSync(__dirname+'/pix.js','utf8');
  const module=await import(require('node:url').pathToFileURL(__dirname+'/pix.js').href);
