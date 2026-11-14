@@ -107,7 +107,7 @@ for k, v in ROTAS.items(): rep(k, k + '\n  ' + v)
 rep("function voltar(){ voltarPilha(); }", "function voltar(){ history.back(); } // o navegador volta e o popstate redesenha a tela anterior")
 
 # eventos
-rep("  state.raw = msgs; state.alias = {};", "  if (!retomando) evento('upload_ok', {mensagens: msgs.length, modo: state.modo, exemplo: !!sample});\n  state.finalMedido = false;\n  state.raw = msgs; state.alias = {};")
+rep("  state.raw = msgs; state.alias = {};", "  if (!retomando) evento('upload_ok', {faixa_msgs: msgs.length < 300 ? 'ate_300' : msgs.length <= 3000 ? '300_3000' : 'mais_3000', modo: state.modo, exemplo: !!sample});\n  state.finalMedido = false;\n  state.raw = msgs; state.alias = {};")
 rep("    home(); const err = $('#err'); err.hidden = false;", "    evento('upload_erro'); home(); const err = $('#err'); err.hidden = false;")
 rep("  }catch(e){ V2.lendo = false;", "  }catch(e){ evento('upload_erro'); V2.lendo = false;")
 rep("view.querySelectorAll('.mode').forEach(b => b.onclick = () => { const k = b.dataset.m;", "view.querySelectorAll('.mode').forEach(b => b.onclick = () => { const k = b.dataset.m; evento('modo_escolhido', {modo: k});")
@@ -123,7 +123,7 @@ j = s.index("  if (m.querySelector('#cp')) m.querySelector('#cp').onclick", i)
 s = s[:i] + """  if (m.querySelector('#dl')) m.querySelector('#dl').onclick = () => {
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nome; document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
-    evento('card_salvo'); msg.textContent = 'Imagem salva! Agora é só mandar no grupo. 🏆';
+    evento('card_salvo'); msg.textContent = 'Imagem salva! Agora é só mandar no grupo. 🏆'; passo2();
   };
 """ + s[j:]
 rep("    try { await navigator.share({files:[f], text:texto}); return 'ok'; }", "    try { await navigator.share({files:[f], text:texto}); evento('card_compartilhado'); return 'ok'; }")

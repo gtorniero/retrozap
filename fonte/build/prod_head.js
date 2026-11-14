@@ -11,10 +11,12 @@ const configurado = v => !!v && !/X{4}|^0+$/.test(v);
 window.dataLayer = window.dataLayer || [];
 function gtag(){ dataLayer.push(arguments); }
 // a tag oficial do Google (gtag js + config) fica no <head>; cada tela nova vira page_view sozinha (medição otimizada: mudanças no histórico)
+// Antes da escolha no aviso de cookies, os eventos ficam só na memória desta aba (nada é enviado nem gravado).
+// Aceitar envia a fila; Recusar (ou não escolher e sair) descarta tudo. Assim a chegada por link compartilhado
+// (chegou_de_compartilhamento, ?de=) e o ob2_entrada contam para quem aceita depois de ver a primeira tela.
+const FILA_MEDICAO = [], FILA_MAX = 40;
 function evento(nome, params = {}){
   // Sem eventos antes de aceitar; não copiar parâmetros livres nem conteúdo do grupo.
-  let analytics = false, marketing = false;
-  try { analytics = localStorage.getItem('rz_cookies') === 'sim'; marketing = localStorage.getItem('rz_marketing_v1') === 'sim'; } catch {}
   const exemplo = !!params.exemplo || !!state.sample;
   const p = {};
   if (['amigos','familia','trabalho','comunidade','casal'].includes(params.modo)) p.modo = params.modo;
@@ -23,7 +25,7 @@ function evento(nome, params = {}){
   // funil do onboarding (ob2_*): só valores de uma lista fechada, nunca texto livre
   if (['iphone','android'].includes(params.aparelho)) p.aparelho = params.aparelho;
   if (['ok','pouca_conversa','formato_invalido','zip_sem_conversa','nao_abriu','erro_leitura'].includes(params.resultado)) p.resultado = params.resultado;
-  if (['inicio','ja_tenho','caixa','sem_exportar','problema','nao_achei'].includes(params.de)) p.de = params.de;
+  if (['inicio','ja_tenho','caixa','sem_exportar','problema','nao_achei','arquivo_errado'].includes(params.de)) p.de = params.de;
   if (['sem_exportar','nao_achei'].includes(params.qual)) p.qual = params.qual;
   if (Number.isInteger(params.passo) && params.passo > 0 && params.passo < 10) p.passo = params.passo;
   if (['ate_300','300_3000','mais_3000'].includes(params.faixa_msgs)) p.faixa_msgs = params.faixa_msgs;
@@ -34,11 +36,21 @@ function evento(nome, params = {}){
   if (['invalid_email','network','unavailable','rejected','invalid_response'].includes(params.error_category)) p.error_category = params.error_category;
   if (exemplo) p.exemplo = true;
   if (window.RZ_INTERNO) return; // modo interno (?btw_interno=1): nada de GA4, pixel ou GTM
+  let escolha = null; try { escolha = localStorage.getItem('rz_cookies'); } catch {}
+  if (escolha == null){ if (FILA_MEDICAO.length < FILA_MAX) FILA_MEDICAO.push([nome, p, exemplo]); return; } // ainda sem escolha: espera na memória
+  enviaEvento(nome, p, exemplo);
+}
+function enviaEvento(nome, p, exemplo){
+  let analytics = false, marketing = false;
+  try { analytics = localStorage.getItem('rz_cookies') === 'sim'; marketing = localStorage.getItem('rz_marketing_v1') === 'sim'; } catch {}
+  if (window.RZ_INTERNO) return;
   // a Meta recebe só o nome do evento (e grupo/casal no Lead); nunca os parâmetros livres
   try { if (window.rzMetaEvent && marketing) window.rzMetaEvent(nome, exemplo, {modo: p.modo}); } catch {}
   try { if (analytics && configurado(CONFIG.GA_ID)){ gtag('event', nome, p); if (GA_ECOMMERCE[nome] && !exemplo) gtag('event', GA_ECOMMERCE[nome], itemPremium(nome)); } } catch {}
   try { if (marketing && window.RZ_GTM && !exemplo) dataLayer.push(Object.assign({event: 'rz_' + nome}, p)); } catch {}
 }
+// chamado pelo aviso de cookies (consentimento.js) logo depois da escolha: Aceitar envia a fila na ordem, Recusar descarta
+window.rzFilaMedicao = aceitou => { const fila = FILA_MEDICAO.splice(0); if (aceitou) for (const [nome, p, exemplo] of fila) try { enviaEvento(nome, p, exemplo); } catch {} };
 // eventos recomendados de e-commerce do GA4, disparados junto com os nossos (os nossos continuam iguais)
 // preço mostrado na oferta: o que o servidor mandou (window.RZ_PRECO, via /api/cobranca) ou o preço cheio; a compra usa o valor real do servidor
 const precoPremium = () => { const p = Number(window.RZ_PRECO); return p > 0 && p < 1000 ? p : 13.99; };
