@@ -83,10 +83,11 @@ function evento(nome, params = {}){
   try { if (marketing && window.RZ_GTM && !exemplo) dataLayer.push(Object.assign({event: 'rz_' + nome}, p)); } catch {}
 }
 // eventos recomendados de e-commerce do GA4, disparados junto com os nossos (os nossos continuam iguais)
-const PRECO_PREMIUM = 8.99;
+// preço mostrado na oferta: o que o servidor mandou (window.RZ_PRECO, via /api/cobranca) ou o preço cheio; a compra usa o valor real do servidor
+const precoPremium = () => { const p = Number(window.RZ_PRECO); return p > 0 && p < 1000 ? p : 13.99; };
 const GA_ECOMMERCE = {view_offer: 'view_item', checkout_attempt: 'begin_checkout', pix_gerado: 'add_payment_info', cartao_aberto: 'add_payment_info'};
 function itemPremium(nome){
-  const d = {currency: 'BRL', value: PRECO_PREMIUM, items: [{item_id: 'rz-premium', item_name: 'Retrozap Premium', price: PRECO_PREMIUM, quantity: 1}]};
+  const preco = precoPremium(), d = {currency: 'BRL', value: preco, items: [{item_id: 'rz-premium', item_name: 'Retrozap Premium', price: preco, quantity: 1}]};
   if (nome === 'pix_gerado') d.payment_type = 'pix';
   if (nome === 'cartao_aberto') d.payment_type = 'card';
   return d;
@@ -819,7 +820,7 @@ function tutorial(how){
   // começa depois de 2 s, para dar tempo de ver a primeira tela
   if (tocando) tm = setTimeout(() => { if (vivo() && tocando) ciclo(); }, 2000);
 }
-/* ---------- cobrança: 1º grupo grátis (casal sempre pago, cobrado ao ir para as categorias), depois R$ 8,99 (Pix ou cartão) libera ilimitado neste navegador ---------- */
+/* ---------- cobrança: 1º grupo grátis (casal sempre pago, cobrado ao ir para as categorias), depois R$ 13,99 (Pix ou cartão) libera ilimitado neste navegador ---------- */
 const TESTE_COBRANCA = /[?&]teste_cobranca=1/.test(location.search);
 // ?zerar=1: este navegador volta a ser visitante novo (apaga grupos feitos e código de acesso guardados aqui)
 if (/[?&]zerar=1/.test(location.search)) { try { localStorage.removeItem('rz_grupos'); localStorage.removeItem('rz_acesso'); } catch {} }
@@ -881,17 +882,13 @@ async function premiumLiberado(){
   try { const r = await fetch('/api/cobranca', {cache: 'no-store'}); if (!r.ok) return true; const c = await r.json();
     return !(c.pronto && (c.modo === 'ligada' || (c.modo === 'teste' && TESTE_COBRANCA))); } catch { return true; }
 }
-// Preço de lançamento (DESLIGADO). Ligado e até a data `ate` (horário de Brasília), mostra acima do preço uma linha honesta:
-// "Preço de lançamento até 31/12 · depois R$ 15,99". Some sozinho depois da data. Não muda o valor cobrado em lugar nenhum.
-// Sem "de R$ 15,99" riscado: o Retrozap nunca cobrou 15,99, e preço "de" fictício engana (CDC, art. 37).
-// Só ligue se o preço realmente for subir para `depois` no dia seguinte a `ate`.
-const PRECO_LANCAMENTO = {ligado: false, ate: '2026-12-31', depois: '15,99'};
-function precoLancamento(hoje){
-  const L = PRECO_LANCAMENTO;
-  if (!L.ligado || !/^\d{4}-\d{2}-\d{2}$/.test(L.ate) || !/^\d{1,3},\d{2}$/.test(L.depois)) return '';
-  if (!hoje) try { hoje = new Intl.DateTimeFormat('en-CA', {timeZone: 'America/Sao_Paulo'}).format(new Date()); } catch { const d = new Date(); hoje = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
-  if (hoje > L.ate) return '';
-  return `Preço de lançamento até ${L.ate.slice(8, 10)}/${L.ate.slice(5, 7)} · depois\u00a0R$\u00a0${L.depois}`; // \u00a0: "depois R$ 15,99" não quebra no meio
+// Preço mostrado no paywall. Quem decide o valor cobrado é o servidor (fonte/build/pix.js e worker/index.js, PRECO e
+// PROMO_LANCAMENTO): o paywall troca o preço e mostra "De R$ 13,99 por R$ 8,99 · até 31/12" quando /api/cobranca manda `promo`.
+const PRECO_TXT = '13,99';
+// linha da promoção vinda do servidor ({de, por, fim}); sem promoção válida, nada
+function linhaPromo(p){
+  if (!p || !/^\d{1,3},\d{2}$/.test(p.de || '') || !/^\d{1,3},\d{2}$/.test(p.por || '') || !/^\d{4}-\d{2}-\d{2}$/.test(p.fim || '')) return '';
+  return `De R$\u00a0${p.de} por R$\u00a0${p.por} · até\u00a0${p.fim.slice(8, 10)}/${p.fim.slice(5, 7)}`;
 }
 let QR_LIB = null;
 const carregaQR = () => QR_LIB || (QR_LIB = new Promise((ok, falha) => { const s = document.createElement('script'); s.src = '/assets/qrcode.js'; s.onload = () => ok(window.qrcode); s.onerror = falha; document.head.appendChild(s); }));
@@ -922,8 +919,8 @@ function paywall(seguir, ctx){
     caixa.innerHTML = `<button type="button" class="pw-x" id="pwX" aria-label="Fechar">✕</button>
       <p class="pw-ctx">${{personagens: '🔒 Os outros personagens são Premium', video: '🔒 Baixar o vídeo é Premium', livre: '🔒 A categoria livre é Premium', destaques: '🔒 O resto da retrospectiva 2026 é Premium', casal: '💕 Agora vem a melhor parte: os troféus de vocês dois'}[ctx] || '🎁 Seu primeiro grupo foi por nossa conta'}</p>
       <h2 id="pwT" class="pw-tit">Acesso ilimitado.<br><em>Pague 1x só.</em></h2>
-      ${precoLancamento() ? `<p class="pw-lanc">${precoLancamento()}</p>` : ''}
-      <div class="pw-preco"><b>R$ 8,99</b><span>no Pix ou no cartão · não dá nem pro cafezinho do editor ☕</span></div>
+      <p class="pw-lanc" id="pwOferta" hidden></p>
+      <div class="pw-preco"><b id="pwPreco">R$ ${PRECO_TXT}</b><span>no Pix ou no cartão · menos que o rateio da pizza 🍕</span></div>
       <ul class="pw-lista">
         <li><span aria-hidden="true">♾️</span><div><b>Quantos grupos quiser</b>Família, amigos, trabalho, condomínio, a pelada de quinta...</div></li>
         <li><span aria-hidden="true">🎭</span><div><b>Todos os personagens</b>Ninguém escapa: cada um com seu título, jeito de falar e manias.</div></li>
@@ -938,8 +935,8 @@ function paywall(seguir, ctx){
       <label class="pw-lb" for="pwEm">Seu e-mail (para o comprovante)</label>
       <input id="pwEm" type="email" inputmode="email" autocomplete="email" placeholder="voce@email.com" class="pw-in">
       <p class="err" role="alert" id="pwErr" hidden></p>
-      <button type="button" class="btn btn-main" id="pwPix">🔓 Liberar no Pix por R$ 8,99</button>
-      <div id="pwCartaoBox" hidden><button type="button" class="btn btn-ghost" id="pwCartao" style="width:100%"><span class="pwc"><b>💳 No cartão por R$&nbsp;<span id="pwPc">8,99</span></b><small>Apple Pay, Google Pay ou cartão</small></span></button></div>
+      <button type="button" class="btn btn-main" id="pwPix">🔓 Liberar no Pix por R$ ${PRECO_TXT}</button>
+      <div id="pwCartaoBox" hidden><button type="button" class="btn btn-ghost" id="pwCartao" style="width:100%"><span class="pwc"><b>💳 No cartão por R$&nbsp;<span id="pwPc">${PRECO_TXT}</span></b><small>Apple Pay, Google Pay ou cartão</small></span></button></div>
       <p class="small" style="margin:0">Ao pagar, você concorda com os <a href="/termos" target="_blank" rel="noopener">Termos de uso</a>. Vendido por Beyond the Work Ideas · CNPJ 69.746.447/0001-00.</p>
       <label class="pw-lb" for="pwPromo">Código promocional</label><input class="pw-in" id="pwPromo" maxlength="80" autocomplete="off"><button type="button" class="btn btn-ghost" id="pwPromoAplicar">Aplicar código e liberar grátis</button>
       <button type="button" class="pw-lk" id="pwTenho">Já paguei, tenho um código</button>
@@ -957,7 +954,7 @@ function paywall(seguir, ctx){
     detalhes.append(lista); caixa.querySelector('#pwCartaoBox').after(detalhes);
     caixa.querySelector('#pwX').onclick = fecha;
     caixa.querySelector('#pwTenho').onclick = codigoTela;
-    const em = caixa.querySelector('#pwEm'), err = caixa.querySelector('#pwErr'), bt = caixa.querySelector('#pwPix');
+    const em = caixa.querySelector('#pwEm'), err = caixa.querySelector('#pwErr'), bt = caixa.querySelector('#pwPix'); let precoPix = PRECO_TXT;
     em.value = lsGet('rz_email') || '';
     caixa.querySelector('#pwPromoAplicar').onclick=async e=>{
       const bt=e.currentTarget,email=em.value.trim(),codigo=caixa.querySelector('#pwPromo').value;
@@ -981,11 +978,17 @@ function paywall(seguir, ctx){
         if (!r.ok || !j.ref) throw new Error(j.error === 'email' ? 'Confira o e-mail.' : 'Não consegui gerar o Pix agora. Tente de novo em instantes.' + (TESTE_COBRANCA ? ` [${r.status}${j.detalhe ? ': ' + j.detalhe : ''}]` : ''));
         try { if (typeof evento === 'function') evento('pix_gerado'); } catch {}
         pixTela(j);
-      } catch (e) { mede('checkout_error', {payment_type:'pix',error_category:errorCategory}); bt.disabled = false; bt.textContent = '🔓 Liberar no Pix por R$ 8,99'; err.hidden = false; err.textContent = e.message || 'Sem conexão. Tente de novo.'; }
+      } catch (e) { mede('checkout_error', {payment_type:'pix',error_category:errorCategory}); bt.disabled = false; bt.textContent = `🔓 Liberar no Pix por R$ ${precoPix}`; err.hidden = false; err.textContent = e.message || 'Sem conexão. Tente de novo.'; }
     };
     // cartão, Apple Pay e Google Pay (Stripe): só aparece quando o servidor tem a chave; chave de teste só com ?teste_cartao=1
     const btc = caixa.querySelector('#pwCartao');
     (AMBIENTE_TESTE ? Promise.resolve({cartao: true}) : fetch('/api/cobranca', {cache: 'no-store'}).then(r => r.json())).then(c => {
+      // preço e promoção decididos pelo servidor
+      if (bt.isConnected && /^\d{1,3},\d{2}$/.test(c?.preco || '')){
+        precoPix = c.preco; window.RZ_PRECO = Number(c.preco.replace(',', '.'));
+        caixa.querySelector('#pwPreco').textContent = `R$ ${c.preco}`; if (!bt.disabled) bt.textContent = `🔓 Liberar no Pix por R$ ${c.preco}`;
+        const lp = caixa.querySelector('#pwOferta'), t = linhaPromo(c.promo); lp.textContent = t; lp.hidden = !t;
+      }
       if (!c?.cartao || (c.cartaoTeste && !/[?&]teste_cartao=1/.test(location.search)) || !btc?.isConnected) return;
       if (c.precoCartao) caixa.querySelector('#pwPc').textContent = c.precoCartao;
       caixa.querySelector('#pwCartaoBox').hidden = false;
@@ -1012,7 +1015,7 @@ function paywall(seguir, ctx){
   };
   const pixTela = j => {
     caixa.innerHTML = `<button type="button" class="pw-x" id="pwX" aria-label="Fechar">✕</button>
-      <h2 id="pwT" style="font-size:22px;margin:0">Pague R$ 8,99 no Pix</h2>
+      <h2 id="pwT" style="font-size:22px;margin:0">Pague R$ ${/^\d{1,3},\d{2}$/.test(j.preco || '') ? j.preco : PRECO_TXT} no Pix</h2>
       <div class="pw-qr" id="pwQr" role="img" aria-label="QR code do Pix">${j.qr64 ? `<img src="data:image/png;base64,${j.qr64}" alt="">` : ''}</div>
       <p class="small" style="margin:0">Escaneie no app do banco ou use o Pix copia e cola:</p>
       <button type="button" class="btn btn-main" id="pwCop">📋 Copiar código Pix</button>

@@ -18,7 +18,7 @@
   },
   // banco da comparação entre grupos. Usar o banco já existente e confirmado na Cloudflare em 09/11/2026; não recriar.
   "d1_databases": [{ "binding": "DB", "database_name": "retrozap", "database_id": "b598acfa-5fa4-4e88-9042-9460c021ad3c" }, {"binding":"PROMOS","database_name":"btw-promocoes","database_id":"84c12b97-d46d-4ba6-abe5-f6e8e7bcf84c"}],
-  // cobrança de R$ 8,99 (Pix e cartão): "teste" (só com ?teste_cobranca=1), "ligada" (para todos) ou "desligada"
+  // cobrança de R$ 13,99 (Pix e cartão; promoção de lançamento em fonte/build/pix.js e worker/index.js): "teste" (só com ?teste_cobranca=1), "ligada" (para todos) ou "desligada"
   "vars": { "COBRANCA": "ligada", "GA4_PROPERTY": "559410482" },
   // mantém variáveis criadas no painel; o Access Token do Mercado Pago é o segredo MP_TOKEN
   "keep_vars": true,

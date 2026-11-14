@@ -23,7 +23,7 @@ for(const event of ['view_offer','checkout_attempt','checkout_error'])c.context.
 assert.deepEqual(Array.from(c.hits,x=>x[1]),['view_offer','view_item','checkout_attempt','begin_checkout','checkout_error']);
 assert(!JSON.stringify(c.hits).includes('PRIVATE'));
 assert.equal(c.hits[4][2].error_category,'network');
-assert.equal(c.hits[1][2].value,8.99);assert.equal(c.hits[1][2].currency,'BRL');assert.equal(c.hits[3][2].items[0].item_id,'rz-premium');
+assert.equal(c.hits[1][2].value,13.99);assert.equal(c.hits[1][2].currency,'BRL');assert.equal(c.hits[3][2].items[0].item_id,'rz-premium');
 c.hits.length=0;c.context.evento('pix_gerado');c.context.evento('cartao_aberto');
 assert.deepEqual(Array.from(c.hits,x=>[x[1],x[2].payment_type]),[['pix_gerado',undefined],['add_payment_info','pix'],['cartao_aberto',undefined],['add_payment_info','card']]);
 c.context.evento('checkout_error',{offer_context:'PRIVATE',payment_type:'PRIVATE',error_category:'PRIVATE'});
@@ -40,6 +40,8 @@ assert.equal(c.hits.find(x=>x[1]==='purchase')[2].items[0].item_id,'rz-premium')
 // modo interno (?btw_interno=1): nada vai para GA4, Meta ou GTM
 c=client('sim',true,{RZ_INTERNO:true,RZ_GTM:1});c.context.evento('view_offer');c.context.compraConfirmada({id,valor:8.99,moeda:'BRL'});
 assert.equal(c.hits.length,0);assert.equal(c.meta.length,0);
+// preço da oferta: o que o servidor mandou ao abrir o paywall (promoção), senão o preço cheio
+c=client('sim',true,{RZ_PRECO:8.99});c.context.evento('view_offer');assert.equal(c.hits.find(x=>x[1]==='view_item')[2].value,8.99);
 console.log('OK: oferta, tentativa e erro distintos de compra; e-commerce do GA4; rz_purchase; modo interno; parâmetros limitados e revogação respeitada.');
 (async()=>{
  const source=fs.readFileSync(__dirname+'/pix.js','utf8');
@@ -54,7 +56,13 @@ console.log('OK: oferta, tentativa e erro distintos de compra; e-commerce do GA4
   if(mode==='ligada'&&paid&&Number(amount)>0){assert.match(body.medicao.id,/^[a-f0-9]{64}$/);assert.equal(body.medicao.valor,6.99);assert.equal(body.medicao.moeda,'BRL');assert(!JSON.stringify(body.medicao).includes('reference-only'));}
   else assert.equal(body.medicao,undefined);
  }
- console.log('OK: consentimento, campos privados, URL segura, venda única, metadata de venda real, pendente e modo teste. Sem rede ou cobrança real.');
+ // preço cobrado decidido pelo servidor: R$ 13,99; promoção de lançamento só quando ligada e dentro das datas (horário de Brasília)
+ const cfg=await (await module.config({env:{COBRANCA:'ligada',MP_TOKEN:'x',DB:{},STRIPE_KEY:'x'}})).json();
+ assert.equal(cfg.preco,'13,99');assert.equal(cfg.precoCartao,'13,99');assert.equal(cfg.promo,null);assert.equal(module.precoAtual(),'13.99');
+ const P={ligado:true,de:'13,99',por:'8,99',inicio:'2026-12-01',fim:'2026-12-31'},t=Date.parse;
+ assert.deepEqual(['2026-12-01T02:59:00Z','2026-12-01T03:00:00Z','2027-01-01T02:59:00Z','2027-01-01T03:00:00Z'].map(d=>module.precoAtual(t(d),P)),['13.99','8.99','8.99','13.99']);
+ assert.equal(module.precoAtual(t('2026-12-15T12:00:00Z'),{...P,ligado:false}),'13.99');
+ console.log('OK: consentimento, campos privados, URL segura, venda única, metadata de venda real, pendente e modo teste; preço 13,99 e promoção só na janela. Sem rede ou cobrança real.');
 })().catch(e=>{console.error(e);process.exitCode=1});
 // URLs de campanha continuam atribuíveis, mas pagamento/e-mail/fragmento nunca entram no GA4.
 // confere o site recém-montado (fonte/retrozap-site) quando existe; senão, o publicado na raiz

@@ -199,7 +199,7 @@ Não usar o verde fora do Top Brasil.
 
 - Português do Brasil, informal, frases curtas, humor de grupo de amigos. Ex.: "Visualiza, não responde, some há meses. O Retrozap encontra."
 - Sempre deixar claro: **funciona no celular, em 2 minutos, e a conversa não sai do aparelho.**
-- Preço (quando citar): **1º grupo grátis**; acesso completo **R$ 8,99, no Pix ou no cartão** (preço único desde 01/11/2026), pagamento único: grupos ilimitados, casal, mídias especiais, personagens, vídeo para baixar, sem anúncios. **Casal é sempre pago.** Confira o preço atual em `CLAUDE.md` antes de publicar.
+- Preço (quando citar): **1º grupo grátis**; acesso completo **R$ 13,99, no Pix ou no cartão** (preço único desde 14/11/2026; antes R$ 8,99), pagamento único: grupos ilimitados, casal, mídias especiais, personagens, vídeo para baixar, sem anúncios. **Casal é sempre pago.** Confira o preço atual em `CLAUDE.md` antes de publicar.
 - Privacidade: dizer "nenhuma mensagem, nome ou telefone sai do seu celular; só números anônimos do grupo inteiro vão para o ranking, e só se você deixar". Não prometer mais que isso.
 - Empresa: Beyond the Work Ideas (BEYOND THE WORK PORTAIS DE CONTEUDO NA INTERNET LTDA), CNPJ 69.746.447/0001-00, São Paulo.
 - Nomes das categorias como no site: O Tagarela, Podcaster do Grupo, Boca-Suja, Rei(nha) do Kkkk, Puxa-Assunto, O Fantasma, Coração Mole, Apaga Mensagens. Casal: Tagarela do Casal, Mais Romântico(a), Despertador do Amor, Mil Perguntas etc.

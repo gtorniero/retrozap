@@ -40,10 +40,11 @@ function evento(nome, params = {}){
   try { if (marketing && window.RZ_GTM && !exemplo) dataLayer.push(Object.assign({event: 'rz_' + nome}, p)); } catch {}
 }
 // eventos recomendados de e-commerce do GA4, disparados junto com os nossos (os nossos continuam iguais)
-const PRECO_PREMIUM = 8.99;
+// preço mostrado na oferta: o que o servidor mandou (window.RZ_PRECO, via /api/cobranca) ou o preço cheio; a compra usa o valor real do servidor
+const precoPremium = () => { const p = Number(window.RZ_PRECO); return p > 0 && p < 1000 ? p : 13.99; };
 const GA_ECOMMERCE = {view_offer: 'view_item', checkout_attempt: 'begin_checkout', pix_gerado: 'add_payment_info', cartao_aberto: 'add_payment_info'};
 function itemPremium(nome){
-  const d = {currency: 'BRL', value: PRECO_PREMIUM, items: [{item_id: 'rz-premium', item_name: 'Retrozap Premium', price: PRECO_PREMIUM, quantity: 1}]};
+  const preco = precoPremium(), d = {currency: 'BRL', value: preco, items: [{item_id: 'rz-premium', item_name: 'Retrozap Premium', price: preco, quantity: 1}]};
   if (nome === 'pix_gerado') d.payment_type = 'pix';
   if (nome === 'cartao_aberto') d.payment_type = 'card';
   return d;

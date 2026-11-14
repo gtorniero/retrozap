@@ -1,5 +1,5 @@
 # Conteúdo editorial do Retrozap: artigos do blog e páginas institucionais novas.
-# True quando a cobrança (R$ 8,99 Pix ou cartão) estiver ligada para todos (COBRANCA = "ligada" no wrangler.jsonc)
+# True quando a cobrança (R$ 13,99 Pix ou cartão) estiver ligada para todos (COBRANCA = "ligada" no wrangler.jsonc)
 COBRANCA_PUBLICA = True
 # Google Tag Manager (pixels de mídia paga: Meta, Google Ads, TikTok). Vazio = desligado. Ex.: 'GTM-ABC1234'
 GTM_ID = 'GTM-NMLZBBQS'
@@ -7,7 +7,7 @@ CTA = '<p><a class="cta" href="/">Fazer a retrospectiva do meu grupo</a></p>'
 
 # Perguntas rápidas do artigo da retrospectiva 2026 (visíveis no texto e no FAQPage)
 FAQ_RETRO_2026 = [
- ('Quanto custa?', 'A retrospectiva do primeiro grupo é grátis. Para fazer outros grupos e a retrospectiva de casal, o acesso ilimitado custa R$ 8,99, pago uma vez só, no Pix ou no cartão.'),
+ ('Quanto custa?', 'A retrospectiva do primeiro grupo é grátis. Para fazer outros grupos e a retrospectiva de casal, o acesso ilimitado custa R$ 13,99, pago uma vez só, no Pix ou no cartão.'),
  ('As mensagens saem do celular?', 'Não. O arquivo é lido pelo seu próprio navegador. Mensagens, nomes e telefones não são enviados para nenhum servidor.'),
  ('Funciona no iPhone e no Android?', 'Sim. O site aceita o arquivo .zip ou .txt que o WhatsApp gera nos dois e também funciona no computador.'),
  ('Dá para refazer depois?', 'Dá. Exporte a conversa de novo no fim de dezembro e faça outra vez para pegar o ano inteiro.')]
@@ -198,7 +198,7 @@ COMO_FUNCIONA = ('como-funciona.html', 'Como funciona o Retrozap', 'Do arquivo e
 """ + CTA)
 
 FAQ = [
- (('O Retrozap é grátis?', 'A retrospectiva do primeiro grupo é grátis. Para fazer quantos grupos quiser e a retrospectiva de casal, o acesso ilimitado custa R$ 8,99 no Pix ou no cartão, pago uma única vez.') if COBRANCA_PUBLICA else ('O Retrozap é grátis?', 'Sim. Você pode fazer a retrospectiva de quantos grupos quiser, sem pagar nada.')),
+ (('O Retrozap é grátis?', 'A retrospectiva do primeiro grupo é grátis. Para fazer quantos grupos quiser e a retrospectiva de casal, o acesso ilimitado custa R$ 13,99 no Pix ou no cartão, pago uma única vez.') if COBRANCA_PUBLICA else ('O Retrozap é grátis?', 'Sim. Você pode fazer a retrospectiva de quantos grupos quiser, sem pagar nada.')),
  ('Minhas mensagens são enviadas para algum servidor?', 'Não. A leitura do arquivo acontece no seu navegador. As mensagens, os nomes e os telefones não saem do seu celular ou computador.'),
  ('Funciona no iPhone e no Android?', 'Sim. O site aceita o .zip ou o .txt que o WhatsApp gera nos dois sistemas, e também funciona no computador.'),
  ('Preciso exportar com mídia?', 'Não. Exporte "Sem mídia": o arquivo fica pequeno e a análise é mais rápida. Com mídia, o site também consegue medir a duração dos áudios.'),
@@ -650,8 +650,8 @@ MODIFICADO = {'retrospectiva-do-grupo-de-whatsapp': '2026-11-14'}
 # Perguntas e respostas visíveis no artigo que também viram FAQPage (JSON-LD)
 FAQ_ARTIGO = {'retrospectiva-do-grupo-de-whatsapp': FAQ_RETRO_2026}
 # Última mudança relevante das páginas fixas (lastmod do sitemap)
-ATUALIZADO = {'': '2026-11-14', 'privacidade': '2026-11-14', 'termos': '2026-10-22', 'sobre': '2026-10-17', 'contato': '2026-10-22',
- 'como-exportar': '2026-10-25', 'como-funciona': '2026-11-03', 'perguntas-frequentes': '2026-11-01', 'ideias': '2026-10-22', 'blog/': '2026-11-14'}
+ATUALIZADO = {'': '2026-11-14', 'privacidade': '2026-11-14', 'termos': '2026-11-14', 'sobre': '2026-10-17', 'contato': '2026-10-22',
+ 'como-exportar': '2026-10-25', 'como-funciona': '2026-11-03', 'perguntas-frequentes': '2026-11-14', 'ideias': '2026-10-22', 'blog/': '2026-11-14'}
 
 # <title> mais curto (até ~60 caracteres, busca principal antes da marca) quando o título da página é longo ou repete a marca.
 # O título completo continua no h1, no og:title e no card do blog.

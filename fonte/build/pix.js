@@ -1,11 +1,19 @@
 import {captureCheckout} from './meta-adapter.mjs';
 import {redeemPromo} from './promos.mjs';
-// Cobrança do Retrozap: R$ 8,99 por Pix (Mercado Pago, API de Orders) libera grupos ilimitados naquele navegador.
+// Cobrança do Retrozap: R$ 13,99 por Pix (Mercado Pago, API de Orders) libera grupos ilimitados naquele navegador.
 // Nenhuma mensagem passa por aqui: só e-mail do pagador, identificador da compra e o código de acesso.
 // Segredo MP_TOKEN (Access Token) fica em Cloudflare > Worker > Settings > Variables and Secrets.
 // Variável COBRANCA (wrangler.jsonc): "teste" = só aparece com ?teste_cobranca=1 e aprova sozinho (APRO); "ligada" = vale para todos.
 // Ver compras: Cloudflare > D1 > retrozap > Console:  SELECT * FROM compras ORDER BY criado DESC;
-const PRECO = '8.99';
+// Preço do acesso ilimitado (Pix e cartão). O servidor é a fonte da verdade do valor cobrado.
+// Promoção de lançamento (DESLIGADA): ligada e entre `inicio` e `fim` (horário de Brasília), o Pix e o cartão cobram `por`
+// e o site mostra "De R$ 13,99 por R$ 8,99 · até 31/12" (via /api/cobranca). Fora das datas volta sozinho para PRECO.
+// Atenção: este arquivo tem uma cópia em fonte/build/worker/index.js (é ela que roda no Worker); mude as duas.
+const PRECO = '13.99';
+const PROMO_LANCAMENTO = {ligado: false, de: '13,99', por: '8,99', inicio: '2026-12-01', fim: '2026-12-31'};
+const hojeBR = (agora = Date.now()) => new Date(agora - 3 * 3600e3).toISOString().slice(0, 10); // Brasília: UTC-3, sem horário de verão
+export const promoAtiva = (agora, P = PROMO_LANCAMENTO) => { const h = hojeBR(agora); return P.ligado === true && /^\d{1,3},\d{2}$/.test(P.por) && h >= P.inicio && h <= P.fim; };
+export const precoAtual = (agora, P = PROMO_LANCAMENTO) => promoAtiva(agora, P) ? P.por.replace(',', '.') : PRECO;
 const MP_PADRAO = 'https://api.mercadopago.com/v1/orders';
 const json = (obj, status = 200) => new Response(JSON.stringify(obj), {status, headers: {'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store'}});
 const modo = env => (env.COBRANCA === 'ligada' ? 'ligada' : env.COBRANCA === 'desligada' ? 'desligada' : 'teste');
@@ -21,7 +29,7 @@ const MP_PAY = 'https://api.mercadopago.com/v1/payments';
 const STRIPE = 'https://api.stripe.com/v1/checkout/sessions';
 const stripeKey = env => String(env.STRIPE_KEY || '').trim();
 const stripeTeste = env => /^(sk|rk)_test_/.test(stripeKey(env));
-const precoCartao = env => String(env.PRECO_CARTAO || '8.99');
+const precoCartao = env => promoAtiva() ? precoAtual() : String(env.PRECO_CARTAO || PRECO);
 async function consultaOrdem(env, id){
   if (id.startsWith('stripe:')){
     const r = await fetch(`${env.STRIPE_API || STRIPE}/${encodeURIComponent(id.slice(7))}`, {headers: {Authorization: `Bearer ${stripeKey(env)}`}});
@@ -71,7 +79,8 @@ async function enviaCodigo(env, email, codigo){
 
 // GET /api/cobranca: o site pergunta se a cobrança está valendo
 export async function config({env}){
-  return json({modo: modo(env), pronto: !!(env.MP_TOKEN && env.DB), preco: '8,99', cartao: !!(stripeKey(env) && env.DB), cartaoTeste: stripeTeste(env), precoCartao: precoCartao(env).replace('.', ',')});
+  return json({modo: modo(env), pronto: !!(env.MP_TOKEN && env.DB), preco: precoAtual().replace('.', ','), cartao: !!(stripeKey(env) && env.DB), cartaoTeste: stripeTeste(env), precoCartao: precoCartao(env).replace('.', ','),
+    promo: promoAtiva() ? {de: PROMO_LANCAMENTO.de, por: PROMO_LANCAMENTO.por, fim: PROMO_LANCAMENTO.fim} : null});
 }
 
 // POST /api/pix {email}: cria o Pix e devolve o QR
@@ -83,14 +92,14 @@ export async function criar({request, env}){
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return json({error: 'email'}, 400);
   await tabela(env);
   const ref = crypto.randomUUID(); await captureCheckout(env,ref,c?.meta);
-  const teste = modo(env) === 'teste';
+  const teste = modo(env) === 'teste', preco = precoAtual(); // valor cobrado decidido aqui, nunca pelo navegador
   // credencial de teste: comprador de teste e APRO (aprova sozinho)
   const payer = teste ? {email: 'test@testuser.com', first_name: 'APRO'} : {email};
   const corpo = {
-    type: 'online', processing_mode: 'automatic', total_amount: PRECO, external_reference: ref,
+    type: 'online', processing_mode: 'automatic', total_amount: preco, external_reference: ref,
     description: 'Retrozap: grupos ilimitados',
     payer,
-    transactions: {payments: [{amount: PRECO, payment_method: {id: 'pix', type: 'bank_transfer'}, expiration_time: 'PT30M'}]}
+    transactions: {payments: [{amount: preco, payment_method: {id: 'pix', type: 'bank_transfer'}, expiration_time: 'PT30M'}]}
   };
   const cab = {'content-type': 'application/json', accept: 'application/json', Authorization: `Bearer ${tok(env)}`};
   const motivo = (st, o) => `${st} ${o?.message || o?.error || ''} ${(o?.errors || o?.cause || []).map(e => e.message || e.description || e.code || '').join('; ')}`.trim().slice(0, 300);
@@ -102,7 +111,7 @@ export async function criar({request, env}){
   else {
     erros.push('orders: ' + motivo(r.status, o));
     // 2) API clássica de pagamentos
-    const classico = {transaction_amount: 8.99, description: corpo.description, payment_method_id: 'pix', external_reference: ref, payer,
+    const classico = {transaction_amount: Number(preco), description: corpo.description, payment_method_id: 'pix', external_reference: ref, payer,
       date_of_expiration: new Date(Date.now() + 30*60e3).toISOString().replace('Z', '-00:00')};
     r = await fetch(env.MP_PAY_API || MP_PAY, {method: 'POST', headers: {...cab, 'X-Idempotency-Key': ref + '-p'}, body: JSON.stringify(classico)});
     o = await r.json().catch(() => null);
@@ -110,8 +119,8 @@ export async function criar({request, env}){
     else erros.push('payments: ' + motivo(r.status, o));
   }
   if (!ordem){ console.log('mp erro', erros.join(' | ')); return json({error: 'mp', detalhe: teste ? erros.join(' | ') + ' | ' + formaTok(env) : undefined}, 502); }
-  await env.DB.prepare('INSERT INTO compras (ref, ordem, email, status, criado, valor, modo) VALUES (?, ?, ?, ?, ?, ?, ?)').bind(ref, ordem, email, 'pendente', new Date().toISOString(), PRECO, modo(env)).run();
-  return json({ref, qr: pm.qr_code || '', qr64: pm.qr_code_base64 || '', link: pm.ticket_url || ''});
+  await env.DB.prepare('INSERT INTO compras (ref, ordem, email, status, criado, valor, modo) VALUES (?, ?, ?, ?, ?, ?, ?)').bind(ref, ordem, email, 'pendente', new Date().toISOString(), preco, modo(env)).run();
+  return json({ref, qr: pm.qr_code || '', qr64: pm.qr_code_base64 || '', link: pm.ticket_url || '', preco: preco.replace('.', ',')});
 }
 
 // POST /api/pix/status {ref}: o site pergunta a cada poucos segundos se já pagou

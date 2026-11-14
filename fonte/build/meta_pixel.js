@@ -24,10 +24,11 @@
     cartao_aberto: 'InitiateCheckout',
     pix_gerado: 'AddPaymentInfo'
   };
-  var PRICE = 8.99;
+  // preço mostrado na oferta: o que o servidor mandou (window.RZ_PRECO) ou o preço cheio
+  function price() { var p = Number(window.RZ_PRECO); return p > 0 && p < 1000 ? p : 13.99; }
   function standardData(name, extra) {
     if (name === 'final_visto') return {content_category: extra && extra.modo === 'casal' ? 'casal' : 'grupo'};
-    var d = {value: PRICE, currency: 'BRL', content_ids: ['rz-premium'], content_type: 'product', content_category: 'premium'};
+    var d = {value: price(), currency: 'BRL', content_ids: ['rz-premium'], content_type: 'product', content_category: 'premium'};
     if (name === 'cartao_aberto') { d.num_items = 1; d.payment = 'card'; }
     if (name === 'pix_gerado') d.payment = 'pix';
     return d;

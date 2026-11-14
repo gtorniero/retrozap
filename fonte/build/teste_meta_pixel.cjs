@@ -62,13 +62,15 @@ assert.deepEqual(Array.from(b.window.fbq.queue.at(-2)), ['trackCustom', 'Retrosp
 assert.deepEqual(JSON.parse(JSON.stringify(last(b))), ['track', 'Lead', {content_category: 'casal'}]);
 b.window.rzMetaEvent('final_visto', false, {modo: 'PRIVADO'});
 assert.deepEqual(JSON.parse(JSON.stringify(last(b))), ['track', 'Lead', {content_category: 'grupo'}]);
-const money = {value: 8.99, currency: 'BRL', content_ids: ['rz-premium'], content_type: 'product', content_category: 'premium'};
+const money = {value: 13.99, currency: 'BRL', content_ids: ['rz-premium'], content_type: 'product', content_category: 'premium'};
 for (const [ev, custom, std, more] of [['view_offer', 'OfertaVista', 'ViewContent', {}], ['cartao_aberto', 'CheckoutAberto', 'InitiateCheckout', {num_items: 1, payment: 'card'}], ['pix_gerado', 'PixGerado', 'AddPaymentInfo', {payment: 'pix'}]]) {
   b.window.rzMetaEvent(ev, false, {email: 'PRIVADO'});
   assert.deepEqual(Array.from(b.window.fbq.queue.at(-2)), ['trackCustom', custom]);
   assert.deepEqual(JSON.parse(JSON.stringify(last(b))), ['track', std, Object.assign({}, money, more)]);
 }
 for (const ev of ['checkout_attempt', 'checkout_error', 'card_salvo', 'compartilhou']) { const n = b.window.fbq.queue.length; b.window.rzMetaEvent(ev, false); assert.equal(b.window.fbq.queue.length, n + 1, ev); assert.equal(last(b)[0], 'trackCustom'); }
+// na promoção, a oferta vale o preço que o servidor mandou
+b.window.RZ_PRECO = 8.99; b.window.rzMetaEvent('view_offer', false); assert.equal(last(b)[2].value, 8.99); delete b.window.RZ_PRECO;
 assert.equal(tracked(b, 'Purchase').length, 0);
 assert.equal(b.window.rzMetaPurchase(8.99, 'RZ-SEGREDO'), false);
 assert.equal(b.window.rzMetaPurchase(8.99, 'b'.repeat(64)), true);
