@@ -38,10 +38,11 @@ if(ad==='denied'){(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersonal
     cartao_aberto: 'InitiateCheckout',
     pix_gerado: 'AddPaymentInfo'
   };
-  var PRICE = 8.99;
+  // preço mostrado na oferta: o que o servidor mandou (window.RZ_PRECO) ou o preço cheio
+  function price() { var p = Number(window.RZ_PRECO); return p > 0 && p < 1000 ? p : 13.99; }
   function standardData(name, extra) {
     if (name === 'final_visto') return {content_category: extra && extra.modo === 'casal' ? 'casal' : 'grupo'};
-    var d = {value: PRICE, currency: 'BRL', content_ids: ['rz-premium'], content_type: 'product', content_category: 'premium'};
+    var d = {value: price(), currency: 'BRL', content_ids: ['rz-premium'], content_type: 'product', content_category: 'premium'};
     if (name === 'cartao_aberto') { d.num_items = 1; d.payment = 'card'; }
     if (name === 'pix_gerado') d.payment = 'pix';
     return d;
@@ -197,18 +198,18 @@ html.casal .ck-sim{color:#fff}
 <header><a class="logo" href="/">retrozap 🏆</a><a class="cta" href="/">Fazer o meu grupo</a></header>
 <main>
 <h1>Termos de Uso</h1>
-<p class="small">Última atualização: 22 de outubro de 2026</p>
+<p class="small">Última atualização: 14 de novembro de 2026</p>
 <h2>1. O que é o Retrozap</h2>
 <p>O Retrozap é oferecido pela BEYOND THE WORK PORTAIS DE CONTEUDO NA INTERNET LTDA (nome fantasia Beyond the Work Ideas), CNPJ 69.746.447/0001-00, Rua Pais Leme, 215, conjunto 1713, Pinheiros, São Paulo/SP, CEP 05424-150. Ao usar o site, você concorda com estes termos.</p>
 <p>O Retrozap é um site de entretenimento que transforma o arquivo exportado de um grupo de WhatsApp em estatísticas, prêmios e cards. Os prêmios são brincadeiras baseadas em contagens automáticas e não são avaliações sérias sobre ninguém.</p>
-<p><b>Preço:</b> a retrospectiva do primeiro grupo é grátis. A retrospectiva de casal e os grupos a partir do segundo fazem parte do acesso ilimitado, que custa R$ 8,99 no Pix (Mercado Pago) ou no cartão, Apple Pay ou Google Pay (Stripe), pago uma única vez, e vale para o navegador onde foi liberado (ou outro, com o código de acesso). Se tiver qualquer problema com a compra, escreva para <a href="mailto:contato@retrozap.com.br">contato@retrozap.com.br</a>.</p>
+<p><b>Preço:</b> a retrospectiva do primeiro grupo é grátis. A retrospectiva de casal e os grupos a partir do segundo fazem parte do acesso ilimitado, que custa R$ 13,99 no Pix (Mercado Pago) ou no cartão, Apple Pay ou Google Pay (Stripe), pago uma única vez, e vale para o navegador onde foi liberado (ou outro, com o código de acesso). Se tiver qualquer problema com a compra, escreva para <a href="mailto:contato@retrozap.com.br">contato@retrozap.com.br</a>.</p>
 <h2>2. Seu papel</h2>
 <ul><li>Use apenas exports de conversas das quais você participa, para uso pessoal e de lazer.</li>
 <li>A conversa é sua e dos outros participantes. Você é responsável pelo que decide compartilhar: pense nas outras pessoas antes de mandar cards e vídeos para fora do grupo.</li>
 <li>Não use o Retrozap para expor, humilhar, perseguir ou discriminar ninguém, nem com conversas de terceiros, de trabalho com dados de clientes ou que tenham informações sensíveis. Categorias ofensivas são bloqueadas.</li>
 <li>Os prêmios, títulos e personagens são brincadeiras geradas automaticamente a partir de contagens. Eles não são avaliações sobre o caráter, a saúde ou a vida de ninguém.</li></ul>
 <h2>3. Compra do acesso ilimitado</h2>
-<ul><li><b>O que é:</b> pagamento único de R$ 8,99, no Pix (pelo Mercado Pago) ou no cartão, Apple Pay ou Google Pay (pelo Stripe), quando essa opção aparecer na tela de compra. O preço é o mesmo em qualquer meio de pagamento. O pagamento libera no navegador os recursos Premium descritos na tela de compra (grupos ilimitados, retrospectiva de casal completa, todos os personagens, categoria livre, baixar o vídeo e sem anúncios). Não é assinatura e não renova.</li>
+<ul><li><b>O que é:</b> pagamento único de R$ 13,99 (ou o preço promocional mostrado na tela de compra, quando houver), no Pix (pelo Mercado Pago) ou no cartão, Apple Pay ou Google Pay (pelo Stripe), quando essa opção aparecer na tela de compra. O preço é o mesmo em qualquer meio de pagamento, e o valor cobrado é sempre o mostrado na tela de compra. O pagamento libera no navegador os recursos Premium descritos na tela de compra (grupos ilimitados, retrospectiva de casal completa, todos os personagens, categoria livre, baixar o vídeo e sem anúncios). Não é assinatura e não renova.</li>
 <li><b>Entrega:</b> o acesso é liberado assim que o pagamento é confirmado, com um código para usar em outro navegador ou recuperar pelo e-mail do pagamento.</li>
 <li><b>Arrependimento:</b> você pode desistir em até 7 dias da compra e recebe o valor de volta (por Pix ou estorno no cartão). É só escrever para <a href="mailto:contato@retrozap.com.br">contato@retrozap.com.br</a> com o e-mail usado no pagamento; confirmamos o recebimento e respondemos em até 5 dias.</li>
 <li><b>Por quanto tempo vale:</b> enquanto o Retrozap estiver no ar. Recursos podem mudar, mas os incluídos na compra não viram cobrança extra. Se o Retrozap for encerrado em menos de 12 meses da sua compra, devolvemos o valor pago.</li></ul>

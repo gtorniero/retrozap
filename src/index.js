@@ -408,7 +408,18 @@ async function redeemPromo(db, request, site2, product, raw, email) {
 __name(redeemPromo, "redeemPromo");
 
 // functions/api/pix.js
-var PRECO = "8.99";
+// Preço do acesso ilimitado (Pix e cartão). O servidor é a fonte da verdade do valor cobrado.
+// Promoção de lançamento (DESLIGADA): ligada e entre `inicio` e `fim` (horário de Brasília), o Pix e o cartão cobram `por`
+// e o site mostra "De R$ 13,99 por R$ 8,99 · até 31/12" (via /api/cobranca). Fora das datas volta sozinho para PRECO.
+// Atenção: cópia de fonte/build/pix.js (esta é a que roda no Worker); mude as duas.
+var PRECO = "13.99";
+var PROMO_LANCAMENTO = { ligado: false, de: "13,99", por: "8,99", inicio: "2026-12-01", fim: "2026-12-31" };
+var hojeBR = /* @__PURE__ */ __name((agora = Date.now()) => new Date(agora - 3 * 36e5).toISOString().slice(0, 10), "hojeBR");
+var promoAtiva = /* @__PURE__ */ __name((agora, P = PROMO_LANCAMENTO) => {
+  const h = hojeBR(agora);
+  return P.ligado === true && /^\d{1,3},\d{2}$/.test(P.por) && h >= P.inicio && h <= P.fim;
+}, "promoAtiva");
+var precoAtual = /* @__PURE__ */ __name((agora, P = PROMO_LANCAMENTO) => promoAtiva(agora, P) ? P.por.replace(",", ".") : PRECO, "precoAtual");
 var MP_PADRAO = "https://api.mercadopago.com/v1/orders";
 var json = /* @__PURE__ */ __name((obj, status2 = 200) => new Response(JSON.stringify(obj), { status: status2, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } }), "json");
 var modo = /* @__PURE__ */ __name((env) => env.COBRANCA === "ligada" ? "ligada" : env.COBRANCA === "desligada" ? "desligada" : "teste", "modo");
@@ -424,7 +435,7 @@ var MP_PAY = "https://api.mercadopago.com/v1/payments";
 var STRIPE = "https://api.stripe.com/v1/checkout/sessions";
 var stripeKey = /* @__PURE__ */ __name((env) => String(env.STRIPE_KEY || "").trim(), "stripeKey");
 var stripeTeste = /* @__PURE__ */ __name((env) => /^(sk|rk)_test_/.test(stripeKey(env)), "stripeTeste");
-var precoCartao = /* @__PURE__ */ __name((env) => String(env.PRECO_CARTAO || "8.99"), "precoCartao");
+var precoCartao = /* @__PURE__ */ __name((env) => promoAtiva() ? precoAtual() : String(env.PRECO_CARTAO || PRECO), "precoCartao");
 async function consultaOrdem(env, id) {
   if (id.startsWith("stripe:")) {
     const r2 = await fetch(`${env.STRIPE_API || STRIPE}/${encodeURIComponent(id.slice(7))}`, { headers: { Authorization: `Bearer ${stripeKey(env)}` } });
@@ -480,7 +491,7 @@ async function enviaCodigo(env, email, codigo) {
 }
 __name(enviaCodigo, "enviaCodigo");
 async function config({ env }) {
-  return json({ modo: modo(env), pronto: !!(env.MP_TOKEN && env.DB), preco: "8,99", cartao: !!(stripeKey(env) && env.DB), cartaoTeste: stripeTeste(env), precoCartao: precoCartao(env).replace(".", ",") });
+  return json({ modo: modo(env), pronto: !!(env.MP_TOKEN && env.DB), preco: precoAtual().replace(".", ","), cartao: !!(stripeKey(env) && env.DB), cartaoTeste: stripeTeste(env), precoCartao: precoCartao(env).replace(".", ","), promo: promoAtiva() ? { de: PROMO_LANCAMENTO.de, por: PROMO_LANCAMENTO.por, fim: PROMO_LANCAMENTO.fim } : null });
 }
 __name(config, "config");
 async function criar({ request, env }) {
@@ -497,16 +508,16 @@ async function criar({ request, env }) {
   await tabela(env);
   const ref = crypto.randomUUID();
   await captureCheckout(env, ref, c?.meta);
-  const teste = modo(env) === "teste";
+  const teste = modo(env) === "teste", preco = precoAtual();
   const payer = teste ? { email: "test@testuser.com", first_name: "APRO" } : { email };
   const corpo = {
     type: "online",
     processing_mode: "automatic",
-    total_amount: PRECO,
+    total_amount: preco,
     external_reference: ref,
     description: "Retrozap: grupos ilimitados",
     payer,
-    transactions: { payments: [{ amount: PRECO, payment_method: { id: "pix", type: "bank_transfer" }, expiration_time: "PT30M" }] }
+    transactions: { payments: [{ amount: preco, payment_method: { id: "pix", type: "bank_transfer" }, expiration_time: "PT30M" }] }
   };
   const cab = { "content-type": "application/json", accept: "application/json", Authorization: `Bearer ${tok(env)}` };
   const motivo = /* @__PURE__ */ __name((st, o2) => `${st} ${o2?.message || o2?.error || ""} ${(o2?.errors || o2?.cause || []).map((e) => e.message || e.description || e.code || "").join("; ")}`.trim().slice(0, 300), "motivo");
@@ -519,7 +530,7 @@ async function criar({ request, env }) {
   } else {
     erros.push("orders: " + motivo(r.status, o));
     const classico = {
-      transaction_amount: 8.99,
+      transaction_amount: Number(preco),
       description: corpo.description,
       payment_method_id: "pix",
       external_reference: ref,
@@ -538,8 +549,8 @@ async function criar({ request, env }) {
     console.log("mp erro", erros.join(" | "));
     return json({ error: "mp", detalhe: teste ? erros.join(" | ") + " | " + formaTok(env) : void 0 }, 502);
   }
-  await env.DB.prepare("INSERT INTO compras (ref, ordem, email, status, criado, valor, modo) VALUES (?, ?, ?, ?, ?, ?, ?)").bind(ref, ordem, email, "pendente", (/* @__PURE__ */ new Date()).toISOString(), PRECO, modo(env)).run();
-  return json({ ref, qr: pm.qr_code || "", qr64: pm.qr_code_base64 || "", link: pm.ticket_url || "" });
+  await env.DB.prepare("INSERT INTO compras (ref, ordem, email, status, criado, valor, modo) VALUES (?, ?, ?, ?, ?, ?, ?)").bind(ref, ordem, email, "pendente", (/* @__PURE__ */ new Date()).toISOString(), preco, modo(env)).run();
+  return json({ ref, qr: pm.qr_code || "", qr64: pm.qr_code_base64 || "", link: pm.ticket_url || "", preco: preco.replace(".", ",") });
 }
 __name(criar, "criar");
 async function status({ request, env }) {
@@ -1046,7 +1057,7 @@ const LINKS = [['Cloudflare (Worker)', 'https://dash.cloudflare.com/?to=/:accoun
   ['Mercado Pago', 'https://www.mercadopago.com.br/activities'], ['GitHub', 'https://github.com/gtorniero/retrozap'], ['Instagram', 'https://www.instagram.com/'], ['TikTok Studio', 'https://www.tiktok.com/tiktokstudio'], ['Gmail', 'https://mail.google.com/']];
 
 // ---------- aba Neg\xF3cio: investimentos (salvos no D1), payback, linha do tempo e plano ----------
-const PRECO = 8.99, PRECO_CARTAO = 8.99;
+const PRECO = 13.99, PRECO_CARTAO = 13.99;
 const NEG_PADRAO = {inicio: '2026-10-17', horasAntes: 0, valorHora: 0, taxa: 0.99, taxaCartao: 3.99, tarifaCartao: 0.39, imposto: 0, extraMes: 0, extraAcum: 0, custos: [
   {nome: 'Claude (assinatura)', valor: 500, freq: 'mensal', desde: '2026-10-01', obs: ''},
   {nome: 'Empresa (abertura e manuten\xE7\xE3o)', valor: 1000, freq: 'anual', desde: '2026-10-01', obs: 'estimativa: confirmar'},
@@ -1069,7 +1080,8 @@ const MARCOS = [
   ['22/10', 'Empresa: CNPJ da Beyond the Work Ideas; termos de compra, arrependimento e registro de acessos (Marco Civil)'],
   ['23\u201324/10', 'Cart\xE3o, Apple Pay e Google Pay pelo Stripe (R$ 6,99), al\xE9m do Pix'],
   ['31/10', 'Novo pre\xE7o: R$ 6,99 no Pix e R$ 8,99 no cart\xE3o; casal passa a ser Premium (cobrado ao ir para as categorias)'],
-  ['01/11', 'Pre\xE7o \xFAnico: R$ 8,99 no Pix ou no cart\xE3o; Pix passa para a conta PJ da Beyond the Work']];
+  ['01/11', 'Pre\xE7o \xFAnico: R$ 8,99 no Pix ou no cart\xE3o; Pix passa para a conta PJ da Beyond the Work'],
+  ['14/11', 'Pre\xE7o \xFAnico: R$ 13,99 no Pix ou no cart\xE3o']];
 let NEG = null, DADOS = null;
 const num = v => Number(String(v ?? '').replace(',', '.')) || 0;
 const meses = desde => { const a = new Date(desde + 'T12:00:00'), b = new Date(); return isNaN(a) || a > b ? (isNaN(a) ? 1 : 0) : (b.getFullYear() - a.getFullYear()) * 12 + b.getMonth() - a.getMonth() + 1; };
@@ -1108,11 +1120,11 @@ function calcNegocio(){
     '<div class="card" style="margin-top:12px"><b>Linha do tempo</b>' + tabela([['Quando'], ['O que entrou']], MARCOS.map(([q, t]) => ['<span style="white-space:nowrap">' + q + '</span>', t])) + '</div></section>';
   // plano de neg\xF3cio
   const meta = Math.max(0, Math.ceil((-Math.min(0, k.saldo) + 3 * k.custoMes) / k.liq));
-  const P = [['Resumo', 'O Retrozap transforma o export de um grupo de WhatsApp numa retrospectiva estilo Wrapped (personagens, pr\xEAmios, ranking, cards e v\xEDdeo), lida 100% no navegador. 1\xBA grupo gr\xE1tis; casais e demais grupos no Premium: R$ 8,99 no Pix ou no cart\xE3o (Apple Pay e Google Pay), pagamento \xFAnico.'],
+  const P = [['Resumo', 'O Retrozap transforma o export de um grupo de WhatsApp numa retrospectiva estilo Wrapped (personagens, pr\xEAmios, ranking, cards e v\xEDdeo), lida 100% no navegador. 1\xBA grupo gr\xE1tis; casais e demais grupos no Premium: R$ 13,99 no Pix ou no cart\xE3o (Apple Pay e Google Pay), pagamento \xFAnico.'],
     ['Oportunidade', 'O Brasil tem mais de 140 milh\xF5es de pessoas no WhatsApp e a vida social acontece nos grupos. Retrospectivas viralizam no fim do ano (Spotify Wrapped) e n\xE3o existe uma para grupos de WhatsApp, em portugu\xEAs e com privacidade.'],
     ['P\xFAblico', 'Grupos de amigos (18\u201335 anos), fam\xEDlias, trabalho e comunidades. Casais como segundo produto: presente e datas comemorativas.'],
     ['Diferencial', 'Nenhuma mensagem sai do celular; humor brasileiro; cards e v\xEDdeo prontos para stories. Cada grupo tem v\xE1rios membros que veem o resultado, ent\xE3o um uso puxa outros.'],
-    ['Receita', 'Premium por pagamento \xFAnico: R$ 8,99 no Pix ou no cart\xE3o (Stripe); casal cobrado depois do Ato I \xB7 AdSense para quem n\xE3o \xE9 Premium \xB7 parceria Party Games (7% das vendas, desligada) \xB7 pr\xF3ximas: pacote Casais no Dia dos Namorados (12/06) e pre\xE7o por temporada.'],
+    ['Receita', 'Premium por pagamento \xFAnico: R$ 13,99 no Pix ou no cart\xE3o (Stripe); casal cobrado depois do Ato I \xB7 AdSense para quem n\xE3o \xE9 Premium \xB7 parceria Party Games (7% das vendas, desligada) \xB7 pr\xF3ximas: pacote Casais no Dia dos Namorados (12/06) e pre\xE7o por temporada.'],
     ['Aquisi\xE7\xE3o', 'Cards e v\xEDdeo compartilhados levam o endere\xE7o do site \xB7 Reels e TikTok com exemplos \xB7 SEO (blog, \u201CWhatsApp Wrapped\u201D) \xB7 datas: dezembro/janeiro (retrospectiva), Dia dos Namorados, anivers\xE1rios de grupo.'],
     ['Metas', 'Empatar: ' + fmt(k.equilibrio) + ' vendas/m\xEAs. Temporada dez\u2013jan: ' + fmt(meta) + ' vendas pagam todo o investimento e 3 meses de custo fixo. Acompanhar: grupos/dia, Pix gerado \u2192 pago, vendas por grupo.'],
     ['Riscos', 'WhatsApp mudar o formato do export \xB7 venda concentrada no fim do ano \xB7 pagamento \xFAnico (pouca recorr\xEAncia) \xB7 c\xF3pia da ideia \xB7 custo fixo alto para a receita atual (a assinatura do Claude \xE9 o maior custo: d\xE1 para baixar o plano fora da temporada).'],
