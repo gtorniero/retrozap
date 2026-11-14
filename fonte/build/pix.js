@@ -6,11 +6,11 @@ import {redeemPromo} from './promos.mjs';
 // Variável COBRANCA (wrangler.jsonc): "teste" = só aparece com ?teste_cobranca=1 e aprova sozinho (APRO); "ligada" = vale para todos.
 // Ver compras: Cloudflare > D1 > retrozap > Console:  SELECT * FROM compras ORDER BY criado DESC;
 // Preço do acesso ilimitado (Pix e cartão). O servidor é a fonte da verdade do valor cobrado.
-// Promoção de lançamento (DESLIGADA): ligada e entre `inicio` e `fim` (horário de Brasília), o Pix e o cartão cobram `por`
+// Promoção de lançamento (LIGADA, decidida em 14/11/2026; só vale de 01/12 a 31/12): ligada e entre `inicio` e `fim` (horário de Brasília), o Pix e o cartão cobram `por`
 // e o site mostra "De R$ 13,99 por R$ 8,99 · até 31/12" (via /api/cobranca). Fora das datas volta sozinho para PRECO.
 // Atenção: este arquivo tem uma cópia em fonte/build/worker/index.js (é ela que roda no Worker); mude as duas.
 const PRECO = '13.99';
-const PROMO_LANCAMENTO = {ligado: false, de: '13,99', por: '8,99', inicio: '2026-12-01', fim: '2026-12-31'};
+const PROMO_LANCAMENTO = {ligado: true, de: '13,99', por: '8,99', inicio: '2026-12-01', fim: '2026-12-31'};
 const hojeBR = (agora = Date.now()) => new Date(agora - 3 * 3600e3).toISOString().slice(0, 10); // Brasília: UTC-3, sem horário de verão
 export const promoAtiva = (agora, P = PROMO_LANCAMENTO) => { const h = hojeBR(agora); return P.ligado === true && /^\d{1,3},\d{2}$/.test(P.por) && h >= P.inicio && h <= P.fim; };
 export const precoAtual = (agora, P = PROMO_LANCAMENTO) => promoAtiva(agora, P) ? P.por.replace(',', '.') : PRECO;

@@ -57,8 +57,10 @@ console.log('OK: oferta, tentativa e erro distintos de compra; e-commerce do GA4
   else assert.equal(body.medicao,undefined);
  }
  // preço cobrado decidido pelo servidor: R$ 13,99; promoção de lançamento só quando ligada e dentro das datas (horário de Brasília)
+ // data fixa antes da promoção (a promoção está ligada para 01/12 a 31/12; teste_promo.mjs confere a janela)
+ const nowReal=Date.now;Date.now=()=>Date.parse('2026-11-14T15:00:00Z');
  const cfg=await (await module.config({env:{COBRANCA:'ligada',MP_TOKEN:'x',DB:{},STRIPE_KEY:'x'}})).json();
- assert.equal(cfg.preco,'13,99');assert.equal(cfg.precoCartao,'13,99');assert.equal(cfg.promo,null);assert.equal(module.precoAtual(),'13.99');
+ assert.equal(cfg.preco,'13,99');assert.equal(cfg.precoCartao,'13,99');assert.equal(cfg.promo,null);assert.equal(module.precoAtual(),'13.99');Date.now=nowReal;
  const P={ligado:true,de:'13,99',por:'8,99',inicio:'2026-12-01',fim:'2026-12-31'},t=Date.parse;
  assert.deepEqual(['2026-12-01T02:59:00Z','2026-12-01T03:00:00Z','2027-01-01T02:59:00Z','2027-01-01T03:00:00Z'].map(d=>module.precoAtual(t(d),P)),['13.99','8.99','8.99','13.99']);
  assert.equal(module.precoAtual(t('2026-12-15T12:00:00Z'),{...P,ligado:false}),'13.99');
