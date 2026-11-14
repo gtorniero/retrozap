@@ -921,6 +921,7 @@ function paywall(seguir, ctx){
       <h2 id="pwT" class="pw-tit">Acesso ilimitado.<br><em>Pague 1x só.</em></h2>
       <p class="pw-lanc" id="pwOferta" hidden></p>
       <div class="pw-preco"><b id="pwPreco">R$ ${PRECO_TXT}</b><span>no Pix ou no cartão · menos que o rateio da pizza 🍕</span></div>
+      <p class="small pw-calma">Pagamento único. Sem assinatura. Nada sai do seu celular.</p>
       <ul class="pw-lista">
         <li><span aria-hidden="true">♾️</span><div><b>Quantos grupos quiser</b>Família, amigos, trabalho, condomínio, a pelada de quinta...</div></li>
         <li><span aria-hidden="true">🎭</span><div><b>Todos os personagens</b>Ninguém escapa: cada um com seu título, jeito de falar e manias.</div></li>
@@ -931,7 +932,7 @@ function paywall(seguir, ctx){
         <li><span aria-hidden="true">🚀</span><div><b>Novidades Premium</b>O que entrar no Premium fica liberado para você, sem pagar de novo.</div></li>
         <li><span aria-hidden="true">🔥</span><div><b>Seus grupos nunca mais vão ser os mesmos</b>Prepare-se para agitar (muito) a conversa.</div></li>
       </ul>
-      <p class="small" style="margin:0">Pagamento único · sem assinatura · liberado na hora · 7 dias para desistir e receber de volta</p>
+      <p class="small" style="margin:0">Liberado na hora · 7 dias para desistir e receber de volta</p>
       <label class="pw-lb" for="pwEm">Seu e-mail (para o comprovante)</label>
       <input id="pwEm" type="email" inputmode="email" autocomplete="email" placeholder="voce@email.com" class="pw-in">
       <p class="err" role="alert" id="pwErr" hidden></p>
@@ -1133,7 +1134,7 @@ function inicio(){
     <button class="btn btn-ghost" id="demo">👀 Experimentar com um exemplo</button>
     <div class="badge priv-l"><span class="ok-ic" aria-hidden="true">✓</span><span><b>O arquivo e as mensagens ficam no seu celular. Sem cadastro.</b> A análise é feita aqui no navegador. Só vão para o nosso servidor números gerais da conversa, para o ranking (dá para desligar), e os dados de pagamento, se você comprar. <a href="/privacidade">Entenda</a></span></div>
     ${anuncio('inicio')}
-    <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/como-exportar">Como exportar</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a><a href="/amigo-secreto">Sorteio de amigo secreto</a><a href="/blog/nomes-para-grupo-de-whatsapp">Nomes para grupo</a><button type="button" class="lk-ck" data-ckpref>Cookies: medição desligada</button></nav>
+    <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/como-exportar">Como exportar</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a><a href="/amigo-secreto">Sorteio de amigo secreto</a><a href="/blog/nomes-para-grupo-de-whatsapp">Nomes para grupo</a><a href="/como-calculamos">Como calculamos</a><button type="button" class="lk-ck" data-ckpref>Cookies: medição desligada</button></nav>
     <p class="small" style="text-align:center;margin:0">© 2026 Retrozap · Beyond the Work Ideas · CNPJ 69.746.447/0001-00</p>
   </section>`;
   $('#comecar').onclick = () => v2Caminho(); ativaAnuncios(); if (typeof marcaMedicao === 'function') marcaMedicao();
@@ -1548,6 +1549,7 @@ function roster(){
     ${aten.length ? `<div class="mems">${aten.map(membro).join('')}</div>` : `<div class="turma-ok"><span class="tok-ic" aria-hidden="true">✅</span><div><b>Turma conferida: tudo certo!</b><span>Ninguém sumido e sem nomes repetidos. É só começar.</span></div></div>`}
     ${resto.length ? `<details class="nums" id="todosD"${state.todosAberto ? ' open' : ''}><summary><b>👥 Ver ${aten.length ? 'os outros ' : 'todos os '}${resto.length} integrantes</b><span class="small">${turmaOk ? 'Só se quiser conferir.' : 'Tudo certo com eles. Toque se quiser conferir.'}</span></summary><div class="mems">${resto.map(membro).join('')}</div></details>` : ''}
     <label class="optin"><input type="checkbox" id="cmp"${state.comparar === false ? '' : ' checked'}><span>📊 ${state.modo === 'casal' ? 'Comparar com outros casais do Retrozap' : 'Comparar meu grupo com outros grupos do Retrozap'}<span class="small">Vem marcado e você pode desmarcar. Só sobem números do ${state.modo === 'casal' ? 'casal' : 'grupo inteiro'}, como o total de mensagens. Nenhuma mensagem, nome ou telefone sai do celular.</span></span></label>
+    <p class="small como-calc"><a href="/como-calculamos" target="_blank" rel="noopener">Como o ranking é calculado<span class="sr-only"> (abre em outra aba)</span></a></p>
     <p class="err" role="alert" id="rerr" hidden></p>
     <button class="btn btn-main" id="go">Tudo certo, começar →</button>
   </section>`;
@@ -1964,6 +1966,7 @@ function suspense(){
       <p class="lead">${so26 ? `Como foi ${casal ? 'o ano de vocês' : 'o ano do grupo'}, comparado com os anos anteriores e com ${casal ? 'os casais' : 'os grupos'} do Brasil.` : 'Os números que ninguém pediu, mas que todo mundo vai querer mandar no grupo.'}</p>
     </div>
     <button class="btn btn-main" id="rl" style="width:100%">Começar →</button>
+    ${so26 && state.comp ? `<p class="small como-calc fin"><a href="/como-calculamos" target="_blank" rel="noopener">Como calculamos o ranking<span class="sr-only"> (abre em outra aba)</span></a></p>` : ''}
   </section>`;
   const sl = $('#sl'), bt = $('#rl'), dots = view.querySelectorAll('.dots i');
   const conta = (el, alvo, txt) => {

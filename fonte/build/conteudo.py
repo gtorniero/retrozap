@@ -862,8 +862,8 @@ LD_EXTRA = {
 }
 # perguntas visíveis de páginas fora do blog que também viram FAQPage
 FAQ_PAGINA = {'amigo-secreto.html': _fer.FAQ_AMIGO}
-# imagem de compartilhamento própria (og.py): página -> (arquivo em /og/, etiqueta)
-OG_PAGINA = {'amigo-secreto.html': ('amigo-secreto', 'Ferramenta grátis')}
+# imagem de compartilhamento própria (og.py): página -> (arquivo em /og/, etiqueta, título na imagem)
+OG_PAGINA = {'amigo-secreto.html': ('amigo-secreto', 'Ferramenta grátis', _fer.AMIGO_TITULO)}
 # trilha visível (além do blog)
 TRILHA_VISIVEL = {'amigo-secreto.html'}
 # bloco de ferramentas no topo do índice do blog
@@ -871,3 +871,14 @@ FERRAMENTAS_BLOG = ('<h2>Ferramentas grátis</h2><div class="cards cards-ferrame
   '<a class="card" href="/amigo-secreto"><b>Sorteio de amigo secreto pelo WhatsApp</b><span class="small">Sorteie e mande um link para cada pessoa. Ninguém tira o próprio nome e os nomes não saem do celular.</span></a>'
   f'<a class="card" href="/blog/nomes-para-grupo-de-whatsapp#gerador-t"><b>Gerador de nomes para grupo</b><span class="small">{_fer.TOTAL_NOMES} nomes por tipo de grupo e estilo, prontos para copiar.</span></a></div>')
 CSS_EXTRA += _fer.CSS_FERRAMENTAS
+
+# ---------- confiança (14/11/2026): metodologia do ranking e dos troféus ----------
+import metodologia as _met
+SEM_ANUNCIO.add('como-calculamos.html')  # CHECAR_SEO é o mesmo conjunto: título e descrição conferidos no build
+FAQ_PAGINA['como-calculamos.html'] = _met.FAQ_METODO
+TRILHA_VISIVEL.add('como-calculamos.html')
+OG_PAGINA['como-calculamos.html'] = ('como-calculamos', 'Metodologia', _met.TITULO)
+# páginas fora do blog com Article no JSON-LD: (publicado, modificado)
+ARTIGO_PAGINA = {'como-calculamos.html': ('2026-11-14', '2026-11-14')}
+ATUALIZADO['como-calculamos'] = '2026-11-14'
+FAQ.insert(len(FAQ) - 1, ('Como o ranking e os troféus são calculados?', 'Tudo é contado no seu celular, a partir do arquivo exportado. Para o ranking, só sobem números do grupo inteiro, e só com a opção de comparar marcada. As regras de cada troféu e do Top X% estão em <a href="/como-calculamos">como calculamos</a>.'))
