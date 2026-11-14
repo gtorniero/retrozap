@@ -315,6 +315,7 @@ function avisoCookies(forcar = false){
     const sim = bt.dataset.ck === 'sim';try{localStorage.setItem('btw_capi_choice_v1',sim?'yes':'no')}catch{} if(!sim)window.BTWMetaConsent?.revoke(); try { localStorage.setItem('rz_cookies', bt.dataset.ck); } catch {}
     try { localStorage.setItem('rz_marketing_v1', bt.dataset.ck); window.dispatchEvent(new Event('rz:marketing-consent'));if(sim)window.BTWMetaConsent?.context(); } catch {}
     try { gtag('consent', 'update', {ad_storage: sim ? 'granted' : 'denied', ad_user_data: sim ? 'granted' : 'denied', ad_personalization: sim ? 'granted' : 'denied', analytics_storage: sim ? 'granted' : 'denied'}); } catch {}
+    try { window.rzFilaMedicao?.(sim); } catch {} // no app: eventos da tela atual que esperavam a escolha (Aceitar envia, Recusar descarta)
     b.remove(); document.body.classList.remove('has-cookies'); folgaCookies(); marcaMedicao();
     try { if (antes && antes !== document.body && antes.isConnected) antes.focus({preventScroll: true}); } catch {}
   });
