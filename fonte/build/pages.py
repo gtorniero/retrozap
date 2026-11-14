@@ -147,9 +147,9 @@ urls.append(page('privacidade.html', 'Política de Privacidade', 'Como o Retroza
 <p>A medição serve para saber quantas pessoas chegam ao Retrozap, de onde vêm (busca, anúncio ou link compartilhado), quantas terminam a retrospectiva e quantas compram. Ela nunca vê o conteúdo do grupo: mensagens, nomes, telefones, o arquivo, os resultados e os prêmios não vão para nenhuma ferramenta de medição. Os eventos que enviamos só levam valores de uma lista fechada, como o tipo de grupo ou "Pix" e "cartão".</p>
 <h3>Sem o seu aceite (ou se você não responder)</h3>
 <ul>
-<li><b>Google Analytics:</b> carrega no Modo de consentimento do Google, sem cookies de análise. Ele recebe sinais técnicos sem identificador (a página, o tipo de aparelho e o site que indicou a visita) para estimar o total de visitas.</li>
+<li><b>Google Analytics e Google Ads:</b> carregam juntos, na mesma tag do Google, no Modo de consentimento do Google, sem cookies. Eles recebem sinais técnicos sem identificador (a página, o tipo de aparelho e o site que indicou a visita) para estimar o total de visitas e de resultados dos anúncios.</li>
 <li><b>Anúncios do Google AdSense</b>, onde houver um bloco marcado como "Publicidade": não são personalizados, mas o Google pode usar cookies para limitar quantas vezes um anúncio aparece, medir os anúncios de forma agregada e combater fraude e abuso.</li>
-<li><b>Pixel da Meta, Google Tag Manager e Google Ads não carregam.</b> Nenhuma compra é enviada à Meta.</li>
+<li><b>Pixel da Meta e Google Tag Manager não carregam.</b> Nenhuma compra é enviada à Meta.</li>
 <li>Usamos só o armazenamento necessário para o site funcionar (lista abaixo).</li>
 </ul>
 <h3>Com o seu aceite ("Aceitar")</h3>
