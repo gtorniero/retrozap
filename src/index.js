@@ -409,11 +409,11 @@ __name(redeemPromo, "redeemPromo");
 
 // functions/api/pix.js
 // Preço do acesso ilimitado (Pix e cartão). O servidor é a fonte da verdade do valor cobrado.
-// Promoção de lançamento (DESLIGADA): ligada e entre `inicio` e `fim` (horário de Brasília), o Pix e o cartão cobram `por`
+// Promoção de lançamento (LIGADA, decidida em 14/11/2026; só vale de 01/12 a 31/12): ligada e entre `inicio` e `fim` (horário de Brasília), o Pix e o cartão cobram `por`
 // e o site mostra "De R$ 13,99 por R$ 8,99 · até 31/12" (via /api/cobranca). Fora das datas volta sozinho para PRECO.
 // Atenção: cópia de fonte/build/pix.js (esta é a que roda no Worker); mude as duas.
 var PRECO = "13.99";
-var PROMO_LANCAMENTO = { ligado: false, de: "13,99", por: "8,99", inicio: "2026-12-01", fim: "2026-12-31" };
+var PROMO_LANCAMENTO = { ligado: true, de: "13,99", por: "8,99", inicio: "2026-12-01", fim: "2026-12-31" };
 var hojeBR = /* @__PURE__ */ __name((agora = Date.now()) => new Date(agora - 3 * 36e5).toISOString().slice(0, 10), "hojeBR");
 var promoAtiva = /* @__PURE__ */ __name((agora, P = PROMO_LANCAMENTO) => {
   const h = hojeBR(agora);
