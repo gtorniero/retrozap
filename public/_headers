@@ -11,3 +11,48 @@
 
 /teste/*
   X-Robots-Tag: noindex, nofollow
+
+/comecar
+  X-Robots-Tag: noindex
+
+/exportar
+  X-Robots-Tag: noindex
+
+/arquivo
+  X-Robots-Tag: noindex
+
+/turma
+  X-Robots-Tag: noindex
+
+/conhecendo
+  X-Robots-Tag: noindex
+
+/prologo
+  X-Robots-Tag: noindex
+
+/numeros
+  X-Robots-Tag: noindex
+
+/categorias
+  X-Robots-Tag: noindex
+
+/premios/*
+  X-Robots-Tag: noindex
+
+/bonus
+  X-Robots-Tag: noindex
+
+/resumo
+  X-Robots-Tag: noindex
+
+/fim
+  X-Robots-Tag: noindex
+
+/destaque
+  X-Robots-Tag: noindex
+
+/personagens
+  X-Robots-Tag: noindex
+
+/crie-seu-premio
+  X-Robots-Tag: noindex
