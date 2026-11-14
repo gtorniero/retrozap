@@ -881,6 +881,18 @@ async function premiumLiberado(){
   try { const r = await fetch('/api/cobranca', {cache: 'no-store'}); if (!r.ok) return true; const c = await r.json();
     return !(c.pronto && (c.modo === 'ligada' || (c.modo === 'teste' && TESTE_COBRANCA))); } catch { return true; }
 }
+// Preço de lançamento (DESLIGADO). Ligado e até a data `ate` (horário de Brasília), mostra acima do preço uma linha honesta:
+// "Preço de lançamento até 31/12 · depois R$ 15,99". Some sozinho depois da data. Não muda o valor cobrado em lugar nenhum.
+// Sem "de R$ 15,99" riscado: o Retrozap nunca cobrou 15,99, e preço "de" fictício engana (CDC, art. 37).
+// Só ligue se o preço realmente for subir para `depois` no dia seguinte a `ate`.
+const PRECO_LANCAMENTO = {ligado: false, ate: '2026-12-31', depois: '15,99'};
+function precoLancamento(hoje){
+  const L = PRECO_LANCAMENTO;
+  if (!L.ligado || !/^\d{4}-\d{2}-\d{2}$/.test(L.ate) || !/^\d{1,3},\d{2}$/.test(L.depois)) return '';
+  if (!hoje) try { hoje = new Intl.DateTimeFormat('en-CA', {timeZone: 'America/Sao_Paulo'}).format(new Date()); } catch { const d = new Date(); hoje = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+  if (hoje > L.ate) return '';
+  return `Preço de lançamento até ${L.ate.slice(8, 10)}/${L.ate.slice(5, 7)} · depois\u00a0R$\u00a0${L.depois}`; // \u00a0: "depois R$ 15,99" não quebra no meio
+}
 let QR_LIB = null;
 const carregaQR = () => QR_LIB || (QR_LIB = new Promise((ok, falha) => { const s = document.createElement('script'); s.src = '/assets/qrcode.js'; s.onload = () => ok(window.qrcode); s.onerror = falha; document.head.appendChild(s); }));
 function paywall(seguir, ctx){
@@ -910,6 +922,7 @@ function paywall(seguir, ctx){
     caixa.innerHTML = `<button type="button" class="pw-x" id="pwX" aria-label="Fechar">✕</button>
       <p class="pw-ctx">${{personagens: '🔒 Os outros personagens são Premium', video: '🔒 Baixar o vídeo é Premium', livre: '🔒 A categoria livre é Premium', destaques: '🔒 O resto da retrospectiva 2026 é Premium', casal: '💕 Agora vem a melhor parte: os troféus de vocês dois'}[ctx] || '🎁 Seu primeiro grupo foi por nossa conta'}</p>
       <h2 id="pwT" class="pw-tit">Acesso ilimitado.<br><em>Pague 1x só.</em></h2>
+      ${precoLancamento() ? `<p class="pw-lanc">${precoLancamento()}</p>` : ''}
       <div class="pw-preco"><b>R$ 8,99</b><span>no Pix ou no cartão · não dá nem pro cafezinho do editor ☕</span></div>
       <ul class="pw-lista">
         <li><span aria-hidden="true">♾️</span><div><b>Quantos grupos quiser</b>Família, amigos, trabalho, condomínio, a pelada de quinta...</div></li>
@@ -931,9 +944,13 @@ function paywall(seguir, ctx){
       <label class="pw-lb" for="pwPromo">Código promocional</label><input class="pw-in" id="pwPromo" maxlength="80" autocomplete="off"><button type="button" class="btn btn-ghost" id="pwPromoAplicar">Aplicar código e liberar grátis</button>
       <button type="button" class="pw-lk" id="pwTenho">Já paguei, tenho um código</button>
       <p class="small" style="margin:0">Continua igual: suas mensagens não saem do seu celular. O Pix é processado pelo Mercado Pago e o cartão pelo Stripe.</p>`;
-    const lista = caixa.querySelector('.pw-lista');
+    const lista = caixa.querySelector('.pw-lista'), itens = [...lista.children];
     const principal = document.createElement('ul'); principal.className = 'pw-lista';
-    principal.append(lista.children[{personagens:1,video:3,livre:4,casal:5}[offerContext] ?? 0]);
+    principal.append(itens[{personagens:1,video:3,livre:4,casal:5}[offerContext] ?? 0]);
+    // o mesmo pagamento vale para os dois: no paywall do casal, grupos ilimitados; no do 2º grupo, os casais
+    const junto = {casal: [0, 'E grupos ilimitados também', 'Amigos, família, trampo, condomínio: quantos quiser, no mesmo pagamento.'],
+                   second_group: [5, 'E o Retrozap Casais também', 'A retrospectiva completa de vocês dois, no mesmo pagamento.']}[offerContext];
+    if (junto){ const li = itens[junto[0]], d = li.querySelector('div'); d.innerHTML = `<b>${junto[1]}</b>${junto[2]}`; principal.append(li); }
     lista.before(principal);
     const detalhes = document.createElement('details'); detalhes.className = 'pw-beneficios';
     detalhes.innerHTML = '<summary style="cursor:pointer;min-height:44px;padding:12px 0;font-weight:700">Veja tudo o que está incluído</summary>';
