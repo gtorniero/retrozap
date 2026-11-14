@@ -5,6 +5,13 @@ COBRANCA_PUBLICA = True
 GTM_ID = 'GTM-NMLZBBQS'
 CTA = '<p><a class="cta" href="/">Fazer a retrospectiva do meu grupo</a></p>'
 
+# Perguntas rápidas do artigo da retrospectiva 2026 (visíveis no texto e no FAQPage)
+FAQ_RETRO_2026 = [
+ ('Quanto custa?', 'A retrospectiva do primeiro grupo é grátis. Para fazer outros grupos e a retrospectiva de casal, o acesso ilimitado custa R$ 8,99, pago uma vez só, no Pix ou no cartão.'),
+ ('As mensagens saem do celular?', 'Não. O arquivo é lido pelo seu próprio navegador. Mensagens, nomes e telefones não são enviados para nenhum servidor.'),
+ ('Funciona no iPhone e no Android?', 'Sim. O site aceita o arquivo .zip ou .txt que o WhatsApp gera nos dois e também funciona no computador.'),
+ ('Dá para refazer depois?', 'Dá. Exporte a conversa de novo no fim de dezembro e faça outra vez para pegar o ano inteiro.')]
+
 NOVOS = [
 ('whatsapp-wrapped', 'WhatsApp Wrapped: como fazer o "Wrapped" do seu grupo de WhatsApp',
  'O Spotify tem o Wrapped; o seu grupo de WhatsApp também pode ter. Veja como gerar a retrospectiva do grupo com prêmios, números e cards.', """
@@ -21,24 +28,30 @@ NOVOS = [
 <p>Antes de mostrar os vencedores, mande no grupo a lista de categorias e peça palpites. Depois revele um prêmio por vez. Mais ideias em <a href="/blog/retrospectiva-do-grupo-de-whatsapp">como fazer a retrospectiva do grupo</a>.</p>
 """ + CTA),
 
-('retrospectiva-do-grupo-de-whatsapp', 'Como fazer a retrospectiva do ano do seu grupo de WhatsApp',
- 'Um passo a passo para transformar o ano do grupo em números, prêmios e um resumo para mandar no próprio grupo.', """
-<h1>Como fazer a retrospectiva do ano do seu grupo de WhatsApp</h1>
-<p>Todo fim de ano a gente vê retrospectiva de música, de série, de exercício. Mas a história que mais rendeu no seu ano provavelmente aconteceu num grupo de WhatsApp: o churrasco que quase não saiu, o áudio de oito minutos, a figurinha que virou meme interno. Dá para transformar tudo isso numa retrospectiva divertida, e sem expor ninguém.</p>
+('retrospectiva-do-grupo-de-whatsapp', 'Retrospectiva do grupo do WhatsApp 2026: como fazer a do seu grupo',
+ 'Passo a passo para fazer a retrospectiva 2026 do seu grupo de WhatsApp: números do ano, prêmios para cada um e cards para mandar no grupo.', """
+<h1>Retrospectiva do grupo do WhatsApp 2026: como fazer a do seu grupo</h1>
+<p>Todo fim de ano a gente vê retrospectiva de música, de série, de exercício. Mas a história que mais rendeu no seu 2026 provavelmente aconteceu num grupo de WhatsApp: o churrasco que quase não saiu, o áudio de oito minutos, a figurinha que virou meme interno. Dá para transformar tudo isso numa retrospectiva divertida, em menos de um minuto e sem expor ninguém.</p>
+<h2>Quando fazer a retrospectiva 2026</h2>
+<p>Dezembro é o mês dela: dá tempo de revelar os prêmios antes do amigo secreto, da ceia ou do Réveillon, quando o grupo está mais animado. Se fizer antes, tudo bem: os números contam as mensagens de 2026 até o dia em que você exportou a conversa, e você pode refazer no fim do ano com um arquivo novo.</p>
 <h2>1. Escolha o grupo certo</h2>
-<p>Funciona melhor em grupos com bastante conversa: amigos, família, faculdade, time de futebol, condomínio. Um grupo com poucas mensagens gera números tímidos. Se o grupo é muito grande, como o do prédio inteiro, prefira categorias leves.</p>
+<p>Funciona melhor em grupos com bastante conversa: amigos, família, faculdade, time de futebol, condomínio. Um grupo com poucas mensagens gera números tímidos. Se o grupo é muito grande, como o do prédio inteiro, prefira categorias leves. Também dá para fazer a de um casal: veja a <a href="/blog/retrospectiva-de-namoro">retrospectiva de namoro</a>.</p>
 <h2>2. Exporte a conversa</h2>
-<p>No celular, abra o grupo, toque no nome dele, role até o fim e escolha <b>Exportar conversa</b> e depois <b>Sem mídia</b>. O arquivo sai em segundos. Tem um passo a passo detalhado em <a href="/blog/como-exportar-conversa-whatsapp">como exportar a conversa de um grupo</a>.</p>
-<h2>3. Gere os números e os prêmios</h2>
+<p>No celular, abra o grupo, toque no nome dele, role até o fim e escolha <b>Exportar conversa</b> e depois <b>Sem mídia</b>. O arquivo sai em segundos. Tem um passo a passo detalhado em <a href="/blog/como-exportar-conversa-whatsapp">como exportar a conversa de um grupo</a> e um <a href="/como-exportar">vídeo de 45 segundos</a>.</p>
+<h2>3. Gere os números e os prêmios de 2026</h2>
 <p>No <a href="/">Retrozap</a>, você escolhe o arquivo e o tipo de grupo. A leitura acontece no seu navegador, as mensagens não saem do celular. Em menos de um minuto aparecem:</p>
-<ul><li>quantas mensagens o grupo trocou e desde quando;</li><li>as mensagens ano a ano, os áudios e quantas horas levaria para ler tudo;</li><li>a gíria oficial e o assunto mais falado do ano;</li><li>de 7 a 10 prêmios, conforme o tipo de grupo, como O Tagarela, O Fantasma e Boca-Suja;</li><li>o nosso 2026, comparado com 2025, e um vídeo para os stories;</li><li>os personagens do grupo, com o jeito de falar de cada um.</li></ul>
+<ul><li>há quanto tempo o grupo existe e as mensagens ano a ano;</li><li>o nosso 2026: mensagens, áudios e risadas do ano, comparados com o mesmo período de 2025 (se o grupo já existia);</li><li>a gíria oficial e o assunto mais falado do ano;</li><li>de 7 a 10 prêmios, conforme o tipo de grupo, como O Tagarela, O Fantasma e Boca-Suja;</li><li>os personagens do grupo, com o jeito de falar de cada um;</li><li>cards prontos para mandar no grupo e nos stories, e um vídeo curto (baixar o vídeo faz parte do acesso ilimitado).</li></ul>
+<p>Os prêmios e as imagens usam só as mensagens de 2026. Se o grupo conversou pouco neste ano, o site usa a conversa inteira e avisa na tela.</p>
 <h2>4. Faça suspense antes de revelar</h2>
-<p>A graça está no momento da revelação. Antes de mostrar os vencedores, mande no grupo a lista de categorias e peça palpites. Depois, revele um prêmio por vez. Quem acertou mais ganha o direito de se gabar até o ano que vem.</p>
+<p>A graça está no momento da revelação. Antes de mostrar os vencedores, mande no grupo a lista de categorias e peça palpites. Depois, revele um prêmio por vez. Quem acertou mais ganha o direito de se gabar até o ano que vem. Precisa de mais ideias? Veja as <a href="/blog/ideias-de-premios-para-grupo-de-whatsapp">40 ideias de prêmios para o grupo</a>.</p>
 <h2>5. Mande o resumo no grupo</h2>
-<p>No fim, salve o card de resumo e mande no grupo ou nos stories. É o tipo de imagem que rende conversa por dias, e que todo mundo quer fazer para os outros grupos também.</p>
+<p>No fim, salve o card de resumo e mande no grupo ou nos stories. É o tipo de imagem que rende conversa por dias, e que todo mundo quer fazer para os outros grupos também. Para fechar o ano, junte com uma das <a href="/blog/mensagens-de-fim-de-ano-para-grupo">mensagens de fim de ano para o grupo</a>.</p>
 <h2>Dica de etiqueta</h2>
 <p>Retrospectiva boa é a que todo mundo ri junto. Evite expor conversas privadas, não poste os cards fora do grupo sem combinar e, se alguém não gostar de um prêmio, tire. A brincadeira só funciona com todo mundo dentro.</p>
-""" + CTA),
+<h2>Perguntas rápidas</h2>
+""" + ''.join(f'<h3>{q}</h3><p>{a}</p>' for q, a in FAQ_RETRO_2026) + """
+<p><a class="cta" href="/">Fazer a retrospectiva 2026 do meu grupo</a></p>
+"""),
 
 ('premios-para-grupo-da-familia', '30 prêmios engraçados para o grupo da família',
  'Ideias de categorias carinhosas e divertidas para premiar o grupo da família no fim do ano.', """
@@ -264,7 +277,45 @@ def gtm_head(gtm_id):
             "<script>(function(){function start(){try{if(window.RZ_GTM||localStorage.getItem('rz_marketing_v1')!=='sim'||!window.rzSafeMeasurementPage())return}catch(e){return}"
             "window.RZ_GTM=1;window.dataLayer=window.dataLayer||[];window.dataLayer.push({'gtm.start':Date.now(),event:'gtm.js'});"
             "var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtm.js?id=" + gtm_id + "';document.head.appendChild(s)}"
-            "window.addEventListener('rz:marketing-consent',start);start()})();</script>\n")
+            "window.addEventListener('rz:marketing-consent',start);window.addEventListener('rz:medicao-pronta',start);start()})();</script>\n")
+
+
+def head_medicao(titulo='Retrozap'):
+    """Consentimento (Consent Mode v2, padrão negado) + Google tag. Igual no app e nas páginas de conteúdo.
+    ?btw_interno=1 grava um cookie de 1 ano que desliga GA4, pixel, GTM e Conversions API (compras de teste da equipe);
+    ?btw_interno=0 apaga. O GA recebe só a origem de quem indicou a visita (nunca o endereço completo) e a URL sem
+    parâmetros que não sejam de campanha."""
+    import json
+    return (r"""<!-- Consentimento (LGPD) + Google tag (gtag.js) -->
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+(function(){try{var q=location.search;if(/[?&]btw_interno=1(?:&|$)/.test(q))document.cookie='btw_interno=1; Max-Age=31536000; Path=/; SameSite=Lax; Secure';else if(/[?&]btw_interno=0(?:&|$)/.test(q))document.cookie='btw_interno=; Max-Age=0; Path=/; SameSite=Lax; Secure';window.RZ_INTERNO=/(?:^|;\s*)btw_interno=1(?:;|$)/.test(document.cookie)}catch(e){}
+var ok=null;try{ok=localStorage.getItem('rz_cookies');}catch(e){}var mk=null;try{mk=localStorage.getItem('rz_marketing_v1');}catch(e){}var ad=ok==='sim'&&mk==='sim'?'granted':'denied';
+gtag('consent','default',{ad_storage:ad,ad_user_data:ad,ad_personalization:ad,analytics_storage:ok==='sim'?'granted':'denied'});
+if(ad==='denied'){(window.adsbygoogle=window.adsbygoogle||[]).requestNonPersonalizedAds=1;}})();</script>
+<script>if(!window.RZ_INTERNO&&/^(?:www\.)?retrozap\.com\.br$/.test(location.hostname)){var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=G-R8R1EN0KQN';document.head.appendChild(s)}</script>
+<script>
+  gtag('js', new Date());
+  gtag('config', 'G-R8R1EN0KQN', {page_title:@@TITULO@@,page_location:(function(){var u=new URL(location.href);u.hash='';for(var pair of Array.from(u.searchParams)){var k=pair[0],v=pair[1];if(/^utm_[a-z_]{2,20}$/.test(k)&&v.length<=200&&!/[@\u0000-\u001f]/.test(v))continue;if(/^(gclid|fbclid|gbraid|wbraid)$/.test(k)&&/^[a-z0-9_.-]{1,500}$/i.test(v))continue;u.searchParams.delete(k)}return u.origin+u.pathname+u.search})(),page_referrer:(function(){try{return document.referrer?new URL(document.referrer).origin+'/':''}catch(e){return''}})()});
+</script>
+""").replace('@@TITULO@@', json.dumps(titulo, ensure_ascii=False).replace('</', '<\\/'))
+
+
+# Aviso de cookies: o mesmo componente no app e nas páginas de conteúdo (consentimento.js)
+def consentimento_js():
+    import os
+    return open(os.path.join(os.path.dirname(__file__), 'consentimento.js'), encoding='utf-8').read()
+
+CSS_COOKIES = """.cookies{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--acai);border-top:1px solid var(--linha);box-shadow:0 -8px 24px rgba(10,4,20,.28);padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));font-size:14px;line-height:1.45;color:var(--areia);display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px 16px}
+.cookies p{margin:0;flex:1 1 300px;max-width:560px;color:var(--areia);font-size:14px;line-height:1.45}
+.cookies a{color:var(--areia);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.ck-bts{display:flex;gap:10px;flex:1 1 260px;max-width:340px}
+.ck-bt{flex:1 1 0;min-width:0;min-height:44px;border-radius:999px;padding:10px 14px;font:inherit;font-size:15px;font-weight:700;line-height:1.2;cursor:pointer}
+.ck-nao{background:transparent;border:2px solid var(--neblina);color:var(--areia)}
+.ck-sim{background:var(--manga);border:2px solid var(--manga);color:var(--noite)}
+html.casal .ck-sim{color:#fff}
+.ck-bt:focus-visible,.cookies a:focus-visible,.lk-ck:focus-visible{outline:3px solid var(--areia);outline-offset:2px}
+.lk-ck{background:none;border:0;padding:0;min-height:24px;font:inherit;color:var(--areia);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+"""
 
 
 # ---------- artigos novos (03/11/2026) ----------
@@ -594,6 +645,52 @@ NOVOS += [
 # Data de publicação de cada artigo (JSON-LD). Artigo novo sem data aqui usa a data do build.
 PUBLICADO = {s: '2026-10-17' for s in ['como-exportar-conversa-whatsapp', 'ideias-de-premios-para-grupo-de-whatsapp', 'privacidade-ao-analisar-conversas-do-whatsapp', 'retrospectiva-do-grupo-de-whatsapp', 'premios-para-grupo-da-familia', 'premios-para-grupo-de-amigos', 'premios-para-grupo-do-trabalho', 'grupo-do-condominio', 'tipos-de-pessoas-em-grupos-de-whatsapp', 'girias-mais-usadas-no-whatsapp', 'quem-mais-fala-no-grupo-do-whatsapp', 'como-reanimar-grupo-parado', 'amigo-secreto-pelo-whatsapp', 'jogos-para-jogar-com-amigos-e-familia']}
 PUBLICADO['whatsapp-wrapped'] = '2026-10-19'
+# Última mudança relevante de conteúdo (dateModified e lastmod do sitemap). Sem data aqui = data de publicação.
+MODIFICADO = {'retrospectiva-do-grupo-de-whatsapp': '2026-11-14'}
+# Perguntas e respostas visíveis no artigo que também viram FAQPage (JSON-LD)
+FAQ_ARTIGO = {'retrospectiva-do-grupo-de-whatsapp': FAQ_RETRO_2026}
+# Última mudança relevante das páginas fixas (lastmod do sitemap)
+ATUALIZADO = {'': '2026-11-14', 'privacidade': '2026-11-14', 'termos': '2026-10-22', 'sobre': '2026-10-17', 'contato': '2026-10-22',
+ 'como-exportar': '2026-10-25', 'como-funciona': '2026-11-03', 'perguntas-frequentes': '2026-11-01', 'ideias': '2026-10-22', 'blog/': '2026-11-14'}
+
+# <title> mais curto (até ~60 caracteres, busca principal antes da marca) quando o título da página é longo ou repete a marca.
+# O título completo continua no h1, no og:title e no card do blog.
+TITULO_SEO = {
+ 'blog/index.html': 'Blog do Retrozap: dicas para grupos de WhatsApp',
+ 'como-funciona.html': 'Como funciona a retrospectiva do WhatsApp · Retrozap',
+ 'sobre.html': 'Sobre o Retrozap',
+ 'blog/retrospectiva-do-grupo-de-whatsapp.html': 'Retrospectiva do grupo do WhatsApp 2026 · Retrozap',
+ 'blog/brincadeiras-para-grupo-de-whatsapp.html': '30 brincadeiras para grupo de WhatsApp · Retrozap',
+ 'blog/como-evitar-brigas-no-grupo-da-familia.html': 'Grupo da família: como evitar brigas · Retrozap',
+ 'blog/como-exportar-conversa-whatsapp.html': 'Como exportar conversa de grupo do WhatsApp · Retrozap',
+ 'blog/como-ler-conversa-exportada-do-whatsapp.html': 'Como abrir a conversa exportada do WhatsApp · Retrozap',
+ 'blog/como-reanimar-grupo-parado.html': '12 ideias para reanimar grupo de WhatsApp · Retrozap',
+ 'blog/exportar-conversa-whatsapp-nao-aparece.html': 'Exportar conversa do WhatsApp não aparece? 7 soluções',
+ 'blog/frases-de-bom-dia-para-grupo.html': 'Bom dia para grupo: 50 frases para mandar · Retrozap',
+ 'blog/grupo-do-condominio.html': 'Grupo do condomínio: prêmios e regras · Retrozap',
+ 'blog/ideias-de-premios-para-grupo-de-whatsapp.html': '40 ideias de prêmios para grupo de WhatsApp · Retrozap',
+ 'blog/jogos-para-jogar-com-amigos-e-familia.html': '6 jogos para animar amigos e família · Retrozap',
+ 'blog/kkkk-rsrs-hahaha-significado.html': 'Kkkk, rsrs, hahaha: como o brasileiro ri no WhatsApp',
+ 'blog/mensagens-de-fim-de-ano-para-grupo.html': 'Mensagens de fim de ano para grupo: 60 textos prontos',
+ 'blog/nomes-para-grupo-de-whatsapp.html': '150 nomes para grupo de WhatsApp · Retrozap',
+ 'blog/perguntas-para-casal.html': '100 perguntas para casal · Retrozap',
+ 'blog/premios-para-grupo-de-amigos.html': '30 prêmios para o grupo de amigos · Retrozap',
+ 'blog/premios-para-grupo-do-trabalho.html': 'Prêmios para o grupo do trabalho · Retrozap',
+ 'blog/privacidade-ao-analisar-conversas-do-whatsapp.html': 'Analisar conversa do WhatsApp sem expor ninguém · Retrozap',
+ 'blog/regras-para-grupo-de-whatsapp.html': 'Regras para grupo de WhatsApp: modelo pronto · Retrozap',
+ 'blog/retrospectiva-de-namoro.html': 'Retrospectiva de namoro pelo WhatsApp · Retrozap',
+ 'blog/whatsapp-wrapped.html': 'WhatsApp Wrapped: a retrospectiva do grupo · Retrozap',
+}
+# meta description mais curta (até ~155) quando a descrição da página é longa; a completa continua no card do blog
+DESC_SEO = {
+ 'blog/como-evitar-brigas-no-grupo-da-familia.html': 'Como manter a paz no grupo da família: combinados que funcionam, política sem briga, fake news, correntes e dicas para o administrador.',
+ 'blog/como-ler-conversa-exportada-do-whatsapp.html': 'Como abrir o .zip ou .txt da conversa exportada do WhatsApp no iPhone, no Android e no computador, e um jeito fácil de ler tudo.',
+ 'blog/exportar-conversa-whatsapp-nao-aparece.html': 'Exportar conversa sumiu, travou ou gerou um arquivo pequeno? 7 causas comuns, como a Privacidade avançada da conversa, e como resolver.',
+ 'blog/frases-de-bom-dia-para-grupo.html': '50 frases de bom dia para grupo de WhatsApp: curtas, engraçadas, para a família e o trabalho. E as regras para o bom dia não irritar ninguém.',
+ 'blog/kkkk-rsrs-hahaha-significado.html': 'O que significam kkkk, rsrs, hahaha, hehe e huehue, a escala da risada e os emojis. E quem é o Rei do Kkkk do seu grupo.',
+ 'blog/presente-criativo-para-namorado.html': 'Presentes criativos e baratos para namorado ou namorada: feitos à mão, experiências e ideias digitais para o aniversário de namoro e o Natal.',
+ 'blog/retrospectiva-de-namoro.html': 'Presente para aniversário de namoro: transforme a conversa do casal no WhatsApp em números, prêmios e cards. Passo a passo e outras ideias.',
+}
 PUBLICADO.update({s: '2026-11-03' for s in ['mensagens-de-fim-de-ano-para-grupo', 'nomes-para-grupo-de-whatsapp', 'regras-para-grupo-de-whatsapp', 'brincadeiras-para-grupo-de-whatsapp', 'perguntas-para-casal', 'retrospectiva-de-namoro', 'presente-criativo-para-namorado', 'kkkk-rsrs-hahaha-significado', 'frases-de-bom-dia-para-grupo', 'como-evitar-brigas-no-grupo-da-familia', 'como-ler-conversa-exportada-do-whatsapp', 'exportar-conversa-whatsapp-nao-aparece']})
 
 # "Leia também" no fim de cada artigo: 3 posts relacionados por slug

@@ -1,4 +1,3 @@
-(()=>{'use strict';const brand='retrozap';const key='btw_meta_subject_'+brand;function currentSubject(){const v=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith(key+'='))?.slice(key.length+1);return v&&/^[a-f0-9-]{36}$/.test(v)?v:localStorage.getItem(key)}function subject(){let id=currentSubject();if(!id){id=crypto.randomUUID();localStorage.setItem(key,id);document.cookie=key+'='+id+'; Max-Age=15552000; Secure; SameSite=Lax; Path=/; Domain=.'+brand+'.com.br'}return id;}function context(){try{if(localStorage.getItem('btw_capi_choice_v1')!=='yes')return null;let c;if(brand==='retrozap')c={version:1,marketing:localStorage.getItem('rz_marketing_v1')==='sim',at:Date.now()};else c=JSON.parse(localStorage.getItem(brand==='quiddo'?'qd_consent_v1':'sd_consent_v1')||'null');if(c?.marketing!==true||c.version!==1||!Number.isFinite(c.at))return null;const out={version:1,marketing:true,at:c.at,subject:subject()};const click=new URLSearchParams(location.search).get('fbclid');if(click&&/^[A-Za-z0-9_-]{20,200}$/.test(click)&&!document.cookie.split(';').map(x=>x.trim()).some(x=>x.startsWith('_fbc=')&&x.endsWith('.'+click)))document.cookie='_fbc=fb.1.'+Date.now()+'.'+click+'; Max-Age=7776000; Secure; SameSite=Lax; Path=/; Domain=.'+brand+'.com.br';for(const [key,name] of [['fbp','_fbp'],['fbc','_fbc']]){const v=document.cookie.split(';').map(s=>s.trim()).find(s=>s.startsWith(name+'='))?.slice(name.length+1);if(v&&/^fb\.\d\.\d{10,13}\.[A-Za-z0-9_-]{1,200}$/.test(v))out[key]=v}return out}catch{return null}}function revoke(){let id;try{id=currentSubject()}catch{}if(!id)return;const api=brand==='sportdna'?(window.SPORTDNA_PAYMENTS?.api||'')+'/meta/revoke':'/api/meta/revoke';void fetch(api,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subject:id}),keepalive:true}).catch(()=>{});}window.BTWMetaConsent=Object.freeze({context,revoke});window.addEventListener('storage',e=>{if(['rz_marketing_v1','qd_consent_v1','sd_consent_v1',null].includes(e.key)&&!context())revoke()});})();
 /* =====================================================================
    CONFIGURAÇÃO — troque só estes valores antes de publicar
    ===================================================================== */
@@ -34,25 +33,41 @@ function evento(nome, params = {}){
   if (['pix','card'].includes(params.payment_type)) p.payment_type = params.payment_type;
   if (['invalid_email','network','unavailable','rejected','invalid_response'].includes(params.error_category)) p.error_category = params.error_category;
   if (exemplo) p.exemplo = true;
-  try { if (window.rzMetaEvent && marketing) window.rzMetaEvent(nome, exemplo); } catch {}
-  try { if (analytics && configurado(CONFIG.GA_ID)) gtag('event', nome, p); } catch {}
+  if (window.RZ_INTERNO) return; // modo interno (?btw_interno=1): nada de GA4, pixel ou GTM
+  // a Meta recebe só o nome do evento (e grupo/casal no Lead); nunca os parâmetros livres
+  try { if (window.rzMetaEvent && marketing) window.rzMetaEvent(nome, exemplo, {modo: p.modo}); } catch {}
+  try { if (analytics && configurado(CONFIG.GA_ID)){ gtag('event', nome, p); if (GA_ECOMMERCE[nome] && !exemplo) gtag('event', GA_ECOMMERCE[nome], itemPremium(nome)); } } catch {}
   try { if (marketing && window.RZ_GTM && !exemplo) dataLayer.push(Object.assign({event: 'rz_' + nome}, p)); } catch {}
 }
+// eventos recomendados de e-commerce do GA4, disparados junto com os nossos (os nossos continuam iguais)
+const PRECO_PREMIUM = 8.99;
+const GA_ECOMMERCE = {view_offer: 'view_item', checkout_attempt: 'begin_checkout', pix_gerado: 'add_payment_info', cartao_aberto: 'add_payment_info'};
+function itemPremium(nome){
+  const d = {currency: 'BRL', value: PRECO_PREMIUM, items: [{item_id: 'rz-premium', item_name: 'Retrozap Premium', price: PRECO_PREMIUM, quantity: 1}]};
+  if (nome === 'pix_gerado') d.payment_type = 'pix';
+  if (nome === 'cartao_aberto') d.payment_type = 'card';
+  return d;
+}
 function compraConfirmada(m){
-  if (!m || !/^[a-f0-9]{64}$/.test(m.id) || !Number.isFinite(m.valor) || m.valor <= 0 || m.moeda !== 'BRL') return;
+  if (!m || !/^[a-f0-9]{64}$/.test(m.id) || !Number.isFinite(m.valor) || m.valor <= 0 || m.moeda !== 'BRL' || window.RZ_INTERNO) return;
   try {
     if (localStorage.getItem('rz_cookies') !== 'sim' || localStorage.getItem('rz_venda_' + m.id)) return;
     // Não tentar medir em URL sensível; o servidor só fornece m para venda real aprovada.
     if (!window.rzSafeMeasurementPage?.()) return;
     localStorage.setItem('rz_venda_' + m.id, '1');
-    gtag('event', 'purchase', {transaction_id:m.id,value:m.valor,currency:'BRL',page_title:'Retrozap',page_location:location.origin+location.pathname});
-    if (localStorage.getItem('rz_marketing_v1') === 'sim') window.rzMetaPurchase?.(m.valor, m.id);
+    gtag('event', 'purchase', {transaction_id:m.id,value:m.valor,currency:'BRL',items:[{item_id:'rz-premium',item_name:'Retrozap Premium',price:m.valor,quantity:1}],page_title:'Retrozap',page_location:location.origin+location.pathname});
+    if (localStorage.getItem('rz_marketing_v1') === 'sim'){
+      window.rzMetaPurchase?.(m.valor, m.id); // mesmo event_id da Conversions API (deduplicação)
+      // para a conversão do Google Ads no GTM: valor e id irreversível da venda, nada mais
+      if (window.RZ_GTM) dataLayer.push({event: 'rz_purchase', value: m.valor, currency: 'BRL', transaction_id: m.id});
+    }
   } catch {} // Sem armazenamento, não arriscar duplicar venda.
 }
 
 /* ---------- Uma página por tela: cada tela conta como página vista ---------- */
 function ir(rota){
-  gtag('set', {page_title:'Retrozap',page_location:location.origin+rota,page_referrer:''});
+  // a página anterior é uma rota do próprio site (sem parâmetros), para o GA não perder a origem da visita
+  gtag('set', {page_title:'Retrozap',page_location:location.origin+rota,page_referrer:location.origin+location.pathname});
   if (location.pathname !== rota) history.pushState({rota}, '', rota); // o GA conta a troca de tela como page_view
 }
 window.addEventListener('popstate', () => {
@@ -60,20 +75,4 @@ window.addEventListener('popstate', () => {
   voltarPilha();
 });
 
-/* ---------- Aviso de cookies ---------- */
-function avisoCookies(forcar = false){
-  if (document.querySelector('.cookies')) return;
-  try { if (!forcar && localStorage.getItem('btw_capi_choice_v1') && localStorage.getItem('rz_cookies') && localStorage.getItem('rz_marketing_v1')) return; } catch {}
-  const b = document.createElement('div'); b.className = 'cookies';
-  b.innerHTML = '<span>Usamos cookies para medir visitas e anúncios. Com seu aceite, enviamos à Meta a compra confirmada e uma versão protegida do e-mail para associá-la aos anúncios. Suas mensagens nunca saem do celular. <a href="/privacidade">Privacidade</a></span> <button class="btn btn-ghost mini" type="button" data-ck="nao">Recusar</button> <button class="btn btn-main mini" type="button" data-ck="sim">Aceitar</button>';
-  b.querySelectorAll('[data-ck]').forEach(bt => bt.onclick = () => {
-    const sim = bt.dataset.ck === 'sim';try{localStorage.setItem('btw_capi_choice_v1',sim?'yes':'no')}catch{} if(!sim)window.BTWMetaConsent?.revoke(); try { localStorage.setItem('rz_cookies', bt.dataset.ck); } catch {}
-    try { localStorage.setItem('rz_marketing_v1', bt.dataset.ck); window.dispatchEvent(new Event('rz:marketing-consent'));if(sim)window.BTWMetaConsent?.context(); } catch {}
-    try { gtag('consent', 'update', {ad_storage: sim ? 'granted' : 'denied', ad_user_data: sim ? 'granted' : 'denied', ad_personalization: sim ? 'granted' : 'denied', analytics_storage: sim ? 'granted' : 'denied'}); } catch {}
-    b.remove(); document.body.classList.remove('has-cookies'); });
-  document.body.appendChild(b); document.body.classList.add('has-cookies'); // espaço extra para o aviso não cobrir nenhum botão
-}
-
-// Permite mudar/revogar a escolha sem apagar todo o site ou o código Premium.
-// Fica como link discreto no rodapé do início (data-ckpref), não solto em todas as telas.
-document.addEventListener('click', e => { if (e.target.closest && e.target.closest('[data-ckpref]')) avisoCookies(true); });
+/* ---------- Aviso de cookies: fica em consentimento.js (o mesmo das páginas de conteúdo) ---------- */

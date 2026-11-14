@@ -25,6 +25,20 @@ p{{font-weight:700;font-size:27px;color:#B9A8CC;margin-top:30px}}
 </style></head><body><div class="og">{CONFETE}<div class="txt"><div class="logo">retrozap</div>
 <h1>Todo grupo tem uma história.<br><em>Descubra a do seu.</em></h1><p>A retrospectiva oficial dos grupos de WhatsApp</p></div>
 <img class="trofeu" src="{TROFEU}"></div></body></html>"""
+# imagem de compartilhamento de cada artigo do blog (1200x630): título do artigo com a identidade do site
+import html as _h, json as _j
+def OG_ARTIGO(titulo): return f"""<html><head><style>{FONTES}
+.og{{width:1200px;height:630px;position:relative;overflow:hidden;background:radial-gradient(circle at 85% 20%,rgba(255,194,60,.25),transparent 45%),#1A0B2E;font-family:'DM Sans';color:#FFF4E0}}
+.og i{{position:absolute;width:16px;height:6px;border-radius:2px;opacity:.45}}
+.top{{position:absolute;left:72px;top:60px;display:flex;align-items:center;gap:18px}}
+.logo{{font-family:'Bricolage Grotesque';font-weight:800;font-size:56px;letter-spacing:-.03em;color:#FFC23C;line-height:1}}
+.tag{{font-weight:700;font-size:22px;color:#1A0B2E;background:#FFC23C;border-radius:999px;padding:6px 16px}}
+h1{{position:absolute;left:72px;top:170px;width:800px;font-family:'Bricolage Grotesque';font-weight:800;font-size:60px;line-height:1.06;letter-spacing:-.01em}}
+p{{position:absolute;left:72px;bottom:56px;font-weight:700;font-size:24px;color:#B9A8CC}}
+.trofeu{{position:absolute;right:40px;bottom:40px;width:250px;transform:rotate(12deg)}}
+</style></head><body><div class="og">{CONFETE}<div class="top"><div class="logo">retrozap</div><span class="tag">Blog</span></div>
+<h1>{_h.escape(titulo)}</h1><p>retrozap.com.br · a retrospectiva do seu grupo de WhatsApp</p>
+<img class="trofeu" src="{TROFEU}"></div></body></html>"""
 def ICONE(t): return f"""<html><head><style>{FONTES}.ic{{width:{t}px;height:{t}px;background:radial-gradient(circle at 50% 30%,rgba(255,194,60,.35),transparent 60%),#1A0B2E;display:flex;align-items:center;justify-content:center;font-family:'Emoji';font-size:{int(t*.68)}px;line-height:1}}</style></head><body><div class="ic"><img src="{TROFEU}" style="width:72%"></div></body></html>"""
 async def main():
     async with async_playwright() as p:
@@ -37,6 +51,16 @@ async def main():
             await pg2.set_content(ICONE(t)); await pg2.evaluate('document.fonts.ready'); await pg2.wait_for_timeout(400)
             nome = {192:'icon-192.png', 512:'icon-512.png', 180:'apple-touch-icon.png', 64:'favicon.png'}[t]
             await pg2.screenshot(path=os.path.join(PUB, nome), clip={'x':0,'y':0,'width':t,'height':t})
+        lista = os.path.join(D, os.environ.get('RZ_OUT', 'retrozap-site'), 'og-artigos.json')
+        if os.path.exists(lista):
+            os.makedirs(os.path.join(PUB, 'og'), exist_ok=True)
+            pg3 = await b.new_page(viewport={'width':1200,'height':630})
+            for a in _j.load(open(lista, encoding='utf-8')):
+                await pg3.set_content(OG_ARTIGO(a['titulo'])); await pg3.evaluate('document.fonts.ready')
+                # título longo: diminui a fonte até caber acima do rodapé da imagem
+                await pg3.evaluate("(() => { const h = document.querySelector('h1'); let t = 60; while (h.getBoundingClientRect().bottom > 520 && t > 36){ t -= 2; h.style.fontSize = t + 'px'; } })()")
+                await pg3.screenshot(path=os.path.join(PUB, 'og', a['slug'] + '.jpg'), type='jpeg', quality=82, clip={'x':0,'y':0,'width':1200,'height':630})
+            os.remove(lista)
         await b.close()
 asyncio.run(main())
 for f in ('og-image.png', 'icon.svg'):

@@ -766,7 +766,7 @@ function anunciaTela(k){
     escondeEmojis(v);
     const h = v.querySelector('h1') || v.querySelector('h2');
     const nome = (h?.textContent || '').replace(/\s+/g, ' ').trim();
-    document.title = k === 'inicio' || !nome ? 'Retrozap · Retrospectiva do grupo de WhatsApp' : `${nome.slice(0, 60)} · Retrozap`;
+    document.title = k === 'inicio' || !nome ? 'Retrospectiva do grupo de WhatsApp 2026 · Retrozap' : `${nome.slice(0, 60)} · Retrozap`;
     if (primeira || document.querySelector('.patro')) return; // no primeiro carregamento não mexe no foco
     if (h){ if (!h.hasAttribute('tabindex')) h.setAttribute('tabindex', '-1'); h.focus({preventScroll: true}); } else v.focus({preventScroll: true});
   });
@@ -1461,14 +1461,26 @@ async function precisaPagar(){
 const ANUNCIOS = {inicio: '', categorias: '', intervalo: '', fim: ''};
 // ?simular_anuncios=1 mostra caixas de exemplo no lugar dos anúncios (para ver o layout; nada é carregado do Google)
 const SIMULA_ANUNCIOS = /[?&]simular_anuncios=1/.test(location.search);
+// Anúncio só depois do resultado: nunca no início (landing dos anúncios pagos), nas categorias, no intervalo comercial,
+// na oferta ou no pagamento. Para ligar o bloco do fim, basta preencher ANUNCIOS.fim.
+const ANUNCIO_PERMITIDO = ['fim'];
 function anuncio(onde){
+  if (!ANUNCIO_PERMITIDO.includes(onde)) return '';
   const slot = ANUNCIOS[onde];
   const semPremium = !lsGet('rz_acesso') && state.planoTeste !== 'premium'; // grupo de exemplo também vê anúncio
   if (SIMULA_ANUNCIOS && semPremium) return `<div class="anuncio"><p class="small" style="margin:0">Publicidade</p><div class="ad-sim">Anúncio de exemplo<br><small>${onde} · responsivo</small></div></div>`;
   if (!slot || !semPremium || AMBIENTE_TESTE) return '';
   return `<div class="anuncio" data-anuncio><p class="small" style="margin:0">Publicidade</p><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4039247360984618" data-ad-slot="${slot}" data-ad-format="auto" data-full-width-responsive="true"></ins></div>`;
 }
-function ativaAnuncios(){ view.querySelectorAll('[data-anuncio] ins:not([data-adsbygoogle-status])').forEach(() => { try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch {} }); }
+// o script do AdSense só carrega quando um bloco manual aparece numa tela permitida (sem ?client=, para não ligar os anúncios automáticos no app)
+function carregaAdSense(){
+  if (window.RZ_ADSENSE || window.RZ_INTERNO || lsGet('rz_acesso') || AMBIENTE_TESTE) return false;
+  window.RZ_ADSENSE = 1; const s = document.createElement('script'); s.async = true; s.crossOrigin = 'anonymous'; s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js'; document.head.appendChild(s); return true;
+}
+function ativaAnuncios(){
+  const blocos = view.querySelectorAll('[data-anuncio] ins:not([data-adsbygoogle-status])'); if (!blocos.length) return;
+  carregaAdSense(); blocos.forEach(() => { try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch {} });
+}
 const AMBIENTE_TESTE = !/(^|\.)retrozap\.com\.br$|^retrozap-v2\.[^.]+\.workers\.dev$|^localhost$|^127\./.test(location.hostname) || (/^localhost$|^127\./.test(location.hostname) && /[?&]plano_teste=1/.test(location.search)); // nunca no site oficial
 if (AMBIENTE_TESTE) state.planoTeste = 'gratis';
 const premiumLocal = () => state.planoTeste ? state.planoTeste === 'premium' : !!(state.sample || lsGet('rz_acesso'));
@@ -1711,10 +1723,10 @@ function inicio(){
     <button class="btn btn-ghost" id="demo">👀 Experimentar com um exemplo</button>
     <div class="badge priv-l"><span class="ok-ic" aria-hidden="true">✓</span><span><b>O arquivo e as mensagens ficam no seu celular. Sem cadastro.</b> A análise é feita aqui no navegador. Só vão para o nosso servidor números gerais da conversa, para o ranking (dá para desligar), e os dados de pagamento, se você comprar. <a href="/privacidade">Entenda</a></span></div>
     ${anuncio('inicio')}
-    <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/como-exportar">Como exportar</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a><button type="button" class="lk-ck" data-ckpref>Preferências de cookies</button></nav>
+    <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/como-exportar">Como exportar</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a><button type="button" class="lk-ck" data-ckpref>Cookies: medição desligada</button></nav>
     <p class="small" style="text-align:center;margin:0">© 2026 Retrozap · Beyond the Work Ideas · CNPJ 69.746.447/0001-00</p>
   </section>`;
-  $('#comecar').onclick = () => v2Caminho(); ativaAnuncios();
+  $('#comecar').onclick = () => v2Caminho(); ativaAnuncios(); if (typeof marcaMedicao === 'function') marcaMedicao();
   $('#demo').onclick = () => { v2Ev('ob2_demo', {de: 'inicio'}); DUR = {}; run(state.modo === 'casal' ? demoCasal() : demoChat(), true); };
   view.querySelectorAll('[data-esc]').forEach(b => b.onclick = () => { const k = b.dataset.esc; setModo(k === 'casal' ? 'casal' : (state.ultimoGrupo || 'amigos')); const y = scrollY; inicio(); scrollTo(0, y); view.querySelector(`[data-esc="${k}"]`)?.focus({preventScroll: true}); });
   window.scrollTo(0,0);

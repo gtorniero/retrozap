@@ -3,9 +3,9 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const crypto = require('node:crypto').webcrypto;
 const head = fs.readFileSync(__dirname + '/prod_head.js','utf8').split('/* ---------- Uma página')[0];
-function client(choice='sim', safe=true){
+function client(choice='sim', safe=true, win={}){
  const storage = new Map([['rz_cookies',choice],['rz_marketing_v1',choice]]), hits=[], meta=[];
- const context={state:{sample:false},localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},location:{origin:'https://retrozap.com.br',pathname:'/'},window:{addEventListener(){},rzSafeMeasurementPage:()=>safe,rzMetaPurchase:(...x)=>meta.push(x),rzMetaEvent:(...x)=>meta.push(x)},dataLayer:hits};
+ const context={state:{sample:false},localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},location:{origin:'https://retrozap.com.br',pathname:'/'},window:Object.assign({addEventListener(){},rzSafeMeasurementPage:()=>safe,rzMetaPurchase:(...x)=>meta.push(x),rzMetaEvent:(...x)=>meta.push(x)},win),dataLayer:hits};
  vm.createContext(context);vm.runInContext(head,context);return {context,hits,meta,storage};
 }
 const id='a'.repeat(64);
@@ -19,14 +19,28 @@ for(const x of [client('nao'),client('sim',false)]){x.context.compraConfirmada({
 c=client();for(const m of [null,{id:'RZ-SEGREDO',valor:6.99,moeda:'BRL'},{id,valor:-1,moeda:'BRL'},{id,valor:6.99,moeda:'USD'}])c.context.compraConfirmada(m);assert.equal(c.hits.length,0);
 c=client();
 for(const event of ['view_offer','checkout_attempt','checkout_error'])c.context.evento(event,{offer_context:'video',payment_type:'pix',error_category:'network',email:'PRIVATE',ref:'PRIVATE',message:'PRIVATE',nomes:['PRIVATE']});
-assert.deepEqual(Array.from(c.hits,x=>x[1]),['view_offer','checkout_attempt','checkout_error']);
+// cada etapa do funil também vira o evento recomendado de e-commerce do GA4, com valor em BRL
+assert.deepEqual(Array.from(c.hits,x=>x[1]),['view_offer','view_item','checkout_attempt','begin_checkout','checkout_error']);
 assert(!JSON.stringify(c.hits).includes('PRIVATE'));
-assert.equal(c.hits[2][2].error_category,'network');
+assert.equal(c.hits[4][2].error_category,'network');
+assert.equal(c.hits[1][2].value,8.99);assert.equal(c.hits[1][2].currency,'BRL');assert.equal(c.hits[3][2].items[0].item_id,'rz-premium');
+c.hits.length=0;c.context.evento('pix_gerado');c.context.evento('cartao_aberto');
+assert.deepEqual(Array.from(c.hits,x=>[x[1],x[2].payment_type]),[['pix_gerado',undefined],['add_payment_info','pix'],['cartao_aberto',undefined],['add_payment_info','card']]);
 c.context.evento('checkout_error',{offer_context:'PRIVATE',payment_type:'PRIVATE',error_category:'PRIVATE'});
 assert.deepEqual(Object.keys(c.hits.at(-1)[2]),[]);
 c.storage.set('rz_cookies','nao');c.storage.set('rz_marketing_v1','nao');
 const before=c.hits.length;c.context.evento('checkout_attempt',{offer_context:'casal',payment_type:'card'});assert.equal(c.hits.length,before);
-console.log('OK: oferta, tentativa e erro distintos de compra; parâmetros limitados e revogação respeitada.');
+// a Meta recebe só o nome do evento e, no Lead, grupo/casal; nunca os parâmetros livres
+c=client();c.context.evento('final_visto',{modo:'casal',nome:'PRIVATE'});
+assert.deepEqual(JSON.parse(JSON.stringify(c.meta.at(-1))),['final_visto',false,{modo:'casal'}]);
+// Google Ads no GTM: rz_purchase com valor e id irreversível, só com aceite de marketing e GTM ligado
+c=client('sim',true,{RZ_GTM:1});c.context.compraConfirmada({id,valor:8.99,moeda:'BRL'});
+assert.deepEqual(JSON.parse(JSON.stringify(c.hits.find(x=>x.event==='rz_purchase'))),{event:'rz_purchase',value:8.99,currency:'BRL',transaction_id:id});
+assert.equal(c.hits.find(x=>x[1]==='purchase')[2].items[0].item_id,'rz-premium');
+// modo interno (?btw_interno=1): nada vai para GA4, Meta ou GTM
+c=client('sim',true,{RZ_INTERNO:true,RZ_GTM:1});c.context.evento('view_offer');c.context.compraConfirmada({id,valor:8.99,moeda:'BRL'});
+assert.equal(c.hits.length,0);assert.equal(c.meta.length,0);
+console.log('OK: oferta, tentativa e erro distintos de compra; e-commerce do GA4; rz_purchase; modo interno; parâmetros limitados e revogação respeitada.');
 (async()=>{
  const source=fs.readFileSync(__dirname+'/pix.js','utf8');
  const module=await import(require('node:url').pathToFileURL(__dirname+'/pix.js').href);
@@ -43,11 +57,19 @@ console.log('OK: oferta, tentativa e erro distintos de compra; parâmetros limit
  console.log('OK: consentimento, campos privados, URL segura, venda única, metadata de venda real, pendente e modo teste. Sem rede ou cobrança real.');
 })().catch(e=>{console.error(e);process.exitCode=1});
 // URLs de campanha continuam atribuíveis, mas pagamento/e-mail/fragmento nunca entram no GA4.
-const html=fs.readFileSync(__dirname+'/../../public/index.html','utf8');
+// confere o site recém-montado (fonte/retrozap-site) quando existe; senão, o publicado na raiz
+const montado=__dirname+'/../retrozap-site/public/index.html';
+const html=fs.readFileSync(fs.existsSync(montado)?montado:__dirname+'/../../public/index.html','utf8');
 const configScript=[...html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)].map(m=>m[1]).find(s=>s.includes("gtag('config', 'G-R8R1EN0KQN'"));
-const calls=[];
-vm.runInNewContext(configScript,{URL,Date,location:{href:'https://retrozap.com.br/?utm_source=instagram&utm_medium=paid_social&utm_campaign=teste_01&ref=SEGREDO&email=pessoa%40example.com#PRIVADO',origin:'https://retrozap.com.br',pathname:'/'},gtag:(...x)=>calls.push(x)});
-const cfg=calls.find(x=>x[0]==='config')[2];
+const config=(href,referrer)=>{const calls=[];vm.runInNewContext(configScript,{URL,Date,document:{referrer},location:{href,origin:'https://retrozap.com.br',pathname:'/'},gtag:(...x)=>calls.push(x)});return calls.find(x=>x[0]==='config')[2];};
+let cfg=config('https://retrozap.com.br/?utm_source=instagram&utm_medium=paid_social&utm_campaign=teste_01&ref=SEGREDO&email=pessoa%40example.com#PRIVADO','');
 assert.equal(cfg.page_title,'Retrozap');assert.equal(cfg.page_referrer,'');
 assert.equal(cfg.page_location,'https://retrozap.com.br/?utm_source=instagram&utm_medium=paid_social&utm_campaign=teste_01');
-console.log('OK: atribuição de campanha preservada, ref/e-mail/fragmento removidos dos parâmetros Google.');
+// quem indicou a visita: só a origem (busca/rede social deixam de cair em Direto), nunca o caminho
+cfg=config('https://retrozap.com.br/','https://www.google.com/search?q=retrospectiva+do+grupo');
+assert.equal(cfg.page_referrer,'https://www.google.com/');
+// nome de campanha com espaço/acento continua; UTM com e-mail sai
+cfg=config('https://retrozap.com.br/?utm_campaign=Black%20Friday%20A%C3%A7%C3%A3o&utm_source=pessoa%40example.com&gclid=abc','https://l.instagram.com/?u=x');
+assert.equal(new URL(cfg.page_location).searchParams.get('utm_campaign'),'Black Friday Ação');assert(!cfg.page_location.includes('example'));
+assert.equal(new URL(cfg.page_location).searchParams.get('gclid'),'abc');assert.equal(cfg.page_referrer,'https://l.instagram.com/');
+console.log('OK: atribuição de campanha e origem da visita preservadas, ref/e-mail/fragmento removidos dos parâmetros Google.');

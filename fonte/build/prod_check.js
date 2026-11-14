@@ -1,5 +1,46 @@
 
-(()=>{'use strict';const brand='retrozap';const key='btw_meta_subject_'+brand;function currentSubject(){const v=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith(key+'='))?.slice(key.length+1);return v&&/^[a-f0-9-]{36}$/.test(v)?v:localStorage.getItem(key)}function subject(){let id=currentSubject();if(!id){id=crypto.randomUUID();localStorage.setItem(key,id);document.cookie=key+'='+id+'; Max-Age=15552000; Secure; SameSite=Lax; Path=/; Domain=.'+brand+'.com.br'}return id;}function context(){try{if(localStorage.getItem('btw_capi_choice_v1')!=='yes')return null;let c;if(brand==='retrozap')c={version:1,marketing:localStorage.getItem('rz_marketing_v1')==='sim',at:Date.now()};else c=JSON.parse(localStorage.getItem(brand==='quiddo'?'qd_consent_v1':'sd_consent_v1')||'null');if(c?.marketing!==true||c.version!==1||!Number.isFinite(c.at))return null;const out={version:1,marketing:true,at:c.at,subject:subject()};const click=new URLSearchParams(location.search).get('fbclid');if(click&&/^[A-Za-z0-9_-]{20,200}$/.test(click)&&!document.cookie.split(';').map(x=>x.trim()).some(x=>x.startsWith('_fbc=')&&x.endsWith('.'+click)))document.cookie='_fbc=fb.1.'+Date.now()+'.'+click+'; Max-Age=7776000; Secure; SameSite=Lax; Path=/; Domain=.'+brand+'.com.br';for(const [key,name] of [['fbp','_fbp'],['fbc','_fbc']]){const v=document.cookie.split(';').map(s=>s.trim()).find(s=>s.startsWith(name+'='))?.slice(name.length+1);if(v&&/^fb\.\d\.\d{10,13}\.[A-Za-z0-9_-]{1,200}$/.test(v))out[key]=v}return out}catch{return null}}function revoke(){let id;try{id=currentSubject()}catch{}if(!id)return;const api=brand==='sportdna'?(window.SPORTDNA_PAYMENTS?.api||'')+'/meta/revoke':'/api/meta/revoke';void fetch(api,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subject:id}),keepalive:true}).catch(()=>{});}window.BTWMetaConsent=Object.freeze({context,revoke});window.addEventListener('storage',e=>{if(['rz_marketing_v1','qd_consent_v1','sd_consent_v1',null].includes(e.key)&&!context())revoke()});})();
+(()=>{'use strict';const brand='retrozap';const key='btw_meta_subject_'+brand;function currentSubject(){const v=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith(key+'='))?.slice(key.length+1);return v&&/^[a-f0-9-]{36}$/.test(v)?v:localStorage.getItem(key)}function subject(){let id=currentSubject();if(!id){id=crypto.randomUUID();localStorage.setItem(key,id);document.cookie=key+'='+id+'; Max-Age=15552000; Secure; SameSite=Lax; Path=/; Domain=.'+brand+'.com.br'}return id;}function context(){try{if(window.RZ_INTERNO)return null;if(localStorage.getItem('btw_capi_choice_v1')!=='yes')return null;let c;if(brand==='retrozap')c={version:1,marketing:localStorage.getItem('rz_marketing_v1')==='sim',at:Date.now()};else c=JSON.parse(localStorage.getItem(brand==='quiddo'?'qd_consent_v1':'sd_consent_v1')||'null');if(c?.marketing!==true||c.version!==1||!Number.isFinite(c.at))return null;const out={version:1,marketing:true,at:c.at,subject:subject()};const click=new URLSearchParams(location.search).get('fbclid');if(click&&/^[A-Za-z0-9_-]{20,200}$/.test(click)&&!document.cookie.split(';').map(x=>x.trim()).some(x=>x.startsWith('_fbc=')&&x.endsWith('.'+click)))document.cookie='_fbc=fb.1.'+Date.now()+'.'+click+'; Max-Age=7776000; Secure; SameSite=Lax; Path=/; Domain=.'+brand+'.com.br';for(const [key,name] of [['fbp','_fbp'],['fbc','_fbc']]){const v=document.cookie.split(';').map(s=>s.trim()).find(s=>s.startsWith(name+'='))?.slice(name.length+1);if(v&&/^fb\.\d\.\d{10,13}\.[A-Za-z0-9_-]{1,200}$/.test(v))out[key]=v}return out}catch{return null}}function revoke(){let id;try{id=currentSubject()}catch{}if(!id)return;const api=brand==='sportdna'?(window.SPORTDNA_PAYMENTS?.api||'')+'/meta/revoke':'/api/meta/revoke';void fetch(api,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subject:id}),keepalive:true}).catch(()=>{});}window.BTWMetaConsent=Object.freeze({context,revoke});window.addEventListener('storage',e=>{if(['rz_marketing_v1','qd_consent_v1','sd_consent_v1',null].includes(e.key)&&!context())revoke()});})();
+
+/* ---------- Aviso de cookies (igual no app e nas páginas de conteúdo) ----------
+   Padrão BTW (14/11/2026): uma frase curta + "Saiba mais"; "Aceitar" é o botão principal (cor da marca, à direita,
+   foco inicial) e "Recusar" é o secundário, na mesma barra e do mesmo tamanho. Não responder = recusa.
+   As chaves rz_cookies, rz_marketing_v1 e btw_capi_choice_v1 e a revogação da Conversions API não mudam. */
+function medicaoLigada(){
+  try { return localStorage.getItem('rz_cookies') === 'sim' && localStorage.getItem('rz_marketing_v1') === 'sim'; } catch { return false; }
+}
+// link do rodapé com o estado atual; tocar nele reabre o aviso (revogar é tão fácil quanto aceitar)
+function marcaMedicao(){
+  const t = 'Cookies: medição ' + (medicaoLigada() ? 'ligada' : 'desligada');
+  document.querySelectorAll('[data-ckpref]').forEach(b => { if (b.textContent !== t) b.textContent = t; });
+}
+function folgaCookies(){
+  // o fim da página ganha espaço para o último botão nunca ficar embaixo do aviso (no app, ajustaAcao também sobe a barra fixa)
+  const ck = document.querySelector('.cookies');
+  const pb = ck && ck.isConnected ? Math.round(ck.getBoundingClientRect().height + 24) + 'px' : '';
+  if (document.body.style.paddingBottom !== pb) document.body.style.paddingBottom = pb;
+}
+function avisoCookies(forcar = false){
+  const aberto = document.querySelector('.cookies');
+  if (aberto){ if (forcar) try { aberto.querySelector('[data-ck="sim"]').focus(); } catch {} return; }
+  try { if (!forcar && localStorage.getItem('btw_capi_choice_v1') && localStorage.getItem('rz_cookies') && localStorage.getItem('rz_marketing_v1')) return; } catch {}
+  const antes = document.activeElement, noApp = !!document.querySelector('.app');
+  const b = document.createElement('section'); b.className = 'cookies'; b.setAttribute('aria-label', 'Aviso de cookies');
+  b.innerHTML = '<p>Usamos cookies do Google e da Meta para medir visitas, anúncios e compras. Sua conversa continua só no seu celular. '
+    + (noApp ? '<a href="/privacidade#medicao" target="_blank" rel="noopener">Saiba mais<span class="sr-only"> (abre em outra aba)</span></a>' : '<a href="/privacidade#medicao">Saiba mais</a>')
+    + '</p><div class="ck-bts"><button class="ck-bt ck-nao" type="button" data-ck="nao">Recusar</button><button class="ck-bt ck-sim" type="button" data-ck="sim">Aceitar</button></div>';
+  b.querySelectorAll('[data-ck]').forEach(bt => bt.onclick = () => {
+    const sim = bt.dataset.ck === 'sim';try{localStorage.setItem('btw_capi_choice_v1',sim?'yes':'no')}catch{} if(!sim)window.BTWMetaConsent?.revoke(); try { localStorage.setItem('rz_cookies', bt.dataset.ck); } catch {}
+    try { localStorage.setItem('rz_marketing_v1', bt.dataset.ck); window.dispatchEvent(new Event('rz:marketing-consent'));if(sim)window.BTWMetaConsent?.context(); } catch {}
+    try { gtag('consent', 'update', {ad_storage: sim ? 'granted' : 'denied', ad_user_data: sim ? 'granted' : 'denied', ad_personalization: sim ? 'granted' : 'denied', analytics_storage: sim ? 'granted' : 'denied'}); } catch {}
+    b.remove(); document.body.classList.remove('has-cookies'); folgaCookies(); marcaMedicao();
+    try { if (antes && antes !== document.body && antes.isConnected) antes.focus({preventScroll: true}); } catch {}
+  });
+  document.body.appendChild(b); document.body.classList.add('has-cookies'); folgaCookies(); // espaço extra para o aviso não cobrir nenhum botão
+  try { b.querySelector('[data-ck="sim"]').focus({preventScroll: true}); } catch {}
+}
+document.addEventListener('click', e => { if (e.target.closest && e.target.closest('[data-ckpref]')) avisoCookies(true); });
+addEventListener('resize', folgaCookies);
+
 /* =====================================================================
    CONFIGURAÇÃO — troque só estes valores antes de publicar
    ===================================================================== */
@@ -35,25 +76,41 @@ function evento(nome, params = {}){
   if (['pix','card'].includes(params.payment_type)) p.payment_type = params.payment_type;
   if (['invalid_email','network','unavailable','rejected','invalid_response'].includes(params.error_category)) p.error_category = params.error_category;
   if (exemplo) p.exemplo = true;
-  try { if (window.rzMetaEvent && marketing) window.rzMetaEvent(nome, exemplo); } catch {}
-  try { if (analytics && configurado(CONFIG.GA_ID)) gtag('event', nome, p); } catch {}
+  if (window.RZ_INTERNO) return; // modo interno (?btw_interno=1): nada de GA4, pixel ou GTM
+  // a Meta recebe só o nome do evento (e grupo/casal no Lead); nunca os parâmetros livres
+  try { if (window.rzMetaEvent && marketing) window.rzMetaEvent(nome, exemplo, {modo: p.modo}); } catch {}
+  try { if (analytics && configurado(CONFIG.GA_ID)){ gtag('event', nome, p); if (GA_ECOMMERCE[nome] && !exemplo) gtag('event', GA_ECOMMERCE[nome], itemPremium(nome)); } } catch {}
   try { if (marketing && window.RZ_GTM && !exemplo) dataLayer.push(Object.assign({event: 'rz_' + nome}, p)); } catch {}
 }
+// eventos recomendados de e-commerce do GA4, disparados junto com os nossos (os nossos continuam iguais)
+const PRECO_PREMIUM = 8.99;
+const GA_ECOMMERCE = {view_offer: 'view_item', checkout_attempt: 'begin_checkout', pix_gerado: 'add_payment_info', cartao_aberto: 'add_payment_info'};
+function itemPremium(nome){
+  const d = {currency: 'BRL', value: PRECO_PREMIUM, items: [{item_id: 'rz-premium', item_name: 'Retrozap Premium', price: PRECO_PREMIUM, quantity: 1}]};
+  if (nome === 'pix_gerado') d.payment_type = 'pix';
+  if (nome === 'cartao_aberto') d.payment_type = 'card';
+  return d;
+}
 function compraConfirmada(m){
-  if (!m || !/^[a-f0-9]{64}$/.test(m.id) || !Number.isFinite(m.valor) || m.valor <= 0 || m.moeda !== 'BRL') return;
+  if (!m || !/^[a-f0-9]{64}$/.test(m.id) || !Number.isFinite(m.valor) || m.valor <= 0 || m.moeda !== 'BRL' || window.RZ_INTERNO) return;
   try {
     if (localStorage.getItem('rz_cookies') !== 'sim' || localStorage.getItem('rz_venda_' + m.id)) return;
     // Não tentar medir em URL sensível; o servidor só fornece m para venda real aprovada.
     if (!window.rzSafeMeasurementPage?.()) return;
     localStorage.setItem('rz_venda_' + m.id, '1');
-    gtag('event', 'purchase', {transaction_id:m.id,value:m.valor,currency:'BRL',page_title:'Retrozap',page_location:location.origin+location.pathname});
-    if (localStorage.getItem('rz_marketing_v1') === 'sim') window.rzMetaPurchase?.(m.valor, m.id);
+    gtag('event', 'purchase', {transaction_id:m.id,value:m.valor,currency:'BRL',items:[{item_id:'rz-premium',item_name:'Retrozap Premium',price:m.valor,quantity:1}],page_title:'Retrozap',page_location:location.origin+location.pathname});
+    if (localStorage.getItem('rz_marketing_v1') === 'sim'){
+      window.rzMetaPurchase?.(m.valor, m.id); // mesmo event_id da Conversions API (deduplicação)
+      // para a conversão do Google Ads no GTM: valor e id irreversível da venda, nada mais
+      if (window.RZ_GTM) dataLayer.push({event: 'rz_purchase', value: m.valor, currency: 'BRL', transaction_id: m.id});
+    }
   } catch {} // Sem armazenamento, não arriscar duplicar venda.
 }
 
 /* ---------- Uma página por tela: cada tela conta como página vista ---------- */
 function ir(rota){
-  gtag('set', {page_title:'Retrozap',page_location:location.origin+rota,page_referrer:''});
+  // a página anterior é uma rota do próprio site (sem parâmetros), para o GA não perder a origem da visita
+  gtag('set', {page_title:'Retrozap',page_location:location.origin+rota,page_referrer:location.origin+location.pathname});
   if (location.pathname !== rota) history.pushState({rota}, '', rota); // o GA conta a troca de tela como page_view
 }
 window.addEventListener('popstate', () => {
@@ -61,23 +118,7 @@ window.addEventListener('popstate', () => {
   voltarPilha();
 });
 
-/* ---------- Aviso de cookies ---------- */
-function avisoCookies(forcar = false){
-  if (document.querySelector('.cookies')) return;
-  try { if (!forcar && localStorage.getItem('btw_capi_choice_v1') && localStorage.getItem('rz_cookies') && localStorage.getItem('rz_marketing_v1')) return; } catch {}
-  const b = document.createElement('div'); b.className = 'cookies';
-  b.innerHTML = '<span>Usamos cookies para medir visitas e anúncios. Com seu aceite, enviamos à Meta a compra confirmada e uma versão protegida do e-mail para associá-la aos anúncios. Suas mensagens nunca saem do celular. <a href="/privacidade">Privacidade</a></span> <button class="btn btn-ghost mini" type="button" data-ck="nao">Recusar</button> <button class="btn btn-main mini" type="button" data-ck="sim">Aceitar</button>';
-  b.querySelectorAll('[data-ck]').forEach(bt => bt.onclick = () => {
-    const sim = bt.dataset.ck === 'sim';try{localStorage.setItem('btw_capi_choice_v1',sim?'yes':'no')}catch{} if(!sim)window.BTWMetaConsent?.revoke(); try { localStorage.setItem('rz_cookies', bt.dataset.ck); } catch {}
-    try { localStorage.setItem('rz_marketing_v1', bt.dataset.ck); window.dispatchEvent(new Event('rz:marketing-consent'));if(sim)window.BTWMetaConsent?.context(); } catch {}
-    try { gtag('consent', 'update', {ad_storage: sim ? 'granted' : 'denied', ad_user_data: sim ? 'granted' : 'denied', ad_personalization: sim ? 'granted' : 'denied', analytics_storage: sim ? 'granted' : 'denied'}); } catch {}
-    b.remove(); document.body.classList.remove('has-cookies'); });
-  document.body.appendChild(b); document.body.classList.add('has-cookies'); // espaço extra para o aviso não cobrir nenhum botão
-}
-
-// Permite mudar/revogar a escolha sem apagar todo o site ou o código Premium.
-// Fica como link discreto no rodapé do início (data-ckpref), não solto em todas as telas.
-document.addEventListener('click', e => { if (e.target.closest && e.target.closest('[data-ckpref]')) avisoCookies(true); });
+/* ---------- Aviso de cookies: fica em consentimento.js (o mesmo das páginas de conteúdo) ---------- */
 
 /* ---------- utilidades ---------- */
 const $ = s => document.querySelector(s);
@@ -115,7 +156,7 @@ function anunciaTela(k){
     escondeEmojis(v);
     const h = v.querySelector('h1') || v.querySelector('h2');
     const nome = (h?.textContent || '').replace(/\s+/g, ' ').trim();
-    document.title = k === 'inicio' || !nome ? 'Retrozap · Retrospectiva do grupo de WhatsApp' : `${nome.slice(0, 60)} · Retrozap`;
+    document.title = k === 'inicio' || !nome ? 'Retrospectiva do grupo de WhatsApp 2026 · Retrozap' : `${nome.slice(0, 60)} · Retrozap`;
     if (primeira || document.querySelector('.patro')) return; // no primeiro carregamento não mexe no foco
     if (h){ if (!h.hasAttribute('tabindex')) h.setAttribute('tabindex', '-1'); h.focus({preventScroll: true}); } else v.focus({preventScroll: true});
   });
@@ -810,14 +851,26 @@ async function precisaPagar(){
 const ANUNCIOS = {inicio: '', categorias: '', intervalo: '', fim: ''};
 // ?simular_anuncios=1 mostra caixas de exemplo no lugar dos anúncios (para ver o layout; nada é carregado do Google)
 const SIMULA_ANUNCIOS = /[?&]simular_anuncios=1/.test(location.search);
+// Anúncio só depois do resultado: nunca no início (landing dos anúncios pagos), nas categorias, no intervalo comercial,
+// na oferta ou no pagamento. Para ligar o bloco do fim, basta preencher ANUNCIOS.fim.
+const ANUNCIO_PERMITIDO = ['fim'];
 function anuncio(onde){
+  if (!ANUNCIO_PERMITIDO.includes(onde)) return '';
   const slot = ANUNCIOS[onde];
   const semPremium = !lsGet('rz_acesso') && state.planoTeste !== 'premium'; // grupo de exemplo também vê anúncio
   if (SIMULA_ANUNCIOS && semPremium) return `<div class="anuncio"><p class="small" style="margin:0">Publicidade</p><div class="ad-sim">Anúncio de exemplo<br><small>${onde} · responsivo</small></div></div>`;
   if (!slot || !semPremium || AMBIENTE_TESTE) return '';
   return `<div class="anuncio" data-anuncio><p class="small" style="margin:0">Publicidade</p><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4039247360984618" data-ad-slot="${slot}" data-ad-format="auto" data-full-width-responsive="true"></ins></div>`;
 }
-function ativaAnuncios(){ view.querySelectorAll('[data-anuncio] ins:not([data-adsbygoogle-status])').forEach(() => { try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch {} }); }
+// o script do AdSense só carrega quando um bloco manual aparece numa tela permitida (sem ?client=, para não ligar os anúncios automáticos no app)
+function carregaAdSense(){
+  if (window.RZ_ADSENSE || window.RZ_INTERNO || lsGet('rz_acesso') || AMBIENTE_TESTE) return false;
+  window.RZ_ADSENSE = 1; const s = document.createElement('script'); s.async = true; s.crossOrigin = 'anonymous'; s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js'; document.head.appendChild(s); return true;
+}
+function ativaAnuncios(){
+  const blocos = view.querySelectorAll('[data-anuncio] ins:not([data-adsbygoogle-status])'); if (!blocos.length) return;
+  carregaAdSense(); blocos.forEach(() => { try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch {} });
+}
 const AMBIENTE_TESTE = !/(^|\.)retrozap\.com\.br$|^retrozap-v2\.[^.]+\.workers\.dev$|^localhost$|^127\./.test(location.hostname) || (/^localhost$|^127\./.test(location.hostname) && /[?&]plano_teste=1/.test(location.search)); // nunca no site oficial
 if (AMBIENTE_TESTE) state.planoTeste = 'gratis';
 const premiumLocal = () => state.planoTeste ? state.planoTeste === 'premium' : !!(state.sample || lsGet('rz_acesso'));
@@ -1061,10 +1114,10 @@ function inicio(){
     <button class="btn btn-ghost" id="demo">👀 Experimentar com um exemplo</button>
     <div class="badge priv-l"><span class="ok-ic" aria-hidden="true">✓</span><span><b>O arquivo e as mensagens ficam no seu celular. Sem cadastro.</b> A análise é feita aqui no navegador. Só vão para o nosso servidor números gerais da conversa, para o ranking (dá para desligar), e os dados de pagamento, se você comprar. <a href="/privacidade">Entenda</a></span></div>
     ${anuncio('inicio')}
-    <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/como-exportar">Como exportar</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a><button type="button" class="lk-ck" data-ckpref>Preferências de cookies</button></nav>
+    <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/como-exportar">Como exportar</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a><button type="button" class="lk-ck" data-ckpref>Cookies: medição desligada</button></nav>
     <p class="small" style="text-align:center;margin:0">© 2026 Retrozap · Beyond the Work Ideas · CNPJ 69.746.447/0001-00</p>
   </section>`;
-  $('#comecar').onclick = () => v2Caminho(); ativaAnuncios();
+  $('#comecar').onclick = () => v2Caminho(); ativaAnuncios(); if (typeof marcaMedicao === 'function') marcaMedicao();
   $('#demo').onclick = () => { v2Ev('ob2_demo', {de: 'inicio'}); DUR = {}; run(state.modo === 'casal' ? demoCasal() : demoChat(), true); };
   view.querySelectorAll('[data-esc]').forEach(b => b.onclick = () => { const k = b.dataset.esc; setModo(k === 'casal' ? 'casal' : (state.ultimoGrupo || 'amigos')); const y = scrollY; inicio(); scrollTo(0, y); view.querySelector(`[data-esc="${k}"]`)?.focus({preventScroll: true}); });
   window.scrollTo(0,0);
@@ -1357,6 +1410,7 @@ async function run(text, sample, retomando){
   if (sample) state.grupo = state.modo === 'casal' ? 'Nosso Cantinho 💕' : 'Turma do Churras'; else if (!state.grupo) state.grupo = nomeDaConversa(text);
   if (!retomando){ SESS.put('conversa', {text, dur: DUR, grupo: state.grupo, modo: state.modo, how: state.how, sample}); try { sessionStorage.removeItem('rz_esc'); } catch {} }
   if (!retomando) evento('upload_ok', {mensagens: msgs.length, modo: state.modo, exemplo: !!sample});
+  state.finalMedido = false;
   state.raw = msgs; state.alias = {}; state.hidden = new Set(); state.ctx = ''; state.intervaloVisto = false; state.spoilerVisto = false; state.livreUsadas = 0; state.palavra26 = null; state.intervaloAd = false;
   state.left = new Set(msgs.sys.filter(e => e.type === 'saiu' || e.type === 'removido').map(e => e.who));
   state.changed = new Set(msgs.sys.filter(e => e.type === 'numero').map(e => e.who));
@@ -1996,7 +2050,7 @@ function rodaFilaImg(){
 const liberado = () => premiumLocal() || (!state.planoTeste && !!state.premOk);
 function fimTela(semFesta){
   anchor(false);
-  ir('/fim'); if (!semFesta) evento('final_visto', {modo: state.modo});
+  ir('/fim'); if (!semFesta && !state.finalMedido){ state.finalMedido = true; evento('final_visto', {modo: state.modo}); }
   pilha(() => fimTela(true), 'fim');
   setSteps(3);
   const d = state.data, casal = state.modo === 'casal' && d.people.length === 2, so26 = !!state.compD, livre = liberado();
@@ -2300,7 +2354,7 @@ function campeao(){
 }
 function final(semFesta){
   anchor(true);
-  ir('/destaque'); if (!semFesta) evento('final_visto', {modo: state.modo});
+  ir('/destaque'); if (!semFesta && !state.finalMedido){ state.finalMedido = true; evento('final_visto', {modo: state.modo}); }
   pilha(() => final(), 'destaque');
   setSteps(3);
   const d = state.data, {champ} = campeao(), b = state.bonus || [], temBonus = b.length && !state.bonusShown;
