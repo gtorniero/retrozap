@@ -1116,8 +1116,7 @@ function inicio(){
   view.innerHTML = `
   <section class="screen hero">
     ${ORIGEM ? `<div class="chegou" role="note"><span aria-hidden="true">👋</span><span>${cs ? 'Um casal te mandou a retrospectiva deles? <b>Agora é a vez de vocês.</b>' : 'Te mandaram a retrospectiva de um grupo? <b>Agora é a vez do seu.</b> Descubra quem é o tagarela, o fantasma e o boca-suja.'}</span></div>` : ''}
-    <p class="eyebrow">${cs ? 'A retrospectiva dos casais do Brasil' : 'A retrospectiva oficial dos grupos do Brasil'}</p>
-    <h1 class="h-home">${cs ? 'Vocês dois em 2026.' : 'Seu grupo em 2026.'} <em>Com troféu pra cada um.</em></h1>
+    <h1 class="h-home"><span class="eyebrow h-eye">${cs ? 'A retrospectiva do casal no WhatsApp' : 'A retrospectiva do seu grupo de WhatsApp'}<span class="sr-only">:</span></span> ${cs ? 'Vocês dois em 2026.' : 'Seu grupo em 2026.'} <em>Com troféu pra cada um.</em></h1>
     <div class="escolha" role="group" aria-label="O que você quer analisar?">
       <button type="button" class="esc esc-g" data-esc="grupo" aria-pressed="${!cs}"><span class="esc-ic" aria-hidden="true">${logoSVG('#1A0B2E', '#FFC23C')}</span><b>Grupos</b><span>amigos, família, trampo, condomínio</span></button>
       <button type="button" class="esc esc-c" data-esc="casal" aria-pressed="${cs}"><i class="novo">Novo</i><span class="esc-ic" aria-hidden="true"><svg viewBox="0 0 120 120" focusable="false">${icHeart('#FFF3EC', '#5E0B2B', 1, 0, 0, 7)}</svg></span><b>Casais</b><span>vocês dois em troféus</span></button>
@@ -1134,7 +1133,7 @@ function inicio(){
     <button class="btn btn-ghost" id="demo">👀 Experimentar com um exemplo</button>
     <div class="badge priv-l"><span class="ok-ic" aria-hidden="true">✓</span><span><b>O arquivo e as mensagens ficam no seu celular. Sem cadastro.</b> A análise é feita aqui no navegador. Só vão para o nosso servidor números gerais da conversa, para o ranking (dá para desligar), e os dados de pagamento, se você comprar. <a href="/privacidade">Entenda</a></span></div>
     ${anuncio('inicio')}
-    <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/como-exportar">Como exportar</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a><button type="button" class="lk-ck" data-ckpref>Cookies: medição desligada</button></nav>
+    <nav class="rodape" aria-label="Links do site"><a href="/privacidade" class="seguro">🔒 É seguro?</a><a href="/como-funciona">Como funciona</a><a href="/como-exportar">Como exportar</a><a href="/perguntas-frequentes">Perguntas frequentes</a><a href="/blog/">Blog</a><a href="/ideias">Envie sua ideia</a><a href="/sobre">Sobre</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos de uso</a><a href="/contato">Contato</a><a href="/amigo-secreto">Sorteio de amigo secreto</a><a href="/blog/nomes-para-grupo-de-whatsapp">Nomes para grupo</a><button type="button" class="lk-ck" data-ckpref>Cookies: medição desligada</button></nav>
     <p class="small" style="text-align:center;margin:0">© 2026 Retrozap · Beyond the Work Ideas · CNPJ 69.746.447/0001-00</p>
   </section>`;
   $('#comecar').onclick = () => v2Caminho(); ativaAnuncios(); if (typeof marcaMedicao === 'function') marcaMedicao();

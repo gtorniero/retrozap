@@ -4,13 +4,120 @@ COBRANCA_PUBLICA = True
 # Google Tag Manager (pixels de mídia paga: Meta, Google Ads, TikTok). Vazio = desligado. Ex.: 'GTM-ABC1234'
 GTM_ID = 'GTM-NMLZBBQS'
 CTA = '<p><a class="cta" href="/">Fazer a retrospectiva do meu grupo</a></p>'
+import ferramentas as _fer  # gerador de nomes e sorteio de amigo secreto (páginas de busca)
 
 # Perguntas rápidas do artigo da retrospectiva 2026 (visíveis no texto e no FAQPage)
 FAQ_RETRO_2026 = [
+ ('O WhatsApp tem retrospectiva?', 'Não. O WhatsApp não tem uma retrospectiva oficial nem mostra estatísticas do grupo. Dá para fazer uma com a conversa exportada: o Retrozap lê o arquivo no seu navegador e monta os números do ano, os prêmios e os cards.'),
+ ('Como fazer a retrospectiva do WhatsApp?', 'Exporte a conversa do grupo sem mídia (toque no nome do grupo e em Exportar conversa), abra o retrozap.com.br e escolha o arquivo. Os números e os prêmios aparecem em menos de um minuto.'),
+ ('Dá para fazer a retrospectiva de um casal?', 'Dá. No início do Retrozap, escolha Casais e use a conversa de vocês dois. A retrospectiva de casal faz parte do acesso ilimitado.'),
  ('Quanto custa?', 'A retrospectiva do primeiro grupo é grátis. Para fazer outros grupos e a retrospectiva de casal, o acesso ilimitado custa R$ 13,99, pago uma vez só, no Pix ou no cartão.'),
  ('As mensagens saem do celular?', 'Não. O arquivo é lido pelo seu próprio navegador. Mensagens, nomes e telefones não são enviados para nenhum servidor.'),
  ('Funciona no iPhone e no Android?', 'Sim. O site aceita o arquivo .zip ou .txt que o WhatsApp gera nos dois e também funciona no computador.'),
  ('Dá para refazer depois?', 'Dá. Exporte a conversa de novo no fim de dezembro e faça outra vez para pegar o ano inteiro.')]
+
+# ---------- páginas de busca (14/11/2026): tabelas e perguntas visíveis que também viram FAQPage ----------
+import html as _hh
+def FAQ_BLOCO(faq, titulo='Perguntas frequentes'):
+    return f'<h2 id="perguntas">{titulo}</h2>' + ''.join(f'<h3>{q}</h3><p>{a}</p>' for q, a in faq)
+def TABELA(legenda, cab, linhas):
+    """Tabela acessível: legenda, cabeçalho de coluna e a 1ª célula de cada linha como cabeçalho de linha."""
+    return (f'<table><caption>{legenda}</caption><thead><tr>' + ''.join(f'<th scope="col">{c}</th>' for c in cab) + '</tr></thead><tbody>'
+            + ''.join('<tr><th scope="row">' + l[0] + '</th>' + ''.join(f'<td>{x}</td>' for x in l[1:]) + '</tr>' for l in linhas) + '</tbody></table>')
+
+RISADAS = [
+ ('k', 'Um k sozinho é quase um ponto final: "entendi". Pode soar seco ou irônico.', 'seco'),
+ ('kk', 'Achou engraçadinho, sem exagero.', 'leve'),
+ ('kkkk', 'A risada padrão do Brasil: riu de verdade.', 'médio'),
+ ('kkkkkkkkk', 'Riu alto. Quanto mais k, maior a risada.', 'forte'),
+ ('KKKKKKK', 'Em maiúsculas é gargalhada, de chorar.', 'muito forte'),
+ ('kkkj, kkkjkkj', 'O j é o dedo escorregando de tanto rir (no teclado, ele fica do lado do k). Virou estilo.', 'forte'),
+ ('kkkjsjsj, ksksks', 'Risada descontrolada, com letras aleatórias. Comum entre quem é mais novo.', 'muito forte'),
+ ('rs', 'O mínimo de "risos". Simpatia, às vezes só educação.', 'leve'),
+ ('rsrs', 'Risada contida e educada. Muito comum no grupo da família.', 'leve'),
+ ('rsrsrsrs', 'Achou graça de verdade, mas sem gargalhar.', 'médio'),
+ ('haha', 'Risada curta e neutra. Boa para o grupo do trabalho.', 'leve'),
+ ('hahaha', 'A risada universal, entendida em vários idiomas.', 'médio'),
+ ('HAHAHAHA', 'Gargalhada escandalosa.', 'forte'),
+ ('hehe', 'Risadinha: timidez, malícia ou "não achei tanta graça".', 'leve'),
+ ('hihi', 'Risada tímida e fofa.', 'leve'),
+ ('huehue', 'A risada da zoeira, que ficou famosa nos jogos online.', 'brincalhão'),
+ ('hauahau, ashuashua', 'O teclado esmagado: ninguém escreve isso calmo.', 'forte'),
+ ('jajaja', 'O "hahaha" do espanhol (lá o j tem som de h). Aqui aparece de brincadeira.', 'médio'),
+ ('lol', 'Sigla em inglês de "laughing out loud" (rindo alto). Mais comum na internet gringa.', 'leve'),
+ ('😂 <span class="small">(lágrimas de alegria)</span>', 'O emoji clássico da risada.', 'forte'),
+ ('🤣 <span class="small">(rolando de rir)</span>', 'Um degrau acima do 😂.', 'muito forte'),
+ ('💀 <span class="small">(caveira)</span>', '"Morri de rir." Muito usado por quem é mais novo.', 'forte'),
+ ('"morri", "socorro", "tô chorando"', 'Quando as letras já não dão conta da risada.', 'máximo'),
+]
+RISADAS_TABELA = TABELA('As formas de rir por escrito mais comuns nos grupos brasileiros, da mais seca à mais escandalosa.', ['Risada', 'O que quer dizer', 'Tom'], RISADAS)
+
+FAQ_KKKK = [
+ ('O que significa kkkk?', 'Kkkk é a risada escrita mais usada no Brasil. A letra k se lê "cá", então kkkk soa como "cácácá", uma gargalhada. Quanto mais k, maior a risada: kk é um sorriso e kkkkkkkk é rir alto.'),
+ ('O que significa rsrs?', 'Rsrs é a abreviação de "risos". É uma risada mais contida e educada, comum no grupo da família e entre quem usa a internet há mais tempo. Às vezes serve só para deixar a frase mais leve.'),
+ ('O que significa hahaha?', 'Hahaha imita o som da gargalhada e é entendida em vários idiomas. No Brasil, soa um pouco mais medida que o kkkk e aparece muito em conversas de trabalho.'),
+ ('Qual a diferença entre kkkk, rsrs e hahaha?', 'O tom. Kkkk é a risada solta dos amigos, rsrs é a risada educada (às vezes só simpatia) e hahaha é a mais neutra, que cabe em qualquer conversa.'),
+ ('O que significa kkkj?', 'É kkkk com o dedo escorregando: no teclado do celular, o j fica do lado do k. Quem ri muito acaba errando a tecla, e o kkkj virou um estilo de risada.'),
+ ('Um k sozinho é falta de educação?', 'Pode soar seco. Um "k" isolado costuma querer dizer "entendi" ou mostrar ironia. Em conversa séria, prefira responder com palavras.'),
+ ('Como saber quem mais ri no grupo do WhatsApp?', 'Exporte a conversa do grupo e abra no Retrozap. O prêmio Rei do Kkkk mostra quem tem a maior porcentagem de mensagens com risada. A conversa é lida no celular e não sai dele.'),
+]
+
+GIRIAS_SIGLAS = [
+ ('vc', 'Você. <i>"Vc vem hoje?"</i>'), ('tb, tbm', 'Também. <i>"Eu tbm quero."</i>'), ('pq', 'Por que ou porque. <i>"Pq ninguém respondeu?"</i>'),
+ ('q, oq', 'Que, o que. <i>"Oq aconteceu?"</i>'), ('blz', 'Beleza: tudo certo, combinado. <i>"Blz, te espero."</i>'),
+ ('vlw', 'Valeu: obrigado. <i>"Vlw pela carona!"</i>'), ('flw', 'Falou: tchau, até mais.'), ('pfv, pfvr', 'Por favor.'),
+ ('obg', 'Obrigado ou obrigada.'), ('msg', 'Mensagem. <i>"Vi sua msg agora."</i>'), ('hj', 'Hoje.'), ('td', 'Tudo.'),
+ ('tdb', 'Tudo bem? <i>"Oi, tdb?"</i>'), ('sdds', 'Saudades. <i>"Sdds de vcs!"</i>'), ('bjs, abs', 'Beijos, abraços: o jeito de se despedir.'),
+ ('fds', 'Fim de semana. <i>"Bora no fds?"</i> Em outro contexto, pode ser palavrão.'), ('msm', 'Mesmo. <i>"Sério msm?"</i>'),
+ ('cmg, ctg', 'Comigo, contigo. <i>"Vem cmg?"</i>'), ('dps, agr', 'Depois, agora. <i>"Respondo dps."</i>'), ('kd', 'Cadê. <i>"Kd vocês?"</i>'),
+ ('qnd', 'Quando.'), ('vdd', 'Verdade. <i>"Vdd, esqueci."</i>'), ('ctz', 'Certeza. <i>"Tem ctz?"</i>'), ('dnv', 'De novo.'),
+ ('mt, mto', 'Muito.'), ('ngm', 'Ninguém. <i>"Ngm vai?"</i>'), ('nd', 'Nada.'), ('n, nn', 'Não. Repetido, é um não bem firme.'),
+ ('s, ss', 'Sim. <i>"Ss, pode ser."</i>'), ('pdc', 'Pode crer: concordo, combinado.'), ('sla', 'Sei lá. <i>"Sla, vê aí."</i>'),
+ ('slk', '"Cê é louco" (se é loko): espanto ou admiração. <i>"Slk, que golaço!"</i>'), ('mds', 'Meu Deus: surpresa ou indignação.'),
+ ('plmds', 'Pelo amor de Deus.'), ('tmj', 'Tamo junto: apoio, parceria. <i>"Qualquer coisa me chama, tmj."</i>'),
+ ('sqn', 'Só que não: ironia. <i>"Amo segunda-feira, sqn."</i>'), ('pprt', 'Papo reto: a verdade sem rodeio.'),
+ ('tlgd', 'Tá ligado? Entendeu?'), ('aff', 'Impaciência ou tédio. <i>"Aff, choveu de novo."</i>'), ('mlk', 'Moleque: menino, ou um amigo.'),
+ ('amg', 'Amigo ou amiga.'), ('pls', 'Please: por favor, em inglês.'),
+]
+GIRIAS_CONVERSA = [
+ ('bora', 'Vamos. <i>"Bora no churras?"</i> Também vira o furo quando ninguém vai.'), ('partiu', 'Vamos agora. <i>"Partiu praia!"</i>'),
+ ('sextou', 'Chegou a sexta-feira: hora de relaxar.'), ('mano, mana', 'Tratamento entre amigos, de qualquer idade.'),
+ ('parça', 'Parceiro: amigo de confiança.'), ('mó', 'Muito, maior. <i>"Mó calor hoje."</i>'),
+ ('bagulho', 'Coisa, qualquer coisa. <i>"Que bagulho é esse?"</i>'), ('firmeza', 'Tudo certo; com interrogação, é "tudo bem?".'),
+ ('de boa, suave', 'Tranquilo, sem problema.'), ('demorou', 'Combinado, vamos sim. Apesar do nome, é um sim animado.'),
+ ('deu ruim', 'Deu errado.'), ('tá ligado?', 'Entendeu? Sabe do que eu tô falando?'), ('pode pá', 'Pode deixar, combinado.'),
+ ('é nóis', 'Estamos juntos; também é um "valeu".'), ('brabo, braba', 'Muito bom. <i>"Esse churrasco tá brabo."</i>'),
+ ('topzera', 'Muito bom, top.'), ('resenha', 'Conversa boa e zoeira entre amigos; também o encontro em si.'),
+ ('rolê', 'Passeio, saída com a turma.'), ('zoeira', 'Brincadeira, bagunça. "A zoeira não tem limites."'),
+ ('trampo', 'Trabalho.'), ('daora', 'Legal, bacana. Muito usada em São Paulo.'),
+ ('sinistro', 'Muito bom ou assustador, depende do tom. Comum no Rio.'), ('migo, miga', 'Amigo, amiga.'),
+ ('crush', 'Paixonite: a pessoa por quem você está interessado.'), ('cringe', 'Vergonha alheia.'),
+ ('flopou', 'Não deu certo, não engajou.'), ('lacrou', 'Arrasou, fez bonito.'), ('mitou', 'Fez algo incrível.'),
+ ('tankar', 'Aguentar, suportar. <i>"Não tanko mais áudio de 5 minutos."</i>'), ('shippar', 'Torcer para duas pessoas ficarem juntas.'),
+ ('stalkear', 'Fuçar o perfil de alguém nas redes.'), ('biscoitar', 'Postar para ganhar elogio ou curtida. Quem faz é "biscoiteiro".'),
+ ('red flag', 'Sinal de alerta sobre alguém.'), ('plot twist', 'Reviravolta inesperada na história.'),
+ ('surtei', 'Fiquei chocado, ou animado demais.'), ('tô passada', 'Estou chocada, surpresa.'),
+ ('vish, eita', 'Espanto: "deu ruim" ou "olha só".'),
+]
+GIRIAS_REGIONAIS = [
+ ('uai', 'Minas Gerais', 'Espanto ou ênfase, como "ué". <i>"Uai, já foi?"</i>'), ('trem', 'Minas Gerais', 'Coisa, qualquer coisa. <i>"Que trem bom!"</i>'),
+ ('bah', 'Rio Grande do Sul', 'Espanto ou ênfase. <i>"Bah, que frio!"</i>'), ('tchê', 'Rio Grande do Sul', 'Tratamento, como "cara".'),
+ ('oxe, oxente', 'Nordeste', 'Espanto ou estranhamento.'), ('visse', 'Pernambuco', '"Viu?", no fim da frase.'),
+ ('arretado', 'Nordeste', 'Muito bom, ou muito bravo, conforme o contexto.'), ('massa', 'Nordeste e outras regiões', 'Legal, bacana.'),
+ ('égua', 'Pará', 'Espanto ou ênfase, para o bem ou para o mal.'), ('mermão', 'Rio de Janeiro', '"Meu irmão": tratamento entre amigos.'),
+ ('véi', 'Centro-Oeste e Nordeste', '"Velho": tratamento entre amigos.'), ('mainha, painho', 'Bahia', 'Mãe e pai, com carinho.'),
+]
+GIRIAS_TOTAL = len(GIRIAS_SIGLAS) + len(GIRIAS_CONVERSA) + len(GIRIAS_REGIONAIS)
+
+FAQ_GIRIAS = [
+ ('O que significa tmj?', 'Tmj é "tamo junto": um jeito de mostrar apoio e parceria. Aparece muito no fim da conversa, como agradecimento.'),
+ ('O que significa slk?', 'Slk vem de "se é loko" (cê é louco) e mostra espanto ou admiração, como em "slk, que golaço". Para "sei lá", o mais comum é sla.'),
+ ('O que significa pprt?', 'Pprt é "papo reto": falar a verdade, sem rodeio.'),
+ ('O que significa sqn?', 'Sqn é "só que não". Vai no fim da frase para mostrar que era ironia, como em "amo segunda-feira, sqn".'),
+ ('O que significa mds?', 'Mds é "meu Deus", para surpresa, susto ou indignação. A versão mais intensa é plmds, "pelo amor de Deus".'),
+ ('Quais são as gírias mais usadas no WhatsApp?', 'Não existe uma lista oficial, e cada grupo tem o próprio dialeto. Nos grupos brasileiros, abreviações como vc, tb, pq, blz e vlw aparecem o tempo todo, junto com gírias como tmj, mds, bora e mano.'),
+ ('Como descobrir a gíria oficial do meu grupo?', 'Exporte a conversa do grupo e abra no Retrozap. Ele conta as gírias de uma lista fechada, como bora, mano, slk, mds e tmj, e mostra a gíria oficial do grupo no resumo. A conversa é lida no seu celular e não sai dele.'),
+]
 
 NOVOS = [
 ('whatsapp-wrapped', 'WhatsApp Wrapped: como fazer o "Wrapped" do seu grupo de WhatsApp',
@@ -31,16 +138,17 @@ NOVOS = [
 ('retrospectiva-do-grupo-de-whatsapp', 'Retrospectiva do grupo do WhatsApp 2026: como fazer a do seu grupo',
  'Passo a passo para fazer a retrospectiva 2026 do seu grupo de WhatsApp: números do ano, prêmios para cada um e cards para mandar no grupo.', """
 <h1>Retrospectiva do grupo do WhatsApp 2026: como fazer a do seu grupo</h1>
+<div class="resposta"><p><b>Resposta rápida:</b> o WhatsApp não tem uma retrospectiva oficial. Para fazer a do seu grupo, exporte a conversa sem mídia e abra o arquivo no <a href="/">Retrozap</a>: em menos de um minuto aparecem os números de 2026, um prêmio para cada um e cards para mandar no grupo. O primeiro grupo é grátis e as mensagens não saem do celular.</p></div>
 <p>Todo fim de ano a gente vê retrospectiva de música, de série, de exercício. Mas a história que mais rendeu no seu 2026 provavelmente aconteceu num grupo de WhatsApp: o churrasco que quase não saiu, o áudio de oito minutos, a figurinha que virou meme interno. Dá para transformar tudo isso numa retrospectiva divertida, em menos de um minuto e sem expor ninguém.</p>
 <h2>Quando fazer a retrospectiva 2026</h2>
-<p>Dezembro é o mês dela: dá tempo de revelar os prêmios antes do amigo secreto, da ceia ou do Réveillon, quando o grupo está mais animado. Se fizer antes, tudo bem: os números contam as mensagens de 2026 até o dia em que você exportou a conversa, e você pode refazer no fim do ano com um arquivo novo.</p>
+<p>Dezembro é o mês dela: dá tempo de revelar os prêmios antes do amigo secreto, da ceia ou do Réveillon, quando o grupo está mais animado. Se fizer antes, tudo bem: os números contam as mensagens de 2026 até o dia em que você exportou a conversa, e você pode refazer no fim do ano com um arquivo novo. Vai ter amigo secreto? Faça o <a href="/amigo-secreto">sorteio de amigo secreto pelo WhatsApp</a> aqui mesmo, de graça.</p>
 <h2>1. Escolha o grupo certo</h2>
 <p>Funciona melhor em grupos com bastante conversa: amigos, família, faculdade, time de futebol, condomínio. Um grupo com poucas mensagens gera números tímidos. Se o grupo é muito grande, como o do prédio inteiro, prefira categorias leves. Também dá para fazer a de um casal: veja a <a href="/blog/retrospectiva-de-namoro">retrospectiva de namoro</a>.</p>
 <h2>2. Exporte a conversa</h2>
 <p>No celular, abra o grupo, toque no nome dele, role até o fim e escolha <b>Exportar conversa</b> e depois <b>Sem mídia</b>. O arquivo sai em segundos. Tem um passo a passo detalhado em <a href="/blog/como-exportar-conversa-whatsapp">como exportar a conversa de um grupo</a> e um <a href="/como-exportar">vídeo de 45 segundos</a>.</p>
 <h2>3. Gere os números e os prêmios de 2026</h2>
 <p>No <a href="/">Retrozap</a>, você escolhe o arquivo e o tipo de grupo. A leitura acontece no seu navegador, as mensagens não saem do celular. Em menos de um minuto aparecem:</p>
-<ul><li>há quanto tempo o grupo existe e as mensagens ano a ano;</li><li>o nosso 2026: mensagens, áudios e risadas do ano, comparados com o mesmo período de 2025 (se o grupo já existia);</li><li>a gíria oficial e o assunto mais falado do ano;</li><li>de 7 a 10 prêmios, conforme o tipo de grupo, como O Tagarela, O Fantasma e Boca-Suja;</li><li>os personagens do grupo, com o jeito de falar de cada um;</li><li>cards prontos para mandar no grupo e nos stories, e um vídeo curto (baixar o vídeo faz parte do acesso ilimitado).</li></ul>
+<ul><li>há quanto tempo o grupo existe e as mensagens ano a ano;</li><li>o nosso 2026: mensagens, áudios e risadas do ano, comparados com o mesmo período de 2025 (se o grupo já existia);</li><li>a <a href="/blog/girias-mais-usadas-no-whatsapp">gíria oficial</a> e o assunto mais falado do ano;</li><li>de 7 a 10 prêmios, conforme o tipo de grupo, como O Tagarela, O Fantasma, Boca-Suja e o <a href="/blog/kkkk-rsrs-hahaha-significado">Rei do Kkkk</a>;</li><li>os personagens do grupo, com o jeito de falar de cada um;</li><li>cards prontos para mandar no grupo e nos stories, e um vídeo curto (baixar o vídeo faz parte do acesso ilimitado).</li></ul>
 <p>Os prêmios e as imagens usam só as mensagens de 2026. Se o grupo conversou pouco neste ano, o site usa a conversa inteira e avisa na tela.</p>
 <h2>4. Faça suspense antes de revelar</h2>
 <p>A graça está no momento da revelação. Antes de mostrar os vencedores, mande no grupo a lista de categorias e peça palpites. Depois, revele um prêmio por vez. Quem acertou mais ganha o direito de se gabar até o ano que vem. Precisa de mais ideias? Veja as <a href="/blog/ideias-de-premios-para-grupo-de-whatsapp">40 ideias de prêmios para o grupo</a>.</p>
@@ -72,11 +180,11 @@ NOVOS = [
 <h1>30 prêmios para o grupo de amigos</h1>
 <p>O grupo de amigos é onde mora a resenha. É também onde estão os personagens mais fáceis de premiar: quem fala demais, quem só aparece para confirmar presença e quem sempre fura o rolê no último minuto. Aqui vão 30 categorias para a sua premiação.</p>
 <h2>Os indispensáveis</h2>
-<ol><li><b>O Tagarela:</b> mais mensagens no ano.</li><li><b>O Fantasma:</b> está no grupo, mas ninguém lembra a voz.</li><li><b>Rei do Furo:</b> "não vou conseguir", "fica pra próxima".</li><li><b>Organizador(a) do Rolê:</b> sem essa pessoa ninguém sai de casa.</li><li><b>Rei do Kkkk:</b> ri de tudo, sempre.</li><li><b>Boca-Suja:</b> o vocabulário mais criativo.</li><li><b>Coruja da Madrugada:</b> ativo entre meia-noite e 5h.</li><li><b>Figurinha de Ouro:</b> uma figurinha vale mais que mil palavras.</li><li><b>Mata-Conversa:</b> depois da mensagem dessa pessoa, silêncio.</li><li><b>Puxa-Assunto:</b> ressuscita o grupo do nada.</li></ol>
+<ol><li><b>O Tagarela:</b> mais mensagens no ano.</li><li><b>O Fantasma:</b> está no grupo, mas ninguém lembra a voz.</li><li><b>Rei do Furo:</b> "não vou conseguir", "fica pra próxima".</li><li><b>Organizador(a) do Rolê:</b> sem essa pessoa ninguém sai de casa.</li><li><b>Rei do Kkkk:</b> ri de tudo, sempre. <a href="/blog/kkkk-rsrs-hahaha-significado">Kkkk, rsrs ou hahaha?</a></li><li><b>Boca-Suja:</b> o vocabulário mais criativo.</li><li><b>Coruja da Madrugada:</b> ativo entre meia-noite e 5h.</li><li><b>Figurinha de Ouro:</b> uma figurinha vale mais que mil palavras.</li><li><b>Mata-Conversa:</b> depois da mensagem dessa pessoa, silêncio.</li><li><b>Puxa-Assunto:</b> ressuscita o grupo do nada.</li></ol>
 <h2>Para a resenha ficar completa</h2>
 <ol start="11"><li><b>Podcaster do Grupo:</b> áudios que viram episódios.</li><li><b>Escritor(a) de Textão:</b> parágrafos onde todos mandam "ok".</li><li><b>O Arrependido:</b> mais mensagens apagadas.</li><li><b>Coração Mole:</b> "amo vocês" no meio da zoeira.</li><li><b>Influencer do Grupo:</b> mais links e vídeos compartilhados.</li><li><b>Atrasado(a) Oficial:</b> "tô saindo" quando ainda está no banho.</li><li><b>Rei do Print:</b> guarda prova de tudo.</li><li><b>Especialista em Tudo:</b> tem opinião sobre qualquer assunto.</li><li><b>Narrador(a) Esportivo:</b> comenta o jogo lance a lance.</li><li><b>Chef do Churrasco:</b> organiza e cobra o rateio.</li></ol>
 <h2>Os prêmios de honra</h2>
-<ol start="21"><li><b>Melhor Meme do Ano.</b></li><li><b>Mensagem Mais Polêmica.</b></li><li><b>Maior Sumiço:</b> quanto tempo alguém ficou sem aparecer.</li><li><b>Dia do Caos:</b> o dia com mais mensagens no ano.</li><li><b>Gíria Oficial:</b> "bora", "mano", "slk".</li><li><b>Frase do Ano:</b> a que mais se repetiu.</li><li><b>Dupla Inseparável:</b> quem mais conversa entre si.</li><li><b>Revelação do Ano:</b> quem entrou e já dominou.</li><li><b>Calado(a) que Surpreende:</b> fala pouco, mas quando fala é ouro.</li><li><b>Destaque do Grupo:</b> quem levou mais troféus.</li></ol>
+<ol start="21"><li><b>Melhor Meme do Ano.</b></li><li><b>Mensagem Mais Polêmica.</b></li><li><b>Maior Sumiço:</b> quanto tempo alguém ficou sem aparecer.</li><li><b>Dia do Caos:</b> o dia com mais mensagens no ano.</li><li><b>Gíria Oficial:</b> "bora", "mano", "slk" (<a href="/blog/girias-mais-usadas-no-whatsapp">o que significam</a>).</li><li><b>Frase do Ano:</b> a que mais se repetiu.</li><li><b>Dupla Inseparável:</b> quem mais conversa entre si.</li><li><b>Revelação do Ano:</b> quem entrou e já dominou.</li><li><b>Calado(a) que Surpreende:</b> fala pouco, mas quando fala é ouro.</li><li><b>Destaque do Grupo:</b> quem levou mais troféus.</li></ol>
 <p>Boa parte dessas categorias o <a href="/">Retrozap</a> descobre sozinho, lendo a conversa no seu celular: do Tagarela ao Rei do Furo, passando pela gíria oficial e pelo dia de caos.</p>
 """ + CTA),
 
@@ -107,19 +215,32 @@ NOVOS = [
  'Do tagarela ao fantasma: os tipos de pessoa que aparecem em todo grupo, e como reconhecer cada um.', """
 <h1>15 personagens que todo grupo de WhatsApp tem</h1>
 <p>Não importa se é o grupo da família, da faculdade ou do futebol: alguns personagens aparecem em todos. Você com certeza vai reconhecer alguém. Talvez até você mesmo.</p>
-<ol><li><b>O Tagarela:</b> responde tudo, comenta tudo e é responsável por um terço das mensagens.</li><li><b>O Fantasma:</b> está no grupo há anos e ninguém lembra a última vez que escreveu.</li><li><b>O Despertador:</b> abre o grupo todo dia com um bom dia.</li><li><b>A Coruja:</b> ativa quando todo mundo dorme.</li><li><b>O Podcaster:</b> áudios longos, de preferência andando na rua.</li><li><b>O Figurinheiro:</b> responde com figurinha antes de pensar.</li><li><b>O Organizador:</b> marca, confirma, cobra o rateio.</li><li><b>O Furão:</b> confirma presença e some no dia.</li><li><b>O Repórter:</b> manda a notícia antes de todo mundo.</li><li><b>O Escritor:</b> parágrafos onde os outros mandam "ok".</li><li><b>O Risonho:</b> "kkkkkkk" em tudo.</li><li><b>O Mata-Conversa:</b> depois da mensagem dele, silêncio total.</li><li><b>O Puxa-Assunto:</b> ressuscita o grupo do nada.</li><li><b>O Arrependido:</b> "esta mensagem foi apagada".</li><li><b>O Coração Mole:</b> "amo vocês" no meio da zoeira.</li></ol>
+<ol><li><b>O Tagarela:</b> responde tudo, comenta tudo e é responsável por um terço das mensagens.</li><li><b>O Fantasma:</b> está no grupo há anos e ninguém lembra a última vez que escreveu.</li><li><b>O Despertador:</b> abre o grupo todo dia com um bom dia.</li><li><b>A Coruja:</b> ativa quando todo mundo dorme.</li><li><b>O Podcaster:</b> áudios longos, de preferência andando na rua.</li><li><b>O Figurinheiro:</b> responde com figurinha antes de pensar.</li><li><b>O Organizador:</b> marca, confirma, cobra o rateio.</li><li><b>O Furão:</b> confirma presença e some no dia.</li><li><b>O Repórter:</b> manda a notícia antes de todo mundo.</li><li><b>O Escritor:</b> parágrafos onde os outros mandam "ok".</li><li><b>O Risonho:</b> "kkkkkkk" em tudo (veja <a href="/blog/kkkk-rsrs-hahaha-significado">o que cada risada quer dizer</a>).</li><li><b>O Mata-Conversa:</b> depois da mensagem dele, silêncio total.</li><li><b>O Puxa-Assunto:</b> ressuscita o grupo do nada.</li><li><b>O Arrependido:</b> "esta mensagem foi apagada".</li><li><b>O Coração Mole:</b> "amo vocês" no meio da zoeira.</li></ol>
 <h2>Quer saber quem é quem no seu grupo?</h2>
 <p>O <a href="/">Retrozap</a> lê a conversa exportada direto no seu celular e mostra os personagens do grupo, com o jeito de falar de cada um, a gíria preferida e os emojis de estimação.</p>
 """ + CTA),
 
-('girias-mais-usadas-no-whatsapp', 'Gírias mais usadas no WhatsApp: o que significam',
- 'Bora, mano, slk, mds, tmj: um guia rápido das gírias brasileiras que dominam os grupos.', """
-<h1>Gírias mais usadas no WhatsApp e o que significam</h1>
-<p>Cada grupo tem um dialeto próprio, mas algumas gírias aparecem em quase todos. Aqui vai um guia rápido, para ninguém ficar perdido na conversa.</p>
-<ul><li><b>Bora:</b> "vamos". A gíria do convite e também a do furo, quando ninguém vai.</li><li><b>Mano / mana:</b> tratamento entre amigos, de qualquer idade.</li><li><b>Véi:</b> o "mano" do Centro-Oeste e do Nordeste.</li><li><b>Slk:</b> "sei lá", ou "você é louco", depende do contexto.</li><li><b>Mds:</b> "meu Deus", para surpresa ou indignação.</li><li><b>Tmj:</b> "tamo junto", apoio e parceria.</li><li><b>Sqn:</b> "só que não", ironia pura.</li><li><b>Pprt:</b> "papo reto", a verdade sem rodeio.</li><li><b>Tlgd:</b> "tá ligado?".</li><li><b>Vish / eita / oxe:</b> espanto, com sotaque.</li><li><b>Sextou:</b> chegou a sexta-feira.</li><li><b>Deu ruim:</b> algo deu errado.</li><li><b>De boa:</b> tranquilo, sem problema.</li><li><b>Resenha:</b> conversa boa, zoeira entre amigos.</li><li><b>Flopou:</b> não deu certo, não engajou.</li><li><b>Cringe:</b> vergonha alheia.</li></ul>
-<h2>Qual é a gíria oficial do seu grupo?</h2>
-<p>O <a href="/">Retrozap</a> conta as gírias mais usadas na conversa do seu grupo e mostra a vencedora no resumo, junto com a frase mais repetida do ano.</p>
-""" + CTA),
+('girias-mais-usadas-no-whatsapp', f'Gírias do WhatsApp: o que significam {GIRIAS_TOTAL} gírias e abreviações',
+ 'Tmj, slk, mds, pprt, sqn, bora, véi: o significado das gírias e abreviações que dominam os grupos de WhatsApp, com exemplos e as gírias de cada região.', f"""
+<h1>Gírias do WhatsApp: o que significam as mais usadas</h1>
+<div class="resposta"><p><b>Resposta rápida:</b> gírias do WhatsApp são abreviações e expressões que o brasileiro usa para escrever rápido e com o tom da conversa. Algumas das mais comuns: <b>vc</b> (você), <b>tmj</b> (tamo junto), <b>slk</b> (cê é louco), <b>mds</b> (meu Deus), <b>pprt</b> (papo reto), <b>sqn</b> (só que não) e <b>bora</b> (vamos). Abaixo estão {GIRIAS_TOTAL}, com exemplos.</p></div>
+<p>Cada grupo tem um dialeto próprio, mas boa parte dele se repete de norte a sul. Separamos as gírias em três tabelas: as abreviações que economizam letras, as gírias de conversa e as regionais, que entregam de onde a pessoa é.</p>
+<nav class="atalhos" aria-label="Ir para a tabela"><ul><li><a href="#siglas">Abreviações</a></li><li><a href="#conversa">Gírias de conversa</a></li><li><a href="#regionais">Regionais</a></li><li><a href="#perguntas">Perguntas</a></li></ul></nav>
+<h2 id="siglas">Abreviações e siglas do WhatsApp</h2>
+<p>Elas nasceram na época em que cada letra do SMS custava caro, e ficaram porque são rápidas de digitar com um dedo só.</p>
+""" + TABELA('Abreviações e siglas comuns nos grupos de WhatsApp, com o significado e um exemplo de uso.', ['Abreviação', 'O que significa'], GIRIAS_SIGLAS) + """
+<h2 id="conversa">Gírias de conversa</h2>
+<p>As que dão o tom do grupo: convite, concordância, espanto e zoeira. Muitas vieram das ruas, outras da internet e dos jogos.</p>
+""" + TABELA('Gírias de conversa usadas nos grupos de WhatsApp, com o significado e um exemplo.', ['Gíria', 'O que significa'], GIRIAS_CONVERSA) + """
+<h2 id="regionais">Gírias regionais que aparecem nos grupos</h2>
+<p>Basta uma mensagem para saber de onde a pessoa é. Algumas já se espalharam pelo país inteiro.</p>
+""" + TABELA('Gírias regionais, a região onde são mais comuns e o significado.', ['Gíria', 'Onde é mais comum', 'O que significa'], GIRIAS_REGIONAIS) + """
+<h2>Como usar gíria sem ruído</h2>
+<ul><li><b>Leia o grupo antes:</b> abreviação demais no grupo do trabalho pode soar descuido; no dos amigos, é o normal.</li><li><b>Na dúvida, escreva por extenso:</b> "fds" pode ser fim de semana ou um palavrão, e "slk" muda de sentido conforme a pessoa.</li><li><b>Com os mais velhos, menos sigla:</b> a tia pode não saber o que é "pprt", mas sabe o que é "papo reto".</li><li><b>Risada também é gíria:</b> o kkkk, o rsrs e o hahaha têm tons diferentes. Veja <a href="/blog/kkkk-rsrs-hahaha-significado">o significado de cada risada</a>.</li></ul>
+<div class="chamada"><h2>Qual é a gíria oficial do seu grupo?</h2><p>O Retrozap conta as gírias da conversa do grupo, de uma lista fechada (como bora, mano, véi, slk, mds, tmj, sextou, resenha, uai, bah e oxe), e mostra a vencedora no resumo, junto com quem mais fala, quem mais ri e quem sumiu. A conversa é lida no seu celular e não sai dele.</p><p><a class="cta" href="/">Descobrir a gíria do meu grupo</a></p></div>
+""" + FAQ_BLOCO(FAQ_GIRIAS) + """
+<p>Veja também os <a href="/blog/tipos-de-pessoas-em-grupos-de-whatsapp">15 personagens que todo grupo de WhatsApp tem</a> e as <a href="/blog/frases-de-bom-dia-para-grupo">frases de bom dia para grupo</a>.</p>
+"""),
 
 ('quem-mais-fala-no-grupo-do-whatsapp', 'Como saber quem mais fala no grupo do WhatsApp',
  'O WhatsApp não mostra estatísticas do grupo. Veja como descobrir quem mais manda mensagem, áudio e figurinha.', """
@@ -145,10 +266,12 @@ NOVOS = [
  'Passo a passo para organizar o amigo secreto do grupo pelo WhatsApp: sorteio, valor, data e lista de desejos.', """
 <h1>Como organizar amigo secreto pelo WhatsApp</h1>
 <p>O amigo secreto é a tradição de fim de ano que mais movimenta os grupos de WhatsApp. Com um pouco de organização, dá para fazer tudo pelo celular, sem confusão.</p>
+<p class="small">Atalho: se já está tudo combinado, vá direto para o <a href="/amigo-secreto">sorteio de amigo secreto grátis</a>.</p>
 <h2>1. Defina o básico no grupo</h2>
 <ul><li><b>Quem participa:</b> faça uma lista e peça confirmação até uma data.</li><li><b>Valor:</b> combine um valor mínimo e máximo.</li><li><b>Data e local da troca:</b> marque com antecedência.</li></ul>
 <h2>2. Faça o sorteio sem ninguém ver</h2>
-<p>O ideal é usar um site ou app de sorteio de amigo secreto, que manda o nome sorteado para cada pessoa individualmente. Evite sortear no grupo: alguém sempre acaba vendo.</p>
+<p>O ideal é um sorteio que mande o nome sorteado para cada pessoa individualmente. Evite sortear no grupo: alguém sempre acaba vendo. No <a href="/amigo-secreto">sorteio de amigo secreto pelo WhatsApp</a> do Retrozap, você escreve os nomes, toca em Sortear e manda para cada pessoa um link que mostra só quem ela tirou. É grátis, ninguém tira o próprio nome, não precisa de telefone e os nomes não saem do seu celular.</p>
+<p><a class="cta" href="/amigo-secreto">Fazer o sorteio agora</a></p>
 <h2>3. Lista de desejos</h2>
 <p>Peça para cada um mandar três sugestões de presente, de preferência num lugar que o sorteado consiga consultar sem revelar quem tirou quem.</p>
 <h2>4. Dê um tempero</h2>
@@ -342,39 +465,11 @@ NOVOS += [
 <ol start="49"><li>Desejo a todos um 2027 com mais mensagens respondidas e menos "visualizou e não respondeu".</li><li>Feliz Natal para todos, inclusive para quem silenciou este grupo em março.</li><li>Meta para 2027: o grupo marcar um encontro e o encontro acontecer.</li><li>Que em 2027 os áudios sejam menores que 5 minutos. Amém.</li><li>Ano novo, mesmo grupo, mesmas figurinhas. E é por isso que a gente ama.</li><li>Feliz Ano Novo! Prometo responder todas as mensagens de 2026 até fevereiro.</li><li>Que 2027 seja tão animado quanto este grupo às duas da manhã.</li><li>Boas festas! Lembrando que o amigo secreto não é desculpa para sumir.</li><li>Feliz Natal ao fantasma do grupo, onde quer que esteja.</li><li>Em 2027 eu vou ser mais organizado. Disse eu, em 2026, 2025 e 2024.</li><li>Que o ano novo traga mais "kkkk" e menos "deu ruim".</li><li>Feliz 2027! Que o rateio do churrasco seja pago no prazo.</li></ol>
 <h2>Feche o ano com a retrospectiva do grupo</h2>
 <p>Quer uma mensagem de fim de ano que ninguém vai ignorar? Mande os números do ano. O <a href="/">Retrozap</a> lê a conversa exportada direto no seu celular e mostra quantas mensagens o grupo trocou em 2026, quem mais falou, quem mais riu, o assunto do ano e os prêmios de cada um. Dá para mandar o card de resumo junto com o "Feliz Ano Novo".</p>
-<p>Para preparar a cerimônia, veja <a href="/blog/retrospectiva-do-grupo-de-whatsapp">como fazer a retrospectiva do grupo</a> e, se for juntar todo mundo, <a href="/blog/amigo-secreto-pelo-whatsapp">como organizar o amigo secreto pelo WhatsApp</a>.</p>
+<p>Para preparar a cerimônia, veja <a href="/blog/retrospectiva-do-grupo-de-whatsapp">como fazer a retrospectiva do grupo</a> e, se for juntar todo mundo, <a href="/blog/amigo-secreto-pelo-whatsapp">como organizar o amigo secreto pelo WhatsApp</a>, com o <a href="/amigo-secreto">sorteio grátis pelo WhatsApp</a>.</p>
 """ + CTA),
 
-('nomes-para-grupo-de-whatsapp', '150 nomes para grupo de WhatsApp: família, amigos, trabalho e mais',
- 'Ideias de nomes para grupo de WhatsApp da família, dos amigos, do trabalho, da faculdade, do futebol, do prédio e da viagem, com dicas para escolher.', """
-<h1>150 nomes para grupo de WhatsApp</h1>
-<p>Todo grupo nasce com um nome provisório, tipo "Churrasco sábado", e anos depois continua com ele. Se você vai criar um grupo novo ou quer finalmente dar um nome à altura da turma, aqui vão 150 ideias, separadas por tipo de grupo. Onde aparece algo entre colchetes, troque pelo sobrenome, pelo ano ou pelo lugar de vocês.</p>
-<h2>Como escolher um bom nome</h2>
-<ul><li><b>Curto:</b> o nome aparece cortado na lista de conversas e nas notificações. Duas ou três palavras bastam.</li><li><b>Fácil de achar:</b> um emoji no começo ajuda a encontrar o grupo no meio de tantos outros.</li><li><b>Com a cara da turma:</b> uma piada interna funciona, desde que todo mundo entenda e ninguém se sinta zoado.</li><li><b>Pensando no futuro:</b> "Formatura 2026" vira estranho em 2030. Se o grupo vai durar, prefira algo atemporal.</li><li><b>Combinando com a foto:</b> nome e foto do grupo juntos contam a mesma história.</li><li><b>Avisando a mudança:</b> trocar o nome do nada confunde. Mande uma mensagem antes ou faça uma enquete.</li></ul>
-<p>Não conseguiu decidir? Escolha três favoritos desta lista e coloque numa enquete no próprio grupo. Além de resolver a dúvida, já é a primeira conversa da turma.</p>
-<h2>Nomes para grupo da família</h2>
-<ol><li>Família Reunida</li><li>Os Mais Chegados</li><li>Clã dos [Sobrenome]</li><li>Raízes</li><li>Casa da Vó</li><li>Almoço de Domingo</li><li>Família Unida Jamais Será Vencida</li><li>Galho Torto da Árvore</li><li>Os Primos</li><li>Primaiada</li><li>Herdeiros do Nada</li><li>Família Buscapé</li><li>Tribo [Sobrenome]</li><li>Mesa Farta</li><li>Ninho</li><li>Bom Dia, Família</li><li>Os Parentes</li><li>Família Margarina</li><li>Sangue Bom</li><li>Árvore Genealógica</li><li>Família Doidinha</li><li>Netos da Vó [Nome]</li><li>Grupo da Paz (por enquanto)</li><li>Natal o Ano Todo</li><li>Café na Casa da Tia</li></ol>
-<!--AD-->
-<h2>Nomes para grupo de amigos</h2>
-<ol start="26"><li>Os de Sempre</li><li>Resenha</li><li>Bonde</li><li>Panelinha</li><li>Os Inseparáveis</li><li>Turma do Barulho</li><li>Só os Brabos</li><li>Conselho dos Sábios</li><li>Amigos de Infância</li><li>Rolê Aleatório</li><li>Bando de Loucos</li><li>Melhores Amigos</li><li>Os Sem Juízo</li><li>Diretoria</li><li>Sócios do Caos</li><li>Grupo de Apoio Emocional</li><li>Resenha Infinita</li><li>Os Furões</li><li>Confraria</li><li>QG</li><li>A Família que a Gente Escolheu</li><li>Plano B</li><li>Esquadrão</li><li>Os Desocupados</li><li>Mesa do Bar</li></ol>
-<h2>Nomes para trabalho e estudo</h2>
-<h3>Trabalho</h3>
-<ol start="51"><li>Equipe [Área]</li><li>Time [Projeto]</li><li>Avisos da Equipe</li><li>Café com a Equipe</li><li>Força-Tarefa</li><li>Squad [Nome]</li><li>Alinhamentos</li><li>Pauta do Dia</li><li>Turma do Cafezinho</li><li>Happy Hour</li><li>Plantão [Área]</li><li>Time dos Sonhos</li><li>Central de Avisos</li><li>Escritório Paralelo</li><li>Comercial em Ação</li><li>Operação [Projeto]</li><li>Ideias em Pauta</li><li>Bastidores</li><li>Corredor</li><li>Almoço da Firma</li></ol>
-<h3>Faculdade e escola</h3>
-<ol start="71"><li>Turma [Ano]</li><li>Formandos [Ano]</li><li>Calouros [Ano]</li><li>Sala [Número]</li><li>Trabalho Final</li><li>Socorro, Prova</li><li>Resumos e Desesperos</li><li>Pais do [Série]</li><li>Mães e Pais da Turma</li><li>Revisão de Véspera</li><li>Fundão</li><li>Intervalo</li><li>TCC Sem Fim</li><li>Biblioteca Fantasma</li><li>Grupo de Estudos (só de nome)</li></ol>
-<h2>Nomes para esporte, prédio e viagem</h2>
-<h3>Futebol e esporte</h3>
-<ol start="86"><li>Pelada de Quinta</li><li>Futebol dos Amigos</li><li>Racha de Domingo</li><li>Time da Firma</li><li>Vôlei de Praia</li><li>Beach Tennis da Galera</li><li>Corredores de Fim de Semana</li><li>Pedal de Domingo</li><li>Bolão da Copa</li><li>Resenha Pós-Jogo</li><li>Craques Aposentados</li><li>Arquibancada</li><li>Joelho Ruim FC</li><li>Academia Sem Desculpa</li><li>Trilheiros</li></ol>
-<h3>Prédio e vizinhança</h3>
-<ol start="101"><li>Moradores do [Prédio]</li><li>Vizinhos do Bloco A</li><li>Avisos do Condomínio</li><li>Rua [Nome] Unida</li><li>Vizinhança Solidária</li><li>Indicações do Prédio</li><li>Classificados do Prédio</li><li>Pets do Condomínio</li><li>Caronas do Bairro</li><li>Feira de Trocas</li><li>Hall de Entrada</li><li>Mães e Pais do Condomínio</li><li>Horta Comunitária</li><li>Bairro em Alerta</li><li>Encomendas e Achados</li></ol>
-<h3>Viagens e eventos</h3>
-<ol start="116"><li>[Destino] [Ano]</li><li>Partiu [Destino]</li><li>Rumo à Praia</li><li>Mochilão</li><li>Contagem Regressiva</li><li>Casa de Praia</li><li>Carnaval [Ano]</li><li>Réveillon [Ano]</li><li>Despedida de Solteiro(a)</li><li>Chá de Bebê da [Nome]</li><li>Aniversário Surpresa (sem o aniversariante!)</li><li>Racha da Viagem</li><li>Bate e Volta</li><li>Show do Ano</li><li>Ilha de Edição (só as fotos)</li></ol>
-<h2>Nomes engraçados para qualquer grupo</h2>
-<ol start="131"><li>Grupo Sem Nome</li><li>Ninguém Responde</li><li>Silenciado por 8 Horas</li><li>Áudio de 5 Minutos</li><li>Visualizou e Saiu</li><li>Kkkkkkk</li><li>Só Memes</li><li>Tô Saindo (Não Tô)</li><li>Central de Fofoca</li><li>Fofoca com Recibo</li><li>Melhor Grupo do Zap</li><li>Grupo Teste (que virou oficial)</li><li>Criado para um Churrasco em 2019</li><li>Respondo Depois</li><li>Gente que Some</li><li>Os Sem Wi-Fi</li><li>Bom Dia Só Amanhã</li><li>Senta que Lá Vem História</li><li>Risada Garantida</li><li>Aqui Ninguém Trabalha</li></ol>
-<h2>Depois do nome, a história</h2>
-<p>Nome escolhido, grupo criado. Agora vale combinar o básico para ele não virar bagunça: veja um <a href="/blog/regras-para-grupo-de-whatsapp">modelo de regras para grupo</a> pronto para copiar. Se o grupo já existe há anos e anda quieto, tem <a href="/blog/brincadeiras-para-grupo-de-whatsapp">30 brincadeiras para fazer hoje</a>.</p>
-<p>E quando o grupo já tiver histórico, dá para descobrir quem é o Tagarela, quem é o Fantasma e qual é a gíria oficial da turma com a <a href="/blog/retrospectiva-do-grupo-de-whatsapp">retrospectiva do grupo</a> no <a href="/">Retrozap</a>. A leitura acontece no seu celular e as mensagens não saem dele.</p>
-""" + CTA),
+('nomes-para-grupo-de-whatsapp', f'{_fer.TOTAL_NOMES} nomes para grupo de WhatsApp (com gerador de nomes)',
+ 'Nomes para grupo de WhatsApp da família, dos amigos, do trabalho, da escola, dos primos, do casal, do futebol, do condomínio e do Natal, e um gerador grátis para sortear ideias.', _fer.nomes_corpo()),
 
 ('regras-para-grupo-de-whatsapp', 'Regras para grupo de WhatsApp: modelo pronto para copiar',
  'Modelos de regras para grupo de WhatsApp da família, do condomínio, do trabalho e da escola, e como aplicar com as ferramentas de administrador.', """
@@ -400,7 +495,7 @@ NOVOS += [
 <h3>Quando alguém descumpre</h3>
 <p>Comece pelo privado, com calma: "Oi, a gente combinou X no grupo, tudo bem?". Só remova alguém se a pessoa insistir depois de avisada. E revise as regras de tempos em tempos: se ninguém respeita uma delas, talvez ela não faça sentido para aquele grupo.</p>
 <h2>Regras também podem ser divertidas</h2>
-<p>Grupo com regra não precisa ser grupo chato. Um bom jeito de aliviar o clima é fechar o ano com uma premiação: quem mandou mais mensagens, quem mais sumiu, quem mais deu bom dia. O <a href="/">Retrozap</a> calcula tudo a partir da conversa exportada, sem as mensagens saírem do seu celular. Veja também <a href="/blog/nomes-para-grupo-de-whatsapp">150 ideias de nomes para o grupo</a>.</p>
+<p>Grupo com regra não precisa ser grupo chato. Um bom jeito de aliviar o clima é fechar o ano com uma premiação: quem mandou mais mensagens, quem mais sumiu, quem mais deu bom dia. O <a href="/">Retrozap</a> calcula tudo a partir da conversa exportada, sem as mensagens saírem do seu celular. Veja também as <a href="/blog/nomes-para-grupo-de-whatsapp">ideias de nomes para o grupo, com gerador</a>.</p>
 """ + CTA),
 ]
 
@@ -498,32 +593,37 @@ NOVOS += [
 <p>E se a ideia for passar a noite conversando, use as <a href="/blog/perguntas-para-casal">100 perguntas para casal</a>. Combinam com qualquer presente desta lista.</p>
 """ + CTA_CASAL),
 
-('kkkk-rsrs-hahaha-significado', 'Kkkk, rsrs, hahaha: o jeito brasileiro de rir no WhatsApp',
- 'O que significam kkkk, rsrs, hahaha, hehe e huehue, a escala de intensidade da risada, as variações e os emojis 😂🤣. E quem é o Rei do Kkkk do seu grupo.', """
-<h1>Kkkk, rsrs, hahaha: o jeito brasileiro de rir no WhatsApp</h1>
-<p>Brasileiro não ri por escrito de um jeito só. Tem o "kkkk", o "rsrs", o "hahaha", o "hehe" e aquela sequência de letras aleatórias que só significa uma coisa: a pessoa caiu da cadeira. Cada forma carrega um tom diferente, e quem erra o tom passa por sério, irônico ou sem graça. Este é um guia rápido da risada digital brasileira.</p>
+('kkkk-rsrs-hahaha-significado', 'Kkkk, rsrs, hahaha: o significado de cada risada no WhatsApp',
+ 'O que significam kkkk, rsrs, hahaha, hehe, kkkj e huehue, a tabela das risadas do k ao KKKKKK, os emojis 😂🤣💀 e quem é o Rei do Kkkk do seu grupo.', """
+<h1>Kkkk, rsrs, hahaha: o que significa cada risada no WhatsApp</h1>
+<div class="resposta">
+<p><b>Kkkk</b> é risada. A letra k se lê "cá", então "kkkk" soa como "cácácá", uma gargalhada. Quanto mais k, maior a risada.</p>
+<p><b>Rsrs</b> é a abreviação de "risos": uma risada mais contida e educada, às vezes só para deixar a frase leve.</p>
+<p><b>Hahaha</b> imita o som da gargalhada e é entendida em vários idiomas. No Brasil, soa um pouco mais medida que o kkkk.</p>
+</div>
+<p>Brasileiro não ri por escrito de um jeito só. Cada forma carrega um tom diferente, e quem erra o tom passa por sério, irônico ou sem graça. Abaixo está a tabela completa da risada digital brasileira, a escala de intensidade e o que cada emoji quer dizer.</p>
+<h2>Tabela das risadas: o que cada uma quer dizer</h2>
+""" + RISADAS_TABELA + """
 <h2>Por que o brasileiro ri com k</h2>
 <p>Em português, a letra k se chama "cá". Escrever "kkkk" soa como "cácácácá", uma gargalhada. É mais rápido de digitar que "hahaha", funciona com uma tecla só e virou a risada padrão do Brasil na internet.</p>
-<p>Curiosamente, os coreanos chegaram a uma solução parecida: lá a risada escrita é "ㅋㅋㅋ", uma letra que também tem som de k. Em outros lugares, a lógica é a mesma, com outras letras: "jajaja" em espanhol, "555" na Tailândia (o número 5 se fala "há") e "www" no Japão.</p>
-<h2>O dicionário da risada</h2>
-<ul><li><b>kkkk:</b> a risada padrão. Serve para quase tudo, do meme bobo à piada interna.</li><li><b>rsrs:</b> abreviação de "risos". Mais contida, educada. Às vezes é só um jeito simpático de suavizar a frase.</li><li><b>hahaha:</b> a risada universal. Para muita gente soa um pouco mais medida que o "kkkk".</li><li><b>hehe:</b> risadinha. Pode ser timidez, pode ser malícia, pode ser "não achei tanta graça".</li><li><b>hihi:</b> risada tímida e fofa.</li><li><b>huehue:</b> ficou famosa nos jogos online. É a risada da zoeira.</li><li><b>hauahau, ashuashua:</b> o teclado esmagado. Ninguém escreve isso calmo.</li><li><b>KKKKKK:</b> em maiúsculas, é gargalhada de verdade.</li><li><b>k:</b> um k sozinho é quase um ponto final. Seco, irônico, às vezes passivo-agressivo.</li></ul>
-<!--AD-->
+<p>Os coreanos chegaram a uma solução parecida: lá a risada escrita é "ㅋㅋㅋ", uma letra que também tem som de k. Em outros lugares, a lógica é a mesma, com outras letras: "jajaja" em espanhol, "555" na Tailândia (o número 5 se fala "há") e "www" no Japão.</p>
 <h2>A escala de intensidade</h2>
 <p>Não existe régua oficial, mas qualquer brasileiro reconhece esta escala:</p>
 <ol><li><b>k</b>: entendi, segue o baile.</li><li><b>kk</b>: achei engraçadinho.</li><li><b>kkkk</b>: ri de verdade.</li><li><b>kkkkkkkkk</b>: ri alto, alguém do lado perguntou o que era.</li><li><b>KKKKKKKKKKK</b>: gargalhada.</li><li><b>kkkkjsjsjsjsks</b>: perdi o controle dos dedos.</li><li><b>"tô chorando", "morri", "não tô respirando"</b>: o nível máximo, quando as letras já não dão conta.</li></ol>
 <p>A regra geral: quanto mais letras, mais engraçado. E quanto mais bagunçadas, mais sincera a risada.</p>
-<h2>Variações, gerações e sotaques</h2>
+<h2>Kkkk, rsrs ou hahaha: qual usar?</h2>
 <p>Não há pesquisa definitiva sobre quem ri de qual jeito, mas algumas diferenças todo mundo percebe no próprio grupo:</p>
 <ul><li><b>O "rsrs" lembra os primeiros anos da internet</b> e aparece muito nos grupos da família.</li><li><b>O "kkkk" domina os grupos de amigos</b>, em todas as idades.</li><li><b>O "hahaha" aparece mais em conversas de trabalho</b>, onde soa mais neutro.</li><li><b>Cada grupo cria a sua:</b> tem turma que só ri com "kkkj", tem quem ri com "auhsuahs", tem quem responde tudo com figurinha.</li></ul>
 <p>Vale lembrar que risada é contexto. Um "rsrs" no grupo da família é carinho. O mesmo "rsrs" numa discussão pode soar como deboche.</p>
 <h3>Como não errar o tom</h3>
 <ul><li><b>Espelhe o grupo:</b> se todo mundo ri com "kkkk", um "rsrs" pode soar distante. No grupo da tia, o contrário.</li><li><b>Em conversa séria, evite o "k" sozinho:</b> ele quase sempre soa como deboche.</li><li><b>No trabalho, menos é mais:</b> um "haha" ou um emoji resolvem sem parecer que você está rindo do chefe.</li><li><b>Risada não substitui resposta:</b> "kkkk" para uma pergunta direta deixa a pessoa sem saber o que você pensa.</li></ul>
-<h2>E os emojis?</h2>
-<ul><li><b>😂 Rosto com lágrimas de alegria:</b> o clássico. Muita gente mais nova acha que ele ficou "de tiozão" e troca por 💀 ou 😭.</li><li><b>🤣 Rolando de rir:</b> um degrau acima do 😂.</li><li><b>😆 Olhos apertados:</b> risada aberta, mais leve.</li><li><b>😹 Gato rindo:</b> a risada de quem ama gato e figurinha.</li></ul>
-<h2>Quem é o Rei do Kkkk do seu grupo?</h2>
-<p>No <a href="/">Retrozap</a>, o prêmio <b>Rei do Kkkk</b> vai para quem tem a maior porcentagem de mensagens com risada. Entram kkkk, rsrs, haha, hihi, hauahau e os emojis 😂🤣😆😹. Por ser porcentagem, quem fala pouco mas ri em tudo tem chance contra o Tagarela, e só concorre quem mandou um mínimo de mensagens para a conta ser justa. A conversa é lida no seu celular, sem sair dele.</p>
-<p>Gosta do assunto? Veja também as <a href="/blog/girias-mais-usadas-no-whatsapp">gírias mais usadas no WhatsApp</a>, os <a href="/blog/tipos-de-pessoas-em-grupos-de-whatsapp">15 personagens que todo grupo tem</a> e mais <a href="/blog/premios-para-grupo-de-amigos">prêmios para o grupo de amigos</a>.</p>
-""" + CTA),
+<h2>E os emojis de risada?</h2>
+<ul><li><b>😂 Rosto com lágrimas de alegria:</b> o clássico. Muita gente mais nova acha que ele ficou "de tiozão" e troca por 💀 ou 😭.</li><li><b>🤣 Rolando de rir:</b> um degrau acima do 😂.</li><li><b>😆 Olhos apertados:</b> risada aberta, mais leve.</li><li><b>😹 Gato rindo:</b> a risada de quem ama gato e figurinha.</li><li><b>💀 Caveira:</b> "morri de rir". Quase nunca é sobre morte.</li><li><b>😭 Chorando:</b> pode ser tristeza ou choro de rir. O resto da mensagem decide.</li></ul>
+<p>Risada é só um pedaço do dialeto do grupo. Veja também as <a href="/blog/girias-mais-usadas-no-whatsapp">gírias do WhatsApp e o que significam</a>, como tmj, slk e pprt.</p>
+<div class="chamada"><h2>Quem é o Rei do Kkkk do seu grupo?</h2><p>No Retrozap, o prêmio <b>Rei do Kkkk</b> vai para quem tem a maior porcentagem de mensagens com risada. Entram kkkk, rsrs, haha, hihi, hauahau e os emojis de risada. Por ser porcentagem, quem fala pouco mas ri de tudo tem chance contra o Tagarela, e só concorre quem mandou um mínimo de mensagens, para a conta ser justa. A conversa é lida no seu celular, sem sair dele.</p><p><a class="cta" href="/">Descobrir o Rei do Kkkk do meu grupo</a></p></div>
+""" + FAQ_BLOCO(FAQ_KKKK) + """
+<p>Gosta do assunto? Veja os <a href="/blog/tipos-de-pessoas-em-grupos-de-whatsapp">15 personagens que todo grupo tem</a>, mais <a href="/blog/premios-para-grupo-de-amigos">prêmios para o grupo de amigos</a> e <a href="/blog/nomes-para-grupo-de-whatsapp">nomes para grupo de WhatsApp</a>, com gerador.</p>
+"""),
 
 ('frases-de-bom-dia-para-grupo', 'Bom dia para grupo: 50 frases (sem ser o tio do bom dia chato)',
  '50 frases de bom dia para grupo de WhatsApp: curtas, engraçadas, para a família, para o trabalho, para segunda e sexta. E as regras para o bom dia não irritar ninguém.', """
@@ -731,3 +831,43 @@ SECOES_BLOG = [
  ('Dicas para grupos', ['mensagens-de-fim-de-ano-para-grupo', 'amigo-secreto-pelo-whatsapp', 'brincadeiras-para-grupo-de-whatsapp', 'como-reanimar-grupo-parado', 'nomes-para-grupo-de-whatsapp', 'regras-para-grupo-de-whatsapp', 'como-evitar-brigas-no-grupo-da-familia', 'frases-de-bom-dia-para-grupo', 'jogos-para-jogar-com-amigos-e-familia']),
  ('Exportar e privacidade', ['como-exportar-conversa-whatsapp', 'exportar-conversa-whatsapp-nao-aparece', 'como-ler-conversa-exportada-do-whatsapp', 'privacidade-ao-analisar-conversas-do-whatsapp']),
 ]
+
+# ---------- páginas de busca (14/11/2026): risadas, gírias, nomes com gerador, retrospectiva e sorteio de amigo secreto ----------
+MODIFICADO.update({s: '2026-11-14' for s in ['kkkk-rsrs-hahaha-significado', 'girias-mais-usadas-no-whatsapp', 'nomes-para-grupo-de-whatsapp', 'amigo-secreto-pelo-whatsapp']})
+FAQ_ARTIGO.update({'kkkk-rsrs-hahaha-significado': FAQ_KKKK, 'girias-mais-usadas-no-whatsapp': FAQ_GIRIAS, 'nomes-para-grupo-de-whatsapp': _fer.FAQ_NOMES})
+TITULO_SEO.update({
+ 'blog/kkkk-rsrs-hahaha-significado.html': 'Kkkk, rsrs, hahaha: significado de cada risada no WhatsApp',
+ 'blog/girias-mais-usadas-no-whatsapp.html': f'Gírias do WhatsApp: significado de {GIRIAS_TOTAL} gírias e siglas',
+ 'blog/nomes-para-grupo-de-whatsapp.html': f'Nomes para grupo de WhatsApp: {_fer.TOTAL_NOMES} ideias + gerador grátis',
+ 'blog/retrospectiva-do-grupo-de-whatsapp.html': 'Retrospectiva do WhatsApp 2026: como fazer a do seu grupo',
+ 'amigo-secreto.html': 'Sorteio de amigo secreto pelo WhatsApp: grátis e online',
+})
+DESC_SEO.update({
+ 'blog/kkkk-rsrs-hahaha-significado.html': 'Kkkk é risada (o k se lê "cá"), rsrs vem de "risos" e hahaha é a risada universal. Veja a tabela do k ao KKKKKK, os emojis e o Rei do Kkkk.',
+ 'blog/girias-mais-usadas-no-whatsapp.html': f'O que significam tmj, slk, mds, pprt, sqn, bora e mais gírias e abreviações do WhatsApp: {GIRIAS_TOTAL} no total, com exemplos e as regionais.',
+ 'blog/nomes-para-grupo-de-whatsapp.html': f'{_fer.TOTAL_NOMES} nomes para grupo de WhatsApp: família, amigos, primos, trabalho, escola, casal, futebol, condomínio e Natal. Com gerador grátis.',
+ 'blog/retrospectiva-do-grupo-de-whatsapp.html': 'O WhatsApp não tem retrospectiva oficial, mas dá para fazer a do seu grupo: números de 2026, um prêmio para cada um e cards. Passo a passo e dúvidas.',
+ 'amigo-secreto.html': 'Sorteie o amigo secreto grátis e mande um link para cada pessoa no WhatsApp. Ninguém tira o próprio nome, sem cadastro e sem telefone.',
+})
+ATUALIZADO['amigo-secreto'] = '2026-11-14'
+# páginas sem AdSense (nem o script automático): ferramentas e páginas de busca revisadas
+SEM_ANUNCIO = {'amigo-secreto.html', 'blog/kkkk-rsrs-hahaha-significado.html', 'blog/girias-mais-usadas-no-whatsapp.html',
+               'blog/nomes-para-grupo-de-whatsapp.html', 'blog/retrospectiva-do-grupo-de-whatsapp.html', 'blog/amigo-secreto-pelo-whatsapp.html'}
+# título até 60 e descrição até 155 caracteres conferidos no build
+CHECAR_SEO = SEM_ANUNCIO
+# JSON-LD extra por página (ferramentas = WebApplication)
+LD_EXTRA = {
+ 'amigo-secreto.html': [_fer.webapp('Sorteio de amigo secreto pelo WhatsApp', 'https://retrozap.com.br/amigo-secreto', 'Sorteio de amigo secreto grátis: ninguém tira o próprio nome e cada pessoa recebe pelo WhatsApp um link que mostra só quem ela tirou. Os nomes não saem do celular.')],
+ 'blog/nomes-para-grupo-de-whatsapp.html': [_fer.webapp('Gerador de nomes para grupo de WhatsApp', 'https://retrozap.com.br/blog/nomes-para-grupo-de-whatsapp#gerador-t', 'Gerador grátis de nomes para grupo de WhatsApp por tipo de grupo e estilo: engraçado, carinhoso ou simples.')],
+}
+# perguntas visíveis de páginas fora do blog que também viram FAQPage
+FAQ_PAGINA = {'amigo-secreto.html': _fer.FAQ_AMIGO}
+# imagem de compartilhamento própria (og.py): página -> (arquivo em /og/, etiqueta)
+OG_PAGINA = {'amigo-secreto.html': ('amigo-secreto', 'Ferramenta grátis')}
+# trilha visível (além do blog)
+TRILHA_VISIVEL = {'amigo-secreto.html'}
+# bloco de ferramentas no topo do índice do blog
+FERRAMENTAS_BLOG = ('<h2>Ferramentas grátis</h2><div class="cards cards-ferramentas">'
+  '<a class="card" href="/amigo-secreto"><b>Sorteio de amigo secreto pelo WhatsApp</b><span class="small">Sorteie e mande um link para cada pessoa. Ninguém tira o próprio nome e os nomes não saem do celular.</span></a>'
+  f'<a class="card" href="/blog/nomes-para-grupo-de-whatsapp#gerador-t"><b>Gerador de nomes para grupo</b><span class="small">{_fer.TOTAL_NOMES} nomes por tipo de grupo e estilo, prontos para copiar.</span></a></div>')
+CSS_EXTRA += _fer.CSS_FERRAMENTAS
