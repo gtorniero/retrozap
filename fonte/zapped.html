@@ -3,6 +3,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=DM+Sans:wght@400;500;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>/* link de anúncio de casal (?m=casal ou utm com "casal"): tema de Casais já na primeira pintura; inicio() confirma o modo */try{if(/[?&](?:m=casal|utm_(?:content|campaign)=[^&]*casal)/i.test(location.search))document.documentElement.classList.add('casal')}catch(e){}</script>
 <style>
 /* Layout: palco roxo de premiação, uma coluna de app (520px) centrada, cerimônia em 3 atos tipo Stories */
 :root{
@@ -154,6 +155,14 @@ input[type=range]{width:100%;accent-color:var(--manga)}
 .modal img{max-width:min(86vw,420px);max-height:58vh;width:auto;height:auto;border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
 .modal .btn-ghost{background:var(--acai-2)}
 .modal p{text-align:center;max-width:32ch;font-size:14px;color:var(--neblina)}
+.modal.com-link img{max-height:34vh}
+.passo-link{width:min(86vw,420px);display:flex;flex-direction:column;gap:10px;background:var(--acai);border:2px solid var(--manga);border-radius:20px;padding:14px;text-align:center}
+.passo-link p,.modal .passo-link p{margin:0;max-width:none;color:var(--areia);font-size:15px;line-height:1.4}
+.passo-link .pl-ok{font-weight:700;color:var(--neblina)}
+.passo-link .pl-n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--manga);color:var(--noite);font-weight:800;margin-right:4px}
+html.casal .passo-link .pl-n{color:#fff}
+.passo-link .btn{width:100%;text-decoration:none}
+.passo-link .pl-url,.modal .passo-link .pl-url{font-size:14px;color:var(--neblina);overflow-wrap:anywhere}
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:15;width:100%;height:100%}
 .sample{font-size:12px;font-weight:700;background:var(--modo);color:var(--noite);border-radius:999px;padding:3px 10px;align-self:flex-start}
 .field{display:flex;flex-direction:column;gap:6px;text-align:left;width:100%}
@@ -466,7 +475,16 @@ html.casal .acao{background:linear-gradient(to top,var(--noite) 70%,rgba(255,245
 html.casal .btn-main,html.casal .tipo-conversa button[aria-pressed="true"]{color:#fff}
 html.casal .chip-casal b{color:var(--manga)}
 html.casal .perso .chip{background:#fff;color:#9B1648}
-.pw-ctx{margin:0;font-size:14px;font-weight:700;color:var(--neblina)}
+.pw-ctx{margin:0;padding:0 38px;font-size:14px;font-weight:700;color:var(--neblina)}
+.pw-prev{list-style:none;margin:0;padding:10px 12px;display:flex;flex-direction:column;gap:2px;background:var(--acai-2);border-radius:16px;text-align:left}
+.pw-prev li{display:flex;align-items:center;gap:10px;min-height:40px;font-weight:700;font-size:15px;color:var(--areia)}
+.pw-prev li .em{font-size:24px;line-height:1;flex:0 0 auto}.pw-prev li .em svg{width:30px;height:30px}
+.pw-prev li b{flex:1;min-width:0}
+.pw-borrao{flex:0 0 auto;width:64px;height:24px;border-radius:999px;background:var(--manga);opacity:.55;filter:blur(5px)}
+.pw-mais{margin:4px 0 0;font-size:14px;color:var(--neblina);text-align:center}
+.num-livre{display:flex;flex-direction:row;gap:14px;align-items:center}
+.num-mini{flex:0 0 36%;max-width:150px;min-width:0;aspect-ratio:9/16;border-radius:14px;background:var(--chiclete);box-shadow:0 10px 24px rgba(94,11,43,.18)}
+.num-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}.num-tx h2{font-size:22px;margin:0;line-height:1.1}.num-tx .btn{width:100%;padding:12px 8px;font-size:16px;white-space:normal}
 .pw-tit{font-size:30px;margin:0;line-height:1.05}.pw-tit em{font-style:normal;color:var(--manga)}
 .pw-preco{display:flex;flex-direction:column;align-items:center;gap:2px}
 .pw-preco b{font-family:var(--titulo);font-size:46px;line-height:1;color:var(--manga)}
@@ -713,6 +731,29 @@ html.casal .selo-esp{background:#B5174D;color:#FFF3EC}html.casal .card-fim.esp{b
 .v2-tt{margin:0 auto}
 .v2-nav{display:flex;gap:10px;width:100%}.v2-nav .btn{flex:1}
 .v2-aviso{margin:0;background:color-mix(in srgb,var(--manga) 16%,transparent);border-radius:14px;padding:12px 14px;font-size:16px}
+.v2-cola{display:flex;flex-direction:column;gap:8px;background:var(--acai-2);border-radius:20px;padding:14px 16px}.v2-cola h2{font-size:20px;margin:0}.v2-cola ol{margin:0}
+.v2-cola .v2-resumo{font-size:16px;color:var(--areia)}html:not(.casal) .v2-cola b{color:var(--manga)}
+.sel-tela{display:flex;justify-content:center}
+.sel-phone{width:min(260px,78vw);border-radius:28px;background:#0b0b0f;padding:7px;box-shadow:0 0 0 2px #3a2a50,0 14px 30px rgba(0,0,0,.35)}
+.sel-scr{border-radius:22px;overflow:hidden;background:#f2f2f4;color:#1d1d1f;font:500 12px/1.3 var(--texto);text-align:left;padding-bottom:6px}
+.sel-scr.a{background:#fff}
+.sel-bar{display:flex;align-items:center;justify-content:space-between;gap:6px;height:38px;padding:0 12px;border-bottom:1px solid #dcdce0;background:#f7f7f8;font-size:12px}
+.sel-scr.a .sel-bar{background:#f1f3f4;color:#1d1d1f;justify-content:flex-start;gap:14px}.sel-scr.a .sel-bar b{flex:1}
+.sel-scr .az{color:#0047b3}
+.sel-lst{margin:8px;background:#fff;border-radius:10px;overflow:hidden}
+.sel-scr.a .sel-lst{margin:4px 0}
+.sel-lst>div{position:relative;display:flex;gap:8px;align-items:center;padding:8px 10px;border-bottom:1px solid #ececf0}
+.sel-lst>div:last-child{border-bottom:0}
+.sel-lst>div.ok{background:#e3f6e8;box-shadow:inset 0 -3px 0 #25a85a}
+.sel-ic{font-size:16px;flex:0 0 auto}
+.sel-n{min-width:0;display:flex;flex-direction:column}.sel-n b{font-weight:700;overflow-wrap:anywhere}.sel-n small{color:#4f4f52;font-size:10.5px}
+.sel-lst>div.ok .sel-n{padding-right:34px}
+.sel-dedo{position:absolute;right:10px;top:50%;width:26px;height:26px;margin-top:-13px;border-radius:50%;background:rgba(255,255,255,.55);border:2px solid var(--chiclete);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.sel-tab{display:flex;justify-content:space-around;margin-top:6px;padding:8px 0 4px;border-top:1px solid #dcdce0;font-size:11px;color:#4f4f52}
+.v2-errado{display:flex;flex-direction:column;gap:10px;background:var(--acai-2);border:2px solid var(--chiclete);border-radius:20px;padding:16px}
+.v2-errado h2{font-size:22px;margin:0;line-height:1.15}.v2-errado h2:focus{outline:none}.v2-errado p{margin:0;font-size:16px;line-height:1.45}
+.v2-certo{display:flex;gap:10px;align-items:center;background:var(--areia);color:var(--noite);border-radius:14px;padding:10px 12px;text-align:left}
+.v2-certo>span:first-child{font-size:22px}.v2-certo b{display:block;font-size:15px;overflow-wrap:anywhere}.v2-certo small{display:block;font-size:13px;opacity:.85}
 .v2-resumo{font-size:14px;color:var(--neblina)}
 .v2-ok{margin:0;font-weight:700;color:var(--menta,#3DDC97)}
 html.casal .v2-card{background:#FFD6E2}html.casal .v2-stat b,html.casal .v2-ex,html.casal .v2-card small{color:#CC1D59}
@@ -1528,10 +1569,17 @@ function paywall(seguir, ctx){
   };
   m.innerHTML = `<div class="patro-box lemb pw" aria-live="polite"></div>`;
   const caixa = m.firstElementChild;
+  // casal: a prévia mostra os troféus que já foram calculados para os dois, sem dizer quem levou
+  const trofeus = ctx === 'casal' ? (state.awards || []).filter(a => !a.honra) : [], prev = trofeus.slice(0, 4);
+  const nomesCasal = ctx === 'casal' && state.data?.people?.length === 2 ? state.data.people.map(p => limpaTxt(p.name).split(' ')[0]).join(' & ') : '';
+  const topoCasal = prev.length ? `<p class="pw-ctx">💕 ${nomesCasal ? esc(nomesCasal) + ' · ' : ''}${fmt(state.data?.total || 0)} mensagens analisadas</p>
+      <h2 id="pwT" class="pw-tit">Os ${trofeus.length} troféus de vocês<br><em>já estão prontos.</em></h2>
+      <div class="pw-trofeus"><ul class="pw-prev">${prev.map(a => `<li><span class="em" aria-hidden="true">${a.e}</span><b>${esc(nomeCat(a.n))}</b><span class="pw-borrao" aria-hidden="true"></span></li>`).join('')}</ul>
+      <p class="sr-only">Quem levou cada troféu aparece depois de liberar.</p><p class="pw-mais">${trofeus.length > prev.length ? `+ ${trofeus.length - prev.length} ${trofeus.length - prev.length === 1 ? 'troféu' : 'troféus'}, o` : 'O'} placar "um contra o outro" e o vídeo de vocês</p></div>` : '';
   const inicio = () => {
     caixa.innerHTML = `<button type="button" class="pw-x" id="pwX" aria-label="Fechar">✕</button>
-      <p class="pw-ctx">${{personagens: '🔒 Os outros personagens são Premium', video: '🔒 Baixar o vídeo é Premium', livre: '🔒 A categoria livre é Premium', destaques: '🔒 O resto da retrospectiva 2026 é Premium', casal: '💕 Agora vem a melhor parte: os troféus de vocês dois'}[ctx] || '🎁 Seu primeiro grupo foi por nossa conta'}</p>
-      <h2 id="pwT" class="pw-tit">Acesso ilimitado.<br><em>Pague 1x só.</em></h2>
+      ${topoCasal || `<p class="pw-ctx">${{personagens: '🔒 Os outros personagens são Premium', video: '🔒 Baixar o vídeo é Premium', livre: '🔒 A categoria livre é Premium', destaques: '🔒 O resto da retrospectiva 2026 é Premium', casal: '💕 Agora vem a melhor parte: os troféus de vocês dois'}[ctx] || '🎁 Seu primeiro grupo foi por nossa conta'}</p>
+      <h2 id="pwT" class="pw-tit">Acesso ilimitado.<br><em>Pague 1x só.</em></h2>`}
       <p class="pw-lanc" id="pwOferta" hidden></p>
       <div class="pw-preco"><b id="pwPreco">R$ ${PRECO_TXT}</b><span>no Pix ou no cartão · menos que o rateio da pizza 🍕</span></div>
       <p class="small pw-calma">Pagamento único. Sem assinatura. Nada sai do seu celular.</p>
@@ -1557,15 +1605,16 @@ function paywall(seguir, ctx){
       <p class="small" style="margin:0">Continua igual: suas mensagens não saem do seu celular. O Pix é processado pelo Mercado Pago e o cartão pelo Stripe.</p>`;
     const lista = caixa.querySelector('.pw-lista'), itens = [...lista.children];
     const principal = document.createElement('ul'); principal.className = 'pw-lista';
-    principal.append(itens[{personagens:1,video:3,livre:4,casal:5}[offerContext] ?? 0]);
+    if (!topoCasal) principal.append(itens[{personagens:1,video:3,livre:4,casal:5}[offerContext] ?? 0]);
     // o mesmo pagamento vale para os dois: no paywall do casal, grupos ilimitados; no do 2º grupo, os casais
     const junto = {casal: [0, 'E grupos ilimitados também', 'Amigos, família, trampo, condomínio: quantos quiser, no mesmo pagamento.'],
                    second_group: [5, 'E o Retrozap Casais também', 'A retrospectiva completa de vocês dois, no mesmo pagamento.']}[offerContext];
     if (junto){ const li = itens[junto[0]], d = li.querySelector('div'); d.innerHTML = `<b>${junto[1]}</b>${junto[2]}`; principal.append(li); }
-    lista.before(principal);
+    if (!topoCasal) lista.before(principal);
     const detalhes = document.createElement('details'); detalhes.className = 'pw-beneficios';
     detalhes.innerHTML = '<summary style="cursor:pointer;min-height:44px;padding:12px 0;font-weight:700">Veja tudo o que está incluído</summary>';
     detalhes.append(lista); caixa.querySelector('#pwCartaoBox').after(detalhes);
+    if (topoCasal) detalhes.before(principal); // casal: a prévia já explica; o e-mail e o Pix sobem para a primeira tela
     caixa.querySelector('#pwX').onclick = fecha;
     caixa.querySelector('#pwTenho').onclick = codigoTela;
     const em = caixa.querySelector('#pwEm'), err = caixa.querySelector('#pwErr'), bt = caixa.querySelector('#pwPix'); let precoPix = PRECO_TXT;
@@ -1719,10 +1768,12 @@ function linkAbreWhats(){
 }
 // página inicial: o que a pessoa vai encontrar + Vamos começar
 const ORIGEM = (() => { try { const q = new URLSearchParams(location.search), de = q.get('de'); return de && /^[a-z]{3,12}$/.test(de) ? {de, casal: q.get('m') === 'casal'} : null; } catch { return null; } })();
+// anúncio ou link de casal abre direto em Casais: ?m=casal, ou utm_content/utm_campaign com "casal" (ex.: utm_content=rz03-casal)
+const ENTRADA_CASAL = (() => { try { const q = new URLSearchParams(location.search); return q.get('m') === 'casal' || /casal/i.test(q.get('utm_content') || '') || /casal/i.test(q.get('utm_campaign') || ''); } catch { return false; } })();
 let ORIGEM_VISTA = false;
 function inicio(){
   anchor(true);
-  if (ORIGEM && !ORIGEM_VISTA){ ORIGEM_VISTA = true; if (ORIGEM.casal) setModo('casal'); try { if (typeof evento === 'function') evento('chegou_de_compartilhamento', {origem: ORIGEM.de}); } catch {} }
+  if (!ORIGEM_VISTA){ ORIGEM_VISTA = true; if (ENTRADA_CASAL || ORIGEM?.casal) setModo('casal'); if (ORIGEM) try { if (typeof evento === 'function') evento('chegou_de_compartilhamento', {origem: ORIGEM.de}); } catch {} }
   PILHA.length = 0; SESS.tela(''); anunciaTela('inicio'); const vb = document.getElementById('voltar'); if (vb) vb.hidden = true;
   PILHA.push({f: inicio, k: 'inicio'}); V2.etapa = 'resultado'; V2.saiu = false; v2Salva(); if (!V2.entrou){ V2.entrou = true; v2Ev('ob2_entrada', {modo: state.modo}); }
   setSteps(0); state.data = null; const cs = state.modo === 'casal';
@@ -1793,7 +1844,12 @@ function v2Caminho(){
     <div class="badge priv-l v2-priv"><span class="ok-ic" aria-hidden="true">🔒</span><span><b>Pode ficar tranquilo.</b> O arquivo é aberto aqui no seu celular: a gente não recebe, não lê e não guarda suas mensagens. <a href="/privacidade" target="_blank" rel="noopener">Entenda a privacidade</a></span></div>
   </section>`;
   // já tem: vai para a etapa do arquivo e abre o seletor no mesmo toque
-  $('#v2Tenho').onclick = () => { v2Ev('ob2_ja_tenho'); home(); V2.viaTenho = true; $('#file')?.click(); V2.viaTenho = false; };
+  $('#v2Tenho').onclick = () => { v2Ev('ob2_ja_tenho'); home();
+    const abre = () => { V2.viaTenho = true; $('#file')?.click(); V2.viaTenho = false; };
+    // Android: a tela do arquivo aparece antes e o seletor abre logo depois (ainda dentro do mesmo toque). Abrir o seletor no
+    // meio do toque segurava a resposta da página até a pessoa voltar dele (INP de até 1,8 s em /comecar). No iPhone o
+    // seletor só abre se for no mesmo instante do toque, então fica como estava (e o Safari não mede INP).
+    if (/Android/i.test(navigator.userAgent)) requestAnimationFrame(() => setTimeout(abre, 0)); else abre(); };
   $('#v2Exportar').onclick = () => { v2Ev('ob2_preciso_exportar'); v2Ev('ob2_aparelho', {aparelho: state.how, detectado: true}); V2.passo = 0; v2Exportar(); };
   window.scrollTo(0, 0);
 }
@@ -1811,8 +1867,9 @@ function v2Exportar(){
     </div>
     ${v2Prog(i + 1, n)}
     ${ultimo ? `<h1 style="font-size:clamp(26px,7.5vw,34px)">Agora é no WhatsApp</h1>
-      <p class="v2-aviso">Depois de salvar o arquivo, <b>volte para esta página</b>. Ela vai estar te esperando no passo de escolher o arquivo.</p>
-      <details class="naoachei"><summary>Rever os passos</summary><ol class="how v2-resumo">${L.map(p => `<li>${p.t()}</li>`).join('')}</ol></details>
+      <p class="v2-aviso">Depois de salvar, <b>volte para esta página</b>: ela vai estar te esperando.</p>
+      <div class="v2-cola"><h2>No WhatsApp, são ${L.length} passos:</h2><ol class="how v2-resumo">${L.map(p => `<li>${p.t()}</li>`).join('')}</ol>
+        <p class="small" style="margin:0">Dica: tire um print desta tela antes de ir.</p></div>
       <a class="btn btn-wa" id="abreWa" href="${linkAbreWhats()}" style="text-decoration:none"><i class="ic-wa" aria-hidden="true"></i>Abrir o WhatsApp</a>
       <button type="button" class="btn btn-ghost" id="v2JaSalvei">Já salvei, escolher o arquivo</button>`
     : `<h1 style="font-size:clamp(24px,7vw,32px)">Vamos te mostrar onde tocar</h1>
@@ -1855,7 +1912,8 @@ function home(){
     ${voltou ? '<p class="v2-ok">✅ Bem-vindo de volta!</p>' : ''}
     <h1 style="font-size:clamp(28px,8vw,38px)">${voltou ? 'Agora escolha o arquivo' : 'Escolha o arquivo'}</h1>
     ${recarregou ? '<p class="v2-aviso">A página foi recarregada enquanto você estava no WhatsApp. O arquivo não fica guardado aqui, então é só escolher ele de novo.</p>' : ''}
-    <p class="pb-dica">${ip ? '👉 Na tela que abrir, toque em <b>Recentes</b>. Se você salvou em Arquivos, ele costuma ser o primeiro da lista: "WhatsApp Chat - ….zip".' : '👉 Na tela que abrir, procure em <b>Recentes</b> ou em <b>Downloads</b> (menu ☰), ou no lugar onde você salvou, como o <b>Drive</b>. O nome começa com "Conversa do WhatsApp com".'}</p>
+    <p class="pb-dica">${ip ? '👉 Na tela que abrir, toque em <b>Recentes</b> e escolha o arquivo <b>Conversa do WhatsApp…zip</b> (o de hoje).' : '👉 Na tela que abrir, procure em <b>Recentes</b> ou em <b>Downloads</b> (menu ☰) e escolha o arquivo <b>Conversa do WhatsApp…txt</b> (o de hoje). Salvou no <b>Drive</b>? Procure lá.'}</p>
+    ${seletorHTML(ip)}
     <label class="drop" for="file" id="v2Drop">
       <span class="big" aria-hidden="true">📂</span>
       <b id="dropT">Toque para escolher o arquivo</b>
@@ -1863,12 +1921,12 @@ function home(){
       <input type="file" id="file" accept=".zip,.txt,application/zip,application/x-zip-compressed,text/plain">
     </label>
     <p class="small v2-status" id="v2Status" role="status" aria-live="polite"></p>
-    <button class="btn btn-main" id="start" disabled>${state.modo === 'casal' ? '💕 Continuar com este arquivo' : '🏆 Continuar com este arquivo'}</button>
+    <button class="btn btn-main" id="start" hidden>${state.modo === 'casal' ? '💕 Continuar com este arquivo' : '🏆 Continuar com este arquivo'}</button>
     <button type="button" class="btn btn-ghost" id="v2Troca" hidden>Trocar arquivo</button>
     <p class="err" role="alert" id="err" hidden></p>
     <div class="badge priv-l v2-priv"><span class="ok-ic" aria-hidden="true">🔒</span><span><b>Pode ficar tranquilo.</b> O arquivo é aberto aqui no seu celular: a gente não recebe, não lê e não guarda suas mensagens. <a href="/privacidade" target="_blank" rel="noopener">Entenda a privacidade</a></span></div>
     <details class="naoachei" id="naoAchei"><summary>😵 Não achei o arquivo</summary>
-      ${ip ? `<ol class="how"><li>Abra o app <b>Arquivos</b> e veja <b>Recentes</b>. Também dá para buscar por "WhatsApp Chat".</li><li>Se escolheu outro lugar na hora de salvar (como iCloud Drive ou No meu iPhone), procure lá.</li><li>Não está em nenhum lugar? Exporte de novo e, na tela de compartilhar, procure a opção de salvar em Arquivos.</li></ol>`
+      ${ip ? `<ol class="how"><li>Abra o app <b>Arquivos</b> e veja <b>Recentes</b>. Também dá para buscar por "Conversa do WhatsApp" (ou "WhatsApp Chat", se o celular estiver em inglês).</li><li>Se escolheu outro lugar na hora de salvar (como iCloud Drive ou No meu iPhone), procure lá.</li><li>Não está em nenhum lugar? Exporte de novo e, na tela de compartilhar, procure a opção de salvar em Arquivos.</li></ol>`
            : `<ol class="how"><li>Abra o gerenciador de arquivos do celular (o nome muda: <b>Arquivos</b>, <b>Meus arquivos</b>…) e veja <b>Downloads</b> ou <b>Recentes</b>. Busque por "Conversa do WhatsApp".</li><li>Se salvou no Drive ou em outro app, procure lá.</li><li>Não está em nenhum lugar? Exporte de novo. As opções de salvar mudam de aparelho para aparelho: escolha uma que guarde o arquivo no celular ou no Drive.</li></ol>`}
       <button type="button" class="btn btn-ghost" id="v2Rever">Rever como exportar</button>
     </details>
@@ -1879,8 +1937,8 @@ function home(){
     V2.lendo = true; state.arquivo = f; state.bytes = null; $('#err').hidden = true; v2Ev('ob2_arquivo', {tipo: /\.zip$/i.test(f.name) ? 'zip' : /\.txt$/i.test(f.name) ? 'txt' : 'outro'});
     const lb = $('#v2Drop'); lb.classList.add('ok'); lb.setAttribute('aria-disabled', 'true'); $('#file').disabled = true;
     lb.querySelector('.big').textContent = '⏳'; $('#dropT').textContent = 'Verificando o arquivo…'; $('#fname').textContent = f.name;
-    $('#v2Status').textContent = 'Lendo o arquivo aqui no seu celular.'; $('#start').disabled = true; $('#v2Troca').hidden = false;
-    lembrete(() => readFile(f));
+    $('#v2Status').textContent = 'Lendo o arquivo aqui no seu celular.'; $('#start').hidden = true; $('#v2Troca').hidden = false; $('#v2Errado')?.remove();
+    lembrete(() => readFile(f), () => { V2.lendo = false; const st = $('#start'); if (st){ st.hidden = false; st.disabled = false; } $('#v2Status').textContent = 'Arquivo escolhido. Toque em Continuar com este arquivo.'; });
   };
   $('#file').onchange = e => { V2.ficticio = false; escolhe(e.target.files[0]); };
   $('#v2Drop').addEventListener('click', () => v2Ev('ob2_abriu_seletor', {de: V2.viaTenho ? 'ja_tenho' : 'caixa'}));
@@ -1895,7 +1953,36 @@ function v2Destrava(){
   V2.lendo = false; state.arquivo = null; const lb = $('#v2Drop'); if (!lb) return;
   lb.classList.remove('ok'); lb.removeAttribute('aria-disabled'); const fi = $('#file'); if (fi){ fi.disabled = false; fi.value = ''; }
   lb.querySelector('.big').textContent = '📂'; $('#dropT').textContent = 'Toque para escolher outro arquivo'; $('#fname').textContent = 'Arquivo .zip ou .txt exportado pelo WhatsApp';
-  $('#v2Status').textContent = ''; $('#v2Troca').hidden = true; $('#start').disabled = true;
+  $('#v2Status').textContent = ''; $('#v2Troca').hidden = true; $('#start').hidden = true;
+}
+// mini tela do seletor de arquivos ("Recentes"), no estilo das cenas do exportar, com o arquivo certo em destaque (decorativa)
+function seletorHTML(ip){
+  const nome = casalTxt(`Conversa do WhatsApp com Turma do Churras.${ip ? 'zip' : 'txt'}`);
+  const itens = [[ip ? '🗜️' : '📄', nome, 'hoje · 412 KB', true], ['🖼️', 'IMG_2231.jpg', 'ontem'], ['📄', 'Boleto_condominio.pdf', '12/11']];
+  return `<div class="sel-tela" aria-hidden="true"><div class="sel-phone"><div class="sel-scr${ip ? ' i' : ' a'}">
+    ${ip ? '<div class="sel-bar"><span class="az">Cancelar</span><b>Recentes</b><span class="az"><b>Abrir</b></span></div>' : '<div class="sel-bar"><span>☰</span><b>Downloads</b><span>⋮</span></div>'}
+    <div class="sel-lst">${itens.map(([e, n, d, ok]) => `<div class="${ok ? 'ok' : ''}"><span class="sel-ic">${e}</span><span class="sel-n"><b>${esc(n)}</b><small>${d}</small></span>${ok ? '<i class="sel-dedo"></i>' : ''}</div>`).join('')}</div>
+    ${ip ? '<div class="sel-tab"><span class="az">🕘 Recentes</span><span>📁 Navegar</span></div>' : ''}
+  </div></div></div>`;
+}
+// arquivo errado: aviso no topo (onde a pessoa está olhando), com o nome do arquivo escolhido e o do certo.
+// O nome do arquivo fica só na tela: não vai para o GA4 nem para lugar nenhum.
+function v2ArquivoErrado(nomeEscolhido, tipo){
+  const ip = state.how === 'iphone', h = view.querySelector('h1'); if (!h) return;
+  view.querySelector('#v2Errado')?.remove();
+  const nome = esc(cortaNome(limpaTxt(String(nomeEscolhido || '').split('/').pop()), 60) || 'esse arquivo');
+  const tit = tipo === 'nao_abriu' ? 'Não deu para abrir esse arquivo' : 'Esse não é o arquivo da conversa';
+  const tx = tipo === 'nao_abriu' ? `O celular não deixou o site abrir <b>${nome}</b>. Escolha de novo, de preferência o arquivo salvo em Downloads. O certo tem este nome e é de hoje:`
+    : tipo === 'zip_sem_conversa' ? `Você escolheu <b>${nome}</b>, que não tem as mensagens dentro. O certo tem este nome e é de hoje:`
+    : `Você escolheu <b>${nome}</b>, que não é o arquivo que o WhatsApp gera em Exportar conversa. O certo tem este nome e é de hoje:`;
+  h.insertAdjacentHTML('afterend', `<div class="v2-errado" id="v2Errado" role="alert" aria-labelledby="v2ErT">
+    <h2 id="v2ErT" tabindex="-1">${tit}</h2><p>${tx}</p>
+    <div class="v2-certo"><span aria-hidden="true">${ip ? '🗜️' : '📄'}</span><span><b>Conversa do WhatsApp com ${state.modo === 'casal' ? 'nome da pessoa' : 'nome do grupo'}.${ip ? 'zip' : 'txt'}</b><small>Com o celular em inglês, o nome começa com "WhatsApp Chat".</small></span></div>
+    <button type="button" class="btn btn-main" id="v2ErOutro">Escolher outro arquivo</button>
+    <button type="button" class="btn btn-ghost" id="v2ErRever">Não tenho esse arquivo: rever como exportar</button></div>`);
+  $('#v2ErOutro').onclick = () => { v2Ev('ob2_outro_arquivo', {de: 'arquivo_errado'}); $('#file')?.click(); };
+  $('#v2ErRever').onclick = () => { v2Ev('ob2_rever_exportar', {de: 'arquivo_errado'}); V2.passo = 0; v2Exportar(); };
+  window.scrollTo(0, 0); $('#v2ErT')?.focus({preventScroll: true});
 }
 const v2Data = t => t.toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit', year: 'numeric'});
 
@@ -2003,7 +2090,7 @@ async function readFile(f){
     }
     text = text.replace(/^\uFEFF/, '');
     await run(text, false);
-  }catch(e){ V2.lendo = false; v2Ev('ob2_leitura', {resultado: e && e.amigavel ? (/zip/.test(e.message) ? 'zip_sem_conversa' : 'nao_abriu') : 'erro_leitura'}); if (!document.getElementById('v2Drop')) home(); const er = $('#err'); if (er){ er.hidden = false; er.textContent = e && e.amigavel ? e.message : 'Não consegui abrir esse arquivo. Ele precisa ser o arquivo que o WhatsApp gera em Exportar conversa (.zip ou .txt). Exporte de novo e escolha esse arquivo.'; } v2Destrava(); }
+  }catch(e){ V2.lendo = false; const tipo = e && e.amigavel ? (/zip/.test(e.message) ? 'zip_sem_conversa' : 'nao_abriu') : 'erro_leitura'; v2Ev('ob2_leitura', {resultado: tipo}); if (!document.getElementById('v2Drop')) home(); v2Destrava(); v2ArquivoErrado(f.name, tipo); }
 }
 function carregando(titulo){
   { const vb = document.getElementById('voltar'); if (vb) vb.hidden = true; }
@@ -2346,10 +2433,21 @@ function story(){
     <div class="badge"><span aria-hidden="true">📅</span><span>A primeira mensagem foi em <b>${dataLonga(d.start)}</b>. A última, em <b>${dataLonga(d.end)}</b>.${d.perdidas ? ` ${fmt(d.perdidas)} linhas não puderam ser lidas.` : ''}</span></div>
     ${d.semTipo ? `<div class="badge"><span aria-hidden="true">📱</span><span><b>Export do Android sem mídia.</b> Nesse formato o WhatsApp escreve só "mídia oculta", sem dizer se era áudio, foto ou figurinha. Por isso juntamos tudo em <b>mídias</b> e o Podcaster vira o <b>Inimigo do Texto</b>.</span></div>` : ''}
     <div class="panel"><h2 style="font-size:22px;margin:0">📈 Mensagens ano a ano</h2>${graficoAnos(d)}</div>
+    ${m === 'casal' ? `<div class="panel num-livre"><img id="numImg" class="num-mini" alt="">
+      <div class="num-tx"><h2>Mostrem o número de vocês</h2><p class="small" style="margin:0">Grátis, em 9:16, pronto para o status e os stories.</p>
+      <button type="button" class="btn btn-main" id="numSh">📤 Compartilhar</button></div></div>` : ''}
     <p class="lead" style="text-align:center;font-size:20px"><b style="color:var(--areia)">${m === 'casal' ? 'Quem é mais romântico? Quem ri mais? Quem pede desculpas?' : 'Quem fala mais? Quem some? Quem manda áudio de 5 minutos?'}</b><br>Tudo isso vai ser revelado agora.</p>
     <button class="btn btn-main" id="go">Ver as categorias →</button>
   </section>`;
   $('#go').onclick = async () => { if (m === 'casal'){ const g = $('#go'); g.disabled = true; const ok = await premiumLiberado(); g.disabled = false; if (!ok) return paywall(lineup, 'casal'); } lineup(); };
+  if ($('#numImg')){
+    // card grátis antes do paywall: quem não pagar ainda sai com algo para mostrar (e o link do site vai junto)
+    const desenha = () => { const el = $('#numImg'); if (el?.isConnected){ el.src = drawNumero(); el.alt = altNumero(); } };
+    FILA_IMG.push(desenha); rodaFilaImg(); (state.compP || Promise.resolve()).then(() => { FILA_IMG.push(desenha); rodaFilaImg(); });
+    $('#numSh').onclick = async () => { await prontoArte(); const url = drawNumero(), blob = paraBlob(url), nome = 'retrozap-numero-do-casal.png', texto = convite('resumo');
+      let pode = false; try { pode = !!navigator.canShare?.({files: [new File([blob], nome, {type: 'image/png'})]}); } catch {}
+      if (pode){ if (await compartilhaArquivo(blob, nome, texto) === 'ok') oferecerLink(texto); } else openCard(() => url, texto, altNumero()); };
+  }
   preencheTops(); (state.compP || Promise.resolve()).then(() => { if (view.querySelector('[data-top]')) preencheTops(); });
   window.scrollTo(0,0);
 }
@@ -2451,7 +2549,7 @@ function popSpoiler(ativos, comecar){
     const blob = paraBlob(url), nome = 'retrozap-spoiler.png', f = new File([blob], nome, {type: 'image/png'});
     let pode = false; try { pode = !!navigator.canShare?.({files: [f]}); } catch {}
     fecha(); comecar?.();
-    if (pode) await compartilhaArquivo(blob, nome, convite('spoiler', n)); else openCard(() => url, convite('spoiler', n), alt);
+    if (pode){ if (await compartilhaArquivo(blob, nome, convite('spoiler', n)) === 'ok') oferecerLink(convite('spoiler', n)); } else openCard(() => url, convite('spoiler', n), alt);
   };
   m.addEventListener('keydown', e => { if (e.key === 'Escape') fecha(); });
   m.addEventListener('click', e => { if (e.target === m) fecha(); });
@@ -2636,6 +2734,7 @@ function ligaVideo(d, casal, refaz){
     if (r === 'sem-gesto'){ bt.textContent = '📤 Vídeo pronto! Toque para salvar ou compartilhar'; msg.textContent = 'Seu vídeo está pronto.'; return; }
     bt.textContent = '📤 Salvar ou compartilhar de novo';
     msg.textContent = r === 'baixou' ? 'Vídeo baixado! Procure na pasta de downloads.' : r === 'ok' ? 'Pronto! 🎉' : 'Seu vídeo está pronto. Toque de novo quando quiser.';
+    if (r === 'ok') oferecerLink(convite('video'));
   };
   $('#vger').onclick = async () => {
     const bt = $('#vger'), msg = $('#vmsg');
@@ -2691,6 +2790,10 @@ function fimTela(semFesta){
       ${(() => { const per = so26 ? 'só ' + ANO_MOMENTO : 'desde o início', itens = casal
           ? [videoHTML(casal), fig(6, '🧾 Recibo do amor', per, altRecibo(d), ESP), fig(10, '📋 Boletim do casal', per, altBoletim(), ESP), fig(13, '✨ Horóscopo do casal', 'desde o início', altAstral(), ESP), fig(7, '💞 Placar do casal', per, altPlacar(d)), fig(5, '💞 Nós dois: um contra o outro', per, altCasal(d)), fig(3, '🏆 Quadro de troféus', state.base26 ? 'só ' + ANO_MOMENTO : 'desde o início', altTop10()), fig(1, '📸 Resumo do casal', 'desde o início', altResumo(d)), so26 ? fig(4, `🗓️ O nosso ${ANO_MOMENTO}`, 'só ' + ANO_MOMENTO, altNosso2026()) : '', rankingOk() ? fig(18, 'Top Brasil dos casais', 'só ' + ANO_MOMENTO, altRanking(), 'TOP BRASIL') : ''].filter(Boolean)
           : [videoHTML(casal), fig(14, '📰 Diário da Turma', per, altDiario(), ESP), dadosGrupo().fp && fig(15, '👻 Procura-se', 'desde o início', altProcurado(), ESP), plantaoInfo() ? fig(17, '🚨 Plantão do Zap', 'só ' + ANO_MOMENTO, altPlantao(), 'Rara: só no Top 10%') : '', hitsGrupo().length ? fig(16, '📻 Rádio Turma FM', 'desde o início', altRadio(), ESP) : '', fig(3, '🏆 Quadro de troféus', state.base26 ? 'só ' + ANO_MOMENTO : 'desde o início', altTop10()), fig(9, `💬 ${so26 ? 'O número de ' + ANO_MOMENTO : 'O número do grupo'}`, per, altNumero()), fig(1, '📸 Resumo do grupo', 'desde o início', altResumo(d)), so26 ? fig(4, `🗓️ Nosso ${ANO_MOMENTO}`, 'só ' + ANO_MOMENTO, altNosso2026()) : '', rankingOk() ? fig(18, 'Top Brasil', 'só ' + ANO_MOMENTO, altRanking(), 'TOP BRASIL') : ''].filter(Boolean);
+        // grátis: o carrossel abre no Quadro de troféus (dá para mandar na hora) e o vídeo com cadeado vai para o fim
+        // (antes do Top Brasil, que é sempre o último). Premium: ordem de sempre, com o vídeo primeiro.
+        if (!premiumLocal()){ const q = itens.findIndex(x => x.includes('id="rimg3"')); if (q > 0) itens.unshift(...itens.splice(q, 1));
+          const v = itens.findIndex(x => x.includes('video-fim')); if (v >= 0){ const [vid] = itens.splice(v, 1), br = itens.findIndex(x => x.includes('id="rimg18"')); itens.splice(br >= 0 ? br : itens.length, 0, vid); } }
         return `<p class="carr-dica" aria-hidden="true">👉 Arraste para o lado: são ${itens.length} mídias</p><div class="carr-box"><button type="button" class="carr-lado esq" data-carr="-1" aria-label="Mídia anterior">‹</button><div class="carr" id="carr" role="region" aria-roledescription="carrossel" aria-label="Vídeo e imagens para compartilhar" tabindex="0">${itens.map((x, i) => `<div class="carr-i" role="group" aria-roledescription="item" aria-label="${i + 1} de ${itens.length}">${x}</div>`).join('')}</div><button type="button" class="carr-lado dir" data-carr="1" aria-label="Próxima mídia">›</button></div>
         <div class="carr-nav"><button type="button" class="carr-seta" data-carr="-1" aria-label="Anterior">‹ Anterior</button><div class="carr-dots">${itens.map((_, i) => `<button type="button" data-dot="${i}" aria-label="Ver item ${i + 1} de ${itens.length}"${i ? '' : ' aria-current="true"'}></button>`).join('')}</div><button type="button" class="carr-seta prox" data-carr="1" aria-label="Próximo">Próximo ›</button></div><p class="carr-n small" aria-hidden="true">1 de ${itens.length}</p><p class="sr-only" id="carrVivo" aria-live="polite"></p>`; })()}
     </section>
@@ -2757,7 +2860,7 @@ function fimTela(semFesta){
   const liga = (id, fz, nome, alt) => { if (!$('#sv' + id)) return;
     $('#sv' + id).onclick = async () => { const blob = paraBlob(fz()), f = new File([blob], nome, {type: 'image/png'});
       let pode = false; try { pode = !!navigator.canShare?.({files: [f]}); } catch {}
-      if (pode) return compartilhaArquivo(blob, nome, convite('resumo'));
+      if (pode){ const r = await compartilhaArquivo(blob, nome, convite('resumo')); if (r === 'ok') oferecerLink(convite('resumo')); return r; }
       openCard(fz, convite('resumo'), alt); }; };
   liga(1, () => drawResumo(d), 'retrozap-resumo.png', altResumo(d));
   liga(3, () => drawTop10(), 'retrozap-trofeus.png', altTop10());
@@ -2946,7 +3049,26 @@ const vfmt = (a,v) => a.pct ? v + '%' : a.rate ? v.toLocaleString('pt-BR') : fmt
 const vunid = (a, v) => `${vfmt(a, v)} ${a.u}`;
 const fatia = (a, v) => a.total ? Math.round(v/a.total*100) + '%' : '';
 function detalhe(a, r){ return a.det && r.p ? a.det(r.p) : a.fatia && a.total ? `${fatia(a, r.v)} dos ${a.u}` : ''; }
-function phrase(a){ return a.p.replaceAll('{w}', a.winner.name).replaceAll('{v}', vfmt(a, a.winner.v)).replaceAll('{s}', fatia(a, a.winner.v)); }
+// empate técnico: o vencedor vira "Ana e Bruno", então o verbo vai para o plural e aparecem os números dos dois
+const PLURAL_EMP = [['A mãe de {w} está decepcionada', 'As mães de {w} estão decepcionadas'], ['{w} mandou', '{w} mandaram'], ['{w} convocou', '{w} convocaram'], ['{w} ressuscitou', '{w} ressuscitaram'], ['{w} apagou', '{w} apagaram'],
+  ['{w} procurou ou achou', '{w} procuraram ou acharam'], ['{w} reclamou', '{w} reclamaram'], ['{w} abriu', '{w} abriram'], ['{w} falou', '{w} falaram'],
+  ['{w} nunca esquece', '{w} nunca esquecem'], ['{w} lê tudo e não fala nada', '{w} leem tudo e não falam nada'], ['{w} é ', '{w} são '], ['{w} se comunica ', '{w} se comunicam '],
+  ['{w} tem ', '{w} têm '], ['{w} escreve ', '{w} escrevem '], ['{w} transformou', '{w} transformaram'], ['{w} documenta', '{w} documentam'], ['{w} está ', '{w} estão '],
+  ['{w} carrega', '{w} carregam'], ['{w} não digita, {w} se expressa', '{w} não digitam, {w} se expressam'], ['{w} levou', '{w} levaram'], ['{w} responde', '{w} respondem'],
+  ['{w} ri ', '{w} riem '], ['{w} pediu', '{w} pediram'], ['{w} quer saber', '{w} querem saber'], ['{w} acha ', '{w} acham '], ['{w} registra', '{w} registram'],
+  ['{w} esqueceu', '{w} esqueceram'], ['{w} sente', '{w} sentem'], ['Corajoso, {w}', 'Corajosos, {w}'], ['Sem essa pessoa', 'Sem essas pessoas'],
+  ['{w}, vai dormir', '{w}, vão dormir'], ['{w}, desliga', '{w}, desliguem'], ['Respira, {w}', 'Respirem, {w}'],
+  ['já tinha mandado', 'já tinham mandado'], ['Desfibrilador humano', 'Desfibriladores humanos'], ['Detetive da comunidade', 'Detetives da comunidade']];
+function phrase(a){
+  let t = a.p, v = vfmt(a, a.winner.v), s = fatia(a, a.winner.v);
+  if (a.empate && a.ranked?.[1]){
+    for (const [x, y] of PLURAL_EMP) t = t.replaceAll(x, y);
+    const v2 = a.ranked[1].v, fim = a.u && ['.', ','].find(p => t.includes(`{v} ${a.u}${p}`));
+    if (v2 !== a.winner.v){ v = `${vfmt(a, a.winner.v)} e ${vfmt(a, v2)}`; if (s) s = `${s} e ${fatia(a, v2)}`; }
+    else if (!a.rate && !a.pct && a.k !== 'avg' && fim) t = t.replace(`{v} ${a.u}${fim}`, `{v} ${a.u} cada${fim}`); // "52 mensagens cada."
+  }
+  return t.replaceAll('{w}', a.winner.name).replaceAll('{v}', v).replaceAll('{s}', s);
+}
 // casal: os dois lado a lado (ouro e prata), com a diferença em destaque
 function duelo(a){
   const r = a.ranked.slice(0, 2); if (r.length < 2 || a.mech === 'podio') return '';
@@ -3043,7 +3165,7 @@ function drawTop10(){
   c.fillStyle = K.txt; c.font = `800 120px ${BR2}`; espaco(c, -4); c.fillText('Quadro de', 70, 330); c.fillText('troféus', 70, 448); espaco(c, 0);
   c.fillStyle = K.dest; caber(c, `${limpaTxt(state.grupo || nomePadrao())} · ${state.base26 ? ANO_MOMENTO : 'desde o início'}`, 70, 520, 940, 700, 40, DM2);
   const ps = principais(), cols = 2, gap = 28, cw = (W - 140 - gap)/cols, rows = Math.ceil(ps.length/cols);
-  const ch = Math.min(250, (1700 - 590 - gap*(rows - 1))/Math.max(rows, 1)), y0 = 590;
+  const ch = Math.min(250, (1600 - 590 - gap*(rows - 1))/Math.max(rows, 1)), y0 = 590;
   ps.forEach((a, i) => {
     const x = 70 + (i % cols)*(cw + gap), y = y0 + Math.floor(i/cols)*(ch + gap);
     c.fillStyle = K.caixa; c.beginPath(); c.roundRect(x, y, cw, ch, 32); c.fill();
@@ -3052,6 +3174,7 @@ function drawTop10(){
     c.textAlign = 'left'; c.fillStyle = K.sub; caber(c, gtit(a.n, a.winner.name), tx, y + ch*.42, tw, 700, Math.round(Math.min(32, ch*.16)), DM2);
     c.fillStyle = K.txt; caber(c, nomeCurto(a.winner.name), tx, y + ch*.74, tw, 800, Math.round(Math.min(56, ch*.27)), BR2);
   });
+  dominioC(c, K.sub);
   c.textAlign = 'center'; c.fillStyle = K.txt; c.font = `700 40px ${DM2}`; c.fillText(K.provoca, W/2, 1830, 980);
   return cv.toDataURL('image/png');
 }
@@ -3228,7 +3351,7 @@ function drawResumo(d){
   }
   // mensagens ano a ano
   const L = porAno(d), mx = Math.max(1, ...L.map(x => x.n)), gx = 90, gw = W - 180, bw = Math.min(110, gw/L.length - 16), y0 = 1560, gh = 200;
-  c.textAlign = 'center'; c.fillStyle = CV().sub; c.font = `700 28px ${DM}`; c.fillText('MENSAGENS ANO A ANO', W/2, y0 - 20);
+  c.textAlign = 'left'; c.fillStyle = CV().sub; c.font = `700 28px ${DM}`; c.fillText('MENSAGENS ANO A ANO', gx, y0 - 20); dominioC(c, CV().sub, W - gx, y0 - 20, 'right', 28); c.textAlign = 'center';
   L.forEach((x, i) => {
     const cx = gx + (i + .5)*gw/L.length, h = Math.max(6, x.n/mx*gh), by = y0 + 30 + gh - h;
     c.fillStyle = x.y === ANO_MOMENTO ? CV().ouro : CV().brilho(.55); c.beginPath(); c.roundRect(cx - bw/2, by, bw, h, 12); c.fill();
@@ -3454,7 +3577,7 @@ function drawNosso2026(){
   }
   if (ds.length){
     const bw = (W - 100 - (ds.length - 1)*16)/ds.length;
-    c.textAlign = 'center'; c.fillStyle = K.sub; c.font = `700 28px ${DM}`; c.fillText(ds.length > 1 ? `TOP ${ds.length} DESTAQUES DE ${ANO_MOMENTO}` : `DESTAQUE DE ${ANO_MOMENTO}`, W/2, 1610);
+    c.textAlign = 'left'; c.fillStyle = K.sub; c.font = `700 28px ${DM}`; c.fillText(ds.length > 1 ? `TOP ${ds.length} DESTAQUES DE ${ANO_MOMENTO}` : `DESTAQUE DE ${ANO_MOMENTO}`, 50, 1610); dominioC(c, K.sub, W - 50, 1610, 'right', 28); c.textAlign = 'center';
     ds.forEach((x, i) => {
       const bx = 50 + i*(bw + 16), cx = bx + bw/2;
       c.fillStyle = K.brilho(.14); c.beginPath(); c.roundRect(bx, 1630, bw, 196, 26); c.fill();
@@ -3538,6 +3661,7 @@ function drawRecibo(d){
   c.fillStyle = VINHO; caber(c, 'via do casal · não tem devolução', W/2, y + 100, pw - 100, 500, 28, MO2);
   barrasC(c, W/2, y + 130, 440, 100, VINHO);
   c.restore();
+  dominioC(c, VINHO, W/2, Math.max(Y_DOMINIO, Math.min(1700, y + 300)));
   rodape3(c, 'e o WhatsApp de vocês? retrozap.com.br', '#FFF3EC');
   return cv.toDataURL('image/png');
 }
@@ -3582,7 +3706,8 @@ function drawBoletim(){
   [[P.na, ma, CEREJA], [P.nb, mb, VINHO]].forEach(([n, v, cor], i) => { const bx = tx + i*(bw + 30);
     c.fillStyle = cor; c.beginPath(); c.roundRect(bx, by, bw, 210, 40); c.fill(); c.fillStyle = '#FFF3EC'; c.textAlign = 'center';
     caber(c, `MÉDIA ${n.toUpperCase()}`, bx + bw/2, by + 66, bw - 60, 700, 30, DM2); c.font = `800 100px ${BR2}`; c.fillText(umaCasa(Math.round(v*10)/10), bx + bw/2, by + 172); });
-  c.save(); c.translate(W/2, by + 330); c.rotate(-.035); c.strokeStyle = CEREJA; c.lineWidth = 9; c.beginPath(); c.roundRect(-400, -60, 800, 120, 30); c.stroke();
+  dominioC(c, VINHO, W/2, by + 262);
+  c.save(); c.translate(W/2, by + 352); c.rotate(-.035); c.strokeStyle = CEREJA; c.lineWidth = 9; c.beginPath(); c.roundRect(-400, -60, 800, 120, 30); c.stroke();
   c.fillStyle = CEREJA; c.textAlign = 'center'; caber(c, `APROVADOS PARA ${ANO_MOMENTO + 1}`, 0, 22, 740, 800, 62, BR2); c.restore();
   rodape3(c, 'e o WhatsApp de vocês? retrozap.com.br', VINHO);
   return cv.toDataURL('image/png');
@@ -3688,6 +3813,7 @@ function drawAstral(){
   if (x.f) item('#FF4F8B', `Ascendente em "${x.f.t}"`, `${x.f.n} vezes até aqui`);
   c.textAlign = 'center'; c.fillStyle = CREME; c.font = `500 38px ${DM2}`;
   wrap(c, `Sintonia: ${x.sint}%. ${x.sint >= 80 ? `Vocês mandam quase o mesmo tanto de mensagens (${fmt(x.sol.max)} a ${fmt(x.sol.min)}).` : x.sint >= 60 ? `${x.sol.w} fala um pouco mais (${fmt(x.sol.max)} a ${fmt(x.sol.min)}).` : `${x.sol.w} fala por dois (${fmt(x.sol.max)} a ${fmt(x.sol.min)}).`}`, W/2, Math.min(y + 30, 1660), 900, 52);
+  dominioC(c, CREME);
   rodape3(c, 'e o mapa do WhatsApp de vocês? retrozap.com.br', CREME);
   return cv.toDataURL('image/png');
 }
@@ -3727,8 +3853,10 @@ function drawDiario(){
   secs.push(['ECONOMIA', `O grupo mandou ${fmt(g.src.total)} mensagens ${state.compD ? 'em ' + ANO_MOMENTO : 'desde o início'}${g.top.total != null && g.top.total <= 50 ? ` e está no top ${g.top.total}% do Brasil` : ''}.`]);
   if (g.rec) secs.push(['CLIMA', `${dataBR(g.rec[0])} teve tempestade: ${fmt(g.rec[1])} mensagens num só dia.`]);
   const cw = (W - 108 - 40)/2;
+  let fimSecs = y;
   secs.slice(0, 4).forEach(([t, txt], i) => { const x = 54 + (i % 2)*(cw + 40), yy = y + Math.floor(i/2)*250;
-    c.textAlign = 'left'; c.fillStyle = NOITE; c.font = `800 38px ${BR2}`; c.fillText(t, x, yy); c.font = `500 32px ${DM2}`; wrap(c, txt, x, yy + 50, cw, 42); });
+    c.textAlign = 'left'; c.fillStyle = NOITE; c.font = `800 38px ${BR2}`; c.fillText(t, x, yy); c.font = `500 32px ${DM2}`; const nl = wrap(c, txt, x, yy + 50, cw, 42); fimSecs = Math.max(fimSecs, yy + 50 + (nl - 1)*42); });
+  dominioC(c, NOITE, W/2, Math.min(1700, Math.max(Y_DOMINIO, fimSecs + 60)));
   c.fillStyle = NOITE; c.beginPath(); c.roundRect(54, 1760, W - 108, 110, 28); c.fill(); c.fillStyle = '#FFF4E0'; c.textAlign = 'center'; c.font = `700 40px ${DM2}`; c.fillText('e o seu grupo de WhatsApp? retrozap.com.br', W/2, 1830);
   return cv.toDataURL('image/png');
 }
@@ -3753,6 +3881,7 @@ function drawProcurado(){
   row('visualizou e não respondeu', 'quase todas', 1260);
   c.fillStyle = NOITE; c.beginPath(); c.roundRect(150, 1420, W - 300, 150, 24); c.fill(); c.fillStyle = '#FFC23C'; c.textAlign = 'center';
   caber(c, `Recompensa: 1 áudio de 5 min do ${primeiro(g.tag.name)}`, W/2, 1512, W - 360, 800, 46, BR2);
+  dominioC(c, NOITE, W/2, 1645);
   c.restore();
   rodape3(c, 'quem é o fantasma do seu grupo de WhatsApp? retrozap.com.br', NOITE);
   return cv.toDataURL('image/png');
@@ -3786,6 +3915,7 @@ function drawRadio(){
       c.fillStyle = NOITE; c.textAlign = 'left'; c.font = `800 54px ${BR2}`; c.fillText(String(i + 2), 104, y + 78);
       caber(c, `"${x.w}" · ${x.pessoas > 1 ? x.pessoas + ' pessoas' : x.quem}`, 190, y + 76, 640, 700, 40, DM2); c.textAlign = 'right'; c.font = `500 38px ${DM2}`; c.fillText(fmt(x.n), W - 104, y + 76); }); }
   if (as){ c.textAlign = 'center'; c.fillStyle = NOITE; caber(c, `Assunto do ano no ar: ${as.txt} · ${fmt(as.n)} mensagens`, W/2, ly + n*rh + 110, 940, 500, 36, DM2); }
+  dominioC(c, NOITE);
   rodape3(c, 'e o hit do seu grupo de WhatsApp? retrozap.com.br', NOITE);
   return cv.toDataURL('image/png');
 }
@@ -3834,6 +3964,7 @@ function drawRanking(){
     c.font = `700 40px ${DM2}`; const pw = c.measureText(fr).width + 130;
     c.fillStyle = K.pill; c.beginPath(); c.roundRect(72, 300, pw, 84, 42); c.fill();
     emojiC(c, em, 72 + 50, 342, 44); c.fillStyle = K.txt; c.fillText(fr, 72 + 90, 356);
+    if (72 + pw < W - 72 - 260) dominioC(c, K.sub, W - 72, 354, 'right');
     c.fillStyle = K.txt; c.font = `800 120px ${BR2}`; espaco(c, -2); c.fillText(h.k === 'dias' ? 'MAIS QUE' : 'TOP BRASIL', 66, 530); espaco(c, 0);
     c.font = `800 360px ${BR2}`; espaco(c, -16); c.fillText(`${h.pct}%`, 52, 850); espaco(c, 0);
     c.fillStyle = K.ac; caber(c, h.nome, 72, 950, 936, 800, 76, BR2);
@@ -3876,6 +4007,7 @@ function drawPlantao(){
   const vs0 = n1 && n1.vs ? n1.vs.split(' ')[0] : ''; box(60, /^[+−-]/.test(vs0) ? vs0 : fmt(g.src.total), /^[+−-]/.test(vs0) ? 'mensagens vs ' + (ANO_MOMENTO - 1) : `mensagens em ${ANO_MOMENTO}`);
   if (g.rec) box(60 + bw + 24, fmt(g.rec[1]), 'no dia do recorde');
   const tk = [g.fp && `${primeiro(g.fp.name)} quase não aparece`, g.kkk && `${primeiro(g.kkk.winner.name)} ri ${vunid(g.kkk, g.kkk.winner.v)}`, g.pod && `${primeiro(g.pod.winner.name)} manda ${fmt(g.pod.winner.v)} ${g.pod.u}`].filter(Boolean).slice(0, 2).join(' · ');
+  dominioC(c, AREIA, W/2, 1600);
   c.fillStyle = '#FFC23C'; c.fillRect(0, 1640, W, 110); c.fillStyle = NOITE; c.textAlign = 'left'; caber(c, tk, 60, 1710, 960, 700, 36, DM2);
   rodape3(c, 'e as notícias do seu grupo de WhatsApp? retrozap.com.br', AREIA);
   return cv.toDataURL('image/png');
@@ -3893,7 +4025,7 @@ function drawPlacar(d){
   c.fillStyle = ROSA; c.font = `800 300px ${BR2}`; espaco(c, -10); c.fillText(`${pa}×${pb}`, W/2, 640); espaco(c, 0);
   const nm = n => limpaTxt(n).split(' ')[0];
   c.fillStyle = CREME; caber(c, nm(a.name), W/2 - 270, 760, 400, 800, 80, BR2); caber(c, nm(b.name), W/2 + 270, 760, 400, 800, 80, BR2);
-  let y = 860; const rh = Math.min(150, 760/cats.length);
+  let y = 860; const rh = Math.min(140, 680/cats.length);
   for (const x of cats){
     c.fillStyle = 'rgba(255,243,236,.08)'; c.beginPath(); c.roundRect(70, y, W - 140, rh - 22, 26); c.fill();
     const meio = y + (rh - 22)/2 + 16, ga = x.a > x.b, gb = x.b > x.a;
@@ -3903,7 +4035,8 @@ function drawPlacar(d){
     y += rh;
   }
   const lider = pa === pb ? null : pa > pb ? b : a;
-  c.fillStyle = ROSA; c.textAlign = 'center'; caber(c, lider ? `${nm(lider.name)} pediu revanche em ${ANO_MOMENTO + 1}.` : 'Empate. Ninguém dorme hoje.', W/2, Math.min(y + 70, 1730), 940, 500, 44, DM2);
+  c.fillStyle = ROSA; c.textAlign = 'center'; caber(c, lider ? `${nm(lider.name)} pediu revanche em ${ANO_MOMENTO + 1}.` : 'Empate. Ninguém dorme hoje.', W/2, Math.min(y + 56, 1600), 940, 500, 44, DM2);
+  dominioC(c, CREME);
   c.fillStyle = CREME; c.font = `700 40px ${DM2}`; c.fillText('e o WhatsApp de vocês? retrozap.com.br', W/2, 1830, 980);
   return cv.toDataURL('image/png');
 }
@@ -3913,17 +4046,22 @@ function numeroGrupo(){
   const tot = ps.reduce((t, p) => t + p.count, 0), top = state.comp?.top?.total;
   // quase empate (diferença de até 3%) vira dupla, como o empate técnico dos troféus
   const dupla = ps[1] && ps[0].count >= 50 && (ps[0].count - ps[1].count)/ps[0].count <= .03 ? ps[1] : null;
-  return {tot, so26, top, dono: ps[0], dupla, pct: tot ? Math.round(ps[0].count/tot*100) : 0, pct2: dupla && tot ? Math.round(dupla.count/tot*100) : 0};
+  const casal = state.modo === 'casal' && ps.length === 2;
+  return {tot, so26, top, casal, dono: ps[0], outro: ps[1], dupla, pct: tot ? Math.round(ps[0].count/tot*100) : 0, pct2: ps[1] && tot ? Math.round(ps[1].count/tot*100) : 0};
 }
 function fraseNumero(x){ const n = p => limpaTxt(p.name).split(' ')[0];
+  // casal: os dois sempre mandam 100% juntos; a graça é quem fala mais
+  if (x.casal) return x.dupla ? `Empate técnico no microfone: ${n(x.dono)} ${x.pct}%, ${n(x.outro)} ${x.pct2}%.` : `${n(x.dono)} mandou ${x.pct}% delas. ${n(x.outro)}, sua vez de falar.`;
   return x.dupla ? `${n(x.dono)} e ${n(x.dupla)} mandaram ${x.pct + x.pct2}% delas. Empate técnico no microfone.` : `Só ${n(x.dono)} mandou ${x.pct}% delas. ${n(x.dono)}, explica.`; }
-function altNumero(){ const x = numeroGrupo(); return `${state.grupo || 'O grupo'} mandou ${fmt(x.tot)} mensagens${x.so26 ? ' em ' + ANO_MOMENTO : ''}. ${x.dono ? fraseNumero(x) : ''}`; }
+// quem mandou: "Turma do Churras mandou", mas "Ana & Bruno mandaram" no casal
+const mandouNum = x => x.casal ? 'mandaram' : 'mandou';
+function altNumero(){ const x = numeroGrupo(); return `${state.grupo || (x.casal ? 'Vocês dois' : 'O grupo')} ${mandouNum(x)} ${fmt(x.tot)} mensagens${x.so26 ? ' em ' + ANO_MOMENTO : ''}. ${x.dono ? fraseNumero(x) : ''}`; }
 function drawNumero(){
   const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
   const NOITE = '#1A0B2E', CHI = '#FF4F8B', AREIA = '#FFF4E0', x = numeroGrupo();
   c.fillStyle = CHI; c.fillRect(0, 0, W, H);
   c.textAlign = 'left'; marcaC(c, 70 + 128, 150, 44, NOITE);
-  c.fillStyle = NOITE; caber(c, `${limpaTxt(state.grupo || nomePadrao())} mandou`, 70, 330, 940, 700, 48, DM2);
+  c.fillStyle = NOITE; caber(c, `${limpaTxt(state.grupo || nomePadrao())} ${mandouNum(x)}`, 70, 330, 940, 700, 48, DM2);
   const N = fmt(x.tot); let f = 400; c.font = `800 ${f}px ${BR2}`; espaco(c, -18);
   while (c.measureText(N).width > 960 && f > 160){ f -= 10; c.font = `800 ${f}px ${BR2}`; }
   c.fillText(N, 56, 360 + f*.86); espaco(c, 0);
@@ -3935,9 +4073,10 @@ function drawNumero(){
     c.save(); c.translate(820, yy + 340); c.rotate(-.18);
     c.fillStyle = '#FFC23C'; c.beginPath(); c.arc(0, 0, 190, 0, 7); c.fill(); c.lineWidth = 12; c.strokeStyle = NOITE; c.stroke();
     c.fillStyle = NOITE; c.textAlign = 'center'; c.font = `800 44px ${DM2}`; c.fillText('TOP', 0, -60); c.font = `800 120px ${BR2}`; c.fillText(`${x.top}%`, 0, 52);
-    c.font = `800 34px ${DM2}`; c.fillText('DOS GRUPOS', 0, 108); c.restore();
+    c.font = `800 34px ${DM2}`; c.fillText(x.casal ? 'DOS CASAIS' : 'DOS GRUPOS', 0, 108); c.restore();
   }
-  c.textAlign = 'center'; c.fillStyle = NOITE; c.font = `700 40px ${DM2}`; c.fillText('e o seu grupo? retrozap.com.br', W/2, 1830, 980);
+  dominioC(c, NOITE);
+  c.textAlign = 'center'; c.fillStyle = NOITE; c.font = `700 40px ${DM2}`; c.fillText(x.casal ? 'e o WhatsApp de vocês? retrozap.com.br' : 'e o seu grupo? retrozap.com.br', W/2, 1830, 980);
   return cv.toDataURL('image/png');
 }
 // card do casal: quem manda mais o quê (sem rótulo de gênero, só os nomes)
@@ -3985,7 +4124,7 @@ function drawCasal(d){
   const tr = ['Mais Romântico', nomeCat('Podcaster do Casal'), 'Tagarela do Casal'].map(n => (state.awards || []).find(x => x.n === gtit(n) && x.winner)).filter(Boolean);
   if (tr.length){
     const ty = y + 100, bw = (W - 100 - (tr.length - 1)*16)/tr.length;
-    c.fillStyle = K.sub; c.font = `700 28px ${DM}`; c.fillText('OS TROFÉUS DE VOCÊS · DESDE O INÍCIO', W/2, ty + 20);
+    c.fillStyle = K.sub; c.font = `700 28px ${DM}`; c.textAlign = 'left'; c.fillText('OS TROFÉUS DE VOCÊS · DESDE O INÍCIO', 50, ty + 20); dominioC(c, K.sub, W - 50, ty + 20, 'right', 28); c.textAlign = 'center';
     tr.forEach((x, i) => {
       const bx = 50 + i*(bw + 16), cx = bx + bw/2, cor = x.winner.name === a.name ? K.A : K.B;
       c.fillStyle = K.caixa; c.beginPath(); c.roundRect(bx, ty + 44, bw, 240, 28); c.fill();
@@ -4347,7 +4486,7 @@ const PATRO_LINK = 'https://playpartygames.com.br/?utm_source=retrozap&utm_mediu
 const PATROCINIO_ATIVO = false;
 // nudge de privacidade antes de ler o arquivo (uma vez por visita)
 let LEMBRETE_VISTO = false;
-function lembrete(seguir){
+function lembrete(seguir, cancelou){
   if (LEMBRETE_VISTO) return seguir();
   const antes = document.activeElement, m = document.createElement('div');
   m.className = 'patro'; m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true'); m.setAttribute('aria-labelledby','lbT'); m.setAttribute('aria-describedby','lbD');
@@ -4359,8 +4498,8 @@ function lembrete(seguir){
     <a href="/privacidade" class="small" style="color:var(--neblina)">Ver a política de privacidade</a>
   </div>`;
   document.body.appendChild(m);
-  const fecha = () => { m.remove(); try { antes?.focus(); } catch {} };
-  m.querySelector('#lbOk').onclick = () => { LEMBRETE_VISTO = true; fecha(); seguir(); };
+  const fecha = ok => { m.remove(); try { antes?.focus(); } catch {} if (!ok) try { cancelou?.(); } catch {} }; // fechou sem "Entendi": quem chamou destrava a tela
+  m.querySelector('#lbOk').onclick = () => { LEMBRETE_VISTO = true; fecha(true); seguir(); };
   m.addEventListener('click', e => { if (e.target === m) fecha(); });
   m.addEventListener('keydown', e => { if (e.key === 'Escape') fecha(); });
   m.querySelector('#lbOk').focus();
@@ -4503,7 +4642,11 @@ function wrap(c, text, x, y, maxW, lh){
     c.save(); c.direction = 'ltr'; c.textAlign = 'left'; c.fillText(l, x0, y + i*lh); c.restore(); });
   return lines.length;
 }
-function cardAward(a){ return drawCard({podio: (a.ranked || []).length > 1 ? a.ranked.slice(1,3).filter(r => r.v > 0).map((r,i) => `${['🥈','🥉'][i]} ${r.name} · ${vfmt(a, r.v)}`) : null, emoji:a.e, title:gtit(a.n, a.winner.name), winner:a.winner.name, line:`${vunid(a, a.winner.v)}${a.fatia && a.total ? ` · ${fatia(a, a.winner.v)} do grupo` : ''}${a.custom ? ' · categoria criada pelo grupo' : ''}`}); }
+function cardAward(a){
+  // empate técnico: "6.728 e 6.676 mensagens" (ou "52 mensagens cada") e o pódio continua no 3º lugar
+  const emp = a.empate && a.ranked?.[1], ini = emp ? 2 : 1, v2 = emp ? a.ranked[1].v : null;
+  const linha = !emp ? vunid(a, a.winner.v) : v2 === a.winner.v ? `${vunid(a, a.winner.v)} cada` : `${vfmt(a, a.winner.v)} e ${vunid(a, v2)}`;
+  return drawCard({podio: (a.ranked || []).length > ini ? a.ranked.slice(ini, 3).filter(r => r.v > 0).map((r,i) => `${['🥈','🥉'][ini - 1 + i]} ${r.name} · ${vfmt(a, r.v)}`) : null, emoji:a.e, title:gtit(a.n, a.winner.name), winner:a.winner.name, line:`${linha}${a.fatia && a.total && !emp ? ` · ${fatia(a, a.winner.v)} do grupo` : ''}${a.custom ? ' · categoria criada pelo grupo' : ''}`}); }
 
 /* ---------- Crie seu prêmio (grátis no lançamento) ---------- */
 const BLOCK = /feio|feia|burr|idiot|gord|nojent|lixo|retardad|imbecil|otari|macac|viad|bicha|piranha|vagabund|corno|baleia|aleijad|pobre|doente|religi|gay|lesbic/;
@@ -4577,6 +4720,10 @@ const K2 = () => state.modo === 'casal'
   ? {fundo:'#FFF3EC', txt:'#5E0B2B', dest:'#CC1D59', destTxt:'#FFF3EC', sub:'#87445C', caixa:'#FFD6E2', caixa2:'#FFE6EC', escuro:'#5E0B2B', claro:'#FFF3EC', provoca:'e o de vocês? retrozap.com.br'}
   : {fundo:'#1A0B2E', txt:'#FFF4E0', dest:'#FFC23C', destTxt:'#1A0B2E', sub:'#B9A8CC', caixa:'#3D1A5C', caixa2:'#2A1242', escuro:'#1A0B2E', claro:'#FFF4E0', provoca:'e o seu grupo? retrozap.com.br'};
 const BR2 = '"Bricolage Grotesque", sans-serif', DM2 = '"DM Sans", sans-serif';
+// "retrozap.com.br" pequeno no pé do conteúdo, dentro da área que aparece no Stories e no status: os ~250 px de baixo
+// do 9:16 ficam sob o campo de resposta, onde está a frase do rodapé. Só texto, sem logo.
+const Y_DOMINIO = 1655;
+function dominioC(c, cor, x = 540, y = Y_DOMINIO, alinha = 'center', tam = 30){ c.save(); c.textAlign = alinha; c.textBaseline = 'alphabetic'; c.fillStyle = cor; c.font = `700 ${tam}px ${DM2}`; espaco(c, 1); c.fillText('retrozap.com.br', x, y); c.restore(); }
 // nome curto para caber em caixas pequenas: "Maria Eduarda Albuquerque" vira "Maria E. Albuquerque" ou "Maria A."
 function nomeCurto(n, max = 14){ const t = limpaTxt(n), p = t.split(' ').filter(w => /\p{L}|\d/u.test(w)); if (t.length <= max || p.length < 2) return p.length ? (t.length <= max ? t : p.join(' ')) : t;
   const ab = p[0] + ' ' + p[p.length - 1]; if (ab.length <= max) return ab; return p[0] + ' ' + p[p.length - 1][0] + '.'; }
@@ -4615,9 +4762,10 @@ function drawCard({emoji, title, winner, line, small, podio}){
   const nlin = wrap(c, limpaTxt(line), W/2, yl, 900, 58); yl += nlin*58 + 30;
   if (podio?.length){
     const its = podio.map(t => { const ch = [...t]; return {e: ch[0], t: limpaTxt(ch.slice(1).join(''))}; });
-    for (const it of its){ if (yl > 1700) break; c.font = `700 40px ${DM2}`; const w = Math.min(c.measureText(it.t).width, 820), x0 = W/2 - (w + 64)/2;
+    for (const it of its){ if (yl > 1580) break; c.font = `700 40px ${DM2}`; const w = Math.min(c.measureText(it.t).width, 820), x0 = W/2 - (w + 64)/2;
       emojiC(c, it.e, x0 + 24, yl - 14, 46); c.save(); c.textAlign = 'left'; c.fillStyle = K.sub; c.fillText(it.t, x0 + 64, yl, 820); c.restore(); yl += 62; }
   }
+  dominioC(c, K.sub);
   c.fillStyle = K.txt; c.font = `700 40px ${DM2}`; c.fillText(K.provoca, W/2, 1830, 980);
   return cv.toDataURL('image/png');
 }
@@ -4635,8 +4783,9 @@ const LINK = 'https://retrozap.com.br';
 const linkDe = de => `retrozap.com.br/?de=${de}${state.modo === 'casal' ? '&m=casal' : ''}`;
 function convite(tipo, x){
   const c = state.modo === 'casal';
-  if (tipo === 'premio') return c ? `${x.winner.name} levou "${x.n}" na nossa retrospectiva 💘😂 Façam a de vocês, sem as mensagens saírem do celular: ${linkDe('trofeu')}`
-    : `Saiu o resultado no nosso grupo: ${x.winner.name} levou "${x.n}" 🏆😂 Descubra quem leva cada prêmio no SEU grupo, de graça e sem as mensagens saírem do celular: ${linkDe('trofeu')}`;
+  const levou = x?.empate ? 'levaram' : 'levou';
+  if (tipo === 'premio') return c ? `${x.winner.name} ${levou} "${x.n}" na nossa retrospectiva 💘😂 Façam a de vocês, sem as mensagens saírem do celular: ${linkDe('trofeu')}`
+    : `Saiu o resultado no nosso grupo: ${x.winner.name} ${levou} "${x.n}" 🏆😂 Descubra quem leva cada prêmio no SEU grupo, de graça e sem as mensagens saírem do celular: ${linkDe('trofeu')}`;
   if (tipo === 'spoiler') return `👀 SPOILER! Fiz a retrospectiva do nosso grupo e esses são os ${x} troféus em disputa. Quem leva cada um? Mandem os palpites que daqui a pouco eu revelo! Faça a do seu grupo: ${linkDe('spoiler')}`;
   if (tipo === 'video') return c ? `A nossa retrospectiva 💘 Façam a de vocês: ${linkDe('video')}` : `A retrospectiva do nosso grupo 🏆 Faça a do seu: ${linkDe('video')}`;
   if (tipo === 'amigos') return `Fiz a retrospectiva do meu grupo no Retrozap! Faz a do seu: quem é o tagarela, quem é o fantasma, qual é a vibe do grupo. É grátis e rápido: ${linkDe('convite')}`;
@@ -4658,6 +4807,42 @@ async function mandarWhats(blob, nome, texto, msg, semNada){
   if (msg) msg.textContent = copiou ? 'Abrimos o WhatsApp com o convite escrito. Escolha a conversa e cole a imagem (Ctrl+V ou Cmd+V).' : 'Abrimos o WhatsApp com o convite escrito. Salve a imagem e anexe na conversa.';
   return 'computador';
 }
+// Passo 2 depois de mandar uma imagem: o link vai à parte. O Stories descarta o texto que acompanha a imagem e muitos apps
+// cortam esse texto; sem link, quem vê o card não tem onde tocar. "Mandar o link" abre o WhatsApp com o convite (com ?de=)
+// e "Copiar link" serve para o sticker de link do Stories. Nada da conversa vai no link.
+const urlConvite = texto => { const m = String(texto || '').match(/retrozap\.com\.br\/\?de=[a-z]+(?:&m=casal)?/); return m ? 'https://' + m[0] : LINK; };
+function passoLinkHTML(texto){
+  const url = urlConvite(texto), casal = state.modo === 'casal';
+  return `<div class="passo-link" role="group" aria-labelledby="plT">
+    <p class="pl-ok"><span aria-hidden="true">✅</span> ${casal ? 'Card pronto!' : 'Card enviado!'}</p>
+    <p id="plT"><span class="pl-n" aria-hidden="true">2</span><b>Agora mande o link.</b> No Stories, e em muitos celulares, o texto não vai junto com a imagem: sem link, quem vê não tem onde tocar.</p>
+    <a class="btn btn-wa" id="plWa" href="https://wa.me/?text=${encodeURIComponent(texto)}" target="_blank" rel="noopener"><i class="ic-wa" aria-hidden="true"></i>${casal ? 'Mandar o link no WhatsApp' : 'Mandar o link no grupo'}</a>
+    <button type="button" class="btn btn-ghost" id="plCopia"><span aria-hidden="true">🔗</span> Copiar link (sticker do Stories)</button>
+    <p class="pl-url" id="plMsg" role="status">${esc(url.replace('https://', ''))}</p>
+  </div>`;
+}
+function ligaPassoLink(raiz, texto){
+  const url = urlConvite(texto), de = (url.match(/de=([a-z]+)/) || [])[1], msg = raiz.querySelector('#plMsg');
+  raiz.querySelector('#plWa')?.addEventListener('click', () => { try { if (typeof evento === 'function') evento('link_mandado', {origem: de}); } catch {} });
+  raiz.querySelector('#plCopia')?.addEventListener('click', async () => {
+    let ok = false; try { await navigator.clipboard.writeText(url); ok = true; } catch {}
+    if (!ok) try { const t = document.createElement('textarea'); t.value = url; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0'; document.body.appendChild(t); t.select(); ok = document.execCommand('copy'); t.remove(); } catch {}
+    msg.textContent = ok ? 'Link copiado! No Stories, toque no ícone de sticker, escolha "Link" e cole.' : `Copie o link: ${url.replace('https://', '')}`;
+    try { if (typeof evento === 'function') evento('link_copiado', {origem: de}); } catch {}
+  });
+}
+// compartilhou direto pelo celular (sem a janela do card): oferece o passo 2 uma vez por retrospectiva
+function oferecerLink(texto){
+  if (state.linkOferecido || document.querySelector('body > .patro')) return; state.linkOferecido = true;
+  const antes = document.activeElement, m = document.createElement('div');
+  m.className = 'patro'; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true'); m.setAttribute('aria-labelledby', 'plT');
+  m.innerHTML = `<div class="patro-box lemb">${passoLinkHTML(texto)}<button type="button" class="btn btn-ghost" id="plFecha">Agora não</button></div>`;
+  const fecha = () => { m.remove(); try { antes?.focus(); } catch {} };
+  document.body.appendChild(m); ligaPassoLink(m, texto);
+  m.querySelector('#plFecha').onclick = fecha;
+  m.addEventListener('keydown', e => { if (e.key === 'Escape') fecha(); });
+  m.addEventListener('click', e => { if (e.target === m) fecha(); });
+}
 async function openCard(fazer, texto = convite('resumo'), alt = 'Card para compartilhar no grupo'){
   await prontoArte(); // desenha só depois das fontes carregarem
   const url = typeof fazer === 'function' ? fazer() : fazer, blob = paraBlob(url), nome = `retrozap-card-${++nCard}.png`;
@@ -4678,26 +4863,33 @@ async function openCard(fazer, texto = convite('resumo'), alt = 'Card para compa
   m.addEventListener('keydown', e => {
     if (e.key === 'Escape') return fecha();
     if (e.key !== 'Tab') return;
-    const bs = [...m.querySelectorAll('button')], i = bs.indexOf(document.activeElement);
+    const bs = [...m.querySelectorAll('button:not([hidden]),a[href]')], i = bs.indexOf(document.activeElement);
     if (e.shiftKey && i <= 0){ e.preventDefault(); bs[bs.length-1].focus(); }
     else if (!e.shiftKey && i === bs.length - 1){ e.preventDefault(); bs[0].focus(); }
   });
   (m.querySelector('#sh') || m.querySelector('#dl')).focus();
+  // depois de mandar (ou salvar) o card: passo 2, mandar o link
+  const passo2 = () => {
+    if (m.querySelector('.passo-link') || !m.isConnected) return;
+    m.classList.add('com-link'); m.querySelector('.btn-row').insertAdjacentHTML('beforebegin', passoLinkHTML(texto)); ligaPassoLink(m, texto);
+    const sh = m.querySelector('#sh'); if (sh) sh.textContent = '📤 Mandar o card de novo';
+    msg.hidden = true; m.querySelector('#plT')?.setAttribute('tabindex', '-1'); m.querySelector('#plT')?.focus({preventScroll: true}); m.scrollTop = 0;
+  };
   m.querySelector('#sh')?.addEventListener('click', async () => {
     const r = await compartilhaArquivo(blob, nome, texto);
-    if (r === 'ok') msg.textContent = 'Pronto! 🏆';
+    if (r === 'ok' || r === 'baixou'){ msg.textContent = 'Pronto! 🏆'; passo2(); }
   });
   if (m.querySelector('#dl')) m.querySelector('#dl').onclick = async () => {
     const d = (typeof DOWN !== 'undefined' && DOWN) || await window.claude?.use?.('downloads').catch(() => null);
     if (d){
-      try { await d.save({filename: nome, data: blob}); msg.textContent = 'Imagem salva! Agora é só mandar no grupo. 🏆'; return; }
+      try { await d.save({filename: nome, data: blob}); msg.textContent = 'Imagem salva! Agora é só mandar no grupo. 🏆'; passo2(); return; }
       catch (e){ if (e?.code === 'declined'){ msg.textContent = 'Tudo bem, a imagem continua aqui.'; return; } msg.textContent = `Não deu para salvar (${e?.code || 'erro'}). Use Copiar imagem.`; return; }
     }
     try { const a = document.createElement('a'); a.href = url; a.download = nome; document.body.appendChild(a); a.click(); a.remove(); msg.textContent = 'Se o download não começou, use Copiar imagem.'; }
     catch { msg.textContent = 'Não deu para salvar daqui. Use Copiar imagem.'; }
   };
   if (m.querySelector('#cp')) m.querySelector('#cp').onclick = async () => {
-    try { await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]); msg.textContent = 'Imagem copiada! Cole no WhatsApp com Ctrl+V (ou Cmd+V).'; }
+    try { await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]); msg.textContent = 'Imagem copiada! Cole no WhatsApp com Ctrl+V (ou Cmd+V).'; passo2(); }
     catch { msg.textContent = 'Seu navegador não deixou copiar a imagem. Clique com o botão direito nela e escolha "Copiar imagem".'; }
   };
 }

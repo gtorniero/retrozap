@@ -42,7 +42,25 @@ c=client('sim',true,{RZ_INTERNO:true,RZ_GTM:1});c.context.evento('view_offer');c
 assert.equal(c.hits.length,0);assert.equal(c.meta.length,0);
 // preço da oferta: o que o servidor mandou ao abrir o paywall (promoção), senão o preço cheio
 c=client('sim',true,{RZ_PRECO:8.99});c.context.evento('view_offer');assert.equal(c.hits.find(x=>x[1]==='view_item')[2].value,8.99);
-console.log('OK: oferta, tentativa e erro distintos de compra; e-commerce do GA4; rz_purchase; modo interno; parâmetros limitados e revogação respeitada.');
+// antes da escolha no aviso de cookies: nada sai e nada é gravado; Aceitar envia a fila na ordem, Recusar descarta
+c=client(null);
+c.context.evento('chegou_de_compartilhamento',{origem:'trofeu',nome:'NOME PRIVADO'});c.context.evento('ob2_entrada',{modo:'casal'});c.context.evento('view_offer',{offer_context:'casal'});
+assert.equal(c.hits.length,0);assert.equal(c.meta.length,0);assert.equal(c.storage.size,2);
+c.storage.set('rz_cookies','sim');c.storage.set('rz_marketing_v1','sim');c.context.window.rzFilaMedicao(true);
+assert.deepEqual(Array.from(c.hits,x=>x[1]),['chegou_de_compartilhamento','ob2_entrada','view_offer','view_item']);
+assert.deepEqual(JSON.parse(JSON.stringify(c.hits[0][2])),{origem:'trofeu'});assert.deepEqual(JSON.parse(JSON.stringify(c.hits[1][2])),{modo:'casal'});
+assert(!JSON.stringify(c.hits).includes('PRIVADO'));assert.equal(c.meta.length,3);
+c.context.window.rzFilaMedicao(true);assert.equal(c.hits.length,4); // a fila só sai uma vez
+c.context.evento('ob2_ja_tenho');assert.equal(c.hits.at(-1)[1],'ob2_ja_tenho'); // depois de aceitar, vai direto
+c=client(null);c.context.evento('chegou_de_compartilhamento',{origem:'resumo'});c.context.evento('upload_ok',{modo:'amigos'});
+c.storage.set('rz_cookies','nao');c.storage.set('rz_marketing_v1','nao');c.context.window.rzFilaMedicao(false);
+c.context.window.rzFilaMedicao(true);c.context.evento('ob2_entrada');
+assert.equal(c.hits.length,0);assert.equal(c.meta.length,0); // recusou: a fila foi descartada e nada mais sai
+c=client(null,true,{RZ_INTERNO:true});c.context.evento('chegou_de_compartilhamento',{origem:'video'});c.storage.set('rz_cookies','sim');c.storage.set('rz_marketing_v1','sim');c.context.window.rzFilaMedicao(true);
+assert.equal(c.hits.length,0); // modo interno nem entra na fila
+c=client(null);for(let i=0;i<100;i++)c.context.evento('ob2_passo',{passo:1});c.storage.set('rz_cookies','sim');c.storage.set('rz_marketing_v1','sim');c.context.window.rzFilaMedicao(true);
+assert.equal(c.hits.length,40); // fila com limite
+console.log('OK: fila antes do aviso de cookies (Aceitar envia, Recusar descarta); oferta, tentativa e erro distintos de compra; e-commerce do GA4; rz_purchase; modo interno; parâmetros limitados e revogação respeitada.');
 (async()=>{
  const source=fs.readFileSync(__dirname+'/pix.js','utf8');
  const module=await import(require('node:url').pathToFileURL(__dirname+'/pix.js').href);
@@ -55,6 +73,10 @@ console.log('OK: oferta, tentativa e erro distintos de compra; e-commerce do GA4
   const body=await res.json();assert.equal(body.pago,paid);
   if(mode==='ligada'&&paid&&Number(amount)>0){assert.match(body.medicao.id,/^[a-f0-9]{64}$/);assert.equal(body.medicao.valor,6.99);assert.equal(body.medicao.moeda,'BRL');assert(!JSON.stringify(body.medicao).includes('reference-only'));}
   else assert.equal(body.medicao,undefined);
+  // deduplicação pixel x Conversions API: o eventID que o navegador manda no Purchase (medicao.id) é o mesmo event_id do servidor
+  if(body.medicao){const capi=await import(require('node:url').pathToFileURL(__dirname+'/meta-capi.mjs').href);
+   const ev=await capi.payload('retrozap',{id:'reference-only-for-unit-test',paid:true,live:true,cents:699,paidAt:Date.now()},{subject:'00000000-0000-4000-8000-000000000003',version:1,marketing:true,at:Date.now(),fbp:'fb.1.1793980000000.123456'});
+   assert.equal(ev.event_id,body.medicao.id);assert.equal(ev.event_name,'Purchase');}
  }
  // preço cobrado decidido pelo servidor: R$ 13,99; promoção de lançamento só quando ligada e dentro das datas (horário de Brasília)
  // data fixa antes da promoção (a promoção está ligada para 01/12 a 31/12; teste_promo.mjs confere a janela)
