@@ -3537,7 +3537,6 @@ function drawTop10(){
     c.textAlign = 'left'; c.fillStyle = K.sub; caber(c, gtit(a.n, a.winner.name), tx, y + ch*.42, tw, 700, Math.round(Math.min(32, ch*.16)), DM2);
     c.fillStyle = K.txt; caber(c, nomeCurto(a.winner.name), tx, y + ch*.74, tw, 800, Math.round(Math.min(56, ch*.27)), BR2);
   });
-  dominioC(c, K.sub);
   c.textAlign = 'center'; c.fillStyle = K.txt; c.font = `700 40px ${DM2}`; c.fillText(K.provoca, W/2, 1830, 980);
   return cv.toDataURL('image/png');
 }
@@ -3714,7 +3713,7 @@ function drawResumo(d){
   }
   // mensagens ano a ano
   const L = porAno(d), mx = Math.max(1, ...L.map(x => x.n)), gx = 90, gw = W - 180, bw = Math.min(110, gw/L.length - 16), y0 = 1560, gh = 200;
-  c.textAlign = 'left'; c.fillStyle = CV().sub; c.font = `700 28px ${DM}`; c.fillText('MENSAGENS ANO A ANO', gx, y0 - 20); dominioC(c, CV().sub, W - gx, y0 - 20, 'right', 28); c.textAlign = 'center';
+  c.textAlign = 'center'; c.fillStyle = CV().sub; c.font = `700 28px ${DM}`; c.fillText('MENSAGENS ANO A ANO', W/2, y0 - 20);
   L.forEach((x, i) => {
     const cx = gx + (i + .5)*gw/L.length, h = Math.max(6, x.n/mx*gh), by = y0 + 30 + gh - h;
     c.fillStyle = x.y === ANO_MOMENTO ? CV().ouro : CV().brilho(.55); c.beginPath(); c.roundRect(cx - bw/2, by, bw, h, 12); c.fill();
@@ -3940,7 +3939,7 @@ function drawNosso2026(){
   }
   if (ds.length){
     const bw = (W - 100 - (ds.length - 1)*16)/ds.length;
-    c.textAlign = 'left'; c.fillStyle = K.sub; c.font = `700 28px ${DM}`; c.fillText(ds.length > 1 ? `TOP ${ds.length} DESTAQUES DE ${ANO_MOMENTO}` : `DESTAQUE DE ${ANO_MOMENTO}`, 50, 1610); dominioC(c, K.sub, W - 50, 1610, 'right', 28); c.textAlign = 'center';
+    c.textAlign = 'center'; c.fillStyle = K.sub; c.font = `700 28px ${DM}`; c.fillText(ds.length > 1 ? `TOP ${ds.length} DESTAQUES DE ${ANO_MOMENTO}` : `DESTAQUE DE ${ANO_MOMENTO}`, W/2, 1610);
     ds.forEach((x, i) => {
       const bx = 50 + i*(bw + 16), cx = bx + bw/2;
       c.fillStyle = K.brilho(.14); c.beginPath(); c.roundRect(bx, 1630, bw, 196, 26); c.fill();
@@ -4024,7 +4023,6 @@ function drawRecibo(d){
   c.fillStyle = VINHO; caber(c, 'via do casal · não tem devolução', W/2, y + 100, pw - 100, 500, 28, MO2);
   barrasC(c, W/2, y + 130, 440, 100, VINHO);
   c.restore();
-  dominioC(c, VINHO, W/2, Math.max(Y_DOMINIO, Math.min(1700, y + 300)));
   rodape3(c, 'e o WhatsApp de vocês? retrozap.com.br', '#FFF3EC');
   return cv.toDataURL('image/png');
 }
@@ -4069,8 +4067,7 @@ function drawBoletim(){
   [[P.na, ma, CEREJA], [P.nb, mb, VINHO]].forEach(([n, v, cor], i) => { const bx = tx + i*(bw + 30);
     c.fillStyle = cor; c.beginPath(); c.roundRect(bx, by, bw, 210, 40); c.fill(); c.fillStyle = '#FFF3EC'; c.textAlign = 'center';
     caber(c, `MÉDIA ${n.toUpperCase()}`, bx + bw/2, by + 66, bw - 60, 700, 30, DM2); c.font = `800 100px ${BR2}`; c.fillText(umaCasa(Math.round(v*10)/10), bx + bw/2, by + 172); });
-  dominioC(c, VINHO, W/2, by + 262);
-  c.save(); c.translate(W/2, by + 352); c.rotate(-.035); c.strokeStyle = CEREJA; c.lineWidth = 9; c.beginPath(); c.roundRect(-400, -60, 800, 120, 30); c.stroke();
+  c.save(); c.translate(W/2, by + 330); c.rotate(-.035); c.strokeStyle = CEREJA; c.lineWidth = 9; c.beginPath(); c.roundRect(-400, -60, 800, 120, 30); c.stroke();
   c.fillStyle = CEREJA; c.textAlign = 'center'; caber(c, `APROVADOS PARA ${ANO_MOMENTO + 1}`, 0, 22, 740, 800, 62, BR2); c.restore();
   rodape3(c, 'e o WhatsApp de vocês? retrozap.com.br', VINHO);
   return cv.toDataURL('image/png');
@@ -4176,7 +4173,6 @@ function drawAstral(){
   if (x.f) item('#FF4F8B', `Ascendente em "${x.f.t}"`, `${x.f.n} vezes até aqui`);
   c.textAlign = 'center'; c.fillStyle = CREME; c.font = `500 38px ${DM2}`;
   wrap(c, `Sintonia: ${x.sint}%. ${x.sint >= 80 ? `Vocês mandam quase o mesmo tanto de mensagens (${fmt(x.sol.max)} a ${fmt(x.sol.min)}).` : x.sint >= 60 ? `${x.sol.w} fala um pouco mais (${fmt(x.sol.max)} a ${fmt(x.sol.min)}).` : `${x.sol.w} fala por dois (${fmt(x.sol.max)} a ${fmt(x.sol.min)}).`}`, W/2, Math.min(y + 30, 1660), 900, 52);
-  dominioC(c, CREME);
   rodape3(c, 'e o mapa do WhatsApp de vocês? retrozap.com.br', CREME);
   return cv.toDataURL('image/png');
 }
@@ -4216,10 +4212,8 @@ function drawDiario(){
   secs.push(['ECONOMIA', `O grupo mandou ${fmt(g.src.total)} mensagens ${state.compD ? 'em ' + ANO_MOMENTO : 'desde o início'}${g.top.total != null && g.top.total <= 50 ? ` e está no top ${g.top.total}% do Brasil` : ''}.`]);
   if (g.rec) secs.push(['CLIMA', `${dataBR(g.rec[0])} teve tempestade: ${fmt(g.rec[1])} mensagens num só dia.`]);
   const cw = (W - 108 - 40)/2;
-  let fimSecs = y;
   secs.slice(0, 4).forEach(([t, txt], i) => { const x = 54 + (i % 2)*(cw + 40), yy = y + Math.floor(i/2)*250;
-    c.textAlign = 'left'; c.fillStyle = NOITE; c.font = `800 38px ${BR2}`; c.fillText(t, x, yy); c.font = `500 32px ${DM2}`; const nl = wrap(c, txt, x, yy + 50, cw, 42); fimSecs = Math.max(fimSecs, yy + 50 + (nl - 1)*42); });
-  dominioC(c, NOITE, W/2, Math.min(1700, Math.max(Y_DOMINIO, fimSecs + 60)));
+    c.textAlign = 'left'; c.fillStyle = NOITE; c.font = `800 38px ${BR2}`; c.fillText(t, x, yy); c.font = `500 32px ${DM2}`; wrap(c, txt, x, yy + 50, cw, 42); });
   c.fillStyle = NOITE; c.beginPath(); c.roundRect(54, 1760, W - 108, 110, 28); c.fill(); c.fillStyle = '#FFF4E0'; c.textAlign = 'center'; c.font = `700 40px ${DM2}`; c.fillText('e o seu grupo de WhatsApp? retrozap.com.br', W/2, 1830);
   return cv.toDataURL('image/png');
 }
@@ -4244,7 +4238,6 @@ function drawProcurado(){
   row('visualizou e não respondeu', 'quase todas', 1260);
   c.fillStyle = NOITE; c.beginPath(); c.roundRect(150, 1420, W - 300, 150, 24); c.fill(); c.fillStyle = '#FFC23C'; c.textAlign = 'center';
   caber(c, `Recompensa: 1 áudio de 5 min do ${primeiro(g.tag.name)}`, W/2, 1512, W - 360, 800, 46, BR2);
-  dominioC(c, NOITE, W/2, 1645);
   c.restore();
   rodape3(c, 'quem é o fantasma do seu grupo de WhatsApp? retrozap.com.br', NOITE);
   return cv.toDataURL('image/png');
@@ -4278,7 +4271,6 @@ function drawRadio(){
       c.fillStyle = NOITE; c.textAlign = 'left'; c.font = `800 54px ${BR2}`; c.fillText(String(i + 2), 104, y + 78);
       caber(c, `"${x.w}" · ${x.pessoas > 1 ? x.pessoas + ' pessoas' : x.quem}`, 190, y + 76, 640, 700, 40, DM2); c.textAlign = 'right'; c.font = `500 38px ${DM2}`; c.fillText(fmt(x.n), W - 104, y + 76); }); }
   if (as){ c.textAlign = 'center'; c.fillStyle = NOITE; caber(c, `Assunto do ano no ar: ${as.txt} · ${fmt(as.n)} mensagens`, W/2, ly + n*rh + 110, 940, 500, 36, DM2); }
-  dominioC(c, NOITE);
   rodape3(c, 'e o hit do seu grupo de WhatsApp? retrozap.com.br', NOITE);
   return cv.toDataURL('image/png');
 }
@@ -4327,7 +4319,6 @@ function drawRanking(){
     c.font = `700 40px ${DM2}`; const pw = c.measureText(fr).width + 130;
     c.fillStyle = K.pill; c.beginPath(); c.roundRect(72, 300, pw, 84, 42); c.fill();
     emojiC(c, em, 72 + 50, 342, 44); c.fillStyle = K.txt; c.fillText(fr, 72 + 90, 356);
-    if (72 + pw < W - 72 - 260) dominioC(c, K.sub, W - 72, 354, 'right');
     c.fillStyle = K.txt; c.font = `800 120px ${BR2}`; espaco(c, -2); c.fillText(h.k === 'dias' ? 'MAIS QUE' : 'TOP BRASIL', 66, 530); espaco(c, 0);
     c.font = `800 360px ${BR2}`; espaco(c, -16); c.fillText(`${h.pct}%`, 52, 850); espaco(c, 0);
     c.fillStyle = K.ac; caber(c, h.nome, 72, 950, 936, 800, 76, BR2);
@@ -4370,7 +4361,6 @@ function drawPlantao(){
   const vs0 = n1 && n1.vs ? n1.vs.split(' ')[0] : ''; box(60, /^[+−-]/.test(vs0) ? vs0 : fmt(g.src.total), /^[+−-]/.test(vs0) ? 'mensagens vs ' + (ANO_MOMENTO - 1) : `mensagens em ${ANO_MOMENTO}`);
   if (g.rec) box(60 + bw + 24, fmt(g.rec[1]), 'no dia do recorde');
   const tk = [g.fp && `${primeiro(g.fp.name)} quase não aparece`, g.kkk && `${primeiro(g.kkk.winner.name)} ri ${vunid(g.kkk, g.kkk.winner.v)}`, g.pod && `${primeiro(g.pod.winner.name)} manda ${fmt(g.pod.winner.v)} ${g.pod.u}`].filter(Boolean).slice(0, 2).join(' · ');
-  dominioC(c, AREIA, W/2, 1600);
   c.fillStyle = '#FFC23C'; c.fillRect(0, 1640, W, 110); c.fillStyle = NOITE; c.textAlign = 'left'; caber(c, tk, 60, 1710, 960, 700, 36, DM2);
   rodape3(c, 'e as notícias do seu grupo de WhatsApp? retrozap.com.br', AREIA);
   return cv.toDataURL('image/png');
@@ -4398,8 +4388,7 @@ function drawPlacar(d){
     y += rh;
   }
   const lider = pa === pb ? null : pa > pb ? b : a;
-  c.fillStyle = ROSA; c.textAlign = 'center'; caber(c, lider ? `${nm(lider.name)} pediu revanche em ${ANO_MOMENTO + 1}.` : 'Empate. Ninguém dorme hoje.', W/2, Math.min(y + 56, 1600), 940, 500, 44, DM2);
-  dominioC(c, CREME);
+  c.fillStyle = ROSA; c.textAlign = 'center'; caber(c, lider ? `${nm(lider.name)} pediu revanche em ${ANO_MOMENTO + 1}.` : 'Empate. Ninguém dorme hoje.', W/2, Math.min(y + 70, 1730), 940, 500, 44, DM2);
   c.fillStyle = CREME; c.font = `700 40px ${DM2}`; c.fillText('e o WhatsApp de vocês? retrozap.com.br', W/2, 1830, 980);
   return cv.toDataURL('image/png');
 }
@@ -4438,7 +4427,6 @@ function drawNumero(){
     c.fillStyle = NOITE; c.textAlign = 'center'; c.font = `800 44px ${DM2}`; c.fillText('TOP', 0, -60); c.font = `800 120px ${BR2}`; c.fillText(`${x.top}%`, 0, 52);
     c.font = `800 34px ${DM2}`; c.fillText(x.casal ? 'DOS CASAIS' : 'DOS GRUPOS', 0, 108); c.restore();
   }
-  dominioC(c, NOITE);
   c.textAlign = 'center'; c.fillStyle = NOITE; c.font = `700 40px ${DM2}`; c.fillText(x.casal ? 'e o WhatsApp de vocês? retrozap.com.br' : 'e o seu grupo? retrozap.com.br', W/2, 1830, 980);
   return cv.toDataURL('image/png');
 }
@@ -4487,7 +4475,7 @@ function drawCasal(d){
   const tr = ['Mais Romântico', nomeCat('Podcaster do Casal'), 'Tagarela do Casal'].map(n => (state.awards || []).find(x => x.n === gtit(n) && x.winner)).filter(Boolean);
   if (tr.length){
     const ty = y + 100, bw = (W - 100 - (tr.length - 1)*16)/tr.length;
-    c.fillStyle = K.sub; c.font = `700 28px ${DM}`; c.textAlign = 'left'; c.fillText('OS TROFÉUS DE VOCÊS · DESDE O INÍCIO', 50, ty + 20); dominioC(c, K.sub, W - 50, ty + 20, 'right', 28); c.textAlign = 'center';
+    c.fillStyle = K.sub; c.font = `700 28px ${DM}`; c.fillText('OS TROFÉUS DE VOCÊS · DESDE O INÍCIO', W/2, ty + 20);
     tr.forEach((x, i) => {
       const bx = 50 + i*(bw + 16), cx = bx + bw/2, cor = x.winner.name === a.name ? K.A : K.B;
       c.fillStyle = K.caixa; c.beginPath(); c.roundRect(bx, ty + 44, bw, 240, 28); c.fill();
@@ -5085,10 +5073,6 @@ const K2 = () => state.modo === 'casal'
   ? {fundo:'#FFF3EC', txt:'#5E0B2B', dest:'#CC1D59', destTxt:'#FFF3EC', sub:'#87445C', caixa:'#FFD6E2', caixa2:'#FFE6EC', escuro:'#5E0B2B', claro:'#FFF3EC', provoca:'e o de vocês? retrozap.com.br'}
   : {fundo:'#1A0B2E', txt:'#FFF4E0', dest:'#FFC23C', destTxt:'#1A0B2E', sub:'#B9A8CC', caixa:'#3D1A5C', caixa2:'#2A1242', escuro:'#1A0B2E', claro:'#FFF4E0', provoca:'e o seu grupo? retrozap.com.br'};
 const BR2 = '"Bricolage Grotesque", sans-serif', DM2 = '"DM Sans", sans-serif';
-// "retrozap.com.br" pequeno no pé do conteúdo, dentro da área que aparece no Stories e no status: os ~250 px de baixo
-// do 9:16 ficam sob o campo de resposta, onde está a frase do rodapé. Só texto, sem logo.
-const Y_DOMINIO = 1655;
-function dominioC(c, cor, x = 540, y = Y_DOMINIO, alinha = 'center', tam = 30){ c.save(); c.textAlign = alinha; c.textBaseline = 'alphabetic'; c.fillStyle = cor; c.font = `700 ${tam}px ${DM2}`; espaco(c, 1); c.fillText('retrozap.com.br', x, y); c.restore(); }
 // nome curto para caber em caixas pequenas: "Maria Eduarda Albuquerque" vira "Maria E. Albuquerque" ou "Maria A."
 function nomeCurto(n, max = 14){ const t = limpaTxt(n), p = t.split(' ').filter(w => /\p{L}|\d/u.test(w)); if (t.length <= max || p.length < 2) return p.length ? (t.length <= max ? t : p.join(' ')) : t;
   const ab = p[0] + ' ' + p[p.length - 1]; if (ab.length <= max) return ab; return p[0] + ' ' + p[p.length - 1][0] + '.'; }
@@ -5127,10 +5111,9 @@ function drawCard({emoji, title, winner, line, small, podio}){
   const nlin = wrap(c, limpaTxt(line), W/2, yl, 900, 58); yl += nlin*58 + 30;
   if (podio?.length){
     const its = podio.map(t => { const ch = [...t]; return {e: ch[0], t: limpaTxt(ch.slice(1).join(''))}; });
-    for (const it of its){ if (yl > 1580) break; c.font = `700 40px ${DM2}`; const w = Math.min(c.measureText(it.t).width, 820), x0 = W/2 - (w + 64)/2;
+    for (const it of its){ if (yl > 1700) break; c.font = `700 40px ${DM2}`; const w = Math.min(c.measureText(it.t).width, 820), x0 = W/2 - (w + 64)/2;
       emojiC(c, it.e, x0 + 24, yl - 14, 46); c.save(); c.textAlign = 'left'; c.fillStyle = K.sub; c.fillText(it.t, x0 + 64, yl, 820); c.restore(); yl += 62; }
   }
-  dominioC(c, K.sub);
   c.fillStyle = K.txt; c.font = `700 40px ${DM2}`; c.fillText(K.provoca, W/2, 1830, 980);
   return cv.toDataURL('image/png');
 }
