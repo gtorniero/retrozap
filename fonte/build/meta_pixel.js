@@ -18,10 +18,13 @@
     checkout_error: 'ErroCheckout'
   };
   // Evento padrão da Meta disparado logo depois do personalizado (o personalizado continua igual).
+  // 17/11: InitiateCheckout vem da tentativa de pagamento (Pix e cartão), igual ao begin_checkout do GA4;
+  // abrir o cartão ou gerar o Pix vira AddPaymentInfo (antes o Pix pulava o InitiateCheckout).
   var standard = {
     final_visto: 'Lead',
     view_offer: 'ViewContent',
-    cartao_aberto: 'InitiateCheckout',
+    checkout_attempt: 'InitiateCheckout',
+    cartao_aberto: 'AddPaymentInfo',
     pix_gerado: 'AddPaymentInfo'
   };
   // preço mostrado na oferta: o que o servidor mandou (window.RZ_PRECO) ou o preço cheio
@@ -29,7 +32,8 @@
   function standardData(name, extra) {
     if (name === 'final_visto') return {content_category: extra && extra.modo === 'casal' ? 'casal' : 'grupo'};
     var d = {value: price(), currency: 'BRL', content_ids: ['rz-premium'], content_type: 'product', content_category: 'premium'};
-    if (name === 'cartao_aberto') { d.num_items = 1; d.payment = 'card'; }
+    if (name === 'checkout_attempt') d.num_items = 1;
+    if (name === 'cartao_aberto') d.payment = 'card';
     if (name === 'pix_gerado') d.payment = 'pix';
     return d;
   }

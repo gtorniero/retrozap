@@ -2,7 +2,7 @@
 # True quando a cobrança (R$ 13,99 Pix ou cartão) estiver ligada para todos (COBRANCA = "ligada" no wrangler.jsonc)
 COBRANCA_PUBLICA = True
 # Google Tag Manager (pixels de mídia paga: Meta, Google Ads, TikTok). Vazio = desligado. Ex.: 'GTM-ABC1234'
-GTM_ID = 'GTM-NMLZBBQS'
+GTM_ID = ''  # 17/11: desligado; o contêiner GTM-NMLZBBQS estava vazio (334 KB sem nenhuma tag). Religar quando houver tag publicada.
 CTA = '<p><a class="cta" href="/">Fazer a retrospectiva do meu grupo</a></p>'
 import ferramentas as _fer  # gerador de nomes e sorteio de amigo secreto (páginas de busca)
 
